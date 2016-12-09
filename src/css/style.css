@@ -1,0 +1,126 @@
+@media (min-width: 980px) {
+  body {
+    padding-top: 60px;
+  }
+}
+.truncate {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.blueprintString {
+  word-wrap: break-word;
+  font-family: Consolas, monospace;
+  font-size: 10.8px;
+}
+.alert-fixed {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  border-radius: 0;
+}
+.keyboard-key {
+  font-family: monospace;
+}
+button,
+input[type=submit] {
+  background: none;
+  font-weight: 600;
+  font-size: 1.5rem;
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 2;
+}
+button.logout,
+input[type=submit].logout,
+button.my,
+input[type=submit].my,
+button.github,
+input[type=submit].github,
+button.facebook,
+input[type=submit].facebook,
+button.twitter,
+input[type=submit].twitter,
+button.google,
+input[type=submit].google {
+  width: 90%;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+button.github,
+input[type=submit].github,
+button.facebook,
+input[type=submit].facebook,
+button.twitter,
+input[type=submit].twitter,
+button.google,
+input[type=submit].google {
+  color: #fff;
+}
+button.github,
+input[type=submit].github {
+  background: #82d465;
+}
+button.github:after,
+input[type=submit].github:after {
+  background: #5cc437;
+}
+button.facebook,
+input[type=submit].facebook {
+  background: #3864a3;
+}
+button.facebook:after,
+input[type=submit].facebook:after {
+  background: #2d5082;
+}
+button.twitter,
+input[type=submit].twitter {
+  background: #5ea9dd;
+}
+button.twitter:after,
+input[type=submit].twitter:after {
+  background: #2c8dd0;
+}
+button.google,
+input[type=submit].google {
+  background: #c30f10;
+}
+button.google:after,
+input[type=submit].google:after {
+  background: #9c0c0d;
+}
+.user-photo {
+  max-width: 36px;
+  max-height: 36px;
+}
+.user-photo-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  min-width: 300px;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: flex-start;
+}
+.user-photo-big {
+  max-width: 100px;
+  max-height: 100px;
+  margin: 6px;
+}
+.jumbotron ul {
+  margin-bottom: 15px;
+  font-size: 21px;
+  font-weight: 200;
+}
+.blueprintThumbnail img {
+  max-height: 300px;
+}
+.blueprintThumbnail.thumbnail {
+  -o-object-fit: cover;
+     object-fit: cover;
+  height: 396.8px;
+}

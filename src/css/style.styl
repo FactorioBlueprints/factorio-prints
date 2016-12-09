@@ -1,0 +1,103 @@
+// Import all partials
+@require './_*.styl'
+
+@media (min-width: 980px) {
+	body {
+		padding-top: 60px;
+	}
+}
+
+.truncate {
+	display: block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.blueprintString {
+	word-wrap: break-word;
+	font-family: Consolas, monospace;
+	font-size: 10.8px;
+}
+
+.alert-fixed {
+	position: fixed;
+	top: 50px;
+	left: 0;
+	width: 100%;
+	z-index: 9999;
+	border-radius: 0
+}
+
+.keyboard-key {
+	font-family: monospace;
+}
+
+button, input[type=submit]
+	background none
+	font-weight 600
+	font-size 1.5rem
+	transition all 0.2s
+	position relative
+	z-index 2
+
+	&.logout, &.my, &.github, &.facebook, &.twitter, &.google
+		width 90%
+		margin-left 10px
+		margin-right 10px
+
+	&.github, &.facebook, &.twitter, &.google
+		color white
+
+	&.github
+		background #82D465
+		&:after
+			background darken(#82D465, 20%)
+
+	&.facebook
+		background #3864A3
+		&:after
+			background darken(#3864A3, 20%)
+
+	&.twitter
+		background #5EA9DD
+		&:after
+			background darken(#5EA9DD, 20%)
+
+	&.google
+		background #c30f10
+		&:after
+			background darken(#c30f10, 20%)
+
+.user-photo
+	max-width: 36px
+	max-height: 36px
+
+.user-photo-container
+	display flex
+	min-width: 300px
+	align-items flex-start
+
+.user-photo-big
+	max-width 100px
+	max-height 100px
+	margin: 6px
+
+//li.dropdown a.dropdown-toggle
+//  padding-top 6px
+//  padding-bottom 6px
+
+.jumbotron ul {
+	margin-bottom 15px;
+	font-size 21px;
+	font-weight 200;
+}
+
+.blueprintThumbnail img {
+	max-height 300px
+}
+
+.blueprintThumbnail.thumbnail {
+	object-fit cover
+	height 396.8px
+}

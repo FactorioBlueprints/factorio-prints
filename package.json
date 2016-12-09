@@ -1,0 +1,47 @@
+{
+  "name": "factorio-blueprints",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://factorioprints.com/",
+  "devDependencies": {
+    "autoprefixer-stylus": "^0.11.0",
+    "babel-eslint": "^7.1.1",
+    "concurrently": "^3.1.0",
+    "eslint": "^3.11.1",
+    "eslint-plugin-babel": "^4.0.0",
+    "eslint-plugin-react": "^6.8.0",
+    "react-scripts": "0.7.0",
+    "stylus": "^0.54.5"
+  },
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "clipboard": "^1.5.15",
+    "firebase": "3.6.1",
+    "history": "^4.4.1",
+    "marked": "^0.3.6",
+    "moment": "^2.17.1",
+    "re-base": "^2.5.1",
+    "react": "^15.4.1",
+    "react-addons-css-transition-group": "^15.4.1",
+    "react-bootstrap": "^0.30.7",
+    "react-clipboard": "^1.2.2",
+    "react-disqus-thread": "^0.4.0",
+    "react-dom": "^15.4.1",
+    "react-dropzone": "^3.7.3",
+    "react-hotkeys": "^0.9.0",
+    "react-router": "^4.0.0-alpha.6",
+    "react-router-bootstrap": "^0.23.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "watch": "concurrently --names 'webpack, stylus' --prefix name 'npm run start' 'npm run styles:watch'",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "styles": "stylus -u autoprefixer-stylus ./src/css/style.styl -o ./src/css/style.css",
+    "styles:watch": "stylus -u autoprefixer-stylus -w ./src/css/style.styl -o ./src/css/style.css"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/react-scripts/config/eslint.js"
+  }
+}
