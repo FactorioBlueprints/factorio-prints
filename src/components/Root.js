@@ -1,4 +1,11 @@
 import React, {Component} from 'react';
+
+import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+
+import {BrowserRouter, Match, Miss} from 'react-router';
+
+import base from '../base';
+
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
 import UserGrid from './UserGrid';
@@ -7,8 +14,6 @@ import Create from './Create';
 import SingleBlueprint from './SingleBlueprint';
 import Intro from './Intro';
 import NoMatch from './NoMatch';
-import base from '../base';
-import {BrowserRouter, Match, Miss} from 'react-router';
 
 class Root extends Component {
 	static propTypes = {};
@@ -89,6 +94,11 @@ class Root extends Component {
 	{
 		const blueprintId = props.params.blueprintId;
 		const blueprint   = this.state.blueprints[blueprintId];
+
+		if (Object.keys(this.state.blueprints).length === 0)
+		{
+			return <Jumbotron><h1>{'Loading data'}</h1></Jumbotron>;
+		}
 		return (
 			<SingleBlueprint
 				{...props}
