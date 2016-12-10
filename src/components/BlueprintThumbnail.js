@@ -8,12 +8,13 @@ import noImageAvailable from '../gif/No_available_image.gif';
 const BlueprintThumbnail = ({
 	id,
 	imageUrl,
+	thumbnail,
 	title,
 	numberOfFavorites,
 }) =>
 	<Col xs={6} md={3}>
 		<Link to={`/view/${id}`}>
-			<Thumbnail src={imageUrl || noImageAvailable} className='blueprintThumbnail'>
+			<Thumbnail src={thumbnail || imageUrl || noImageAvailable} className='blueprintThumbnail'>
 				<h4 className='truncate'>{title}</h4>
 				<p><Glyphicon glyph='heart' /> {numberOfFavorites}</p>
 			</Thumbnail>

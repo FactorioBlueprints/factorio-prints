@@ -23,6 +23,7 @@ class SingleBlueprint extends Component {
 		blueprint: PropTypes.shape({
 			title              : PropTypes.string.isRequired,
 			imageUrl           : PropTypes.string,
+			thumbnail           : PropTypes.string,
 			author             : PropTypes.shape({
 				displayName: PropTypes.string.isRequired,
 				userId     : PropTypes.string.isRequired,
@@ -81,6 +82,8 @@ class SingleBlueprint extends Component {
 			return <NoMatch />;
 		}
 
+		const thumbnail = this.props.blueprint.thumbnail || this.props.blueprint.imageUrl || noImageAvailable;
+
 		const renderedMarkdown = marked(this.props.blueprint.descriptionMarkdown);
 		const createdDate      = this.props.blueprint.createdDate;
 		const lastUpdatedDate  = this.props.blueprint.lastUpdatedDate;
@@ -96,7 +99,7 @@ class SingleBlueprint extends Component {
 				<Col md={4}>
 					<Thumbnail
 						href={this.props.blueprint.imageUrl || noImageAvailable}
-						src={this.props.blueprint.imageUrl || noImageAvailable}
+						src={thumbnail}
 						target='_blank'
 					/>
 					<Panel header='Info'>
