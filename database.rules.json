@@ -27,6 +27,9 @@
         ".write": "auth != null && auth.uid == $uid",
         "blueprints": {
           ".read": "true"
+        },
+        "displayName": {
+          ".read": "true"
         }
       }
     }
