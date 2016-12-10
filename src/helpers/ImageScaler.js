@@ -94,12 +94,12 @@ const scaleImage = (img, config) =>
 	canvas.height = img.height;
 	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
 
-	while (canvas.width >= 2 * config.maxWidth)
+	while ((canvas.width >= 2 * config.maxWidth) || (canvas.height >= 2 * config.maxHeight))
 	{
 		canvas = getHalfScaleCanvas(canvas);
 	}
 
-	if (canvas.width > config.maxWidth)
+	if (canvas.width > config.maxWidth || canvas.height > config.maxHeight)
 	{
 		canvas = scaleCanvasWithAlgorithm(canvas, config);
 	}
