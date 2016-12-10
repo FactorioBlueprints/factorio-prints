@@ -12,6 +12,7 @@ import UserGrid from './UserGrid';
 import FavoritesGrid from './FavoritesGrid';
 import Create from './Create';
 import SingleBlueprint from './SingleBlueprint';
+import EditBlueprint from './EditBlueprint';
 import Intro from './Intro';
 import NoMatch from './NoMatch';
 
@@ -108,6 +109,22 @@ class Root extends Component {
 			/>
 		);
 	};
+	renderEditBlueprint   = (props) =>
+	{
+		const blueprintId = props.params.blueprintId;
+		const blueprint   = this.state.blueprints[blueprintId];
+
+		if (Object.keys(this.state.blueprints).length === 0)
+		{
+			return <Jumbotron><h1>{'Loading data'}</h1></Jumbotron>;
+		}
+		return <EditBlueprint
+			{...props}
+			id={blueprintId}
+			blueprint={blueprint}
+			user={this.state.user}
+		/>;
+	};
 	renderUser            = props =>
 		<UserGrid
 			{...props}
@@ -137,6 +154,7 @@ class Root extends Component {
 						<Match pattern='/blueprints' exactly render={this.renderBlueprintGrid} />
 						<Match pattern='/create' exactly component={this.renderCreate} />
 						<Match pattern='/view/:blueprintId' component={this.renderSingleBlueprint} />
+						<Match pattern='/edit/:blueprintId' component={this.renderEditBlueprint} />
 						<Match pattern='/user/:userId' component={this.renderUser} />
 						<Match pattern='/favorites' exactly component={this.renderFavorites} />
 						<Miss component={NoMatch} />

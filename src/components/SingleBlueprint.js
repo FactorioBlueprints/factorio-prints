@@ -23,7 +23,7 @@ class SingleBlueprint extends Component {
 		blueprint: PropTypes.shape({
 			title              : PropTypes.string.isRequired,
 			imageUrl           : PropTypes.string,
-			thumbnail           : PropTypes.string,
+			thumbnail          : PropTypes.string,
 			author             : PropTypes.shape({
 				displayName: PropTypes.string.isRequired,
 				userId     : PropTypes.string.isRequired,
@@ -40,6 +40,8 @@ class SingleBlueprint extends Component {
 			displayName: PropTypes.string.isRequired,
 		}),
 	};
+
+	static contextTypes = {router: PropTypes.object.isRequired};
 
 	handleFavorite = () =>
 	{
@@ -75,6 +77,14 @@ class SingleBlueprint extends Component {
 		);
 	};
 
+	renderEditButton = () =>
+		<Button
+			bsSize='large'
+			className='pull-right'
+			onClick={() => this.context.router.transitionTo(`/edit/${this.props.id}`)}>
+			{'Edit'}
+		</Button>;
+
 	render()
 	{
 		if (!this.props.blueprint)
@@ -88,11 +98,14 @@ class SingleBlueprint extends Component {
 		const createdDate      = this.props.blueprint.createdDate;
 		const lastUpdatedDate  = this.props.blueprint.lastUpdatedDate;
 
+		const ownedByCurrentUser = this.props.user && this.props.user.userId === this.props.blueprint.author.userId;
+
 		return <Grid>
 			<Row>
 				<PageHeader>
 					{this.props.blueprint.title}
-					{this.renderFavoriteButton()}
+					{!ownedByCurrentUser && this.renderFavoriteButton()}
+					{ownedByCurrentUser && this.renderEditButton()}
 				</PageHeader>
 			</Row>
 			<Row>
@@ -110,8 +123,7 @@ class SingleBlueprint extends Component {
 									<td>
 										<Link to={`/user/${this.props.blueprint.author.userId}`}>
 											{this.props.blueprint.author.displayName}
-											{this.props.user && this.props.user.userId === this.props.blueprint.author.userId &&
-											<span className='pull-right'><b>{'(You)'}</b></span>}
+											{ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
 										</Link>
 									</td>
 								</tr>
