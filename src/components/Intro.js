@@ -6,7 +6,7 @@ const Intro = () =>
 	<Jumbotron>
 		<h1>{'Factorio Prints'}</h1>
 		<p>
-			{'This this a site to share blueprints for the game '}
+			{'This is a site to share blueprints for the game '}
 			<a href='https://www.factorio.com/'>{'Factorio'}</a>
 			{'.'}
 		</p>
