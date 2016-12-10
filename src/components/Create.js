@@ -19,17 +19,7 @@ import marked from 'marked';
 import base from '../base';
 import firebase from 'firebase';
 
-const PreviewFile = ({
-	name,
-	preview,
-}) =>
-	<Col key={name} xs={6} md={3}>
-		<Thumbnail
-			src={preview || noImageAvailable}
-			alt='242x200'>
-			<h4 className='truncate'>{name}</h4>
-		</Thumbnail>
-	</Col>;
+import scaleImage from '../helpers/ImageScaler';
 
 class Create extends Component {
 	static propTypes = {
@@ -46,6 +36,7 @@ class Create extends Component {
 			title              : '',
 			descriptionMarkdown: '',
 			blueprintString    : '',
+			thumbnail          : '',
 		},
 		renderedMarkdown        : '',
 		files                   : [],
@@ -108,6 +99,26 @@ class Create extends Component {
 				...this.state.blueprint,
 				imageUrl: acceptedFiles.length > 1 && acceptedFiles[0].preview,
 			},
+		});
+
+		if (acceptedFiles.length === 0)
+		{
+			return;
+		}
+
+		const config = {
+			maxWidth : 350,
+			maxHeight: 600,
+			quality  : 0.70,
+		};
+		scaleImage(acceptedFiles[0], config, (imageData) =>
+		{
+			this.setState({
+				blueprint: {
+					...this.state.blueprint,
+					thumbnail: imageData,
+				},
+			});
 		});
 	};
 
@@ -206,6 +217,23 @@ class Create extends Component {
 				this.context.router.transitionTo(`/view/${newBlueprintRef.key}`);
 			});
 		});
+	};
+
+	renderPreview = () =>
+	{
+		if (!this.state.blueprint.thumbnail)
+		{
+			console.log(this.state.blueprint.thumbnail);
+			return <div>{'Please attach one screenshot.'}</div>;
+		}
+
+		return (
+			<Col xs={6} md={3}>
+				<Thumbnail src={this.state.blueprint.thumbnail || this.state.blueprint.imageUrl || noImageAvailable}>
+					<h4 className='truncate'>{this.state.blueprint.title}</h4>
+				</Thumbnail>
+			</Col>
+		);
 	};
 
 	render()
@@ -334,12 +362,7 @@ class Create extends Component {
 								<Col componentClass={ControlLabel} sm={2}>{'Attached screenshot'}</Col>
 								<Col sm={10}>
 									<Row>
-										{this.state.files.length === 0
-											? <div>{'Please attach one screenshot.'}</div>
-											: <div>{this.state.files.map(file => <PreviewFile
-											key={file.name} {...file}
-										/>)}</div>
-										}
+										{this.renderPreview()}
 									</Row>
 								</Col>
 							</FormGroup>
