@@ -1,10 +1,10 @@
 import React from 'react';
 
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import Well from 'react-bootstrap/lib/Well';
 
 const Intro = () =>
-	<Jumbotron>
-		<h1>{'Factorio Prints'}</h1>
+	<Well>
+		<h2>{'Factorio Prints'}</h2>
 		<p>
 			{'This is a site to share blueprints for the game '}
 			<a href='https://www.factorio.com/'>{'Factorio'}</a>
@@ -22,6 +22,6 @@ const Intro = () =>
 				<a href='https://mods.factorio.com/mods/killkrog/KBlueprints'>{"Killkrog's Blueprint Manager"}</a>
 			</li>
 		</ul>
-	</Jumbotron>;
+	</Well>;
 
 export default Intro;
