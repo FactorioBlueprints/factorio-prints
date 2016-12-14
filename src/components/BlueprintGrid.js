@@ -11,7 +11,7 @@ class BlueprintGrid extends Component {
 		return <Grid>
 			<Row>
 				{
-					Object.keys(this.props.blueprints).map(key =>
+					Object.keys(this.props.blueprints).reverse().map(key =>
 						<BlueprintThumbnail key={key} id={key} {...this.props.blueprints[key]} />)
 				}
 			</Row>
