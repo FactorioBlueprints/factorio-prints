@@ -223,7 +223,6 @@ class Create extends Component {
 	{
 		if (!this.state.blueprint.thumbnail)
 		{
-			console.log(this.state.blueprint.thumbnail);
 			return <div>{'Please attach one screenshot.'}</div>;
 		}
 

@@ -142,7 +142,6 @@ const scaleFile = (file, {
 		img.onload = () =>
 		{
 			const imageData = scaleImage(img, config);
-			console.log(imageData);
 			if (callback)
 			{
 				return callback(imageData);
