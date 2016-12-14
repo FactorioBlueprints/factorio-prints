@@ -88,7 +88,7 @@ class Root extends Component {
 
 	renderIntro           = props =>
 		<div>
-			{this.state.authData === null && <Intro />}
+			{this.state.user === null && <Intro />}
 			{this.renderBlueprintGrid(props)}
 		</div>;
 	renderBlueprintGrid   = props =>

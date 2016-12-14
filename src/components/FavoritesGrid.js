@@ -12,7 +12,7 @@ class FavoritesGrid extends Component {
 	static propTypes = {
 		user      : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string.isRequired,
+			displayName: PropTypes.string,
 		}),
 		blueprints: PropTypes.object.isRequired,
 	};

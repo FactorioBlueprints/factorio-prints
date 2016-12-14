@@ -13,7 +13,7 @@ class Header extends Component {
 	static propTypes = {
 		user: PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string.isRequired,
+			displayName: PropTypes.string,
 			photoURL   : PropTypes.string.isRequired,
 		}),
 	};

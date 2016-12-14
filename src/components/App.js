@@ -17,7 +17,7 @@ class App extends Component {
 		children                 : PropTypes.node.isRequired,
 		user                     : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string.isRequired,
+			displayName: PropTypes.string,
 			photoURL   : PropTypes.string.isRequired,
 		}),
 		onHideKeyboardShortcuts  : PropTypes.func.isRequired,

@@ -25,7 +25,7 @@ class SingleBlueprint extends Component {
 			imageUrl           : PropTypes.string,
 			thumbnail          : PropTypes.string,
 			author             : PropTypes.shape({
-				displayName: PropTypes.string.isRequired,
+				displayName: PropTypes.string,
 				userId     : PropTypes.string.isRequired,
 			}).isRequired,
 			createdDate        : PropTypes.number.isRequired,
@@ -37,7 +37,7 @@ class SingleBlueprint extends Component {
 		}),
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string.isRequired,
+			displayName: PropTypes.string,
 		}),
 		isModerator: PropTypes.bool,
 	};
