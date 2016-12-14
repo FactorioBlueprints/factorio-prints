@@ -72,20 +72,10 @@ class Header extends Component {
 		}
 		return (
 			<NavDropdown title='Sign in / Join' id='dropdown-login'>
-				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>Log in
-					with Google
-				</button>
-				<button className='facebook btn btn-block' onClick={() => this.authenticate(this.facebookProvider)}>Log
-					in with
-					Facebook
-				</button>
-				<button className='twitter btn btn-block' onClick={() => this.authenticate(this.twitterProvider)}>Log in
-					with
-					Twitter
-				</button>
-				<button className='github btn btn-block' onClick={() => this.authenticate(this.githubProvider)}>Log in
-					with GitHub
-				</button>
+				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>{'Log in with Google'}</button>
+				{/*<button className='facebook btn btn-block' onClick={() => this.authenticate(this.facebookProvider)}>{'Log in with Facebook'}</button>*/}
+				{/*<button className='twitter btn btn-block' onClick={() => this.authenticate(this.twitterProvider)}>{'Log in with Twitter'}</button>*/}
+				<button className='github btn btn-block' onClick={() => this.authenticate(this.githubProvider)}>{'Log in with GitHub'}</button>
 			</NavDropdown>
 		);
 	};
