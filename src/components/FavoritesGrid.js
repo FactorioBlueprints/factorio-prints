@@ -21,22 +21,20 @@ class FavoritesGrid extends Component {
 		keys: {},
 	};
 
-	componentWillMount()
+	componentWillReceiveProps(nextProps)
 	{
-		if (this.props.user)
+		if (nextProps.user)
 		{
-			this.ref = base.syncState(`/users/${this.props.user.userId}/favorites/`, {
-				context: this,
-				state  : 'keys',
+			const favoritesRef = base.database().ref(`/users/${nextProps.user.userId}/favorites/`);
+			favoritesRef.once('value').then((snapshot) =>
+			{
+				const keys = snapshot.val();
+				this.setState({keys});
 			});
 		}
-	}
-
-	componentWillUnmount()
-	{
-		if (this.ref)
+		else
 		{
-			base.removeBinding(this.ref);
+			console.log(nextProps);
 		}
 	}
 
