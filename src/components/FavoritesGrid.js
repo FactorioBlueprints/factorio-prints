@@ -53,9 +53,6 @@ class FavoritesGrid extends Component {
 		return (
 			<Grid>
 				<Row>
-					<PageHeader>{'My Favorites'}</PageHeader>
-				</Row>
-				<Row>
 					{
 						Object.keys(this.state.keys)
 							.filter(key => this.state.keys[key])
