@@ -12,7 +12,7 @@ const BlueprintThumbnail = ({
 	title,
 	numberOfFavorites,
 }) =>
-	<Col xs={6} md={3}>
+	<Col xs={12} sm={6} md={3}>
 		<Link to={`/view/${id}`}>
 			<Thumbnail src={thumbnail || imageUrl || noImageAvailable} className='blueprintThumbnail'>
 				<h4 className='truncate'>{title}</h4>
