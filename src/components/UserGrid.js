@@ -42,7 +42,7 @@ class UserGrid extends Component {
 			<Grid>
 				<Row>
 					<PageHeader>
-						{'Blueprints by '}{this.state.displayName}
+						{'Viewing Blueprints by '}{this.state.displayName}
 					</PageHeader>
 				</Row>
 				<Row>

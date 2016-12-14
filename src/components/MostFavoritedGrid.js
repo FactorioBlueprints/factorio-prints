@@ -1,6 +1,8 @@
 import React, {Component, PropTypes} from 'react';
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
+import PageHeader from 'react-bootstrap/lib/PageHeader';
+
 import BlueprintThumbnail from './BlueprintThumbnail';
 
 class MostFavoritedGrid extends Component {
@@ -24,6 +26,9 @@ class MostFavoritedGrid extends Component {
 	render()
 	{
 		return <Grid>
+			<Row>
+				<PageHeader>{'Viewing Most Favorited'}</PageHeader>
+			</Row>
 			<Row>
 				{
 					Object.keys(this.props.blueprints)

@@ -103,8 +103,8 @@ class Header extends Component {
 
 				<Navbar.Collapse>
 					<Nav>
-						<li><Link to='/blueprints'>{'View Blueprints'}</Link></li>
-						<li><Link to='/top'>{'Top'}</Link></li>
+						<li><Link to='/blueprints'>{'Most Recent'}</Link></li>
+						<li><Link to='/top'>{'Most Favorited'}</Link></li>
 						<li><Link to='/create'>{'Create'}</Link></li>
 						{this.props.user && <li><Link to={'/favorites'}> {'My Favorites'} </Link></li>}
 						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}> {'My Blueprints'} </Link></li>}
