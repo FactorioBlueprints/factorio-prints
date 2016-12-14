@@ -18,7 +18,6 @@ class Header extends Component {
 		}),
 	};
 
-
 	constructor()
 	{
 		super();
@@ -30,9 +29,7 @@ class Header extends Component {
 
 		// Choose between multiple google accounts
 		// http://stackoverflow.com/a/40551683/23572
-		this.googleProvider.setCustomParameters({
-			'prompt': 'consent select_account'
-		});
+		this.googleProvider.setCustomParameters({prompt: 'consent select_account'});
 	}
 
 	authenticate = (provider) =>
@@ -63,16 +60,6 @@ class Header extends Component {
 						<MenuItem className='user-photo-container'>
 							<img src={this.props.user.photoURL} alt='user' className='user-photo-big pull-left' />
 							<h4><b>{this.props.user.displayName}</b></h4>
-						</MenuItem>
-						<MenuItem>
-							<Link to={'/favorites'}>
-								<button className='btn btn-block btn-default'>{'My Favorites'}</button>
-							</Link>
-						</MenuItem>
-						<MenuItem>
-							<Link to={`/user/${this.props.user.userId}`}>
-								<button className='btn btn-block btn-default'>{'My Blueprints'}</button>
-							</Link>
 						</MenuItem>
 						<MenuItem>
 							<button className='btn btn-block btn-primary' onClick={this.handleLogout}>
@@ -118,6 +105,8 @@ class Header extends Component {
 						<li><Link to='/blueprints'>{'View Blueprints'}</Link></li>
 						<li><Link to='/top'>{'Top'}</Link></li>
 						<li><Link to='/create'>{'Create'}</Link></li>
+						{this.props.user && <li><Link to={'/favorites'}> {'My Favorites'} </Link></li>}
+						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}> {'My Blueprints'} </Link></li>}
 					</Nav>
 					<Nav pullRight>
 						{this.renderAuthentication()}
