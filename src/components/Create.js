@@ -223,15 +223,24 @@ class Create extends Component {
 	{
 		if (!this.state.blueprint.thumbnail)
 		{
-			return <div>{'Please attach one screenshot.'}</div>;
+			return <div />;
 		}
 
 		return (
-			<Col xs={6} md={3}>
-				<Thumbnail src={this.state.blueprint.thumbnail || this.state.blueprint.imageUrl || noImageAvailable}>
-					<h4 className='truncate'>{this.state.blueprint.title}</h4>
-				</Thumbnail>
+		<FormGroup controlId='formHorizontalBlueprint'>
+			<Col componentClass={ControlLabel} sm={2}>{'Attached screenshot'}</Col>
+			<Col sm={10}>
+				<Row>
+					<Col xs={6} md={3}>
+						<Thumbnail src={this.state.blueprint.thumbnail || this.state.blueprint.imageUrl || noImageAvailable}>
+							<h4 className='truncate'>{this.state.blueprint.title}</h4>
+						</Thumbnail>
+					</Col>
+				</Row>
 			</Col>
+		</FormGroup>
+
+
 		);
 	};
 
@@ -339,17 +348,10 @@ class Create extends Component {
 								<Col componentClass={ControlLabel} sm={2}>{'Upload screenshot'}</Col>
 								<Col sm={10}>
 									<div>
-										{/* // TODO: Style Dropzone using CSS */}
 										<Dropzone
 											accept=' image/*'
-											maxSize={25000000}
-											style={{
-												padding     : '6px 12px',
-												height      : '200px',
-												borderWidth : '1px',
-												borderStyle : 'dashed',
-												borderRadius: '5px',
-											}}
+											maxSize={10000000}
+											className='dropzone'
 											onDrop={this.handleDrop}>
 											<div>{'Drop an image file here, or click to open the file chooser.'}</div>
 										</Dropzone>
@@ -357,14 +359,7 @@ class Create extends Component {
 								</Col>
 							</FormGroup>
 
-							<FormGroup controlId='formHorizontalBlueprint'>
-								<Col componentClass={ControlLabel} sm={2}>{'Attached screenshot'}</Col>
-								<Col sm={10}>
-									<Row>
-										{this.renderPreview()}
-									</Row>
-								</Col>
-							</FormGroup>
+							{this.renderPreview()}
 
 							<FormGroup>
 								<Col smOffset={2} sm={10}>
