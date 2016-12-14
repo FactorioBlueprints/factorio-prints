@@ -1,7 +1,5 @@
-@media (min-width: 980px) {
-  body {
-    padding-top: 60px;
-  }
+body {
+  padding-top: 60px;
 }
 .truncate {
   display: block;
