@@ -8,6 +8,7 @@ import base from '../base';
 
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
+import MostFavoritedGrid from './MostFavoritedGrid';
 import UserGrid from './UserGrid';
 import FavoritesGrid from './FavoritesGrid';
 import Create from './Create';
@@ -86,22 +87,27 @@ class Root extends Component {
 		this.setState({showKeyboardShortcuts: !this.state.showKeyboardShortcuts});
 	};
 
-	renderIntro           = props =>
+	renderIntro             = props =>
 		<div>
 			{this.state.user === null && <Intro />}
 			{this.renderBlueprintGrid(props)}
 		</div>;
-	renderBlueprintGrid   = props =>
+	renderBlueprintGrid     = props =>
 		<BlueprintGrid
 			{...props}
 			blueprints={this.state.blueprints}
 		/>;
-	renderCreate          = props =>
+	renderMostFavoritedGrid = props =>
+		<MostFavoritedGrid
+			{...props}
+			blueprints={this.state.blueprints}
+		/>;
+	renderCreate            = props =>
 		<Create
 			{...props}
 			user={this.state.user}
 		/>;
-	renderSingleBlueprint = (props) =>
+	renderSingleBlueprint   = (props) =>
 	{
 		const blueprintId = props.params.blueprintId;
 		const blueprint   = this.state.blueprints[blueprintId];
@@ -120,7 +126,7 @@ class Root extends Component {
 			/>
 		);
 	};
-	renderEditBlueprint   = (props) =>
+	renderEditBlueprint     = (props) =>
 	{
 		const blueprintId = props.params.blueprintId;
 		const blueprint   = this.state.blueprints[blueprintId];
@@ -137,13 +143,13 @@ class Root extends Component {
 			isModerator={this.state.isModerator}
 		/>;
 	};
-	renderUser            = props =>
+	renderUser              = props =>
 		<UserGrid
 			{...props}
 			id={props.params.userId}
 			blueprints={this.state.blueprints}
 		/>;
-	renderFavorites       = props =>
+	renderFavorites         = props =>
 		<FavoritesGrid
 			{...props}
 			user={this.state.user}
@@ -162,6 +168,7 @@ class Root extends Component {
 					<div>
 						<Match pattern='/' exactly render={this.renderIntro} />
 						<Match pattern='/blueprints' exactly render={this.renderBlueprintGrid} />
+						<Match pattern='/top' exactly render={this.renderMostFavoritedGrid} />
 						<Match pattern='/create' exactly component={this.renderCreate} />
 						<Match pattern='/view/:blueprintId' component={this.renderSingleBlueprint} />
 						<Match pattern='/edit/:blueprintId' component={this.renderEditBlueprint} />

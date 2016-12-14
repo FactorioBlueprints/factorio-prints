@@ -116,6 +116,7 @@ class Header extends Component {
 				<Navbar.Collapse>
 					<Nav>
 						<li><Link to='/blueprints'>{'View Blueprints'}</Link></li>
+						<li><Link to='/top'>{'Top'}</Link></li>
 						<li><Link to='/create'>{'Create'}</Link></li>
 					</Nav>
 					<Nav pullRight>
