@@ -19,8 +19,8 @@ import base from '../base';
 
 class SingleBlueprint extends Component {
 	static propTypes = {
-		id       : PropTypes.string.isRequired,
-		blueprint: PropTypes.shape({
+		id         : PropTypes.string.isRequired,
+		blueprint  : PropTypes.shape({
 			title              : PropTypes.string.isRequired,
 			imageUrl           : PropTypes.string,
 			thumbnail          : PropTypes.string,
@@ -35,10 +35,11 @@ class SingleBlueprint extends Component {
 			blueprintString    : PropTypes.string.isRequired,
 			descriptionMarkdown: PropTypes.string.isRequired,
 		}),
-		user     : PropTypes.shape({
+		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string.isRequired,
 		}),
+		isModerator: PropTypes.bool,
 	};
 
 	static contextTypes = {router: PropTypes.object.isRequired};
@@ -105,7 +106,7 @@ class SingleBlueprint extends Component {
 				<PageHeader>
 					{this.props.blueprint.title}
 					{!ownedByCurrentUser && this.renderFavoriteButton()}
-					{ownedByCurrentUser && this.renderEditButton()}
+					{(ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
 				</PageHeader>
 			</Row>
 			<Row>

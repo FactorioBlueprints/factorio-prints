@@ -15,9 +15,11 @@ const keyMap = {
 class App extends Component {
 	static propTypes = {
 		children                 : PropTypes.node.isRequired,
-		onLogin                  : PropTypes.func.isRequired,
-		onLogout                 : PropTypes.func.isRequired,
-		authData                 : PropTypes.object,
+		user                     : PropTypes.shape({
+			userId     : PropTypes.string.isRequired,
+			displayName: PropTypes.string.isRequired,
+			photoURL   : PropTypes.string.isRequired,
+		}),
 		onHideKeyboardShortcuts  : PropTypes.func.isRequired,
 		onToggleKeyboardShortcuts: PropTypes.func.isRequired,
 		showKeyboardShortcuts    : PropTypes.bool.isRequired,
@@ -38,11 +40,7 @@ class App extends Component {
 				keyMap={keyMap}
 				handlers={handlers}
 				ref={autofocus}>
-				<Header
-					onLogin={this.props.onLogin}
-					onLogout={this.props.onLogout}
-					authData={this.props.authData}
-				/>
+				<Header user={this.props.user} />
 				<div className='container-fluid'>
 					<div className='row application-context-container'>
 						{this.props.children}

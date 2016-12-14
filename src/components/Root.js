@@ -23,7 +23,7 @@ class Root extends Component {
 		blueprints           : {},
 		showKeyboardShortcuts: false,
 		user                 : null,
-		authData             : null,
+		isModerator          : false,
 	};
 
 	componentWillMount()
@@ -32,6 +32,43 @@ class Root extends Component {
 			context: this,
 			state  : 'blueprints',
 		});
+
+		base.auth().onAuthStateChanged((user) =>
+		{
+			if (user)
+			{
+				const {uid, displayName, email, photoURL} = user;
+
+				this.setState({
+					user: {
+						userId: uid,
+						displayName,
+						photoURL,
+					},
+				});
+
+				const userRef = base.database().ref(`/users/${uid}`);
+				userRef.update({
+					displayName,
+					email,
+					photoURL,
+				});
+
+				const moderatorRef = base.database().ref(`/moderators/${uid}`);
+				moderatorRef.once('value').then((snapshot) =>
+				{
+					const newState = {isModerator: snapshot.val()};
+					this.setState(newState);
+				});
+			}
+			else
+			{
+				this.setState({
+					user       : null,
+					isModerator: false,
+				});
+			}
+		}, error => console.error({error}));
 	}
 
 	componentWillUnmount()
@@ -47,33 +84,6 @@ class Root extends Component {
 	handleToggleKeyboardShortcuts = () =>
 	{
 		this.setState({showKeyboardShortcuts: !this.state.showKeyboardShortcuts});
-	};
-
-	handleLogin = (authData) =>
-	{
-		const {uid, displayName, email, photoURL} = authData.user;
-
-		this.setState({
-			authData,
-			user: {
-				userId: uid,
-				displayName,
-			},
-		});
-		const userRef = base.database().ref(`/users/${uid}`);
-		userRef.update({
-			displayName,
-			email,
-			photoURL,
-		});
-	};
-
-	handleLogout = () =>
-	{
-		this.setState({
-			authData: null,
-			user    : null,
-		});
 	};
 
 	renderIntro           = props =>
@@ -106,6 +116,7 @@ class Root extends Component {
 				id={blueprintId}
 				blueprint={blueprint}
 				user={this.state.user}
+				isModerator={this.state.isModerator}
 			/>
 		);
 	};
@@ -123,6 +134,7 @@ class Root extends Component {
 			id={blueprintId}
 			blueprint={blueprint}
 			user={this.state.user}
+			isModerator={this.state.isModerator}
 		/>;
 	};
 	renderUser            = props =>
@@ -143,9 +155,7 @@ class Root extends Component {
 		return <shell className='app-shell primary-content'>
 			<BrowserRouter>
 				<App
-					onLogin={this.handleLogin}
-					onLogout={this.handleLogout}
-					authData={this.state.authData}
+					user={this.state.user}
 					onHideKeyboardShortcuts={this.handleHideKeyboardShortcuts}
 					onToggleKeyboardShortcuts={this.handleToggleKeyboardShortcuts}
 					showKeyboardShortcuts={this.state.showKeyboardShortcuts}>

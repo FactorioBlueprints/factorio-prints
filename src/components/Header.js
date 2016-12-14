@@ -7,45 +7,42 @@ import MenuItem from 'react-bootstrap/lib/MenuItem';
 import {Link} from 'react-router';
 import ReactDOM from 'react-dom';
 import base from '../base';
+import {auth} from 'firebase';
 
 class Header extends Component {
 	static propTypes = {
-		authData: PropTypes.object,
-		onLogin : PropTypes.func.isRequired,
-		onLogout: PropTypes.func.isRequired,
+		user: PropTypes.shape({
+			userId     : PropTypes.string.isRequired,
+			displayName: PropTypes.string.isRequired,
+			photoURL   : PropTypes.string.isRequired,
+		}),
 	};
 
-	componentDidMount()
+
+	constructor()
 	{
-		base.onAuth((user) =>
-		{
-			if (user)
-			{
-				this.authHandler(null, {user});
-			}
+		super();
+
+		this.googleProvider   = new auth.GoogleAuthProvider();
+		this.facebookProvider = new auth.FacebookAuthProvider();
+		this.twitterProvider  = new auth.TwitterAuthProvider();
+		this.githubProvider   = new auth.GithubAuthProvider();
+
+		// Choose between multiple google accounts
+		// http://stackoverflow.com/a/40551683/23572
+		this.googleProvider.setCustomParameters({
+			'prompt': 'consent select_account'
 		});
 	}
 
 	authenticate = (provider) =>
 	{
-		base.authWithOAuthPopup(provider, this.authHandler);
-	};
-
-	authHandler = (error, authData) =>
-	{
-		if (error)
-		{
-			console.error({error});
-			return;
-		}
-
-		this.props.onLogin(authData);
+		base.auth().signInWithPopup(provider).catch(error => console.error({error}));
 	};
 
 	handleLogout = () =>
 	{
-		base.unauth();
-		this.props.onLogout();
+		base.auth().signOut();
 	};
 
 	focusOnSearch = () =>
@@ -55,17 +52,17 @@ class Header extends Component {
 
 	renderAuthentication = () =>
 	{
-		if (this.props.authData)
+		if (this.props.user)
 		{
 			return (
 				<Dropdown id='dropdown-logout'>
 					<Dropdown.Toggle bsStyle='link'>
-						<img src={this.props.authData.user.photoURL} alt='user' className='user-photo' />
+						<img src={this.props.user.photoURL} alt='user' className='user-photo' />
 					</Dropdown.Toggle>
 					<Dropdown.Menu>
 						<MenuItem className='user-photo-container'>
-							<img src={this.props.authData.user.photoURL} alt='user' className='user-photo-big pull-left' />
-							<h4><b>{this.props.authData.user.displayName}</b></h4>
+							<img src={this.props.user.photoURL} alt='user' className='user-photo-big pull-left' />
+							<h4><b>{this.props.user.displayName}</b></h4>
 						</MenuItem>
 						<MenuItem>
 							<Link to={'/favorites'}>
@@ -73,7 +70,7 @@ class Header extends Component {
 							</Link>
 						</MenuItem>
 						<MenuItem>
-							<Link to={`/user/${this.props.authData.user.uid}`}>
+							<Link to={`/user/${this.props.user.userId}`}>
 								<button className='btn btn-block btn-default'>{'My Blueprints'}</button>
 							</Link>
 						</MenuItem>
@@ -88,15 +85,19 @@ class Header extends Component {
 		}
 		return (
 			<NavDropdown title='Sign in / Join' id='dropdown-login'>
-				<button className='google btn btn-block' onClick={() => this.authenticate('google')}>Log in with Google
+				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>Log in
+					with Google
 				</button>
-				<button className='facebook btn btn-block' onClick={() => this.authenticate('facebook')}>Log in with
+				<button className='facebook btn btn-block' onClick={() => this.authenticate(this.facebookProvider)}>Log
+					in with
 					Facebook
 				</button>
-				<button className='twitter btn btn-block' onClick={() => this.authenticate('twitter')}>Log in with
+				<button className='twitter btn btn-block' onClick={() => this.authenticate(this.twitterProvider)}>Log in
+					with
 					Twitter
 				</button>
-				<button className='github btn btn-block' onClick={() => this.authenticate('github')}>Log in with GitHub
+				<button className='github btn btn-block' onClick={() => this.authenticate(this.githubProvider)}>Log in
+					with GitHub
 				</button>
 			</NavDropdown>
 		);

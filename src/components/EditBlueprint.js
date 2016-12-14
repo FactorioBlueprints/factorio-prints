@@ -10,6 +10,8 @@ import Panel from 'react-bootstrap/lib/Panel';
 import Row from 'react-bootstrap/lib/Row';
 import Alert from 'react-bootstrap/lib/Alert';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
+import Modal from 'react-bootstrap/lib/Modal';
 
 import NoMatch from './NoMatch';
 import marked from 'marked';
@@ -18,8 +20,8 @@ import firebase from 'firebase';
 
 class EditBlueprint extends Component {
 	static propTypes = {
-		id       : PropTypes.string.isRequired,
-		blueprint: PropTypes.shape({
+		id         : PropTypes.string.isRequired,
+		blueprint  : PropTypes.shape({
 			title              : PropTypes.string.isRequired,
 			author             : PropTypes.shape({
 				displayName: PropTypes.string.isRequired,
@@ -28,29 +30,49 @@ class EditBlueprint extends Component {
 			blueprintString    : PropTypes.string.isRequired,
 			descriptionMarkdown: PropTypes.string.isRequired,
 		}),
-		user     : PropTypes.shape({
+		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string.isRequired,
 		}),
+		isModerator: PropTypes.bool,
 	};
 
 	static contextTypes = {router: PropTypes.object.isRequired};
 
 	state = {
-		blueprint       : {
+		blueprint           : {
 			title              : this.props.blueprint.title,
 			descriptionMarkdown: this.props.blueprint.descriptionMarkdown,
 			blueprintString    : this.props.blueprint.blueprintString,
 		},
-		renderedMarkdown: marked(this.props.blueprint.descriptionMarkdown),
-		submissionErrors: [],
+		renderedMarkdown    : marked(this.props.blueprint.descriptionMarkdown),
+		submissionErrors    : [],
+		deletionModalVisible: false,
 	};
 
-	handleDismissError = () =>
+	handleDismissError       = () =>
 	{
 		this.setState({submissionErrors: []});
 	};
+	handleShowConfirmDelete  = (event) =>
+	{
+		event.preventDefault();
+		this.setState({deletionModalVisible: true});
+	};
+	handleHideConfirmDelete  = () =>
+	{
+		this.setState({deletionModalVisible: false});
+	};
+	handleDeleteBlueprint    = () =>
+	{
+		const blueprintRef   = base.database().ref(`/blueprints/${this.props.id}`);
+		blueprintRef.remove();
 
+		const userBlueprintRef = base.database().ref(`/users/${this.props.user.userId}/blueprints/${this.props.id}`);
+		userBlueprintRef.remove();
+
+		this.context.router.transitionTo(`/user/${this.props.user.userId}`);
+	};
 	handleDescriptionChanged = (event) =>
 	{
 		const descriptionMarkdown = event.target.value;
@@ -74,7 +96,7 @@ class EditBlueprint extends Component {
 		});
 	};
 
-	editBlueprint = (event) =>
+	handleSaveBlueprintEdits = (event) =>
 	{
 		event.preventDefault();
 
@@ -130,7 +152,7 @@ class EditBlueprint extends Component {
 
 		const ownedByCurrentUser = this.props.user && this.props.user.userId === this.props.blueprint.author.userId;
 
-		if (!ownedByCurrentUser)
+		if (!ownedByCurrentUser && !this.props.isModerator)
 		{
 			return <Jumbotron><h1>{'You are not the author of this blueprint.'}</h1></Jumbotron>;
 		}
@@ -138,6 +160,21 @@ class EditBlueprint extends Component {
 		const blueprint = this.state.blueprint;
 
 		return <Grid>
+			<Modal show={this.state.deletionModalVisible} onHide={this.handleHideConfirmDelete}>
+				<Modal.Header closeButton>
+					<Modal.Title>Are you sure you want to delete the blueprint?</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<p>Deleting: {this.state.blueprint.title}</p>
+					<p>This cannot be undone.</p>
+				</Modal.Body>
+				<Modal.Footer>
+					<ButtonToolbar>
+						<Button bsStyle='danger' onClick={this.handleDeleteBlueprint}>Delete</Button>
+						<Button onClick={this.handleHideConfirmDelete}>Cancel</Button>
+					</ButtonToolbar>
+				</Modal.Footer>
+			</Modal>
 			<Row>
 				{this.state.submissionErrors.length > 0 && <Alert
 					bsStyle='danger'
@@ -158,7 +195,7 @@ class EditBlueprint extends Component {
 			<Row>
 				<form
 					className='form-horizontal'
-					onSubmit={e => this.editBlueprint(e)}>
+					onSubmit={this.handleSaveBlueprintEdits}>
 					<FormGroup controlId='formHorizontalTitle'>
 						<Col componentClass={ControlLabel} sm={2} autoFocus>{'Title'}</Col>
 						<Col sm={10}>
@@ -206,7 +243,11 @@ class EditBlueprint extends Component {
 
 					<FormGroup>
 						<Col smOffset={2} sm={10}>
-							<Button type='submit' onClick={this.handleSubmit}>{'Save'}</Button>
+							<ButtonToolbar>
+								<Button bsStyle='primary' bsSize='large' type='submit' onClick={this.handleSaveBlueprintEdits}>{'Save'}</Button>
+								{this.props.isModerator &&
+								<Button bsStyle='danger' bsSize='large' type='submit' onClick={this.handleShowConfirmDelete}>{'Delete'}</Button>}
+							</ButtonToolbar>
 						</Col>
 					</FormGroup>
 				</form>
