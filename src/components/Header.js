@@ -93,11 +93,12 @@ class Header extends Component {
 	render()
 	{
 		return (
-			<Navbar fixedTop>
+			<Navbar fixedTop collapseOnSelect>
 				<Navbar.Header>
 					<Navbar.Brand>
 						<Link to='/'>{'Factorio Prints'}</Link>
 					</Navbar.Brand>
+					<Navbar.Toggle />
 				</Navbar.Header>
 
 				<Navbar.Collapse>
