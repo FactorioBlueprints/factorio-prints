@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
-    "clipboard": "^1.5.15",
     "firebase": "3.6.1",
     "history": "^4.4.1",
     "marked": "^0.3.6",
@@ -24,7 +23,7 @@
     "react": "^15.4.1",
     "react-addons-css-transition-group": "^15.4.1",
     "react-bootstrap": "^0.30.7",
-    "react-clipboard": "^1.2.2",
+    "react-copy-to-clipboard": "^4.2.3",
     "react-disqus-thread": "^0.4.0",
     "react-dom": "^15.4.1",
     "react-dropzone": "^3.7.3",

@@ -1,4 +1,5 @@
 import React, {Component, PropTypes} from 'react';
+
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 import Col from 'react-bootstrap/lib/Col';
@@ -8,14 +9,18 @@ import Panel from 'react-bootstrap/lib/Panel';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Button from 'react-bootstrap/lib/Button';
 import Table from 'react-bootstrap/lib/Table';
+import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
+
 import {Link} from 'react-router';
 import ReactDisqusThread from 'react-disqus-thread';
-// import ClipboardButton from 'react-clipboard';
-import noImageAvailable from '../gif/No_available_image.gif';
-import NoMatch from './NoMatch';
+import CopyToClipboard from 'react-copy-to-clipboard';
+
 import marked from 'marked';
 import moment from 'moment';
+
 import base from '../base';
+import noImageAvailable from '../gif/No_available_image.gif';
+import NoMatch from './NoMatch';
 
 class SingleBlueprint extends Component {
 	static propTypes = {
@@ -43,6 +48,10 @@ class SingleBlueprint extends Component {
 	};
 
 	static contextTypes = {router: PropTypes.object.isRequired};
+
+	state = {
+		expandBlueprint: false,
+	};
 
 	handleFavorite = () =>
 	{
@@ -101,6 +110,8 @@ class SingleBlueprint extends Component {
 
 		const ownedByCurrentUser = this.props.user && this.props.user.userId === this.props.blueprint.author.userId;
 
+		const showOrHide = this.state.expandBlueprint ? 'Hide' : 'Show';
+
 		return <Grid>
 			<Row>
 				<PageHeader>
@@ -152,12 +163,20 @@ class SingleBlueprint extends Component {
 					<Panel header='Details'>
 						<div dangerouslySetInnerHTML={{__html: renderedMarkdown}} />
 					</Panel>
-
-					<Panel header='Blueprint String'>
-						{/* <ClipboardButton data-clipboard-target='#blueprintString' className='btn btn-default'> */}
-						{/* <Glyphicon glyph='copy' />{' Copy to Clipboard'} */}
-						{/* </ClipboardButton> */}
-						<div className='blueprintString' id='blueprintString'>
+				</Col>
+				<Col md={8}>
+					<Panel>
+						<ButtonToolbar>
+							<CopyToClipboard text={this.props.blueprint.blueprintString}>
+								<Button bsStyle='primary'><Glyphicon glyph='copy' />{' Copy to Clipboard'}</Button>
+							</CopyToClipboard>
+							<Button onClick={() => this.setState({expandBlueprint: !this.state.expandBlueprint})}>{showOrHide + ' Blueprint'}</Button>
+						</ButtonToolbar>
+					</Panel>
+				</Col>
+				<Col md={8}>
+					<Panel header='Blueprint String' collapsible expanded={this.state.expandBlueprint}>
+						<div className='blueprintString'>
 							{this.props.blueprint.blueprintString}
 						</div>
 					</Panel>
