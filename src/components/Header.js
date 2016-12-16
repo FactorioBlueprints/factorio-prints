@@ -83,7 +83,7 @@ class Header extends Component {
 	render()
 	{
 		return (
-			<Navbar fixedTop collapseOnSelect>
+			<Navbar fixedTop collapseOnSelect inverse>
 				<Navbar.Header>
 					<Navbar.Brand>
 						<Link to='/'>{'Factorio Prints'}</Link>
