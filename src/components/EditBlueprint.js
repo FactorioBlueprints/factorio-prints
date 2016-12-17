@@ -13,6 +13,8 @@ import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Modal from 'react-bootstrap/lib/Modal';
 
+import FontAwesome from 'react-fontawesome';
+
 import NoMatch from './NoMatch';
 import marked from 'marked';
 import base from '../base';
@@ -244,9 +246,9 @@ class EditBlueprint extends Component {
 					<FormGroup>
 						<Col smOffset={2} sm={10}>
 							<ButtonToolbar>
-								<Button bsStyle='primary' bsSize='large' type='submit' onClick={this.handleSaveBlueprintEdits}>{'Save'}</Button>
+								<Button bsStyle='primary' bsSize='large' type='submit' onClick={this.handleSaveBlueprintEdits}><FontAwesome name='floppy-o' size='lg' />{' Save'}</Button>
 								{this.props.isModerator &&
-								<Button bsStyle='danger' bsSize='large' type='submit' onClick={this.handleShowConfirmDelete}>{'Delete'}</Button>}
+								<Button bsStyle='danger' bsSize='large' type='submit' onClick={this.handleShowConfirmDelete}><FontAwesome name='trash-o' size='lg' />{' Delete'}</Button>}
 							</ButtonToolbar>
 						</Col>
 					</FormGroup>
