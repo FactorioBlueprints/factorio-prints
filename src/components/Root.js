@@ -26,6 +26,7 @@ class Root extends Component {
 		blueprints           : {},
 		showKeyboardShortcuts: false,
 		user                 : null,
+		userFavorites        : {},
 		isModerator          : false,
 	};
 
@@ -63,13 +64,21 @@ class Root extends Component {
 					const newState = {isModerator: snapshot.val()};
 					this.setState(newState);
 				});
+
+				this.userFavoritesRef = base.syncState(`/users/${uid}/favorites`, {
+					context: this,
+					state  : 'userFavorites',
+				});
 			}
 			else
 			{
 				this.setState({
-					user       : null,
-					isModerator: false,
+					user         : null,
+					userFavorites: {},
+					isModerator  : false,
 				});
+
+				base.removeBinding(this.userFavoritesRef);
 			}
 		}, error => console.error({error}));
 	}
@@ -161,6 +170,7 @@ class Root extends Component {
 			{...props}
 			user={this.state.user}
 			blueprints={this.state.blueprints}
+			userFavorites={this.state.userFavorites}
 		/>;
 
 	render()

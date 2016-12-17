@@ -1,42 +1,19 @@
 import React, {Component, PropTypes} from 'react';
-
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-
 import BlueprintThumbnail from './BlueprintThumbnail';
-import base from '../base';
 
 class FavoritesGrid extends Component {
 	static propTypes = {
-		user      : PropTypes.shape({
+		user         : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		blueprints: PropTypes.object.isRequired,
+		blueprints   : PropTypes.object.isRequired,
+		userFavorites: PropTypes.object.isRequired,
 	};
-
-	state = {
-		keys: {},
-	};
-
-	componentWillReceiveProps(nextProps)
-	{
-		if (nextProps.user)
-		{
-			const favoritesRef = base.database().ref(`/users/${nextProps.user.userId}/favorites/`);
-			favoritesRef.once('value').then((snapshot) =>
-			{
-				const keys = snapshot.val();
-				this.setState({keys});
-			});
-		}
-		else
-		{
-			console.log(nextProps);
-		}
-	}
 
 	render()
 	{
@@ -57,8 +34,8 @@ class FavoritesGrid extends Component {
 				</Row>
 				<Row>
 					{
-						Object.keys(this.state.keys)
-							.filter(key => this.state.keys[key])
+						Object.keys(this.props.userFavorites)
+							.filter(key => this.props.userFavorites[key])
 							.map(key => <BlueprintThumbnail key={key} id={key} {...this.props.blueprints[key]} />)
 					}
 				</Row>
