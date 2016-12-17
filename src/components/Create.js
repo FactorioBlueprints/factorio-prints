@@ -13,7 +13,10 @@ import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 import Modal from 'react-bootstrap/lib/Modal';
+
 import Dropzone from 'react-dropzone';
+import FontAwesome from 'react-fontawesome';
+
 import noImageAvailable from '../gif/No_available_image.gif';
 import marked from 'marked';
 import base from '../base';
@@ -132,7 +135,7 @@ class Create extends Component {
 		});
 	};
 
-	createBlueprint = (event) =>
+	handleCreateBlueprint = (event) =>
 	{
 		event.preventDefault();
 
@@ -219,6 +222,12 @@ class Create extends Component {
 		});
 	};
 
+	handleCancel = () =>
+	{
+		localStorage.removeItem('factorio-blueprint-create-form');
+		this.context.router.transitionTo('/blueprints');
+	};
+
 	renderPreview = () =>
 	{
 		if (!this.state.blueprint.thumbnail)
@@ -295,7 +304,7 @@ class Create extends Component {
 					<Row>
 						<form
 							className='form-horizontal'
-							onSubmit={e => this.createBlueprint(e)}>
+							onSubmit={this.handleCreateBlueprint}>
 							<FormGroup controlId='formHorizontalTitle'>
 								<Col componentClass={ControlLabel} sm={2} autoFocus>{'Title'}</Col>
 								<Col sm={10}>
@@ -363,7 +372,8 @@ class Create extends Component {
 
 							<FormGroup>
 								<Col smOffset={2} sm={10}>
-									<Button type='submit' onClick={this.handleSubmit}>{'Save'}</Button>
+									<Button type='submit' bsStyle='primary'><FontAwesome name='floppy-o' size='lg' />{' Save'}</Button>
+									<Button  onClick={this.handleCancel}><FontAwesome name='ban' size='lg' />{' Cancel'}</Button>
 								</Col>
 							</FormGroup>
 						</form>
