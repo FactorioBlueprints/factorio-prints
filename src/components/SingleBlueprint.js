@@ -4,7 +4,6 @@ import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 import Col from 'react-bootstrap/lib/Col';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
-import Glyphicon from 'react-bootstrap/lib/Glyphicon';
 import Panel from 'react-bootstrap/lib/Panel';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Button from 'react-bootstrap/lib/Button';
@@ -14,10 +13,10 @@ import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import {Link} from 'react-router';
 import ReactDisqusThread from 'react-disqus-thread';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import FontAwesome from 'react-fontawesome';
 
 import marked from 'marked';
 import moment from 'moment';
-
 import base from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 import NoMatch from './NoMatch';
@@ -67,6 +66,12 @@ class SingleBlueprint extends Component {
 		base.database().ref(`/users/${userId}/favorites/${this.props.id}`).set(!wasFavorite);
 	};
 
+	handleExpandCollapse = (event) =>
+	{
+		event.preventDefault();
+		this.setState({expandBlueprint: !this.state.expandBlueprint});
+	};
+
 	renderFavoriteButton = () =>
 	{
 		const user = this.props.user;
@@ -78,11 +83,11 @@ class SingleBlueprint extends Component {
 
 		const favorites  = this.props.blueprint.favorites;
 		const myFavorite = favorites && user && favorites[user.userId];
-		const glyphName  = myFavorite ? 'heart' : 'heart-empty';
+		const iconName  = myFavorite ? 'heart' : 'heart-o';
 
 		return (
 			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
-				<Glyphicon glyph={glyphName} />{' Favorite'}
+				<FontAwesome name={iconName} />{' Favorite'}
 			</Button>
 		);
 	};
@@ -92,7 +97,7 @@ class SingleBlueprint extends Component {
 			bsSize='large'
 			className='pull-right'
 			onClick={() => this.context.router.transitionTo(`/edit/${this.props.id}`)}>
-			{'Edit'}
+			<FontAwesome name='edit' />{' Edit'}
 		</Button>;
 
 	render()
@@ -131,7 +136,7 @@ class SingleBlueprint extends Component {
 						<Table bordered hover fill>
 							<tbody>
 								<tr>
-									<td>{'Author'}</td>
+									<td><FontAwesome name='user' className='fa-lg fa-fw' />{' Author'}</td>
 									<td>
 										<Link to={`/user/${this.props.blueprint.author.userId}`}>
 											{this.props.blueprint.author.displayName}
@@ -140,19 +145,19 @@ class SingleBlueprint extends Component {
 									</td>
 								</tr>
 								<tr>
-									<td>{'Created'}</td>
+									<td><FontAwesome name='calendar' className='fa-lg fa-fw' />{' Created'}</td>
 									<td>
 										<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(createdDate).fromNow()}</span>
 									</td>
 								</tr>
 								<tr>
-									<td>{'Last Updated'}</td>
+									<td><FontAwesome name='clock-o' className='fa-lg fa-fw' />{' Last Updated'}</td>
 									<td>
 										<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(lastUpdatedDate).fromNow()}</span>
 									</td>
 								</tr>
 								<tr>
-									<td><Glyphicon glyph='heart-empty' />{' Favorites'}</td>
+									<td><FontAwesome name='heart' className='fa-lg fa-fw' />{' Favorites'}</td>
 									<td>{this.props.blueprint.numberOfFavorites}</td>
 								</tr>
 							</tbody>
@@ -168,9 +173,9 @@ class SingleBlueprint extends Component {
 					<Panel>
 						<ButtonToolbar>
 							<CopyToClipboard text={this.props.blueprint.blueprintString}>
-								<Button bsStyle='primary'><Glyphicon glyph='copy' />{' Copy to Clipboard'}</Button>
+								<Button bsStyle='primary'><FontAwesome name='clipboard' className='fa-lg' />{' Copy to Clipboard'}</Button>
 							</CopyToClipboard>
-							<Button onClick={() => this.setState({expandBlueprint: !this.state.expandBlueprint})}>{showOrHide + ' Blueprint'}</Button>
+							<Button onClick={this.handleExpandCollapse}><FontAwesome name='expand' size='lg' flip='horizontal' /> {showOrHide + ' Blueprint'}</Button>
 						</ButtonToolbar>
 					</Panel>
 				</Col>

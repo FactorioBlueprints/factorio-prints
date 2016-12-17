@@ -9,6 +9,8 @@ import ReactDOM from 'react-dom';
 import base from '../base';
 import {auth} from 'firebase';
 
+import FontAwesome from 'react-fontawesome';
+
 class Header extends Component {
 	static propTypes = {
 		user: PropTypes.shape({
@@ -63,7 +65,8 @@ class Header extends Component {
 						</MenuItem>
 						<MenuItem>
 							<button className='btn btn-block btn-primary' onClick={this.handleLogout}>
-								{'Log out'}
+								<FontAwesome name='sign-out' size='lg' fixedWidth />
+								{' Log out'}
 							</button>
 						</MenuItem>
 					</Dropdown.Menu>
@@ -71,11 +74,15 @@ class Header extends Component {
 			);
 		}
 		return (
-			<NavDropdown title='Sign in / Join' id='dropdown-login'>
-				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>{'Log in with Google'}</button>
-				{/*<button className='facebook btn btn-block' onClick={() => this.authenticate(this.facebookProvider)}>{'Log in with Facebook'}</button>*/}
-				{/*<button className='twitter btn btn-block' onClick={() => this.authenticate(this.twitterProvider)}>{'Log in with Twitter'}</button>*/}
-				<button className='github btn btn-block' onClick={() => this.authenticate(this.githubProvider)}>{'Log in with GitHub'}</button>
+			<NavDropdown title={<span><FontAwesome name='sign-in' size='lg' fixedWidth />{' Sign in / Join'}</span>} id='dropdown-login'>
+				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>
+					<FontAwesome name='google' size='lg' fixedWidth />
+					{' Log in with Google'}
+				</button>
+				<button className='github btn btn-block' onClick={() => this.authenticate(this.githubProvider)}>
+					<FontAwesome name='github' size='lg' fixedWidth />
+					{' Log in with GitHub'}
+				</button>
 			</NavDropdown>
 		);
 	};
@@ -86,18 +93,19 @@ class Header extends Component {
 			<Navbar fixedTop collapseOnSelect inverse>
 				<Navbar.Header>
 					<Navbar.Brand>
-						<Link to='/'>{'Factorio Prints'}</Link>
+						<Link to='/'><FontAwesome name='cogs' size='lg' fixedWidth />{' Factorio Prints'}</Link>
 					</Navbar.Brand>
 					<Navbar.Toggle />
 				</Navbar.Header>
 
 				<Navbar.Collapse>
 					<Nav>
-						<li><Link to='/blueprints'>{'Most Recent'}</Link></li>
-						<li><Link to='/top'>{'Most Favorited'}</Link></li>
-						<li><Link to='/create'>{'Create'}</Link></li>
-						{this.props.user && <li><Link to={'/favorites'}> {'My Favorites'} </Link></li>}
-						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}> {'My Blueprints'} </Link></li>}
+						<li><Link to='/blueprints'><FontAwesome name='clock-o' size='lg' fixedWidth />{' Most Recent'}</Link></li>
+						<li><Link to='/top'><FontAwesome name='trophy' size='lg' fixedWidth />{' Most Favorited'}</Link></li>
+						<li><Link to='/create'><FontAwesome name='plus-square' size='lg' fixedWidth />{' Create'}</Link></li>
+						{this.props.user && <li><Link to={'/favorites'}><FontAwesome name='heart' size='lg' fixedWidth />{' My Favorites'} </Link></li>}
+						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}><FontAwesome name='user' size='lg' fixedWidth />{' My Blueprints'}</Link>
+						</li>}
 					</Nav>
 					<Nav pullRight>
 						{this.renderAuthentication()}

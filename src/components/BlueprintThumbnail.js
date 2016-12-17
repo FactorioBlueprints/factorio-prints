@@ -1,8 +1,8 @@
 import React, {PropTypes} from 'react';
 import Col from 'react-bootstrap/lib/Col';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
-import Glyphicon from 'react-bootstrap/lib/Glyphicon';
 import {Link} from 'react-router';
+import FontAwesome from 'react-fontawesome';
 import noImageAvailable from '../gif/No_available_image.gif';
 
 const BlueprintThumbnail = ({
@@ -16,7 +16,7 @@ const BlueprintThumbnail = ({
 		<Link to={`/view/${id}`}>
 			<Thumbnail src={thumbnail || imageUrl || noImageAvailable} className='blueprintThumbnail'>
 				<h4 className='truncate'>{title}</h4>
-				<p><Glyphicon glyph='heart' /> {numberOfFavorites}</p>
+				<p><FontAwesome name='heart' /> {numberOfFavorites}</p>
 			</Thumbnail>
 		</Link>
 	</Col>;
