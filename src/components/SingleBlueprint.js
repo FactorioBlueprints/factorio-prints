@@ -83,7 +83,7 @@ class SingleBlueprint extends Component {
 
 		const favorites  = this.props.blueprint.favorites;
 		const myFavorite = favorites && user && favorites[user.userId];
-		const iconName  = myFavorite ? 'heart' : 'heart-o';
+		const iconName   = myFavorite ? 'heart' : 'heart-o';
 
 		return (
 			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
@@ -118,13 +118,13 @@ class SingleBlueprint extends Component {
 		const showOrHide = this.state.expandBlueprint ? 'Hide' : 'Show';
 
 		return <Grid>
-			<Row>
-				<PageHeader>
-					{this.props.blueprint.title}
+			<div className='page-header'>
+				<div className='btn-toolbar pull-right'>
 					{!ownedByCurrentUser && this.renderFavoriteButton()}
 					{(ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
-				</PageHeader>
-			</Row>
+				</div>
+				<h1>{this.props.blueprint.title}</h1>
+			</div>
 			<Row>
 				<Col md={4}>
 					<Thumbnail
@@ -173,9 +173,15 @@ class SingleBlueprint extends Component {
 					<Panel>
 						<ButtonToolbar>
 							<CopyToClipboard text={this.props.blueprint.blueprintString}>
-								<Button bsStyle='primary'><FontAwesome name='clipboard' className='fa-lg' />{' Copy to Clipboard'}</Button>
+								<Button bsStyle='primary'>
+									<FontAwesome name='clipboard' className='fa-lg' />
+									{' Copy to Clipboard'}
+								</Button>
 							</CopyToClipboard>
-							<Button onClick={this.handleExpandCollapse}><FontAwesome name='expand' size='lg' flip='horizontal' /> {showOrHide + ' Blueprint'}</Button>
+							<Button onClick={this.handleExpandCollapse}>
+								<FontAwesome name='expand' size='lg' flip='horizontal' />
+								{`${showOrHide} Blueprint`}
+							</Button>
 						</ButtonToolbar>
 					</Panel>
 				</Col>
