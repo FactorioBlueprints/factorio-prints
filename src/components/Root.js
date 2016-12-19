@@ -1,13 +1,8 @@
 import React, {Component} from 'react';
-
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-
 import {BrowserRouter, Match, Miss} from 'react-router';
-
 import base from '../base';
-
 import FontAwesome from 'react-fontawesome';
-
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
 import MostFavoritedGrid from './MostFavoritedGrid';
@@ -23,11 +18,10 @@ class Root extends Component {
 	static propTypes = {};
 
 	state = {
-		blueprints           : {},
-		showKeyboardShortcuts: false,
-		user                 : null,
-		userFavorites        : {},
-		isModerator          : false,
+		blueprints   : {},
+		user         : null,
+		userFavorites: {},
+		isModerator  : false,
 	};
 
 	componentWillMount()
@@ -87,16 +81,6 @@ class Root extends Component {
 	{
 		base.removeBinding(this.ref);
 	}
-
-	handleHideKeyboardShortcuts = () =>
-	{
-		this.setState({showKeyboardShortcuts: false});
-	};
-
-	handleToggleKeyboardShortcuts = () =>
-	{
-		this.setState({showKeyboardShortcuts: !this.state.showKeyboardShortcuts});
-	};
 
 	renderIntro             = props =>
 		<div>
@@ -177,11 +161,7 @@ class Root extends Component {
 	{
 		return <shell className='app-shell primary-content'>
 			<BrowserRouter>
-				<App
-					user={this.state.user}
-					onHideKeyboardShortcuts={this.handleHideKeyboardShortcuts}
-					onToggleKeyboardShortcuts={this.handleToggleKeyboardShortcuts}
-					showKeyboardShortcuts={this.state.showKeyboardShortcuts}>
+				<App user={this.state.user}>
 					<div>
 						<Match pattern='/' exactly render={this.renderIntro} />
 						<Match pattern='/blueprints' exactly render={this.renderBlueprintGrid} />

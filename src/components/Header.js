@@ -32,6 +32,7 @@ class Header extends Component {
 		// Choose between multiple google accounts
 		// http://stackoverflow.com/a/40551683/23572
 		this.googleProvider.setCustomParameters({prompt: 'consent select_account'});
+		this.githubProvider.setCustomParameters({allow_signup: true});
 	}
 
 	authenticate = (provider) =>
@@ -42,11 +43,6 @@ class Header extends Component {
 	handleLogout = () =>
 	{
 		base.auth().signOut();
-	};
-
-	focusOnSearch = () =>
-	{
-		ReactDOM.findDOMNode(this.search).focus();
 	};
 
 	renderAuthentication = () =>
