@@ -1,5 +1,4 @@
 import React, {Component, PropTypes} from 'react';
-
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 import Col from 'react-bootstrap/lib/Col';
@@ -8,17 +7,16 @@ import Panel from 'react-bootstrap/lib/Panel';
 import Button from 'react-bootstrap/lib/Button';
 import Table from 'react-bootstrap/lib/Table';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
-
 import {Link} from 'react-router';
 import ReactDisqusThread from 'react-disqus-thread';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import FontAwesome from 'react-fontawesome';
-
 import marked from 'marked';
 import moment from 'moment';
 import base from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 import NoMatch from './NoMatch';
+import buildImageUrl from '../helpers/buildImageUrl';
 
 class SingleBlueprint extends Component {
 	static propTypes = {
@@ -37,6 +35,14 @@ class SingleBlueprint extends Component {
 			favorites          : PropTypes.object,
 			blueprintString    : PropTypes.string.isRequired,
 			descriptionMarkdown: PropTypes.string.isRequired,
+			image              : PropTypes.shape({
+				id        : PropTypes.string.isRequired,
+				link      : PropTypes.string.isRequired,
+				deletehash: PropTypes.string.isRequired,
+				type      : PropTypes.string.isRequired,
+				height    : PropTypes.number.isRequired,
+				width     : PropTypes.number.isRequired,
+			}),
 		}),
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
@@ -106,7 +112,8 @@ class SingleBlueprint extends Component {
 			return <NoMatch />;
 		}
 
-		const thumbnail = this.props.blueprint.thumbnail || this.props.blueprint.imageUrl || noImageAvailable;
+		const thumbnail = buildImageUrl(this.props.blueprint, 'l');
+		console.log({thumbnail});
 
 		const renderedMarkdown = marked(this.props.blueprint.descriptionMarkdown);
 		const createdDate      = this.props.blueprint.createdDate;
@@ -127,7 +134,7 @@ class SingleBlueprint extends Component {
 			<Row>
 				<Col md={4}>
 					<Thumbnail
-						href={this.props.blueprint.imageUrl || noImageAvailable}
+						href={(this.props.blueprint.image && this.props.blueprint.image.link) || this.props.blueprint.imageUrl || noImageAvailable}
 						src={thumbnail}
 						target='_blank'
 					/>

@@ -13,10 +13,9 @@ import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 import Modal from 'react-bootstrap/lib/Modal';
-
+import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
-
 import noImageAvailable from '../gif/No_available_image.gif';
 import marked from 'marked';
 import base from '../base';
@@ -35,18 +34,24 @@ class Create extends Component {
 	static contextTypes = {router: PropTypes.object.isRequired};
 
 	static initialState = {
-		blueprint               : {
-			title              : '',
-			descriptionMarkdown: '',
-			blueprintString    : '',
-			thumbnail          : '',
-		},
+		thumbnail               : '',
 		renderedMarkdown        : '',
 		files                   : [],
 		rejectedFiles           : [],
 		submissionErrors        : [],
 		uploadProgressBarVisible: false,
 		uploadProgressPercent   : 0,
+		blueprint               : {
+			title              : '',
+			descriptionMarkdown: '',
+			blueprintString    : '',
+		},
+	};
+
+	static imgurHeaders = {
+		Accept        : 'application/json',
+		'Content-Type': 'application/json',
+		Authorization : 'Client-ID 46a3f144b6a0882',
 	};
 
 	state = Create.initialState;
@@ -116,12 +121,7 @@ class Create extends Component {
 		};
 		scaleImage(acceptedFiles[0], config, (imageData) =>
 		{
-			this.setState({
-				blueprint: {
-					...this.state.blueprint,
-					thumbnail: imageData,
-				},
-			});
+			this.setState({thumbnail: imageData});
 		});
 	};
 
@@ -135,10 +135,112 @@ class Create extends Component {
 		});
 	};
 
+	processStatus = (response) =>
+	{
+		if (response.status === 200 || response.status === 0)
+		{
+			return Promise.resolve(response);
+		}
+		return Promise.reject(new Error(response.statusText));
+	};
+
+	handleImgurError = (error) =>
+	{
+		console.error(error.message ? error.message : error);
+	};
+
+	handleFirebaseStorageError = (error) =>
+	{
+		console.error('Image failed to upload.', {error});
+		this.setState({
+			submissionErrors        : ['Image failed to upload.'],
+			uploadProgressBarVisible: false,
+		});
+	};
+
+	handleUploadProgress = (snapshot) =>
+	{
+		const uploadProgressPercent = Math.trunc(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+		this.setState({uploadProgressPercent});
+	};
+
 	handleCreateBlueprint = (event) =>
 	{
 		event.preventDefault();
 
+		const submissionErrors = this.validateInputs();
+
+		if (submissionErrors.length > 0)
+		{
+			this.setState({submissionErrors});
+			return;
+		}
+
+		const file     = this.state.files[0];
+		const fileName = file.name;
+
+		const fileNameRef = base.storage().ref().child(fileName);
+		fileNameRef.getDownloadURL().then(() =>
+		{
+			this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
+		}, () =>
+		{
+			this.setState({uploadProgressBarVisible: true});
+			const uploadTask = fileNameRef.put(file);
+			uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, () =>
+			{
+				fetch('https://api.imgur.com/3/upload.json', {
+					method : 'POST',
+					headers: Create.imgurHeaders,
+					body   : file,
+				})
+					.then(this.processStatus)
+					.then((response) =>
+					{
+						response.json().then((json) =>
+						{
+							const data  = json.data;
+							const image = {
+								id        : data.id,
+								link      : data.link,
+								deletehash: data.deletehash,
+								type      : data.type,
+								height    : data.height,
+								width     : data.width,
+							};
+
+							const blueprint       = {
+								...this.state.blueprint,
+								author           : this.props.user,
+								createdDate      : firebase.database.ServerValue.TIMESTAMP,
+								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+								favorites        : {},
+								numberOfFavorites: 0,
+								imageUrl         : uploadTask.snapshot.downloadURL,
+								fileName,
+								image,
+							};
+							const newBlueprintRef = base.database().ref('/blueprints').push(blueprint);
+							base.database().ref(`/users/${this.props.user.userId}/blueprints`).update({[newBlueprintRef.key]: true});
+
+							const thumbnail = this.state.thumbnail;
+							newBlueprintRef.then(() =>
+							{
+								base.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
+								{
+									this.setState(Create.initialState);
+									this.context.router.transitionTo(`/view/${newBlueprintRef.key}`);
+								});
+							});
+						});
+					})
+					.catch(this.handleImgurError);
+			});
+		});
+	};
+
+	validateInputs = () =>
+	{
 		const submissionErrors = [];
 		if (!this.state.blueprint.title)
 		{
@@ -171,56 +273,8 @@ class Create extends Component {
 		{
 			submissionErrors.push('You must attach exactly one screenshot');
 		}
-
-		if (submissionErrors.length > 0)
-		{
-			this.setState({submissionErrors});
-			return;
-		}
-
-		const storageRef  = base.storage().ref();
-		const fileName    = this.state.files[0].name;
-		const fileNameRef = storageRef.child(fileName);
-		fileNameRef.getDownloadURL().then(() =>
-		{
-			this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
-		}, () =>
-		{
-			this.setState({uploadProgressBarVisible: true});
-			const uploadTask = fileNameRef.put(this.state.files[0]);
-			uploadTask.on('state_changed', (snapshot) =>
-			{
-				const uploadProgressPercent = Math.trunc(snapshot.bytesTransferred / snapshot.totalBytes * 100);
-				this.setState({uploadProgressPercent});
-			}, (error) =>
-			{
-				// Handle unsuccessful uploads
-				console.log('Image failed to upload.', {error});
-				this.setState({
-					submissionErrors        : ['Image failed to upload.'],
-					uploadProgressBarVisible: false,
-				});
-			}, () =>
-			{
-				// Handle successful uploads on complete
-				// For instance, get the download URL: https://firebasestorage.googleapis.com/...
-				const blueprint         = {
-					...this.state.blueprint,
-					author           : this.props.user,
-					createdDate      : firebase.database.ServerValue.TIMESTAMP,
-					lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-					favorites        : {},
-					numberOfFavorites: 0,
-					imageUrl         : uploadTask.snapshot.downloadURL,
-				};
-				const newBlueprintRef   = base.database().ref('/blueprints').push(blueprint);
-				const userBlueprintsRef = base.database().ref(`/users/${this.props.user.userId}/blueprints`);
-				userBlueprintsRef.update({[newBlueprintRef.key]: true});
-				this.setState(Create.initialState);
-				this.context.router.transitionTo(`/view/${newBlueprintRef.key}`);
-			});
-		});
-	};
+		return submissionErrors;
+	}
 
 	handleCancel = () =>
 	{
@@ -230,24 +284,24 @@ class Create extends Component {
 
 	renderPreview = () =>
 	{
-		if (!this.state.blueprint.thumbnail)
+		if (!this.state.thumbnail)
 		{
 			return <div />;
 		}
 
 		return (
-		<FormGroup controlId='formHorizontalBlueprint'>
-			<Col componentClass={ControlLabel} sm={2}>{'Attached screenshot'}</Col>
-			<Col sm={10}>
-				<Row>
-					<Col xs={6} md={3}>
-						<Thumbnail src={this.state.blueprint.thumbnail || this.state.blueprint.imageUrl || noImageAvailable}>
-							<h4 className='truncate'>{this.state.blueprint.title}</h4>
-						</Thumbnail>
-					</Col>
-				</Row>
-			</Col>
-		</FormGroup>
+			<FormGroup controlId='formHorizontalBlueprint'>
+				<Col componentClass={ControlLabel} sm={2}>{'Attached screenshot'}</Col>
+				<Col sm={10}>
+					<Row>
+						<Col xs={6} md={3}>
+							<Thumbnail src={this.state.thumbnail || this.state.blueprint.imageUrl || noImageAvailable}>
+								<h4 className='truncate'>{this.state.blueprint.title}</h4>
+							</Thumbnail>
+						</Col>
+					</Row>
+				</Col>
+			</FormGroup>
 
 
 		);
@@ -372,8 +426,16 @@ class Create extends Component {
 
 							<FormGroup>
 								<Col smOffset={2} sm={10}>
-									<Button type='submit' bsStyle='primary'><FontAwesome name='floppy-o' size='lg' />{' Save'}</Button>
-									<Button  onClick={this.handleCancel}><FontAwesome name='ban' size='lg' />{' Cancel'}</Button>
+									<ButtonToolbar>
+										<Button type='submit' bsStyle='primary'>
+											<FontAwesome name='floppy-o' size='lg' />
+											{' Save'}
+										</Button>
+										<Button onClick={this.handleCancel}>
+											<FontAwesome name='ban' size='lg' />
+											{' Cancel'}
+										</Button>
+									</ButtonToolbar>
 								</Col>
 							</FormGroup>
 						</form>

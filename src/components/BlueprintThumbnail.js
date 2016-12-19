@@ -3,7 +3,7 @@ import Col from 'react-bootstrap/lib/Col';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import {Link} from 'react-router';
 import FontAwesome from 'react-fontawesome';
-import noImageAvailable from '../gif/No_available_image.gif';
+import buildImageUrl from '../helpers/buildImageUrl';
 
 const BlueprintThumbnail = ({
 	id,
@@ -11,10 +11,11 @@ const BlueprintThumbnail = ({
 	thumbnail,
 	title,
 	numberOfFavorites,
+	image,
 }) =>
 	<Col xs={12} sm={6} md={3}>
 		<Link to={`/view/${id}`}>
-			<Thumbnail src={thumbnail || imageUrl || noImageAvailable} className='blueprintThumbnail'>
+			<Thumbnail src={buildImageUrl({imageUrl, thumbnail, image}, 'm')} className='blueprintThumbnail'>
 				<h4 className='truncate'>{title}</h4>
 				<p><FontAwesome name='heart' /> {numberOfFavorites}</p>
 			</Thumbnail>
@@ -24,8 +25,17 @@ const BlueprintThumbnail = ({
 BlueprintThumbnail.propTypes = {
 	id               : PropTypes.string.isRequired,
 	imageUrl         : PropTypes.string,
+	thumbnail        : PropTypes.string,
 	title            : PropTypes.string.isRequired,
 	numberOfFavorites: PropTypes.number.isRequired,
+	image            : PropTypes.shape({
+		id        : PropTypes.string.isRequired,
+		link      : PropTypes.string.isRequired,
+		deletehash: PropTypes.string.isRequired,
+		type      : PropTypes.string.isRequired,
+		height    : PropTypes.number.isRequired,
+		width     : PropTypes.number.isRequired,
+	}),
 };
 
 export default BlueprintThumbnail;
