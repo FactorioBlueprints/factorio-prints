@@ -78,6 +78,7 @@
     "no-magic-numbers": "off",
     "newline-after-var": "off",
     "no-ternary": "off",
+    "multiline-ternary": "off",
     "no-inline-comments": "off",
     "sort-imports": "off",
     "space-before-function-paren": "off",
