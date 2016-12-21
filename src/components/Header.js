@@ -5,7 +5,6 @@ import NavDropdown from 'react-bootstrap/lib/NavDropdown';
 import Dropdown from 'react-bootstrap/lib/Dropdown';
 import MenuItem from 'react-bootstrap/lib/MenuItem';
 import {Link} from 'react-router';
-import ReactDOM from 'react-dom';
 import base from '../base';
 import {auth} from 'firebase';
 
