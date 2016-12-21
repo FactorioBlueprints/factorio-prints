@@ -5,7 +5,6 @@ import Row from 'react-bootstrap/lib/Row';
 import Col from 'react-bootstrap/lib/Col';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Panel from 'react-bootstrap/lib/Panel';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Button from 'react-bootstrap/lib/Button';
 import Table from 'react-bootstrap/lib/Table';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -174,13 +173,13 @@ class SingleBlueprint extends Component {
 						<ButtonToolbar>
 							<CopyToClipboard text={this.props.blueprint.blueprintString}>
 								<Button bsStyle='primary'>
-									<FontAwesome name='clipboard' className='fa-lg' />
+									<FontAwesome name='clipboard' size='lg' fixedWidth />
 									{' Copy to Clipboard'}
 								</Button>
 							</CopyToClipboard>
 							<Button onClick={this.handleExpandCollapse}>
-								<FontAwesome name='expand' size='lg' flip='horizontal' />
-								{`${showOrHide} Blueprint`}
+								<FontAwesome name='expand' size='lg' fixedWidth flip='horizontal' />
+								{` ${showOrHide} Blueprint`}
 							</Button>
 						</ButtonToolbar>
 					</Panel>
