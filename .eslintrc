@@ -83,7 +83,10 @@
     "sort-imports": "off",
     "space-before-function-paren": "off",
     "no-invalid-this": "off",
-    "no-return-assign": "off"
+    "no-return-assign": "off",
+    "newline-per-chained-call": "off",
+    "max-statements": "off",
+    "max-lines": "off"
   },
   "plugins": [
     "babel",
