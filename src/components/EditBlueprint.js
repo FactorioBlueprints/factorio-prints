@@ -31,6 +31,7 @@ class EditBlueprint extends Component {
 			}).isRequired,
 			blueprintString    : PropTypes.string.isRequired,
 			descriptionMarkdown: PropTypes.string.isRequired,
+			imageUrl           : PropTypes.string.isRequired,
 		}),
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
@@ -67,11 +68,20 @@ class EditBlueprint extends Component {
 	};
 	handleDeleteBlueprint    = () =>
 	{
-		const blueprintRef   = base.database().ref(`/blueprints/${this.props.id}`);
-		blueprintRef.remove();
-
+		const blueprintRef     = base.database().ref(`/blueprints/${this.props.id}`);
 		const userBlueprintRef = base.database().ref(`/users/${this.props.user.userId}/blueprints/${this.props.id}`);
-		userBlueprintRef.remove();
+		const thumbnailRef     = base.database().ref(`/thumbnails/${this.props.id}`);
+		if (this.props.blueprint.fileName)
+		{
+			const fileNameRef = base.storage().ref().child(this.props.blueprint.fileName);
+			fileNameRef.delete();
+		}
+
+		thumbnailRef.remove().then(() =>
+		{
+			blueprintRef.remove();
+			userBlueprintRef.remove();
+		});
 
 		this.context.router.transitionTo(`/user/${this.props.user.userId}`);
 	};
@@ -246,9 +256,11 @@ class EditBlueprint extends Component {
 					<FormGroup>
 						<Col smOffset={2} sm={10}>
 							<ButtonToolbar>
-								<Button bsStyle='primary' bsSize='large' type='submit' onClick={this.handleSaveBlueprintEdits}><FontAwesome name='floppy-o' size='lg' />{' Save'}</Button>
+								<Button bsStyle='primary' bsSize='large' type='submit' onClick={this.handleSaveBlueprintEdits}><FontAwesome name='floppy-o' size='lg' />{' Save'}
+								</Button>
 								{this.props.isModerator &&
-								<Button bsStyle='danger' bsSize='large' type='submit' onClick={this.handleShowConfirmDelete}><FontAwesome name='trash-o' size='lg' />{' Delete'}</Button>}
+								<Button bsStyle='danger' bsSize='large' type='submit' onClick={this.handleShowConfirmDelete}><FontAwesome name='trash-o' size='lg' />{' Delete'}
+								</Button>}
 							</ButtonToolbar>
 						</Col>
 					</FormGroup>
