@@ -41,6 +41,15 @@
       "$blueprint": {
         ".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true"
       }
+    },
+    "blueprintSummaries": {
+      ".read": "true",
+      "$blueprint": {
+        ".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
+        "numberOfFavorites": {
+          ".write": "auth != null"
+        }
+      }
     }
   }
 }
