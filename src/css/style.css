@@ -121,11 +121,3 @@ input[type=submit].google:after {
   font-size: 21px;
   font-weight: 200;
 }
-.blueprintThumbnail img {
-  max-height: 300px;
-}
-.blueprintThumbnail.thumbnail {
-  -o-object-fit: cover;
-     object-fit: cover;
-  height: 396.8px;
-}

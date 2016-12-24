@@ -1,6 +1,8 @@
 import React, {PropTypes} from 'react';
 import Col from 'react-bootstrap/lib/Col';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
+import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
+import Tooltip from 'react-bootstrap/lib/Tooltip';
 import {Link} from 'react-router';
 import FontAwesome from 'react-fontawesome';
 import buildImageUrl from '../helpers/buildImageUrl';
@@ -13,10 +15,12 @@ const BlueprintThumbnail = ({
 	numberOfFavorites,
 	image,
 }) =>
-	<Col xs={12} sm={6} md={3}>
+	<Col xs={12} sm={6} md={2}>
 		<Link to={`/view/${id}`}>
-			<Thumbnail src={buildImageUrl({imageUrl, thumbnail, image}, 'm')} className='blueprintThumbnail'>
-				<h4 className='truncate'>{title}</h4>
+			<Thumbnail src={buildImageUrl({imageUrl, thumbnail, image}, 'b')}>
+				<OverlayTrigger placement="bottom" overlay={<Tooltip>{title}</Tooltip>}>
+					<p className='truncate'>{title}</p>
+				</OverlayTrigger>
 				<p><FontAwesome name='heart' /> {numberOfFavorites}</p>
 			</Thumbnail>
 		</Link>
