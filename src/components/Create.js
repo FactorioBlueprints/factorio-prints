@@ -226,10 +226,19 @@ class Create extends Component {
 							const thumbnail = this.state.thumbnail;
 							newBlueprintRef.then(() =>
 							{
-								base.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
-								{
-									this.setState(Create.initialState);
-									this.context.router.transitionTo(`/view/${newBlueprintRef.key}`);
+								const blueprintSummary = {
+									imgurId          : blueprint.image.id,
+									imgurType        : blueprint.image.type,
+									title            : blueprint.title,
+									numberOfFavorites: blueprint.numberOfFavorites,
+								};
+
+								base.database().ref(`/blueprintSummaries/${newBlueprintRef.key}`).set(blueprintSummary).then(() => {
+									base.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
+									{
+										this.setState(Create.initialState);
+										this.context.router.transitionTo(`/view/${newBlueprintRef.key}`);
+									});
 								});
 							});
 						});
