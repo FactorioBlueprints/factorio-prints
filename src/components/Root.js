@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import {BrowserRouter, Match, Miss} from 'react-router';
 import base from '../base';
-import FontAwesome from 'react-fontawesome';
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
 import MostFavoritedGrid from './MostFavoritedGrid';
@@ -105,22 +104,11 @@ class Root extends Component {
 	renderSingleBlueprint   = (props) =>
 	{
 		const blueprintId = props.params.blueprintId;
-		const blueprint   = this.state.blueprints[blueprintId];
 
-		if (Object.keys(this.state.blueprints).length === 0)
-		{
-			return <Jumbotron>
-				<h1>
-					<FontAwesome name='cog' spin />
-					{' Loading data'}
-				</h1>
-			</Jumbotron>;
-		}
 		return (
 			<SingleBlueprint
 				{...props}
 				id={blueprintId}
-				blueprint={blueprint}
 				user={this.state.user}
 				isModerator={this.state.isModerator}
 			/>

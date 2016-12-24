@@ -7,6 +7,8 @@ import Panel from 'react-bootstrap/lib/Panel';
 import Button from 'react-bootstrap/lib/Button';
 import Table from 'react-bootstrap/lib/Table';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
+import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+
 import {Link} from 'react-router';
 import ReactDisqusThread from 'react-disqus-thread';
 import CopyToClipboard from 'react-copy-to-clipboard';
@@ -21,29 +23,6 @@ import buildImageUrl from '../helpers/buildImageUrl';
 class SingleBlueprint extends Component {
 	static propTypes = {
 		id         : PropTypes.string.isRequired,
-		blueprint  : PropTypes.shape({
-			title              : PropTypes.string.isRequired,
-			imageUrl           : PropTypes.string,
-			thumbnail          : PropTypes.string,
-			author             : PropTypes.shape({
-				displayName: PropTypes.string,
-				userId     : PropTypes.string.isRequired,
-			}).isRequired,
-			createdDate        : PropTypes.number.isRequired,
-			lastUpdatedDate    : PropTypes.number.isRequired,
-			numberOfFavorites  : PropTypes.number.isRequired,
-			favorites          : PropTypes.object,
-			blueprintString    : PropTypes.string.isRequired,
-			descriptionMarkdown: PropTypes.string.isRequired,
-			image              : PropTypes.shape({
-				id        : PropTypes.string.isRequired,
-				link      : PropTypes.string.isRequired,
-				deletehash: PropTypes.string.isRequired,
-				type      : PropTypes.string.isRequired,
-				height    : PropTypes.number.isRequired,
-				width     : PropTypes.number.isRequired,
-			}),
-		}),
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
@@ -55,11 +34,25 @@ class SingleBlueprint extends Component {
 
 	state = {
 		expandBlueprint: false,
+		loading        : true,
 	};
+
+	componentWillMount()
+	{
+		const blueprintRef = base.database().ref(`/blueprints/${this.props.id}`);
+		blueprintRef.once('value').then((snapshot) =>
+		{
+			const blueprint = snapshot.val();
+			this.setState({
+				blueprint,
+				loading: false,
+			});
+		});
+	}
 
 	handleFavorite = () =>
 	{
-		const blueprint            = this.props.blueprint;
+		const blueprint            = this.state.blueprint;
 		const favorites            = blueprint.favorites;
 		const userId               = this.props.user.userId;
 		const wasFavorite          = favorites && favorites[userId];
@@ -86,7 +79,7 @@ class SingleBlueprint extends Component {
 			return <div />;
 		}
 
-		const favorites  = this.props.blueprint.favorites;
+		const favorites  = this.state.blueprint.favorites;
 		const myFavorite = favorites && user && favorites[user.userId];
 		const iconName   = myFavorite ? 'heart' : 'heart-o';
 
@@ -107,19 +100,27 @@ class SingleBlueprint extends Component {
 
 	render()
 	{
-		if (!this.props.blueprint)
+		if (this.state.loading)
+		{
+			return <Jumbotron>
+				<h1>
+					<FontAwesome name='cog' spin />
+					{' Loading data'}
+				</h1>
+			</Jumbotron>;
+		}
+
+		if (!this.state.blueprint)
 		{
 			return <NoMatch />;
 		}
 
-		const thumbnail = buildImageUrl(this.props.blueprint, 'l');
-		console.log({thumbnail});
+		const thumbnail        = buildImageUrl(this.state.blueprint, 'l');
+		const renderedMarkdown = marked(this.state.blueprint.descriptionMarkdown);
+		const createdDate      = this.state.blueprint.createdDate;
+		const lastUpdatedDate  = this.state.blueprint.lastUpdatedDate;
 
-		const renderedMarkdown = marked(this.props.blueprint.descriptionMarkdown);
-		const createdDate      = this.props.blueprint.createdDate;
-		const lastUpdatedDate  = this.props.blueprint.lastUpdatedDate;
-
-		const ownedByCurrentUser = this.props.user && this.props.user.userId === this.props.blueprint.author.userId;
+		const ownedByCurrentUser = this.props.user && this.props.user.userId === this.state.blueprint.author.userId;
 
 		const showOrHide = this.state.expandBlueprint ? 'Hide' : 'Show';
 
@@ -129,12 +130,12 @@ class SingleBlueprint extends Component {
 					{!ownedByCurrentUser && this.renderFavoriteButton()}
 					{(ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
 				</div>
-				<h1>{this.props.blueprint.title}</h1>
+				<h1>{this.state.blueprint.title}</h1>
 			</div>
 			<Row>
 				<Col md={4}>
 					<Thumbnail
-						href={(this.props.blueprint.image && this.props.blueprint.image.link) || this.props.blueprint.imageUrl || noImageAvailable}
+						href={this.state.blueprint.image && this.state.blueprint.image.link || this.state.blueprint.imageUrl || noImageAvailable}
 						src={thumbnail}
 						target='_blank'
 					/>
@@ -144,8 +145,8 @@ class SingleBlueprint extends Component {
 								<tr>
 									<td><FontAwesome name='user' className='fa-lg fa-fw' />{' Author'}</td>
 									<td>
-										<Link to={`/user/${this.props.blueprint.author.userId}`}>
-											{this.props.blueprint.author.displayName}
+										<Link to={`/user/${this.state.blueprint.author.userId}`}>
+											{this.state.blueprint.author.displayName}
 											{ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
 										</Link>
 									</td>
@@ -164,7 +165,7 @@ class SingleBlueprint extends Component {
 								</tr>
 								<tr>
 									<td><FontAwesome name='heart' className='fa-lg fa-fw' />{' Favorites'}</td>
-									<td>{this.props.blueprint.numberOfFavorites}</td>
+									<td>{this.state.blueprint.numberOfFavorites}</td>
 								</tr>
 							</tbody>
 						</Table>
@@ -178,7 +179,7 @@ class SingleBlueprint extends Component {
 				<Col md={8}>
 					<Panel>
 						<ButtonToolbar>
-							<CopyToClipboard text={this.props.blueprint.blueprintString}>
+							<CopyToClipboard text={this.state.blueprint.blueprintString}>
 								<Button bsStyle='primary'>
 									<FontAwesome name='clipboard' size='lg' fixedWidth />
 									{' Copy to Clipboard'}
@@ -194,7 +195,7 @@ class SingleBlueprint extends Component {
 				<Col md={8}>
 					<Panel header='Blueprint String' collapsible expanded={this.state.expandBlueprint}>
 						<div className='blueprintString'>
-							{this.props.blueprint.blueprintString}
+							{this.state.blueprint.blueprintString}
 						</div>
 					</Panel>
 				</Col>
@@ -203,7 +204,7 @@ class SingleBlueprint extends Component {
 				<ReactDisqusThread
 					shortname='factorio-blueprints'
 					identifier={this.props.id}
-					title={this.props.blueprint.title}
+					title={this.state.blueprint.title}
 				/>
 			</Row>
 		</Grid>;
