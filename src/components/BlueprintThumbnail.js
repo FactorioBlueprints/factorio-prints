@@ -18,7 +18,7 @@ const BlueprintThumbnail = ({
 	<Col xs={12} sm={6} md={2}>
 		<Link to={`/view/${id}`}>
 			<Thumbnail src={buildImageUrl({imageUrl, thumbnail, image}, 'b')}>
-				<OverlayTrigger placement="bottom" overlay={<Tooltip>{title}</Tooltip>}>
+				<OverlayTrigger placement="bottom" overlay={<Tooltip id='thumbnail-title-tooltip'>{title}</Tooltip>}>
 					<p className='truncate'>{title}</p>
 				</OverlayTrigger>
 				<p><FontAwesome name='heart' /> {numberOfFavorites}</p>
