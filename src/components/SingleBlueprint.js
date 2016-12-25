@@ -108,7 +108,14 @@ class SingleBlueprint extends Component {
 	{
 		try
 		{
-			Blueprint.setEntityData({coal: {type: 'item'}});
+			Blueprint.setEntityData({
+				coal             : {type: 'item'},
+				rail_chain_signal: {
+					type  : 'item',
+					width : 1,
+					height: 1
+				},
+			});
 			const parsedBlueprint = new Blueprint(blueprintString);
 			return flow(
 				countBy('name'),
