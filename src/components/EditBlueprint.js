@@ -152,6 +152,15 @@ class EditBlueprint extends Component {
 		};
 
 		base.database().ref(`/blueprints/${this.props.id}/`).update(updatedBlueprint);
+
+		const blueprintSummary = {
+			imgurId          : blueprint.image.id,
+			imgurType        : blueprint.image.type,
+			title            : blueprint.title,
+			numberOfFavorites: blueprint.numberOfFavorites,
+		};
+
+		base.database().ref(`/blueprintSummaries/${this.props.id}/`).update(blueprintSummary);
 		this.context.router.transitionTo(`/view/${this.props.id}`);
 	};
 
