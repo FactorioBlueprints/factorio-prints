@@ -23,16 +23,6 @@ import firebase from 'firebase';
 class EditBlueprint extends Component {
 	static propTypes = {
 		id         : PropTypes.string.isRequired,
-		blueprint  : PropTypes.shape({
-			title              : PropTypes.string.isRequired,
-			author             : PropTypes.shape({
-				displayName: PropTypes.string.isRequired,
-				userId     : PropTypes.string.isRequired,
-			}).isRequired,
-			blueprintString    : PropTypes.string.isRequired,
-			descriptionMarkdown: PropTypes.string.isRequired,
-			imageUrl           : PropTypes.string.isRequired,
-		}),
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string.isRequired,
@@ -43,15 +33,24 @@ class EditBlueprint extends Component {
 	static contextTypes = {router: PropTypes.object.isRequired};
 
 	state = {
-		blueprint           : {
-			title              : this.props.blueprint.title,
-			descriptionMarkdown: this.props.blueprint.descriptionMarkdown,
-			blueprintString    : this.props.blueprint.blueprintString,
-		},
-		renderedMarkdown    : marked(this.props.blueprint.descriptionMarkdown),
+		renderedMarkdown    : '',
 		submissionErrors    : [],
 		deletionModalVisible: false,
+		loading             : true,
 	};
+
+	componentWillMount()
+	{
+		const blueprintRef = base.database().ref(`/blueprints/${this.props.id}`);
+		blueprintRef.once('value').then((snapshot) =>
+		{
+			const blueprint = snapshot.val();
+			this.setState({
+				blueprint,
+				loading: false,
+			});
+		});
+	}
 
 	handleDismissError       = () =>
 	{
@@ -97,8 +96,7 @@ class EditBlueprint extends Component {
 			},
 		});
 	};
-
-	handleChange = (event) =>
+	handleChange             = (event) =>
 	{
 		this.setState({
 			blueprint: {
@@ -107,35 +105,35 @@ class EditBlueprint extends Component {
 			},
 		});
 	};
-
 	handleSaveBlueprintEdits = (event) =>
 	{
 		event.preventDefault();
 
 		const submissionErrors = [];
-		if (!this.state.blueprint.title)
+		const blueprint        = this.state.blueprint;
+		if (!blueprint.title)
 		{
 			submissionErrors.push('Title may not be empty');
 		}
-		else if (this.state.blueprint.title.trim().length < 10)
+		else if (blueprint.title.trim().length < 10)
 		{
 			submissionErrors.push('Title must be at least 10 characters');
 		}
 
-		if (!this.state.blueprint.descriptionMarkdown)
+		if (!blueprint.descriptionMarkdown)
 		{
 			submissionErrors.push('Description Markdown may not be empty');
 		}
-		else if (this.state.blueprint.descriptionMarkdown.trim().length < 10)
+		else if (blueprint.descriptionMarkdown.trim().length < 10)
 		{
 			submissionErrors.push('Description Markdown must be at least 10 characters');
 		}
 
-		if (!this.state.blueprint.blueprintString)
+		if (!blueprint.blueprintString)
 		{
 			submissionErrors.push('Blueprint String may not be empty');
 		}
-		else if (this.state.blueprint.blueprintString.trim().length < 10)
+		else if (blueprint.blueprintString.trim().length < 10)
 		{
 			submissionErrors.push('Blueprint String must be at least 10 characters');
 		}
@@ -146,30 +144,39 @@ class EditBlueprint extends Component {
 			return;
 		}
 
-		const blueprint = {
-			...this.state.blueprint,
+		const updatedBlueprint = {
+			...blueprint,
 			lastUpdatedDate: firebase.database.ServerValue.TIMESTAMP,
 		};
 
-		base.database().ref(`/blueprints/${this.props.id}/`).update(blueprint);
+		base.database().ref(`/blueprints/${this.props.id}/`).update(updatedBlueprint);
 		this.context.router.transitionTo(`/view/${this.props.id}`);
 	};
 
 	render()
 	{
-		if (!this.props.blueprint)
+		if (this.state.loading)
+		{
+			return <Jumbotron>
+				<h1>
+					<FontAwesome name='cog' spin />
+					{' Loading data'}
+				</h1>
+			</Jumbotron>;
+		}
+
+		const blueprint = this.state.blueprint;
+		if (!blueprint)
 		{
 			return <NoMatch />;
 		}
 
-		const ownedByCurrentUser = this.props.user && this.props.user.userId === this.props.blueprint.author.userId;
+		const ownedByCurrentUser = this.props.user && this.props.user.userId === blueprint.author.userId;
 
 		if (!ownedByCurrentUser && !this.props.isModerator)
 		{
 			return <Jumbotron><h1>{'You are not the author of this blueprint.'}</h1></Jumbotron>;
 		}
-
-		const blueprint = this.state.blueprint;
 
 		return <Grid>
 			<Modal show={this.state.deletionModalVisible} onHide={this.handleHideConfirmDelete}>
@@ -177,7 +184,7 @@ class EditBlueprint extends Component {
 					<Modal.Title>Are you sure you want to delete the blueprint?</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
-					<p>Deleting: {this.state.blueprint.title}</p>
+					<p>Deleting: {blueprint.title}</p>
 					<p>This cannot be undone.</p>
 				</Modal.Body>
 				<Modal.Footer>
@@ -201,7 +208,7 @@ class EditBlueprint extends Component {
 			</Row>
 			<Row>
 				<PageHeader>
-					{'Editing: '}{this.props.blueprint.title}
+					{'Editing: '}{blueprint.title}
 				</PageHeader>
 			</Row>
 			<Row>
@@ -256,10 +263,14 @@ class EditBlueprint extends Component {
 					<FormGroup>
 						<Col smOffset={2} sm={10}>
 							<ButtonToolbar>
-								<Button bsStyle='primary' bsSize='large' type='submit' onClick={this.handleSaveBlueprintEdits}><FontAwesome name='floppy-o' size='lg' />{' Save'}
+								<Button bsStyle='primary' bsSize='large' type='submit'
+										onClick={this.handleSaveBlueprintEdits}><FontAwesome name='floppy-o'
+																							 size='lg' />{' Save'}
 								</Button>
 								{this.props.isModerator &&
-								<Button bsStyle='danger' bsSize='large' type='submit' onClick={this.handleShowConfirmDelete}><FontAwesome name='trash-o' size='lg' />{' Delete'}
+								<Button bsStyle='danger' bsSize='large' type='submit'
+										onClick={this.handleShowConfirmDelete}><FontAwesome name='trash-o'
+																							size='lg' />{' Delete'}
 								</Button>}
 							</ButtonToolbar>
 						</Col>

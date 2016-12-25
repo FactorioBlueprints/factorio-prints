@@ -8,7 +8,6 @@ import Button from 'react-bootstrap/lib/Button';
 import Table from 'react-bootstrap/lib/Table';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-
 import {Link} from 'react-router';
 import ReactDisqusThread from 'react-disqus-thread';
 import CopyToClipboard from 'react-copy-to-clipboard';
@@ -16,18 +15,17 @@ import FontAwesome from 'react-fontawesome';
 import marked from 'marked';
 import moment from 'moment';
 import base from '../base';
-import noImageAvailable from '../gif/No_available_image.gif';
 import NoMatch from './NoMatch';
 import buildImageUrl from '../helpers/buildImageUrl';
 
 class SingleBlueprint extends Component {
 	static propTypes = {
-		id         : PropTypes.string.isRequired,
-		user       : PropTypes.shape({
+		id              : PropTypes.string.isRequired,
+		user            : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		isModerator: PropTypes.bool,
+		isModerator     : PropTypes.bool,
 	};
 
 	static contextTypes = {router: PropTypes.object.isRequired};
@@ -110,17 +108,19 @@ class SingleBlueprint extends Component {
 			</Jumbotron>;
 		}
 
-		if (!this.state.blueprint)
+		const blueprint = this.state.blueprint;
+		if (!blueprint)
 		{
 			return <NoMatch />;
 		}
 
-		const thumbnail        = buildImageUrl(this.state.blueprint, 'l');
-		const renderedMarkdown = marked(this.state.blueprint.descriptionMarkdown);
-		const createdDate      = this.state.blueprint.createdDate;
-		const lastUpdatedDate  = this.state.blueprint.lastUpdatedDate;
+		const image            = blueprint.image;
+		const thumbnail        = buildImageUrl(image.id, image.type, 'l');
+		const renderedMarkdown = marked(blueprint.descriptionMarkdown);
+		const createdDate      = blueprint.createdDate;
+		const lastUpdatedDate  = blueprint.lastUpdatedDate;
 
-		const ownedByCurrentUser = this.props.user && this.props.user.userId === this.state.blueprint.author.userId;
+		const ownedByCurrentUser = this.props.user && this.props.user.userId === blueprint.author.userId;
 
 		const showOrHide = this.state.expandBlueprint ? 'Hide' : 'Show';
 
@@ -130,12 +130,12 @@ class SingleBlueprint extends Component {
 					{!ownedByCurrentUser && this.renderFavoriteButton()}
 					{(ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
 				</div>
-				<h1>{this.state.blueprint.title}</h1>
+				<h1>{blueprint.title}</h1>
 			</div>
 			<Row>
 				<Col md={4}>
 					<Thumbnail
-						href={this.state.blueprint.image && this.state.blueprint.image.link || this.state.blueprint.imageUrl || noImageAvailable}
+						href={image.link}
 						src={thumbnail}
 						target='_blank'
 					/>
@@ -143,10 +143,10 @@ class SingleBlueprint extends Component {
 						<Table bordered hover fill>
 							<tbody>
 								<tr>
-									<td><FontAwesome name='user' className='fa-lg fa-fw' />{' Author'}</td>
+									<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
 									<td>
-										<Link to={`/user/${this.state.blueprint.author.userId}`}>
-											{this.state.blueprint.author.displayName}
+										<Link to={`/user/${blueprint.author.userId}`}>
+											{blueprint.author.displayName}
 											{ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
 										</Link>
 									</td>
@@ -154,18 +154,20 @@ class SingleBlueprint extends Component {
 								<tr>
 									<td><FontAwesome name='calendar' className='fa-lg fa-fw' />{' Created'}</td>
 									<td>
-										<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(createdDate).fromNow()}</span>
+										<span
+											title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(createdDate).fromNow()}</span>
 									</td>
 								</tr>
 								<tr>
 									<td><FontAwesome name='clock-o' className='fa-lg fa-fw' />{' Last Updated'}</td>
 									<td>
-										<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(lastUpdatedDate).fromNow()}</span>
+										<span
+											title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(lastUpdatedDate).fromNow()}</span>
 									</td>
 								</tr>
 								<tr>
 									<td><FontAwesome name='heart' className='fa-lg fa-fw' />{' Favorites'}</td>
-									<td>{this.state.blueprint.numberOfFavorites}</td>
+									<td>{blueprint.numberOfFavorites}</td>
 								</tr>
 							</tbody>
 						</Table>
@@ -179,7 +181,7 @@ class SingleBlueprint extends Component {
 				<Col md={8}>
 					<Panel>
 						<ButtonToolbar>
-							<CopyToClipboard text={this.state.blueprint.blueprintString}>
+							<CopyToClipboard text={blueprint.blueprintString}>
 								<Button bsStyle='primary'>
 									<FontAwesome name='clipboard' size='lg' fixedWidth />
 									{' Copy to Clipboard'}
@@ -195,7 +197,7 @@ class SingleBlueprint extends Component {
 				<Col md={8}>
 					<Panel header='Blueprint String' collapsible expanded={this.state.expandBlueprint}>
 						<div className='blueprintString'>
-							{this.state.blueprint.blueprintString}
+							{blueprint.blueprintString}
 						</div>
 					</Panel>
 				</Col>
@@ -204,7 +206,7 @@ class SingleBlueprint extends Component {
 				<ReactDisqusThread
 					shortname='factorio-blueprints'
 					identifier={this.props.id}
-					title={this.state.blueprint.title}
+					title={blueprint.title}
 				/>
 			</Row>
 		</Grid>;

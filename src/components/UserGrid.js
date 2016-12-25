@@ -10,7 +10,7 @@ import base from '../base';
 class UserGrid extends Component {
 	static propTypes = {
 		id        : PropTypes.string.isRequired,
-		blueprints: PropTypes.object.isRequired,
+		blueprintSummaries: PropTypes.object.isRequired,
 	};
 
 	state = {
@@ -48,7 +48,7 @@ class UserGrid extends Component {
 				<Row>
 					{
 						Object.keys(this.state.keys)
-							.map(key => <BlueprintThumbnail key={key} id={key} {...this.props.blueprints[key]} />)
+							.map(key => <BlueprintThumbnail key={key} id={key} {...this.props.blueprintSummaries[key]} />)
 					}
 				</Row>
 			</Grid>

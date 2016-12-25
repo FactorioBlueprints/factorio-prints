@@ -11,7 +11,7 @@ class FavoritesGrid extends Component {
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		blueprints   : PropTypes.object.isRequired,
+		blueprintSummaries   : PropTypes.object.isRequired,
 		userFavorites: PropTypes.object.isRequired,
 	};
 
@@ -36,7 +36,7 @@ class FavoritesGrid extends Component {
 					{
 						Object.keys(this.props.userFavorites)
 							.filter(key => this.props.userFavorites[key])
-							.map(key => <BlueprintThumbnail key={key} id={key} {...this.props.blueprints[key]} />)
+							.map(key => <BlueprintThumbnail key={key} id={key} {...this.props.blueprintSummaries[key]} />)
 					}
 				</Row>
 			</Grid>

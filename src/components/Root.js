@@ -17,17 +17,17 @@ class Root extends Component {
 	static propTypes = {};
 
 	state = {
-		blueprints   : {},
-		user         : null,
-		userFavorites: {},
-		isModerator  : false,
+		blueprintSummaries: {},
+		user              : null,
+		userFavorites     : {},
+		isModerator       : false,
 	};
 
 	componentWillMount()
 	{
-		this.ref = base.syncState('blueprints', {
+		this.ref = base.syncState('blueprintSummaries', {
 			context: this,
-			state  : 'blueprints',
+			state  : 'blueprintSummaries',
 		});
 
 		base.auth().onAuthStateChanged((user) =>
@@ -89,12 +89,12 @@ class Root extends Component {
 	renderBlueprintGrid     = props =>
 		<BlueprintGrid
 			{...props}
-			blueprints={this.state.blueprints}
+			blueprintSummaries={this.state.blueprintSummaries}
 		/>;
 	renderMostFavoritedGrid = props =>
 		<MostFavoritedGrid
 			{...props}
-			blueprints={this.state.blueprints}
+			blueprintSummaries={this.state.blueprintSummaries}
 		/>;
 	renderCreate            = props =>
 		<Create
@@ -117,16 +117,14 @@ class Root extends Component {
 	renderEditBlueprint     = (props) =>
 	{
 		const blueprintId = props.params.blueprintId;
-		const blueprint   = this.state.blueprints[blueprintId];
 
-		if (Object.keys(this.state.blueprints).length === 0)
+		if (Object.keys(this.state.blueprintSummaries).length === 0)
 		{
 			return <Jumbotron><h1>{'Loading data'}</h1></Jumbotron>;
 		}
 		return <EditBlueprint
 			{...props}
 			id={blueprintId}
-			blueprint={blueprint}
 			user={this.state.user}
 			isModerator={this.state.isModerator}
 		/>;
@@ -135,13 +133,13 @@ class Root extends Component {
 		<UserGrid
 			{...props}
 			id={props.params.userId}
-			blueprints={this.state.blueprints}
+			blueprintSummaries={this.state.blueprintSummaries}
 		/>;
 	renderFavorites         = props =>
 		<FavoritesGrid
 			{...props}
 			user={this.state.user}
-			blueprints={this.state.blueprints}
+			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
 		/>;
 

@@ -1,13 +1,7 @@
-import noImageAvailable from '../gif/No_available_image.gif';
-
-const buildImageUrl = ({imageUrl, thumbnail, image}, suffix) =>
+const buildImageUrl = (imgurId, imgurType, suffix) =>
 {
-	if (image)
-	{
-		const typeParts = image.type.split('/');
-		return `http://i.imgur.com/${image.id}${suffix}.${typeParts[1]}`;
-	}
-	return thumbnail || imageUrl || noImageAvailable;
+	const typeParts = imgurType.split('/');
+	return `http://i.imgur.com/${imgurId}${suffix}.${typeParts[1]}`;
 };
 
 export default buildImageUrl;

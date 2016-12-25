@@ -9,15 +9,14 @@ import buildImageUrl from '../helpers/buildImageUrl';
 
 const BlueprintThumbnail = ({
 	id,
-	imageUrl,
-	thumbnail,
+	imgurId,
+	imgurType,
 	title,
-	numberOfFavorites,
-	image,
+	numberOfFavorites
 }) =>
 	<Col xs={6} sm={6} md={2}>
 		<Link to={`/view/${id}`}>
-			<Thumbnail src={buildImageUrl({imageUrl, thumbnail, image}, 'b')}>
+			<Thumbnail src={buildImageUrl(imgurId, imgurType, 'b')}>
 				<OverlayTrigger placement="bottom" overlay={<Tooltip id='thumbnail-title-tooltip'>{title}</Tooltip>}>
 					<p className='truncate'>{title}</p>
 				</OverlayTrigger>

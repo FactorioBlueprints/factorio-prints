@@ -6,7 +6,7 @@ import PageHeader from 'react-bootstrap/lib/PageHeader';
 import BlueprintThumbnail from './BlueprintThumbnail';
 
 class BlueprintGrid extends Component {
-	static propTypes = {blueprints: PropTypes.object.isRequired};
+	static propTypes = {blueprintSummaries: PropTypes.object.isRequired};
 
 	render()
 	{
@@ -16,8 +16,8 @@ class BlueprintGrid extends Component {
 			</Row>
 			<Row>
 				{
-					Object.keys(this.props.blueprints).reverse().map(key =>
-						<BlueprintThumbnail key={key} id={key} {...this.props.blueprints[key]} />)
+					Object.keys(this.props.blueprintSummaries).reverse().map(key =>
+						<BlueprintThumbnail key={key} id={key} {...this.props.blueprintSummaries[key]} />)
 				}
 			</Row>
 		</Grid>;
