@@ -152,21 +152,21 @@ class SingleBlueprint extends Component {
 									</td>
 								</tr>
 								<tr>
-									<td><FontAwesome name='calendar' className='fa-lg fa-fw' />{' Created'}</td>
+									<td><FontAwesome name='calendar' size='lg' fixedWidth />{' Created'}</td>
 									<td>
 										<span
 											title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(createdDate).fromNow()}</span>
 									</td>
 								</tr>
 								<tr>
-									<td><FontAwesome name='clock-o' className='fa-lg fa-fw' />{' Last Updated'}</td>
+									<td><FontAwesome name='clock-o' size='lg' fixedWidth />{' Last Updated'}</td>
 									<td>
 										<span
 											title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(lastUpdatedDate).fromNow()}</span>
 									</td>
 								</tr>
 								<tr>
-									<td><FontAwesome name='heart' className='fa-lg fa-fw' />{' Favorites'}</td>
+									<td><FontAwesome name='heart' size='lg' fixedWidth />{' Favorites'}</td>
 									<td>{blueprint.numberOfFavorites}</td>
 								</tr>
 							</tbody>
