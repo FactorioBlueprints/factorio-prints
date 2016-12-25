@@ -14,18 +14,25 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import FontAwesome from 'react-fontawesome';
 import marked from 'marked';
 import moment from 'moment';
+import Blueprint from 'factorio-blueprint';
 import base from '../base';
 import NoMatch from './NoMatch';
 import buildImageUrl from '../helpers/buildImageUrl';
 
+import countBy from 'lodash/fp/countBy';
+import toPairs from 'lodash/fp/toPairs';
+import sortBy from 'lodash/fp/sortBy';
+import reverse from 'lodash/fp/reverse';
+import flow from 'lodash/fp/flow';
+
 class SingleBlueprint extends Component {
 	static propTypes = {
-		id              : PropTypes.string.isRequired,
-		user            : PropTypes.shape({
+		id         : PropTypes.string.isRequired,
+		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		isModerator     : PropTypes.bool,
+		isModerator: PropTypes.bool,
 	};
 
 	static contextTypes = {router: PropTypes.object.isRequired};
@@ -97,6 +104,25 @@ class SingleBlueprint extends Component {
 			<FontAwesome name='edit' />{' Edit'}
 		</Button>;
 
+	entityHistogram = (blueprintString) =>
+	{
+		try
+		{
+			Blueprint.setEntityData({coal: {type: 'item'}});
+			const parsedBlueprint = new Blueprint(blueprintString);
+			return flow(
+				countBy('name'),
+				toPairs,
+				sortBy(1),
+				reverse
+			)(parsedBlueprint.entities);
+		}
+		catch (e)
+		{
+			console.error(e.message);
+		}
+	};
+
 	render()
 	{
 		if (this.state.loading)
@@ -118,6 +144,7 @@ class SingleBlueprint extends Component {
 		const image            = blueprint.image;
 		const thumbnail        = buildImageUrl(image.id, image.type, 'l');
 		const renderedMarkdown = marked(blueprint.descriptionMarkdown);
+		const histogram        = this.entityHistogram(blueprint.blueprintString);
 		const createdDate      = blueprint.createdDate;
 		const lastUpdatedDate  = blueprint.lastUpdatedDate;
 
@@ -173,6 +200,17 @@ class SingleBlueprint extends Component {
 							</tbody>
 						</Table>
 					</Panel>
+					{histogram && <Panel header='Requirements'>
+						<Table bordered hover fill>
+							<tbody>
+								{histogram.map(pair =>
+									<tr key={pair[0]}>
+										<td>{pair[1]}</td>
+										<td>{pair[0]}</td>
+									</tr>)}
+							</tbody>
+						</Table>
+					</Panel>}
 				</Col>
 				<Col md={8}>
 					<Panel header='Details'>
