@@ -37,15 +37,16 @@ class SingleBlueprint extends Component {
 
 	componentWillMount()
 	{
-		const blueprintRef = base.database().ref(`/blueprints/${this.props.id}`);
-		blueprintRef.once('value').then((snapshot) =>
-		{
-			const blueprint = snapshot.val();
-			this.setState({
-				blueprint,
-				loading: false,
-			});
+		this.ref = base.syncState(`/blueprints/${this.props.id}`, {
+			context: this,
+			state  : 'blueprint',
+			then   : () => this.setState({loading: false}),
 		});
+	}
+
+	componentWillUnmount()
+	{
+		base.removeBinding(this.ref);
 	}
 
 	handleFavorite = () =>
