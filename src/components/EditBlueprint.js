@@ -150,6 +150,8 @@ class EditBlueprint extends Component {
 			...blueprint,
 			lastUpdatedDate: firebase.database.ServerValue.TIMESTAMP,
 		};
+		delete updatedBlueprint.favorites;
+		delete updatedBlueprint.author;
 
 		base.database().ref(`/blueprints/${this.props.id}/`).update(updatedBlueprint);
 
