@@ -12,9 +12,7 @@ import Alert from 'react-bootstrap/lib/Alert';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Modal from 'react-bootstrap/lib/Modal';
-
 import FontAwesome from 'react-fontawesome';
-
 import NoMatch from './NoMatch';
 import marked from 'marked';
 import base from '../base';
@@ -70,6 +68,7 @@ class EditBlueprint extends Component {
 		const blueprintRef     = base.database().ref(`/blueprints/${this.props.id}`);
 		const userBlueprintRef = base.database().ref(`/users/${this.props.user.userId}/blueprints/${this.props.id}`);
 		const thumbnailRef     = base.database().ref(`/thumbnails/${this.props.id}`);
+		const summaryRef       = base.database().ref(`/blueprintSummaries/${this.props.id}`);
 		if (this.props.blueprint.fileName)
 		{
 			const fileNameRef = base.storage().ref().child(this.props.blueprint.fileName);
@@ -78,8 +77,11 @@ class EditBlueprint extends Component {
 
 		thumbnailRef.remove().then(() =>
 		{
-			blueprintRef.remove();
-			userBlueprintRef.remove();
+			summaryRef.remove().then(() =>
+			{
+				blueprintRef.remove();
+				userBlueprintRef.remove();
+			});
 		});
 
 		this.context.router.transitionTo(`/user/${this.props.user.userId}`);
@@ -263,14 +265,20 @@ class EditBlueprint extends Component {
 					<FormGroup>
 						<Col smOffset={2} sm={10}>
 							<ButtonToolbar>
-								<Button bsStyle='primary' bsSize='large' type='submit'
-										onClick={this.handleSaveBlueprintEdits}><FontAwesome name='floppy-o'
-																							 size='lg' />{' Save'}
+								<Button
+									bsStyle='primary'
+									bsSize='large'
+									type='submit'
+									onClick={this.handleSaveBlueprintEdits}>
+									<FontAwesome name='floppy-o' size='lg' />{' Save'}
 								</Button>
 								{this.props.isModerator &&
-								<Button bsStyle='danger' bsSize='large' type='submit'
-										onClick={this.handleShowConfirmDelete}><FontAwesome name='trash-o'
-																							size='lg' />{' Delete'}
+								<Button
+									bsStyle='danger'
+									bsSize='large'
+									type='submit'
+									onClick={this.handleShowConfirmDelete}>
+									<FontAwesome name='trash-o' size='lg' />{' Delete'}
 								</Button>}
 							</ButtonToolbar>
 						</Col>
