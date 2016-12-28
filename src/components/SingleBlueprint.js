@@ -14,10 +14,11 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 import FontAwesome from 'react-fontawesome';
 import marked from 'marked';
 import moment from 'moment';
-import Blueprint from 'factorio-blueprint';
 import base from '../base';
 import NoMatch from './NoMatch';
 import buildImageUrl from '../helpers/buildImageUrl';
+import decodeFromBase64 from '../parser/decodeFromBase64';
+import luaTableToJsonObject from '../parser/luaTableToJsonObject';
 
 import countBy from 'lodash/fp/countBy';
 import toPairs from 'lodash/fp/toPairs';
@@ -104,31 +105,20 @@ class SingleBlueprint extends Component {
 			<FontAwesome name='edit' />{' Edit'}
 		</Button>;
 
-	entityHistogram = (blueprintString) =>
+	parseBlueprint = (blueprintString) =>
 	{
-		try
-		{
-			Blueprint.setEntityData({
-				coal             : {type: 'item'},
-				rail_chain_signal: {
-					type  : 'item',
-					width : 1,
-					height: 1
-				},
-			});
-			const parsedBlueprint = new Blueprint(blueprintString);
-			return flow(
-				countBy('name'),
-				toPairs,
-				sortBy(1),
-				reverse
-			)(parsedBlueprint.entities);
-		}
-		catch (e)
-		{
-			console.error(e.message);
-		}
+		const luaTable      = decodeFromBase64(blueprintString);
+		const blueprintJson = luaTableToJsonObject(luaTable);
+		return blueprintJson;
 	};
+
+	entityHistogram = parsedBlueprint =>
+		flow(
+			countBy('name'),
+			toPairs,
+			sortBy(1),
+			reverse
+		)(parsedBlueprint.entities);
 
 	render()
 	{
@@ -151,9 +141,9 @@ class SingleBlueprint extends Component {
 		const image            = blueprint.image;
 		const thumbnail        = buildImageUrl(image.id, image.type, 'l');
 		const renderedMarkdown = marked(blueprint.descriptionMarkdown);
-		const histogram        = this.entityHistogram(blueprint.blueprintString);
 		const createdDate      = blueprint.createdDate;
 		const lastUpdatedDate  = blueprint.lastUpdatedDate;
+		const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString);
 
 		const ownedByCurrentUser = this.props.user && this.props.user.userId === blueprint.author.userId;
 
@@ -207,14 +197,38 @@ class SingleBlueprint extends Component {
 							</tbody>
 						</Table>
 					</Panel>
-					{histogram && <Panel header='Requirements'>
+					{parsedBlueprint && !parsedBlueprint.book && <Panel header='Requirements'>
 						<Table bordered hover fill>
 							<tbody>
-								{histogram.map(pair =>
+								{this.entityHistogram(parsedBlueprint).map(pair =>
 									<tr key={pair[0]}>
 										<td>{pair[1]}</td>
 										<td>{pair[0]}</td>
 									</tr>)}
+							</tbody>
+						</Table>
+					</Panel>}
+					{parsedBlueprint && <Panel header='Extra Info'>
+						<Table bordered hover fill>
+							<tbody>
+								<tr>
+									<td>Name</td>
+									<td>{parsedBlueprint.name}</td>
+								</tr>
+								{parsedBlueprint.book && <tr>
+									<td colSpan='2'>
+										Blueprint book with {parsedBlueprint.book.length} blueprints.
+									</td>
+								</tr>}
+								{(parsedBlueprint.icons || [])
+									.filter(icon => icon != null)
+									.map(icon =>
+									{
+										return <tr key={icon.index}>
+											<td>Icon {icon.index}</td>
+											<td>{icon.signal.name}</td>
+										</tr>
+									})}
 							</tbody>
 						</Table>
 					</Panel>}
