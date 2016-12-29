@@ -71,7 +71,10 @@ class Root extends Component {
 					isModerator  : false,
 				});
 
-				base.removeBinding(this.userFavoritesRef);
+				if (this.userFavoritesRef)
+				{
+					base.removeBinding(this.userFavoritesRef);
+				}
 			}
 		}, error => console.error({error}));
 	}
@@ -79,6 +82,11 @@ class Root extends Component {
 	componentWillUnmount()
 	{
 		base.removeBinding(this.ref);
+
+		if (this.userFavoritesRef)
+		{
+			base.removeBinding(this.userFavoritesRef);
+		}
 	}
 
 	renderIntro             = props =>
