@@ -19,7 +19,6 @@ import NoMatch from './NoMatch';
 import buildImageUrl from '../helpers/buildImageUrl';
 import decodeFromBase64 from '../parser/decodeFromBase64';
 import luaTableToJsonObject from '../parser/luaTableToJsonObject';
-
 import countBy from 'lodash/fp/countBy';
 import toPairs from 'lodash/fp/toPairs';
 import sortBy from 'lodash/fp/sortBy';
@@ -213,7 +212,7 @@ class SingleBlueprint extends Component {
 							<tbody>
 								<tr>
 									<td>Name</td>
-									<td>{parsedBlueprint.name}</td>
+									<td>{parsedBlueprint.name || parsedBlueprint.data && parsedBlueprint.data.label}</td>
 								</tr>
 								{parsedBlueprint.book && <tr>
 									<td colSpan='2'>
