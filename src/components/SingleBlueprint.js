@@ -106,9 +106,17 @@ class SingleBlueprint extends Component {
 
 	parseBlueprint = (blueprintString) =>
 	{
-		const luaTable      = decodeFromBase64(blueprintString);
-		const blueprintJson = luaTableToJsonObject(luaTable);
-		return blueprintJson;
+		try
+		{
+			const luaTable      = decodeFromBase64(blueprintString);
+			const blueprintJson = luaTableToJsonObject(luaTable);
+			return blueprintJson;
+		}
+		catch (e)
+		{
+			console.error(e.message);
+			return undefined;
+		}
 	};
 
 	entityHistogram = parsedBlueprint =>
