@@ -114,7 +114,7 @@ class SingleBlueprint extends Component {
 		}
 		catch (e)
 		{
-			console.error(e.message);
+			console.error(e);
 			return undefined;
 		}
 	};
@@ -220,7 +220,7 @@ class SingleBlueprint extends Component {
 							<tbody>
 								<tr>
 									<td>Name</td>
-									<td>{parsedBlueprint.name || parsedBlueprint.data && parsedBlueprint.data.label}</td>
+									<td>{parsedBlueprint.name || (parsedBlueprint.data && parsedBlueprint.data.label)}</td>
 								</tr>
 								{parsedBlueprint.book && <tr>
 									<td colSpan='2'>

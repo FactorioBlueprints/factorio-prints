@@ -13,9 +13,9 @@ const decodeFromBase64 = (string) =>
 	}
 
 	const unzipped = pako.inflate(arrayBuffer);
-	const luaCode  = String.fromCharCode.apply(null, new Uint16Array(unzipped));
+	const luaCode = new TextDecoder("utf-16le").decode(new Uint16Array(unzipped));
 
-	const match = luaCode.match(/do local _=(.+);return _;end/);
+	const match = luaCode.match(/do local _=([\s\S]+);return _;end/);
 	if (!match)
 	{
 		throw new Error(`Invalid blueprint string: ${luaCode}`);
