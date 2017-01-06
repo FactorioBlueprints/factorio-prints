@@ -7,7 +7,7 @@ class App extends Component {
 		user    : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
-			photoURL   : PropTypes.string.isRequired,
+			photoURL   : PropTypes.string,
 		}),
 	};
 

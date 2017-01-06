@@ -15,7 +15,7 @@ class Header extends Component {
 		user: PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
-			photoURL   : PropTypes.string.isRequired,
+			photoURL   : PropTypes.string,
 		}),
 	};
 
@@ -44,6 +44,33 @@ class Header extends Component {
 		base.auth().signOut();
 	};
 
+	getSmallUserPhoto = () =>
+	{
+		if (this.props.user.photoURL)
+		{
+			return <img src={this.props.user.photoURL} alt='user' className='user-photo' />;
+		}
+		return <FontAwesome name='user' size='2x' fixedWidth />
+	};
+
+	getLargeUserPhoto = () =>
+	{
+		if (this.props.user.photoURL)
+		{
+			return <img src={this.props.user.photoURL} alt='user' className='user-photo-big pull-left' />;
+		}
+		return <FontAwesome name='user' size='4x' fixedWidth />
+	};
+
+	getDisplayName = () =>
+	{
+		if (this.props.user.displayName)
+		{
+			return <h4><b>{this.props.user.displayName}</b></h4>;
+		}
+		return false;
+	};
+
 	renderAuthentication = () =>
 	{
 		if (this.props.user)
@@ -51,12 +78,12 @@ class Header extends Component {
 			return (
 				<Dropdown id='dropdown-logout'>
 					<Dropdown.Toggle bsStyle='link'>
-						<img src={this.props.user.photoURL} alt='user' className='user-photo' />
+						{this.getSmallUserPhoto()}
 					</Dropdown.Toggle>
 					<Dropdown.Menu>
 						<MenuItem className='user-photo-container'>
-							<img src={this.props.user.photoURL} alt='user' className='user-photo-big pull-left' />
-							<h4><b>{this.props.user.displayName}</b></h4>
+							{this.getLargeUserPhoto()}
+							{this.getDisplayName()}
 						</MenuItem>
 						<MenuItem>
 							<button className='btn btn-block btn-primary' onClick={this.handleLogout}>
@@ -68,8 +95,17 @@ class Header extends Component {
 				</Dropdown>
 			);
 		}
+
+		const title = (
+			<span>
+				<FontAwesome name='sign-in' size='lg' fixedWidth />
+				{' Sign in / Join'}
+			</span>
+		);
+
 		return (
-			<NavDropdown title={<span><FontAwesome name='sign-in' size='lg' fixedWidth />{' Sign in / Join'}</span>} id='dropdown-login'>
+			<NavDropdown title={title}
+						 id='dropdown-login'>
 				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>
 					<FontAwesome name='google' size='lg' fixedWidth />
 					{' Log in with Google'}
@@ -98,9 +134,8 @@ class Header extends Component {
 						<li><Link to='/blueprints'><FontAwesome name='clock-o' size='lg' fixedWidth />{' Most Recent'}</Link></li>
 						<li><Link to='/top'><FontAwesome name='trophy' size='lg' fixedWidth />{' Most Favorited'}</Link></li>
 						<li><Link to='/create'><FontAwesome name='plus-square' size='lg' fixedWidth />{' Create'}</Link></li>
-						{this.props.user && <li><Link to={'/favorites'}><FontAwesome name='heart' size='lg' fixedWidth />{' My Favorites'} </Link></li>}
-						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}><FontAwesome name='user' size='lg' fixedWidth />{' My Blueprints'}</Link>
-						</li>}
+						{this.props.user && <li><Link to={'/favorites'}><FontAwesome name='heart' size='lg' fixedWidth />{' My Favorites'}</Link></li>}
+						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}><FontAwesome name='user' size='lg' fixedWidth />{' My Blueprints'}</Link></li>}
 					</Nav>
 					<Nav pullRight>
 						{this.renderAuthentication()}
