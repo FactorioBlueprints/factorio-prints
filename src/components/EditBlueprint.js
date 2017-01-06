@@ -69,9 +69,9 @@ class EditBlueprint extends Component {
 		const userBlueprintRef = base.database().ref(`/users/${this.props.user.userId}/blueprints/${this.props.id}`);
 		const thumbnailRef     = base.database().ref(`/thumbnails/${this.props.id}`);
 		const summaryRef       = base.database().ref(`/blueprintSummaries/${this.props.id}`);
-		if (this.props.blueprint.fileName)
+		if (this.state.blueprint.fileName)
 		{
-			const fileNameRef = base.storage().ref().child(this.props.blueprint.fileName);
+			const fileNameRef = base.storage().ref().child(this.state.blueprint.fileName);
 			fileNameRef.delete();
 		}
 
