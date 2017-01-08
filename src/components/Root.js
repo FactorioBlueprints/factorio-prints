@@ -34,31 +34,24 @@ class Root extends Component {
 		{
 			if (user)
 			{
-				const {uid, displayName, email, photoURL, emailVerified, providerData} = user;
+				const {uid, email, photoURL, emailVerified, providerData} = user;
 				const providerId = providerData && providerData.length && providerData[0].providerId;
 
-				this.setState({
-					user: {
-						userId: uid,
-						displayName,
-						photoURL,
-						email,
-						emailVerified,
-						providerId,
-					},
-				});
-
-				const userRef     = base.database().ref(`/users/${uid}`);
-				const newUserData = {
-					email,
-					photoURL,
-					providerId,
-				};
-				if (displayName)
+				base.database().ref(`/users/${uid}/displayName`)
+					.once('value').then((snapshot) =>
 				{
-					newUserData.displayName = displayName;
-				}
-				userRef.update(newUserData);
+					const displayName = snapshot.val();
+					this.setState({
+						user: {
+							userId: uid,
+							displayName,
+							photoURL,
+							email,
+							emailVerified,
+							providerId,
+						},
+					});
+				});
 
 				const moderatorRef = base.database().ref(`/moderators/${uid}`);
 				moderatorRef.once('value').then((snapshot) =>
