@@ -235,7 +235,7 @@ class SingleBlueprint extends Component {
 									{
 										return <tr key={icon.index}>
 											<td>Icon {icon.index}</td>
-											<td>{icon.signal.name}</td>
+											<td>{icon.name || icon.signal && icon.signal.name}</td>
 										</tr>
 									})}
 							</tbody>
