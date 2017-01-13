@@ -180,7 +180,7 @@ class SingleBlueprint extends Component {
 									<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
 									<td>
 										<Link to={`/user/${blueprint.author.userId}`}>
-											{blueprint.author.displayName}
+											{blueprint.author.displayName || '(Anonymous)'}
 											{ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
 										</Link>
 									</td>
