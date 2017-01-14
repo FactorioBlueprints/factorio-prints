@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "https://factorioprints.com/",
   "devDependencies": {
-    "autoprefixer-stylus": "^0.11.0",
+    "autoprefixer-stylus": "^0.13.0",
     "babel-cli": "^6.18.0",
     "babel-eslint": "^7.1.1",
     "babel-plugin-lodash": "^3.2.11",
@@ -13,7 +13,7 @@
     "eslint": "^3.12.2",
     "eslint-plugin-babel": "^4.0.0",
     "eslint-plugin-react": "^6.8.0",
-    "react-scripts": "^0.7.0",
+    "react-scripts": "^0.8.5",
     "stylus": "^0.54.5"
   },
   "dependencies": {
