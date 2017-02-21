@@ -48,7 +48,7 @@
     "react/jsx-filename-extension": "off",
     "react/prop-types": "warn",
     "react/forbid-component-props": "off",
-    "react/jsx-max-props-per-line": "warn",
+    "react/jsx-max-props-per-line": "off",
     "react/no-danger": "warn",
     "react/jsx-wrap-multilines": ["error", {"declaration": true, "assignment": true, "return": false}],
 
