@@ -24,4 +24,19 @@ const decodeFromBase64 = (string) =>
 	return match[1];
 };
 
+export const decodeFromBase64v15 = (string) =>
+{
+	const binary      = atob(string.slice(1));
+	const arrayBuffer = new Uint8Array(new ArrayBuffer(binary.length));
+
+	for (let i = 0; i < binary.length; i++)
+	{
+		arrayBuffer[i] = binary.charCodeAt(i);
+	}
+
+	const unzipped = pako.inflate(arrayBuffer);
+	const jsonCode = new TextDecoder("utf-16le").decode(new Uint16Array(unzipped));
+	return jsonCode;
+};
+
 export default decodeFromBase64;
