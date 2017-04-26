@@ -1,0 +1,37 @@
+Index: src/components/Create.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/components/Create.js	(date 1481394008000)
++++ src/components/Create.js	(revision )
+@@ -19,6 +19,8 @@
+ import base from '../base';
+ import firebase from 'firebase';
+ 
++import scaleImage from '../helpers/ImageScaler';
++
+ const PreviewFile = ({
+ 	name,
+ 	preview,
+@@ -164,8 +166,19 @@
+ 			return;
+ 		}
+ 
++		const file     = this.state.files[0];
++		const fileName = file.name;
++		scaleImage(file, {
++			maxWidth: 350, maxHeight: 600, quality: 0.70, debug: true,
++		}, (imageData) =>
++		{
++			console.log(imageData);
++		});
++
++		return;
++
++
+ 		const storageRef  = base.storage().ref();
+-		const fileName    = this.state.files[0].name;
+ 		const fileNameRef = storageRef.child(fileName);
+ 		fileNameRef.getDownloadURL().then(() =>
+ 		{

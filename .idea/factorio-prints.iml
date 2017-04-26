@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="react-bootstrap-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-redux-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-router-bootstrap-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-router-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-router-redux-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-fontawesome-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-dropzone-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="firebase-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="bluebird-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="lodash-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="marked-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="history-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="pako-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-dom-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="react-addons-css-transition-group-DefinitelyTyped" level="application" />
+  </component>
+</module>

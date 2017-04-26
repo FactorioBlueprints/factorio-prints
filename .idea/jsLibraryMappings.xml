@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptLibraryMappings">
+    <file url="PROJECT" libraries="{bluebird-DefinitelyTyped, firebase-DefinitelyTyped, history-DefinitelyTyped, lodash-DefinitelyTyped, marked-DefinitelyTyped, pako-DefinitelyTyped, react-DefinitelyTyped, react-addons-css-transition-group-DefinitelyTyped, react-bootstrap-DefinitelyTyped, react-dom-DefinitelyTyped, react-dropzone-DefinitelyTyped, react-fontawesome-DefinitelyTyped, react-redux-DefinitelyTyped, react-router-DefinitelyTyped, react-router-bootstrap-DefinitelyTyped, react-router-redux-DefinitelyTyped}" />
+    <excludedPredefinedLibrary name="factorio-prints/node_modules" />
+  </component>
+</project>
