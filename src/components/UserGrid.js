@@ -21,8 +21,9 @@ class UserGrid extends Component
 	};
 
 	state = {
-		user   : {},
-		loading: true,
+		displayName: '',
+		blueprints : {},
+		loading    : true,
 	};
 
 	componentWillMount()
@@ -37,19 +38,30 @@ class UserGrid extends Component
 
 	componentWillUnmount()
 	{
-		base.removeBinding(this.ref);
+		base.removeBinding(this.displayNameRef);
+		base.removeBinding(this.blueprintsRef);
 	}
 
 	syncState = (props) =>
 	{
-		if (this.ref)
+		if (this.displayNameRef)
 		{
-			base.removeBinding(this.ref);
+			base.removeBinding(this.displayNameRef);
 		}
 
-		this.ref = base.syncState(`/users/${props.id}/`, {
+		if (this.blueprintsRef)
+		{
+			base.removeBinding(this.blueprintsRef);
+		}
+
+		this.displayNameRef = base.syncState(`/users/${props.id}/displayName`, {
+			context: this,
+			state  : 'displayName',
+		});
+
+		this.blueprintsRef = base.syncState(`/users/${props.id}/blueprints`, {
 			context  : this,
-			state    : 'user',
+			state    : 'blueprints',
 			then     : () => this.setState({loading: false}),
 			onFailure: () => this.setState({loading: false}),
 		});
@@ -67,8 +79,8 @@ class UserGrid extends Component
 			</Jumbotron>;
 		}
 
-		const {user} = this.state;
-		if (isEmpty(user))
+		const {blueprints, displayName} = this.state;
+		if (isEmpty(blueprints))
 		{
 			return <NoMatch />;
 		}
@@ -77,12 +89,12 @@ class UserGrid extends Component
 			<Grid>
 				<Row>
 					<PageHeader>
-						{'Viewing Blueprints by '}{this.state.user.displayName || '(Anonymous)'}
+						{'Viewing Blueprints by '}{displayName || '(Anonymous)'}
 					</PageHeader>
 				</Row>
 				<Row>
 					{
-						Object.keys(this.state.user.blueprints || {}).map(key =>
+						Object.keys(blueprints || {}).map(key =>
 							<BlueprintThumbnail
 								key={key}
 								id={key}
