@@ -17,7 +17,7 @@ import moment from 'moment';
 import base from '../base';
 import NoMatch from './NoMatch';
 import buildImageUrl from '../helpers/buildImageUrl';
-import decodeFromBase64, {decodeFromBase64v15} from '../parser/decodeFromBase64';
+import decodeFromBase64, {decodeV15Base64} from '../parser/decodeFromBase64';
 import luaTableToJsonObject from '../parser/luaTableToJsonObject';
 
 import isEmpty from 'lodash/isEmpty';
@@ -146,7 +146,7 @@ class SingleBlueprint extends Component
 		{
 			try
 			{
-				const decoded = decodeFromBase64v15(blueprintString);
+				const decoded = decodeV15Base64(blueprintString);
 				const result  = JSON.parse(decoded);
 				return result.blueprint;
 			}

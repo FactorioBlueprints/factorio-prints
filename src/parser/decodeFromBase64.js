@@ -2,7 +2,7 @@ import pako from 'pako';
 
 const atob = require('atob');
 
-const decodeFromBase64 = (string) =>
+const decodeV14Base64 = (string) =>
 {
 	const binary      = atob(string);
 	const arrayBuffer = new Uint8Array(new ArrayBuffer(binary.length));
@@ -13,7 +13,7 @@ const decodeFromBase64 = (string) =>
 	}
 
 	const unzipped = pako.inflate(arrayBuffer);
-	const luaCode = new TextDecoder("utf-16le").decode(new Uint16Array(unzipped));
+	const luaCode = new TextDecoder('utf-16le').decode(new Uint16Array(unzipped));
 
 	const match = luaCode.match(/do local _=([\s\S]+);return _;end/);
 	if (!match)
@@ -24,7 +24,7 @@ const decodeFromBase64 = (string) =>
 	return match[1];
 };
 
-export const decodeFromBase64v15 = (string) =>
+export const decodeV15Base64 = (string) =>
 {
 	const binary      = atob(string.slice(1));
 	const arrayBuffer = new Uint8Array(new ArrayBuffer(binary.length));
@@ -35,8 +35,8 @@ export const decodeFromBase64v15 = (string) =>
 	}
 
 	const unzipped = pako.inflate(arrayBuffer);
-	const jsonCode = new TextDecoder("utf-16le").decode(new Uint16Array(unzipped));
+	const jsonCode = new TextDecoder('utf-16le').decode(new Uint16Array(unzipped));
 	return jsonCode;
 };
 
-export default decodeFromBase64;
+export default decodeV14Base64;
