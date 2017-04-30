@@ -7,46 +7,48 @@ var LuaVisitor = require('./LuaVisitor').LuaVisitor;
 var grammarFileName = "Lua.g4";
 
 var serializedATN = ["\u0003\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd",
-    "\u0003\u0013F\u0004\u0002\t\u0002\u0004\u0003\t\u0003\u0004\u0004\t",
+    "\u0003\u0013J\u0004\u0002\t\u0002\u0004\u0003\t\u0003\u0004\u0004\t",
     "\u0004\u0004\u0005\t\u0005\u0004\u0006\t\u0006\u0004\u0007\t\u0007\u0004",
     "\b\t\b\u0004\t\t\t\u0004\n\t\n\u0003\u0002\u0003\u0002\u0003\u0002\u0003",
     "\u0002\u0007\u0002\u0019\n\u0002\f\u0002\u000e\u0002\u001c\u000b\u0002",
     "\u0003\u0002\u0003\u0002\u0003\u0003\u0003\u0003\u0003\u0003\u0003\u0003",
     "\u0007\u0003$\n\u0003\f\u0003\u000e\u0003\'\u000b\u0003\u0003\u0003",
     "\u0003\u0003\u0003\u0004\u0003\u0004\u0003\u0004\u0003\u0004\u0003\u0005",
-    "\u0003\u0005\u0003\u0005\u0003\u0005\u0003\u0005\u0005\u00054\n\u0005",
-    "\u0003\u0006\u0003\u0006\u0003\u0006\u0003\u0006\u0003\u0006\u0003\u0006",
-    "\u0005\u0006<\n\u0006\u0003\u0007\u0003\u0007\u0003\b\u0003\b\u0003",
-    "\t\u0003\t\u0003\n\u0003\n\u0003\n\u0002\u0002\u000b\u0002\u0004\u0006",
-    "\b\n\f\u000e\u0010\u0012\u0002\u0005\u0003\u0002\n\u000b\u0003\u0002",
-    "\u000f\u0012\u0003\u0002\r\u000eD\u0002\u0014\u0003\u0002\u0002\u0002",
-    "\u0004\u001f\u0003\u0002\u0002\u0002\u0006*\u0003\u0002\u0002\u0002",
-    "\b3\u0003\u0002\u0002\u0002\n;\u0003\u0002\u0002\u0002\f=\u0003\u0002",
-    "\u0002\u0002\u000e?\u0003\u0002\u0002\u0002\u0010A\u0003\u0002\u0002",
-    "\u0002\u0012C\u0003\u0002\u0002\u0002\u0014\u0015\u0007\u0003\u0002",
-    "\u0002\u0015\u001a\u0005\u0006\u0004\u0002\u0016\u0017\u0007\u0004\u0002",
-    "\u0002\u0017\u0019\u0005\u0006\u0004\u0002\u0018\u0016\u0003\u0002\u0002",
-    "\u0002\u0019\u001c\u0003\u0002\u0002\u0002\u001a\u0018\u0003\u0002\u0002",
-    "\u0002\u001a\u001b\u0003\u0002\u0002\u0002\u001b\u001d\u0003\u0002\u0002",
-    "\u0002\u001c\u001a\u0003\u0002\u0002\u0002\u001d\u001e\u0007\u0005\u0002",
-    "\u0002\u001e\u0003\u0003\u0002\u0002\u0002\u001f \u0007\u0003\u0002",
-    "\u0002 %\u0005\n\u0006\u0002!\"\u0007\u0004\u0002\u0002\"$\u0005\n\u0006",
-    "\u0002#!\u0003\u0002\u0002\u0002$\'\u0003\u0002\u0002\u0002%#\u0003",
-    "\u0002\u0002\u0002%&\u0003\u0002\u0002\u0002&(\u0003\u0002\u0002\u0002",
-    "\'%\u0003\u0002\u0002\u0002()\u0007\u0005\u0002\u0002)\u0005\u0003\u0002",
-    "\u0002\u0002*+\u0005\b\u0005\u0002+,\u0007\u0006\u0002\u0002,-\u0005",
-    "\n\u0006\u0002-\u0007\u0003\u0002\u0002\u0002./\u0007\u0007\u0002\u0002",
-    "/0\u0005\u0012\n\u000201\u0007\b\u0002\u000214\u0003\u0002\u0002\u0002",
-    "24\u0007\f\u0002\u00023.\u0003\u0002\u0002\u000232\u0003\u0002\u0002",
-    "\u00024\t\u0003\u0002\u0002\u00025<\u0005\f\u0007\u00026<\u0005\u000e",
-    "\b\u00027<\u0005\u0010\t\u00028<\u0005\u0012\n\u00029<\u0005\u0004\u0003",
-    "\u0002:<\u0005\u0002\u0002\u0002;5\u0003\u0002\u0002\u0002;6\u0003\u0002",
-    "\u0002\u0002;7\u0003\u0002\u0002\u0002;8\u0003\u0002\u0002\u0002;9\u0003",
-    "\u0002\u0002\u0002;:\u0003\u0002\u0002\u0002<\u000b\u0003\u0002\u0002",
-    "\u0002=>\u0007\t\u0002\u0002>\r\u0003\u0002\u0002\u0002?@\t\u0002\u0002",
-    "\u0002@\u000f\u0003\u0002\u0002\u0002AB\t\u0003\u0002\u0002B\u0011\u0003",
-    "\u0002\u0002\u0002CD\t\u0004\u0002\u0002D\u0013\u0003\u0002\u0002\u0002",
-    "\u0006\u001a%3;"].join("");
+    "\u0003\u0005\u0003\u0005\u0003\u0005\u0003\u0005\u0003\u0005\u0003\u0005",
+    "\u0003\u0005\u0003\u0005\u0005\u00058\n\u0005\u0003\u0006\u0003\u0006",
+    "\u0003\u0006\u0003\u0006\u0003\u0006\u0003\u0006\u0005\u0006@\n\u0006",
+    "\u0003\u0007\u0003\u0007\u0003\b\u0003\b\u0003\t\u0003\t\u0003\n\u0003",
+    "\n\u0003\n\u0002\u0002\u000b\u0002\u0004\u0006\b\n\f\u000e\u0010\u0012",
+    "\u0002\u0005\u0003\u0002\n\u000b\u0003\u0002\u000f\u0012\u0003\u0002",
+    "\r\u000eI\u0002\u0014\u0003\u0002\u0002\u0002\u0004\u001f\u0003\u0002",
+    "\u0002\u0002\u0006*\u0003\u0002\u0002\u0002\b7\u0003\u0002\u0002\u0002",
+    "\n?\u0003\u0002\u0002\u0002\fA\u0003\u0002\u0002\u0002\u000eC\u0003",
+    "\u0002\u0002\u0002\u0010E\u0003\u0002\u0002\u0002\u0012G\u0003\u0002",
+    "\u0002\u0002\u0014\u0015\u0007\u0003\u0002\u0002\u0015\u001a\u0005\u0006",
+    "\u0004\u0002\u0016\u0017\u0007\u0004\u0002\u0002\u0017\u0019\u0005\u0006",
+    "\u0004\u0002\u0018\u0016\u0003\u0002\u0002\u0002\u0019\u001c\u0003\u0002",
+    "\u0002\u0002\u001a\u0018\u0003\u0002\u0002\u0002\u001a\u001b\u0003\u0002",
+    "\u0002\u0002\u001b\u001d\u0003\u0002\u0002\u0002\u001c\u001a\u0003\u0002",
+    "\u0002\u0002\u001d\u001e\u0007\u0005\u0002\u0002\u001e\u0003\u0003\u0002",
+    "\u0002\u0002\u001f \u0007\u0003\u0002\u0002 %\u0005\n\u0006\u0002!\"",
+    "\u0007\u0004\u0002\u0002\"$\u0005\n\u0006\u0002#!\u0003\u0002\u0002",
+    "\u0002$\'\u0003\u0002\u0002\u0002%#\u0003\u0002\u0002\u0002%&\u0003",
+    "\u0002\u0002\u0002&(\u0003\u0002\u0002\u0002\'%\u0003\u0002\u0002\u0002",
+    "()\u0007\u0005\u0002\u0002)\u0005\u0003\u0002\u0002\u0002*+\u0005\b",
+    "\u0005\u0002+,\u0007\u0006\u0002\u0002,-\u0005\n\u0006\u0002-\u0007",
+    "\u0003\u0002\u0002\u0002./\u0007\u0007\u0002\u0002/0\u0005\u0012\n\u0002",
+    "01\u0007\b\u0002\u000218\u0003\u0002\u0002\u000223\u0007\u0007\u0002",
+    "\u000234\u0005\u0010\t\u000245\u0007\b\u0002\u000258\u0003\u0002\u0002",
+    "\u000268\u0007\f\u0002\u00027.\u0003\u0002\u0002\u000272\u0003\u0002",
+    "\u0002\u000276\u0003\u0002\u0002\u00028\t\u0003\u0002\u0002\u00029@",
+    "\u0005\f\u0007\u0002:@\u0005\u000e\b\u0002;@\u0005\u0010\t\u0002<@\u0005",
+    "\u0012\n\u0002=@\u0005\u0004\u0003\u0002>@\u0005\u0002\u0002\u0002?",
+    "9\u0003\u0002\u0002\u0002?:\u0003\u0002\u0002\u0002?;\u0003\u0002\u0002",
+    "\u0002?<\u0003\u0002\u0002\u0002?=\u0003\u0002\u0002\u0002?>\u0003\u0002",
+    "\u0002\u0002@\u000b\u0003\u0002\u0002\u0002AB\u0007\t\u0002\u0002B\r",
+    "\u0003\u0002\u0002\u0002CD\t\u0002\u0002\u0002D\u000f\u0003\u0002\u0002",
+    "\u0002EF\t\u0003\u0002\u0002F\u0011\u0003\u0002\u0002\u0002GH\t\u0004",
+    "\u0002\u0002H\u0013\u0003\u0002\u0002\u0002\u0006\u001a%7?"].join("");
 
 
 var atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
@@ -353,6 +355,10 @@ KeyContext.prototype.string = function() {
     return this.getTypedRuleContext(StringContext,0);
 };
 
+KeyContext.prototype.number = function() {
+    return this.getTypedRuleContext(NumberContext,0);
+};
+
 KeyContext.prototype.NAME = function() {
     return this.getToken(LuaParser.NAME, 0);
 };
@@ -375,10 +381,11 @@ LuaParser.prototype.key = function() {
     var localctx = new KeyContext(this, this._ctx, this.state);
     this.enterRule(localctx, 6, LuaParser.RULE_key);
     try {
-        this.state = 49;
+        this.state = 53;
         this._errHandler.sync(this);
-        switch(this._input.LA(1)) {
-        case LuaParser.T__4:
+        var la_ = this._interp.adaptivePredict(this._input,2,this._ctx);
+        switch(la_) {
+        case 1:
             this.enterOuterAlt(localctx, 1);
             this.state = 44;
             this.match(LuaParser.T__4);
@@ -387,13 +394,23 @@ LuaParser.prototype.key = function() {
             this.state = 46;
             this.match(LuaParser.T__5);
             break;
-        case LuaParser.NAME:
+
+        case 2:
             this.enterOuterAlt(localctx, 2);
             this.state = 48;
+            this.match(LuaParser.T__4);
+            this.state = 49;
+            this.number();
+            this.state = 50;
+            this.match(LuaParser.T__5);
+            break;
+
+        case 3:
+            this.enterOuterAlt(localctx, 3);
+            this.state = 52;
             this.match(LuaParser.NAME);
             break;
-        default:
-            throw new antlr4.error.NoViableAltException(this);
+
         }
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
@@ -467,43 +484,43 @@ LuaParser.prototype.value = function() {
     var localctx = new ValueContext(this, this._ctx, this.state);
     this.enterRule(localctx, 8, LuaParser.RULE_value);
     try {
-        this.state = 57;
+        this.state = 61;
         this._errHandler.sync(this);
         var la_ = this._interp.adaptivePredict(this._input,3,this._ctx);
         switch(la_) {
         case 1:
             this.enterOuterAlt(localctx, 1);
-            this.state = 51;
+            this.state = 55;
             this.nil();
             break;
 
         case 2:
             this.enterOuterAlt(localctx, 2);
-            this.state = 52;
+            this.state = 56;
             this.bool();
             break;
 
         case 3:
             this.enterOuterAlt(localctx, 3);
-            this.state = 53;
+            this.state = 57;
             this.number();
             break;
 
         case 4:
             this.enterOuterAlt(localctx, 4);
-            this.state = 54;
+            this.state = 58;
             this.string();
             break;
 
         case 5:
             this.enterOuterAlt(localctx, 5);
-            this.state = 55;
+            this.state = 59;
             this.array();
             break;
 
         case 6:
             this.enterOuterAlt(localctx, 6);
-            this.state = 56;
+            this.state = 60;
             this.dictionary();
             break;
 
@@ -558,7 +575,7 @@ LuaParser.prototype.nil = function() {
     this.enterRule(localctx, 10, LuaParser.RULE_nil);
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 59;
+        this.state = 63;
         this.match(LuaParser.T__6);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
@@ -611,7 +628,7 @@ LuaParser.prototype.bool = function() {
     var _la = 0; // Token type
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 61;
+        this.state = 65;
         _la = this._input.LA(1);
         if(!(_la===LuaParser.T__7 || _la===LuaParser.T__8)) {
         this._errHandler.recoverInline(this);
@@ -686,7 +703,7 @@ LuaParser.prototype.number = function() {
     var _la = 0; // Token type
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 63;
+        this.state = 67;
         _la = this._input.LA(1);
         if(!((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << LuaParser.INT) | (1 << LuaParser.HEX) | (1 << LuaParser.FLOAT) | (1 << LuaParser.HEX_FLOAT))) !== 0))) {
         this._errHandler.recoverInline(this);
@@ -753,7 +770,7 @@ LuaParser.prototype.string = function() {
     var _la = 0; // Token type
     try {
         this.enterOuterAlt(localctx, 1);
-        this.state = 65;
+        this.state = 69;
         _la = this._input.LA(1);
         if(!(_la===LuaParser.NORMALSTRING || _la===LuaParser.CHARSTRING)) {
         this._errHandler.recoverInline(this);

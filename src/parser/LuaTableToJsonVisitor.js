@@ -1,6 +1,7 @@
 import {LuaVisitor} from '../antlr/LuaVisitor';
 
-class LuaTableToJsonVisitor extends LuaVisitor {
+class LuaTableToJsonVisitor extends LuaVisitor
+{
 	visitDictionary = (ctx) =>
 	{
 		const result = {};
@@ -13,12 +14,27 @@ class LuaTableToJsonVisitor extends LuaVisitor {
 		return result;
 	};
 
-	visitArray  = ctx => ctx.value().map(eachValue => this.visit(eachValue))
-	visitKey    = ctx => ctx.string() ? ctx.string().getText() : ctx.NAME().getText();
+	visitArray  = ctx => ctx.value().map(eachValue => this.visit(eachValue));
 	visitValue  = ctx => this.visit(ctx.children[0]);
-	visitNil    = ctx => null;
-	visitBool   = ctx => true;
+	visitNil    = () => null;
+	visitBool   = () => true;
 	visitNumber = ctx => Number(ctx.children[0].getText());
+
+	visitKey = (ctx) =>
+	{
+		if (ctx.string())
+		{
+			return ctx.string().getText();
+		}
+		else if (ctx.number())
+		{
+			return ctx.number().getText();
+		}
+		else
+		{
+			return ctx.NAME().getText();
+		}
+	};
 
 	visitString = (ctx) =>
 	{

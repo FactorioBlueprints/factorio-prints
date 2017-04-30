@@ -6,7 +6,7 @@ array: '{' value (',' value)* '}' ;
 
 field: key '=' value;
 
-key: '[' string ']' | NAME ;
+key: '[' string ']' | '[' number ']' | NAME ;
 
 value: nil | bool | number | string | array | dictionary;
 
