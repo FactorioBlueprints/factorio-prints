@@ -8,6 +8,8 @@ import Button from 'react-bootstrap/lib/Button';
 import Table from 'react-bootstrap/lib/Table';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import SplitButton from 'react-bootstrap/lib/SplitButton';
+import MenuItem from 'react-bootstrap/lib/MenuItem';
 import {Link} from 'react-router';
 import ReactDisqusThread from 'react-disqus-thread';
 import CopyToClipboard from 'react-copy-to-clipboard';
@@ -16,9 +18,11 @@ import marked from 'marked';
 import moment from 'moment';
 import base from '../base';
 import NoMatch from './NoMatch';
+import Title from './Title';
+
+import Blueprint from '../Blueprint';
+
 import buildImageUrl from '../helpers/buildImageUrl';
-import decodeFromBase64, {decodeV15Base64} from '../parser/decodeFromBase64';
-import luaTableToJsonObject from '../parser/luaTableToJsonObject';
 
 import isEmpty from 'lodash/isEmpty';
 import countBy from 'lodash/fp/countBy';
@@ -41,9 +45,10 @@ class SingleBlueprint extends Component
 	static contextTypes = {router: PropTypes.object.isRequired};
 
 	state = {
-		expandBlueprint: false,
-		loading        : true,
-		author         : null,
+		showBlueprint: false,
+		showJson     : false,
+		loading      : true,
+		author       : null,
 	};
 
 	componentWillMount()
@@ -100,10 +105,16 @@ class SingleBlueprint extends Component
 		base.database().ref().update(updates);
 	};
 
-	handleExpandCollapse = (event) =>
+	handleShowHideBase64 = (event) =>
 	{
 		event.preventDefault();
-		this.setState({expandBlueprint: !this.state.expandBlueprint});
+		this.setState({showBlueprint: !this.state.showBlueprint});
+	};
+
+	handleShowHideJson = (event) =>
+	{
+		event.preventDefault();
+		this.setState({showJson: !this.state.showJson});
 	};
 
 	renderFavoriteButton = () =>
@@ -138,23 +149,12 @@ class SingleBlueprint extends Component
 	{
 		try
 		{
-			const luaTable      = decodeFromBase64(blueprintString);
-			const blueprintJson = luaTableToJsonObject(luaTable);
-			return blueprintJson;
+			return new Blueprint(blueprintString);
 		}
 		catch (ignored)
 		{
-			try
-			{
-				const decoded = decodeV15Base64(blueprintString);
-				const result  = JSON.parse(decoded);
-				return result.blueprint;
-			}
-			catch (e)
-			{
-				console.error(e);
-				return undefined;
-			}
+			console.error(ignored);
+			return undefined;
 		}
 	};
 
@@ -192,7 +192,7 @@ class SingleBlueprint extends Component
 
 		const ownedByCurrentUser = this.props.user && this.props.user.userId === author.userId;
 
-		const showOrHide = this.state.expandBlueprint ? 'Hide' : 'Show';
+		const v15Decoded = parsedBlueprint && parsedBlueprint.getV15Decoded();
 
 		return <Grid>
 			<div className='page-header'>
@@ -242,10 +242,10 @@ class SingleBlueprint extends Component
 							</tbody>
 						</Table>
 					</Panel>
-					{parsedBlueprint && !parsedBlueprint.book && <Panel header='Requirements'>
+					{parsedBlueprint && !parsedBlueprint.isBook() && <Panel header='Requirements'>
 						<Table bordered hover fill>
 							<tbody>
-								{this.entityHistogram(parsedBlueprint).map(pair =>
+								{this.entityHistogram(v15Decoded.blueprint).map(pair =>
 									<tr key={pair[0]}>
 										<td>{pair[1]}</td>
 										<td>{pair[0]}</td>
@@ -258,14 +258,15 @@ class SingleBlueprint extends Component
 							<tbody>
 								<tr>
 									<td>Name</td>
-									<td>{parsedBlueprint.name || (parsedBlueprint.data && parsedBlueprint.data.label)}</td>
+									<td>{parsedBlueprint.isBook() ? v15Decoded.blueprint_book.label : v15Decoded.blueprint.label}</td>
 								</tr>
-								{parsedBlueprint.book && <tr>
+								{parsedBlueprint.isBook() && v15Decoded.blueprint_book && <tr>
 									<td colSpan='2'>
-										Blueprint book with {parsedBlueprint.book.length} blueprints.
+										Blueprint book with {v15Decoded.blueprint_book.blueprints.length}
+										blueprints.
 									</td>
 								</tr>}
-								{(parsedBlueprint.icons || [])
+								{(!parsedBlueprint.isBook() && v15Decoded.blueprint.icons || [])
 									.filter(icon => icon != null)
 									.map(icon =>
 									{
@@ -282,29 +283,44 @@ class SingleBlueprint extends Component
 					<Panel header='Details'>
 						<div dangerouslySetInnerHTML={{__html: renderedMarkdown}} />
 					</Panel>
-				</Col>
-				<Col md={8}>
 					<Panel>
 						<ButtonToolbar>
 							<CopyToClipboard text={blueprint.blueprintString}>
 								<Button bsStyle='primary'>
-									<FontAwesome name='clipboard' size='lg' fixedWidth />
-									{' Copy to Clipboard'}
+									<Title icon='clipboard' text='Copy to Clipboard' />
 								</Button>
 							</CopyToClipboard>
-							<Button onClick={this.handleExpandCollapse}>
-								<FontAwesome name='expand' size='lg' fixedWidth flip='horizontal' />
-								{` ${showOrHide} Blueprint`}
+							<Button onClick={this.handleShowHideBase64}>
+								{
+									this.state.showBlueprint
+										? <Title icon='toggle-on' text='Hide Blueprint' className='text-success' />
+										: <Title icon='toggle-off' text='Show Blueprint' />
+								}
 							</Button>
+							<Button onClick={this.handleShowHideJson}>
+								{
+									this.state.showJson
+										? <Title icon='toggle-on' text='Hide Json' className='text-success' />
+										: <Title icon='toggle-off' text='Show Json' />
+								}
+							</Button>
+							{parsedBlueprint.isV14() && (
+								<Button onClick={console.log}>
+									{'Convert to 0.15'}
+								</Button>
+							)}
 						</ButtonToolbar>
 					</Panel>
-				</Col>
-				<Col md={8}>
-					<Panel header='Blueprint String' collapsible expanded={this.state.expandBlueprint}>
+					{this.state.showBlueprint && <Panel header='Blueprint String'>
 						<div className='blueprintString'>
 							{blueprint.blueprintString}
 						</div>
-					</Panel>
+					</Panel>}
+					{this.state.showJson && <Panel header='Json Representation'>
+						<div className='json'>
+							{JSON.stringify(v15Decoded, null, 4)}
+						</div>
+					</Panel>}
 				</Col>
 			</Row>
 			<Row>

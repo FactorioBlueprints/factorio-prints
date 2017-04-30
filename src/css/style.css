@@ -12,6 +12,14 @@ body {
   font-family: Consolas, monospace;
   font-size: 10.8px;
 }
+.json {
+  font-family: Consolas, monospace;
+  font-size: 10.8px;
+  display: block;
+  word-break: break-all;
+  word-wrap: break-word;
+  white-space: pre;
+}
 .alert-fixed {
   position: fixed;
   top: 50px;
