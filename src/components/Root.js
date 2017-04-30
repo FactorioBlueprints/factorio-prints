@@ -13,7 +13,8 @@ import EditBlueprint from './EditBlueprint';
 import Intro from './Intro';
 import NoMatch from './NoMatch';
 
-class Root extends Component {
+class Root extends Component
+{
 	static propTypes = {};
 
 	state = {
@@ -36,22 +37,33 @@ class Root extends Component {
 			{
 				const {uid, email, photoURL, emailVerified, providerData} = user;
 				const providerId = providerData && providerData.length && providerData[0].providerId;
+				const providerDisplayName = providerId ? providerData[0].displayName : undefined;
 
-				base.database().ref(`/users/${uid}/displayName`)
-					.once('value').then((snapshot) =>
-				{
-					const displayName = snapshot.val();
-					this.setState({
-						user: {
-							userId: uid,
-							displayName,
-							photoURL,
-							email,
-							emailVerified,
-							providerId,
-						},
-					});
-				});
+				base.database()
+					.ref(`/users/${uid}/displayName`)
+					.once('value')
+					.then((snapshot) =>
+					{
+						const databaseDisplayName = snapshot.val();
+						const displayName = databaseDisplayName || providerDisplayName;
+						this.setState({
+							user: {
+								userId: uid,
+								displayName,
+								photoURL,
+								email,
+								emailVerified,
+								providerId,
+							},
+						});
+						if (!databaseDisplayName && providerDisplayName)
+						{
+							base.database()
+								.ref(`/users/${uid}/displayName`)
+								.set(providerDisplayName);
+						}
+					})
+					.catch(console.log);
 
 				const moderatorRef = base.database().ref(`/moderators/${uid}`);
 				moderatorRef.once('value').then((snapshot) =>
@@ -60,6 +72,10 @@ class Root extends Component {
 					this.setState(newState);
 				});
 
+				if (this.userFavoritesRef)
+				{
+					base.removeBinding(this.userFavoritesRef);
+				}
 				this.userFavoritesRef = base.syncState(`/users/${uid}/favorites`, {
 					context: this,
 					state  : 'userFavorites',
@@ -78,7 +94,7 @@ class Root extends Component {
 					base.removeBinding(this.userFavoritesRef);
 				}
 			}
-		}, error => console.error({error}));
+		}, console.log);
 	}
 
 	componentWillUnmount()

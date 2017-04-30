@@ -67,6 +67,7 @@ class SingleBlueprint extends Component {
 		const numberOfFavorites    = blueprint.numberOfFavorites;
 		const newNumberOfFavorites = numberOfFavorites + (wasFavorite ? -1 : 1);
 
+		// TODO: Call update once for all three updates
 		base.database().ref(`/blueprints/${this.props.id}/favorites/${userId}`).set(!wasFavorite);
 		base.database().ref(`/blueprints/${this.props.id}/numberOfFavorites`).set(newNumberOfFavorites);
 		base.database().ref(`/users/${userId}/favorites/${this.props.id}`).set(!wasFavorite);
