@@ -4,6 +4,7 @@
     <option name="PER_PROJECT_SETTINGS">
       <value>
         <option name="HTML_SPACE_INSIDE_EMPTY_TAG" value="true" />
+        <option name="HTML_DO_NOT_INDENT_CHILDREN_OF" value="html,body" />
         <JSCodeStyleSettings>
           <option name="FORCE_SEMICOLON_STYLE" value="true" />
           <option name="ALIGN_OBJECT_PROPERTIES" value="2" />
@@ -13,9 +14,7 @@
           <option name="IMPORT_SORT_MODULE_NAME" value="true" />
         </JSCodeStyleSettings>
         <XML>
-          <option name="XML_ATTRIBUTE_WRAP" value="4" />
-          <option name="XML_KEEP_BLANK_LINES" value="1" />
-          <option name="XML_SPACE_INSIDE_EMPTY_TAG" value="true" />
+          <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>
         <codeStyleSettings language="JavaScript">
           <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
