@@ -27,7 +27,8 @@ import sortBy from 'lodash/fp/sortBy';
 import reverse from 'lodash/fp/reverse';
 import flow from 'lodash/fp/flow';
 
-class SingleBlueprint extends Component {
+class SingleBlueprint extends Component
+{
 	static propTypes = {
 		id         : PropTypes.string.isRequired,
 		user       : PropTypes.shape({
@@ -42,15 +43,17 @@ class SingleBlueprint extends Component {
 	state = {
 		expandBlueprint: false,
 		loading        : true,
+		author         : null,
 	};
 
 	componentWillMount()
 	{
-		this.ref = base.syncState(`/blueprints/${this.props.id}`, {
-			context: this,
-			state  : 'blueprint',
-			then   : () => this.setState({loading: false}),
-		});
+		this.syncState(this.props);
+	}
+
+	componentWillReceiveProps(nextProps)
+	{
+		this.syncState(nextProps);
 	}
 
 	componentWillUnmount()
@@ -58,19 +61,43 @@ class SingleBlueprint extends Component {
 		base.removeBinding(this.ref);
 	}
 
+	syncState = (props) =>
+	{
+		if (this.ref)
+		{
+			base.removeBinding(this.ref);
+		}
+
+		this.ref = base.syncState(`/blueprints/${props.id}`, {
+			context: this,
+			state  : 'blueprint',
+			then   : () =>
+			{
+				this.setState({loading: false});
+				base.database().ref(`/users/${this.state.blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
+				{
+					this.setState({author: snapshot.val()});
+				});
+				// TODO: Remove this once all summary number of favorites are back in sync with the real number of favorites.
+				base.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(this.state.blueprint.numberOfFavorites);
+			},
+		});
+	};
+
 	handleFavorite = () =>
 	{
-		const blueprint            = this.state.blueprint;
-		const favorites            = blueprint.favorites;
-		const userId               = this.props.user.userId;
-		const wasFavorite          = favorites && favorites[userId];
-		const numberOfFavorites    = blueprint.numberOfFavorites;
-		const newNumberOfFavorites = numberOfFavorites + (wasFavorite ? -1 : 1);
+		const {userId}                       = this.props.user;
+		const {favorites, numberOfFavorites} = this.state.blueprint;
+		const wasFavorite                    = favorites && favorites[userId];
+		const newNumberOfFavorites           = numberOfFavorites + (wasFavorite ? -1 : 1);
 
-		// TODO: Call update once for all three updates
-		base.database().ref(`/blueprints/${this.props.id}/favorites/${userId}`).set(!wasFavorite);
-		base.database().ref(`/blueprints/${this.props.id}/numberOfFavorites`).set(newNumberOfFavorites);
-		base.database().ref(`/users/${userId}/favorites/${this.props.id}`).set(!wasFavorite);
+		const updates = {
+			[`/blueprints/${this.props.id}/numberOfFavorites`]        : newNumberOfFavorites,
+			[`/blueprints/${this.props.id}/favorites/${userId}`]      : wasFavorite ? null : true,
+			[`/blueprintSummaries/${this.props.id}/numberOfFavorites`]: newNumberOfFavorites,
+			[`/users/${userId}/favorites/${this.props.id}`]           : wasFavorite ? null : true,
+		};
+		base.database().ref().update(updates);
 	};
 
 	handleExpandCollapse = (event) =>
@@ -81,16 +108,16 @@ class SingleBlueprint extends Component {
 
 	renderFavoriteButton = () =>
 	{
-		const user = this.props.user;
+		const {user} = this.props;
 
 		if (!user)
 		{
 			return <div />;
 		}
 
-		const favorites  = this.state.blueprint.favorites;
-		const myFavorite = favorites && user && favorites[user.userId];
-		const iconName   = myFavorite ? 'heart' : 'heart-o';
+		const {favorites} = this.state.blueprint;
+		const myFavorite  = favorites && user && favorites[user.userId];
+		const iconName    = myFavorite ? 'heart' : 'heart-o';
 
 		return (
 			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
@@ -120,7 +147,7 @@ class SingleBlueprint extends Component {
 			try
 			{
 				const decoded = decodeFromBase64v15(blueprintString);
-				const result   = JSON.parse(decoded);
+				const result  = JSON.parse(decoded);
 				return result.blueprint;
 			}
 			catch (e)
@@ -136,7 +163,7 @@ class SingleBlueprint extends Component {
 			countBy('name'),
 			toPairs,
 			sortBy(1),
-			reverse
+			reverse,
 		)(parsedBlueprint.entities);
 
 	render()
@@ -151,20 +178,19 @@ class SingleBlueprint extends Component {
 			</Jumbotron>;
 		}
 
-		const blueprint = this.state.blueprint;
+		const {blueprint} = this.state;
 		if (isEmpty(blueprint))
 		{
 			return <NoMatch />;
 		}
 
-		const image            = blueprint.image;
-		const thumbnail        = buildImageUrl(image.id, image.type, 'l');
-		const renderedMarkdown = marked(blueprint.descriptionMarkdown);
-		const createdDate      = blueprint.createdDate;
-		const lastUpdatedDate  = blueprint.lastUpdatedDate;
-		const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString);
+		const {image, createdDate, lastUpdatedDate, descriptionMarkdown, blueprintString, author, title, numberOfFavorites} = blueprint;
 
-		const ownedByCurrentUser = this.props.user && this.props.user.userId === blueprint.author.userId;
+		const thumbnail        = buildImageUrl(image.id, image.type, 'l');
+		const renderedMarkdown = marked(descriptionMarkdown);
+		const parsedBlueprint  = this.parseBlueprint(blueprintString);
+
+		const ownedByCurrentUser = this.props.user && this.props.user.userId === author.userId;
 
 		const showOrHide = this.state.expandBlueprint ? 'Hide' : 'Show';
 
@@ -174,7 +200,7 @@ class SingleBlueprint extends Component {
 					{!ownedByCurrentUser && this.renderFavoriteButton()}
 					{(ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
 				</div>
-				<h1>{blueprint.title}</h1>
+				<h1>{title}</h1>
 			</div>
 			<Row>
 				<Col md={4}>
@@ -189,8 +215,8 @@ class SingleBlueprint extends Component {
 								<tr>
 									<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
 									<td>
-										<Link to={`/user/${blueprint.author.userId}`}>
-											{blueprint.author.displayName || '(Anonymous)'}
+										<Link to={`/user/${author.userId}`}>
+											{this.state.author || '(Anonymous)'}
 											{ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
 										</Link>
 									</td>
@@ -211,7 +237,7 @@ class SingleBlueprint extends Component {
 								</tr>
 								<tr>
 									<td><FontAwesome name='heart' size='lg' fixedWidth />{' Favorites'}</td>
-									<td>{blueprint.numberOfFavorites}</td>
+									<td>{numberOfFavorites}</td>
 								</tr>
 							</tbody>
 						</Table>
@@ -246,7 +272,7 @@ class SingleBlueprint extends Component {
 										return <tr key={icon.index}>
 											<td>Icon {icon.index}</td>
 											<td>{icon.name || icon.signal && icon.signal.name}</td>
-										</tr>
+										</tr>;
 									})}
 							</tbody>
 						</Table>
