@@ -257,13 +257,12 @@ class SingleBlueprint extends Component
 						<Table bordered hover fill>
 							<tbody>
 								<tr>
-									<td>Name</td>
+									<td>{'Name'}</td>
 									<td>{parsedBlueprint.isBook() ? v15Decoded.blueprint_book.label : v15Decoded.blueprint.label}</td>
 								</tr>
 								{parsedBlueprint.isBook() && v15Decoded.blueprint_book && <tr>
 									<td colSpan='2'>
-										Blueprint book with {v15Decoded.blueprint_book.blueprints.length}
-										blueprints.
+										{`Blueprint book with ${v15Decoded.blueprint_book.blueprints.length} blueprints.`}
 									</td>
 								</tr>}
 								{(!parsedBlueprint.isBook() && v15Decoded.blueprint.icons || [])
