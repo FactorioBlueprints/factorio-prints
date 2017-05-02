@@ -58,7 +58,10 @@ class SingleBlueprint extends Component
 
 	componentWillReceiveProps(nextProps)
 	{
-		this.syncState(nextProps);
+		if (this.props.id !== nextProps.id)
+		{
+			this.syncState(nextProps);
+		}
 	}
 
 	componentWillUnmount()
