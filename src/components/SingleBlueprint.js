@@ -157,7 +157,7 @@ class SingleBlueprint extends Component
 		}
 		catch (ignored)
 		{
-			console.error(ignored);
+			console.log(ignored);
 			return undefined;
 		}
 	};
@@ -307,7 +307,7 @@ class SingleBlueprint extends Component
 										: <Title icon='toggle-off' text='Show Json' />
 								}
 							</Button>
-							{parsedBlueprint.isV14() && (
+							{parsedBlueprint && parsedBlueprint.isV14() && (
 								<Button onClick={console.log}>
 									{'Convert to 0.15'}
 								</Button>
