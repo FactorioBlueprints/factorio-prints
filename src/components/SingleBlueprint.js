@@ -307,11 +307,15 @@ class SingleBlueprint extends Component
 										: <Title icon='toggle-off' text='Show Json' />
 								}
 							</Button>
-							{parsedBlueprint && parsedBlueprint.isV14() && (
-								<Button onClick={console.log}>
+							{
+								/*
+								parsedBlueprint && parsedBlueprint.isV14() && (
+								<Button onClick={() => console.log('not implemented yet')}>
 									{'Convert to 0.15'}
 								</Button>
-							)}
+								 )
+								*/
+							}
 						</ButtonToolbar>
 					</Panel>
 					{this.state.showBlueprint && <Panel header='Blueprint String'>
