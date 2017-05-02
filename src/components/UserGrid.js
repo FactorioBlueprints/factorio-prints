@@ -58,8 +58,10 @@ class UserGrid extends Component
 		}
 
 		this.displayNameRef = base.syncState(`/users/${props.id}/displayName`, {
-			context: this,
-			state  : 'displayName',
+			context  : this,
+			state    : 'displayName',
+			asString : true,
+			onFailure: console.log,
 		});
 
 		this.blueprintsRef = base.syncState(`/users/${props.id}/blueprints`, {
@@ -83,6 +85,7 @@ class UserGrid extends Component
 		}
 
 		const {blueprints, displayName} = this.state;
+		console.log(displayName);
 		if (isEmpty(blueprints) && isEmpty(displayName))
 		{
 			return <NoMatch />;
