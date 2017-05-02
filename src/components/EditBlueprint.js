@@ -18,7 +18,8 @@ import marked from 'marked';
 import base from '../base';
 import firebase from 'firebase';
 
-class EditBlueprint extends Component {
+class EditBlueprint extends Component
+{
 	static propTypes = {
 		id         : PropTypes.string.isRequired,
 		user       : PropTypes.shape({
@@ -65,26 +66,23 @@ class EditBlueprint extends Component {
 	};
 	handleDeleteBlueprint    = () =>
 	{
-		const blueprintRef     = base.database().ref(`/blueprints/${this.props.id}`);
-		const userBlueprintRef = base.database().ref(`/users/${this.props.user.userId}/blueprints/${this.props.id}`);
-		const thumbnailRef     = base.database().ref(`/thumbnails/${this.props.id}`);
-		const summaryRef       = base.database().ref(`/blueprintSummaries/${this.props.id}`);
-		if (this.state.blueprint.fileName)
-		{
-			const fileNameRef = base.storage().ref().child(this.state.blueprint.fileName);
-			fileNameRef.delete();
-		}
-
-		thumbnailRef.remove().then(() =>
-		{
-			summaryRef.remove().then(() =>
+		base.database().ref().update({
+			[`/blueprints/${this.props.id}`]                                : null,
+			[`/users/${this.props.user.userId}/blueprints/${this.props.id}`]: null,
+			[`/thumbnails/${this.props.id}`]                                : null,
+			[`/blueprintSummaries/${this.props.id}`]                        : null,
+		})
+			.then(() =>
 			{
-				blueprintRef.remove();
-				userBlueprintRef.remove();
-			});
-		});
-
-		this.context.router.transitionTo(`/user/${this.props.user.userId}`);
+				if (this.state.blueprint.fileName)
+				{
+					const fileNameRef = base.storage().ref().child(this.state.blueprint.fileName);
+					return fileNameRef.delete();
+				}
+				return undefined;
+			})
+			.then(() => this.context.router.transitionTo(`/user/${this.props.user.userId}`))
+			.catch(console.log);
 	};
 	handleDescriptionChanged = (event) =>
 	{
