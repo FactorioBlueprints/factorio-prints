@@ -83,7 +83,7 @@ class UserGrid extends Component
 		}
 
 		const {blueprints, displayName} = this.state;
-		if (isEmpty(blueprints))
+		if (isEmpty(blueprints) && isEmpty(displayName))
 		{
 			return <NoMatch />;
 		}
