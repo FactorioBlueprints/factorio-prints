@@ -101,6 +101,7 @@ class UserGrid extends Component
 							<BlueprintThumbnail
 								key={key}
 								id={key}
+								isFavorite={false}
 								{...this.props.blueprintSummaries[key]}
 							/>)
 					}

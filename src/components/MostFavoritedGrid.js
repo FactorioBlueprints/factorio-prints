@@ -5,8 +5,12 @@ import PageHeader from 'react-bootstrap/lib/PageHeader';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 
-class MostFavoritedGrid extends Component {
-	static propTypes = {blueprintSummaries: PropTypes.object.isRequired};
+class MostFavoritedGrid extends Component
+{
+	static propTypes = {
+		blueprintSummaries: PropTypes.object.isRequired,
+		userFavorites     : PropTypes.object.isRequired,
+	};
 
 	compareNumberOfFavorites = (a, b) =>
 	{
@@ -38,6 +42,7 @@ class MostFavoritedGrid extends Component {
 							<BlueprintThumbnail
 								key={key}
 								id={key}
+								isFavorite={this.props.userFavorites[key] === true}
 								{...this.props.blueprintSummaries[key]}
 							/>)
 				}

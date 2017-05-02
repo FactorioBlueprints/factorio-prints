@@ -13,6 +13,7 @@ const BlueprintThumbnail = ({
 	imgurType,
 	title,
 	numberOfFavorites,
+	isFavorite,
 }) =>
 	<Col xs={6} sm={6} md={2}>
 		<Link to={`/view/${id}`}>
@@ -20,7 +21,7 @@ const BlueprintThumbnail = ({
 				<OverlayTrigger placement='bottom' overlay={<Tooltip id='thumbnail-title-tooltip'>{title}</Tooltip>}>
 					<p className='truncate'>{title}</p>
 				</OverlayTrigger>
-				<p><FontAwesome name='heart' /> {numberOfFavorites}</p>
+				<p><FontAwesome name='heart' className={isFavorite ? 'text-primary' : 'text-default'} /> {numberOfFavorites}</p>
 			</Thumbnail>
 		</Link>
 	</Col>;
@@ -31,6 +32,7 @@ BlueprintThumbnail.propTypes = {
 	imgurType        : PropTypes.string.isRequired,
 	title            : PropTypes.string.isRequired,
 	numberOfFavorites: PropTypes.number.isRequired,
+	isFavorite       : PropTypes.bool.isRequired,
 };
 
 export default BlueprintThumbnail;

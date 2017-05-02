@@ -116,11 +116,13 @@ class Root extends Component
 		<BlueprintGrid
 			{...props}
 			blueprintSummaries={this.state.blueprintSummaries}
+			userFavorites={this.state.userFavorites}
 		/>;
 	renderMostFavoritedGrid = props =>
 		<MostFavoritedGrid
 			{...props}
 			blueprintSummaries={this.state.blueprintSummaries}
+			userFavorites={this.state.userFavorites}
 		/>;
 	renderCreate            = props =>
 		<Create
