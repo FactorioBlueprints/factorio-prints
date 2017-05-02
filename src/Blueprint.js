@@ -93,25 +93,28 @@ class Blueprint
 			throw new Error();
 		}
 
-		const {data: {label, active, main}} = decodedObject;
-		const blueprints                    = [active, ...main];
+		if (decodedObject.data)
+		{
+			const {data: {label, active, main}} = decodedObject;
+			const blueprints                    = [active, ...main];
 
-		const convertedBlueprints = blueprints.map((blueprint, index) => (
-			{
-				blueprint: this.convertSingleBookEntry(blueprint),
-				index,
-			}));
+			const convertedBlueprints = blueprints.map((blueprint, index) => (
+				{
+					blueprint: this.convertSingleBookEntry(blueprint),
+					index,
+				}));
 
-		const blueprint_book = {
-			blueprints  : convertedBlueprints,
-			item        : 'blueprint-book',
-			label,
-			active_index: 0,
-			version     : 12345567890,
-		};
+			const blueprint_book = {
+				blueprints  : convertedBlueprints,
+				item        : 'blueprint-book',
+				label,
+				active_index: 0,
+				version     : 12345567890,
+			};
 
-		console.log({blueprint_book});
-		return {blueprint_book};
+			return {blueprint_book};
+		}
+		return {blueprint_book: {blueprints: []}};
 	};
 
 	convert = () =>
@@ -134,7 +137,7 @@ class Blueprint
 		}
 
 		return this.convert();
-	}
+	};
 }
 
 export default Blueprint;
