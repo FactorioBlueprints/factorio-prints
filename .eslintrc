@@ -28,6 +28,7 @@
     "no-useless-constructor": "error",
     "operator-linebreak": "error",
     "arrow-spacing": "error",
+    "camelcase": ["error", {properties: "never"}],
 
     "babel/generator-star-spacing": "error",
     "babel/new-cap": "error",
