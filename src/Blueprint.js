@@ -40,9 +40,8 @@ class Blueprint
 		throw new Error('Unknown blueprint format');
 	};
 
-	convertSingleBlueprint = (decodedObject) =>
+	convertSingleBlueprint = (decodedObject = this.decodedObject) =>
 	{
-		decodedObject = decodedObject || this.decodedObject;
 		if (!this.isV14())
 		{
 			throw new Error();
@@ -63,7 +62,6 @@ class Blueprint
 			version : 12345567890,
 		};
 
-		console.log({blueprint});
 		return {blueprint};
 	};
 
@@ -80,9 +78,8 @@ class Blueprint
 		};
 	};
 
-	convertBlueprintBook = (decodedObject) =>
+	convertBlueprintBook = (decodedObject = this.decodedObject) =>
 	{
-		decodedObject = decodedObject || this.decodedObject;
 		if (!this.isV14())
 		{
 			throw new Error();
