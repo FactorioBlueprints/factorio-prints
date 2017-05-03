@@ -67,11 +67,11 @@ class Blueprint
 
 	convertSingleBookEntry = (decodedObject) =>
 	{
-		const {label, tiles, icons} = decodedObject;
+		const {label, tiles, entities, icons} = decodedObject;
 
 		return {
 			icons,
-			entities: tiles.map((entity, index) => ({entity_number: index, ...entity})),
+			entities: (tiles || entities).map((entity, index) => ({entity_number: index, ...entity})),
 			item    : 'blueprint',
 			label,
 			version : 12345567890,
@@ -93,7 +93,7 @@ class Blueprint
 		if (decodedObject.data)
 		{
 			const {data: {label, active, main}} = decodedObject;
-			const blueprints                    = [active, ...main];
+			const blueprints                    = active ? [active, ...main] : main;
 
 			const convertedBlueprints = blueprints.map((blueprint, index) => (
 				{
