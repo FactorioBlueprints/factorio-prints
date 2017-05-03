@@ -32,6 +32,8 @@ import buildImageUrl from '../helpers/buildImageUrl';
 import NoMatch from './NoMatch';
 import Title from './Title';
 
+import {encodeV15ToBase64} from '../parser/decodeFromBase64';
+
 class SingleBlueprint extends Component
 {
 	static propTypes = {
@@ -48,6 +50,7 @@ class SingleBlueprint extends Component
 	state = {
 		showBlueprint: false,
 		showJson     : false,
+		showConverted: false,
 		loading      : true,
 		author       : null,
 	};
@@ -119,6 +122,12 @@ class SingleBlueprint extends Component
 	{
 		event.preventDefault();
 		this.setState({showJson: !this.state.showJson});
+	};
+
+	handleShowHideConverted = (event) =>
+	{
+		event.preventDefault();
+		this.setState({showConverted: !this.state.showConverted});
 	};
 
 	renderFavoriteButton = () =>
@@ -274,12 +283,10 @@ class SingleBlueprint extends Component
 								{(!parsedBlueprint.isBook() && v15Decoded.blueprint.icons || [])
 									.filter(icon => icon != null)
 									.map(icon =>
-									{
-										return <tr key={icon.index}>
+										<tr key={icon.index}>
 											<td>Icon {icon.index}</td>
 											<td>{icon.name || icon.signal && icon.signal.name}</td>
-										</tr>;
-									})}
+										</tr>)}
 							</tbody>
 						</Table>
 					</Panel>}
@@ -310,13 +317,15 @@ class SingleBlueprint extends Component
 								}
 							</Button>
 							{
-								/*
-								parsedBlueprint && parsedBlueprint.isV14() && (
-								<Button onClick={() => console.log('not implemented yet')}>
-									{'Convert to 0.15'}
+								parsedBlueprint && parsedBlueprint.isV14() &&
+								<Button onClick={this.handleShowHideConverted}>
+									{
+										this.state.showConverted
+											? <Title icon='toggle-on' text='Hide 0.15 blueprint' className='text-success' />
+											: <Title icon='toggle-off' text='Convert to 0.15 blueprint' />
+									}
 								</Button>
-								 )
-								*/
+
 							}
 						</ButtonToolbar>
 					</Panel>
@@ -328,6 +337,11 @@ class SingleBlueprint extends Component
 					{this.state.showJson && <Panel header='Json Representation'>
 						<div className='json'>
 							{JSON.stringify(v15Decoded, null, 4)}
+						</div>
+					</Panel>}
+					{this.state.showConverted && <Panel header='0.15 format Blueprint String (Experimental)'>
+						<div className='blueprintString'>
+							{encodeV15ToBase64(JSON.stringify(v15Decoded))}
 						</div>
 					</Panel>}
 				</Col>

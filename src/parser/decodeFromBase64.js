@@ -39,4 +39,13 @@ export const decodeV15Base64 = (string) =>
 	return jsonCode;
 };
 
+export const encodeV15ToBase64 = (jsonCode) =>
+{
+	const unzipped = new TextEncoder().encode(jsonCode);
+	const arrayBuffer  = pako.deflate(unzipped);
+
+	const string = btoa(String.fromCharCode.apply(null, arrayBuffer));
+	return `0${string}`;
+};
+
 export default decodeV14Base64;
