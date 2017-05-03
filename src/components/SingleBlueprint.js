@@ -133,10 +133,12 @@ class SingleBlueprint extends Component
 		const {favorites} = this.state.blueprint;
 		const myFavorite  = favorites && user && favorites[user.userId];
 		const iconName    = myFavorite ? 'heart' : 'heart-o';
+		const iconClass   = myFavorite ? 'text-primary' : 'text-default';
 
 		return (
 			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
-				<FontAwesome name={iconName} />{' Favorite'}
+				<FontAwesome name={iconName} className={iconClass} />
+				{' Favorite'}
 			</Button>
 		);
 	};
