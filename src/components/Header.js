@@ -136,6 +136,7 @@ class Header extends Component {
 						<li><Link to='/create'><FontAwesome name='plus-square' size='lg' fixedWidth />{' Create'}</Link></li>
 						{this.props.user && <li><Link to={'/favorites'}><FontAwesome name='heart' size='lg' fixedWidth />{' My Favorites'}</Link></li>}
 						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}><FontAwesome name='user' size='lg' fixedWidth />{' My Blueprints'}</Link></li>}
+						<li><Link to='/contact'><FontAwesome name='envelope' size='lg' fixedWidth />{' Contact me'}</Link></li>
 					</Nav>
 					<Nav pullRight>
 						{this.renderAuthentication()}

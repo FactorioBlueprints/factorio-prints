@@ -12,6 +12,7 @@ import SingleBlueprint from './SingleBlueprint';
 import EditBlueprint from './EditBlueprint';
 import Intro from './Intro';
 import NoMatch from './NoMatch';
+import Contact from './Contact';
 
 class Root extends Component
 {
@@ -187,6 +188,7 @@ class Root extends Component
 						<Match pattern='/edit/:blueprintId' component={this.renderEditBlueprint} />
 						<Match pattern='/user/:userId' component={this.renderUser} />
 						<Match pattern='/favorites' exactly component={this.renderFavorites} />
+						<Match pattern='/contact' extactly component={Contact} />
 						<Miss component={NoMatch} />
 					</div>
 				</App>
