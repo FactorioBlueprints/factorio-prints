@@ -83,6 +83,8 @@
 
     "no-loops/no-loops": "error",
 
+    "lodash/prefer-lodash-method": "off",
+
     "indent": [ "error", "tab", { "SwitchCase": 1 }],
     "key-spacing": ["error", { "align": "colon" }],
     "no-multi-spaces": "off",
