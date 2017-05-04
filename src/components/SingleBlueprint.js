@@ -32,6 +32,8 @@ import buildImageUrl from '../helpers/buildImageUrl';
 import NoMatch from './NoMatch';
 import Title from './Title';
 
+import entitiesWithIcons from '../data/entitiesWithIcons';
+
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 
 class SingleBlueprint extends Component
@@ -263,6 +265,7 @@ class SingleBlueprint extends Component
 								{this.entityHistogram(v15Decoded.blueprint).map(pair =>
 									<tr key={pair[0]}>
 										<td>{pair[1]}</td>
+										<td>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
 										<td>{pair[0]}</td>
 									</tr>)}
 							</tbody>
@@ -276,17 +279,21 @@ class SingleBlueprint extends Component
 									<td>{parsedBlueprint.isBook() ? v15Decoded.blueprint_book.label : v15Decoded.blueprint.label}</td>
 								</tr>
 								{parsedBlueprint.isBook() && v15Decoded.blueprint_book && <tr>
-									<td colSpan='2'>
+									<td colSpan='3'>
 										{`Blueprint book with ${v15Decoded.blueprint_book.blueprints.length} blueprints.`}
 									</td>
 								</tr>}
 								{(!parsedBlueprint.isBook() && v15Decoded.blueprint.icons || [])
 									.filter(icon => icon != null)
 									.map(icon =>
-										<tr key={icon.index}>
-											<td>Icon {icon.index}</td>
-											<td>{icon.name || icon.signal && icon.signal.name}</td>
-										</tr>)}
+									{
+										const iconName = icon.name || icon.signal && icon.signal.name;
+										return <tr key={icon.index}>
+											<td>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
+											<td>{iconName}</td>
+										</tr>
+									})
+								}
 							</tbody>
 						</Table>
 					</Panel>}
