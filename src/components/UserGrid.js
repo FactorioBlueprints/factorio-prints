@@ -100,7 +100,7 @@ class UserGrid extends Component
 				</Row>
 				<Row>
 					{
-						Object.keys(blueprints || {}).map(key =>
+						Object.keys(blueprints || {}).reverse().map(key =>
 							<BlueprintThumbnail
 								key={key}
 								id={key}
