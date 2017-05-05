@@ -4,6 +4,10 @@ import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import isEmpty from 'lodash/isEmpty';
+import groupBy from 'lodash/groupBy';
+import sumBy from 'lodash/sumBy';
+import flatMap from 'lodash/flatMap';
+import mapValues from 'lodash/mapValues';
 
 import marked from 'marked';
 import moment from 'moment';
@@ -183,6 +187,19 @@ class SingleBlueprint extends Component
 			reverse,
 		)(parsedBlueprint.entities);
 
+	itemHistogram = parsedBlueprint =>
+	{
+		const items       = flatMap(parsedBlueprint.entities, entity => entity.items || []);
+		const itemsByName = groupBy(items, 'item');
+		const result      = mapValues(itemsByName, (array) => sumBy(array, 'count'));
+
+		return flow(
+			toPairs,
+			sortBy(1),
+			reverse,
+		)(result);
+	};
+
 	render()
 	{
 		if (this.state.loading)
@@ -268,6 +285,13 @@ class SingleBlueprint extends Component
 										<td>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
 										<td>{pair[0]}</td>
 									</tr>)}
+								{this.itemHistogram(v15Decoded.blueprint).map(pair =>
+									<tr key={pair[0]}>
+										<td>{pair[1]}</td>
+										<td>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
+										<td>{pair[0]}</td>
+									</tr>)
+								}
 							</tbody>
 						</Table>
 					</Panel>}
