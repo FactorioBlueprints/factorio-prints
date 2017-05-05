@@ -1,15 +1,14 @@
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import Grid from 'react-bootstrap/lib/Grid';
-import Row from 'react-bootstrap/lib/Row';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
-
 import get from 'lodash/get';
+import PropTypes from 'prop-types';
+import React, {Component} from 'react';
+import Grid from 'react-bootstrap/lib/Grid';
+import PageHeader from 'react-bootstrap/lib/PageHeader';
+import Row from 'react-bootstrap/lib/Row';
+
+import base from '../base';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import SearchForm from './SearchForm';
-
-import base from '../base';
 
 class MostFavoritedGrid extends Component
 {
@@ -96,10 +95,12 @@ class MostFavoritedGrid extends Component
 			<Row>
 				<PageHeader>{'Viewing Most Favorited'}</PageHeader>
 			</Row>
-			<SearchForm
-				searchString={this.state.searchString}
-				onSearchString={this.handleSearchString}
-			/>
+			<Row>
+				<SearchForm
+					searchString={this.state.searchString}
+					onSearchString={this.handleSearchString}
+				/>
+			</Row>
 			<Row>
 				{
 					Object.keys(this.props.blueprintSummaries)

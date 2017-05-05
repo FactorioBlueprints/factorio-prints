@@ -20,6 +20,7 @@ import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Col from 'react-bootstrap/lib/Col';
 import Grid from 'react-bootstrap/lib/Grid';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import Label from 'react-bootstrap/lib/Label';
 import Panel from 'react-bootstrap/lib/Panel';
 import Row from 'react-bootstrap/lib/Row';
 import Table from 'react-bootstrap/lib/Table';
@@ -269,6 +270,14 @@ class SingleBlueprint extends Component
 						src={this.state.thumbnail}
 						target='_blank'
 					/>
+					{blueprint.tags && blueprint.tags.length > 0 && <Panel header='Tags'>
+						<h4>
+							{
+								flatMap((blueprint.tags || []), (tag => [<Link to={`/tagged${tag}`}><Label bsStyle='primary'>{tag}</Label></Link>, ' ']))
+							}
+						</h4>
+					</Panel>
+					}
 					<Panel header='Info'>
 						<Table bordered hover fill>
 							<tbody>

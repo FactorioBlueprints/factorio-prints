@@ -1,7 +1,7 @@
 import firebase from 'firebase';
 import marked from 'marked';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -19,19 +19,23 @@ import Row from 'react-bootstrap/lib/Row';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
+
+import Select from 'react-select';
+import 'react-select/dist/react-select.css';
 import base from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
-import NoMatch from './NoMatch';
+import buildImageUrl from '../helpers/buildImageUrl';
 
 import scaleImage from '../helpers/ImageScaler';
-import buildImageUrl from '../helpers/buildImageUrl';
+import NoMatch from './NoMatch';
 
 class EditBlueprint extends Component
 {
 	static propTypes = {
-		id         : PropTypes.string.isRequired,
-		isModerator: PropTypes.bool,
-		user       : PropTypes.shape({
+		id          : PropTypes.string.isRequired,
+		isModerator : PropTypes.bool,
+		tags        : PropTypes.arrayOf(PropTypes.string).isRequired,
+		user        : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
@@ -52,9 +56,9 @@ class EditBlueprint extends Component
 	};
 
 	static imgurHeaders = {
-		Accept        : 'application/json',
-		'Content-Type': 'application/json',
-		Authorization : 'Client-ID 46a3f144b6a0882',
+		'Accept'       : 'application/json',
+		'Content-Type' : 'application/json',
+		'Authorization': 'Client-ID 46a3f144b6a0882',
 	};
 
 	componentWillMount()
@@ -207,7 +211,7 @@ class EditBlueprint extends Component
 			return;
 		}
 
-		const [file, ]     = this.state.files;
+		const [file]     = this.state.files;
 		let imagePromise;
 		let uploadTask;
 		if (file)
@@ -256,6 +260,7 @@ class EditBlueprint extends Component
 				[`/blueprints/${this.props.id}/title`]              : this.state.blueprint.title,
 				[`/blueprints/${this.props.id}/blueprintString`]    : this.state.blueprint.blueprintString,
 				[`/blueprints/${this.props.id}/descriptionMarkdown`]: this.state.blueprint.descriptionMarkdown,
+				[`/blueprints/${this.props.id}/tags`]               : this.state.blueprint.tags,
 				[`/blueprints/${this.props.id}/lastUpdatedDate`]    : firebase.database.ServerValue.TIMESTAMP,
 				[`/blueprints/${this.props.id}/image`]              : image,
 				[`/blueprintSummaries/${this.props.id}/title/`]     : this.state.blueprint.title,
@@ -275,6 +280,13 @@ class EditBlueprint extends Component
 			{
 				updates[`/thumbnails/${this.props.id}`] = this.state.thumbnail;
 			}
+			this.props.tags.forEach((tag) =>
+			{
+				updates[`/byTag/${tag}/${this.props.id}`] = null;
+			});
+			this.state.blueprint.tags.forEach((tag) => {
+				updates[`/byTag/${tag}/${this.props.id}`] = true;
+			});
 
 			base.database().ref().update(updates);
 		})
@@ -301,13 +313,18 @@ class EditBlueprint extends Component
 
 	handleDeleteBlueprint    = () =>
 	{
-		base.database().ref().update({
+		const updates = {
 			[`/blueprints/${this.props.id}`]                                : null,
 			// TODO: Should be author, not current user
 			[`/users/${this.props.user.userId}/blueprints/${this.props.id}`]: null,
 			[`/thumbnails/${this.props.id}`]                                : null,
 			[`/blueprintSummaries/${this.props.id}`]                        : null,
-		})
+		};
+		this.props.tags.forEach((tag) =>
+		{
+			updates[`/byTag/${tag}/${this.props.id}`] = null;
+		});
+		base.database().ref().update(updates)
 			.then(() =>
 			{
 				if (this.state.blueprint.fileName)
@@ -400,6 +417,17 @@ class EditBlueprint extends Component
 			return <Jumbotron><h1>{'You are not the author of this blueprint.'}</h1></Jumbotron>;
 		}
 
+		const handleTagSelection = (selectedTags) =>
+		{
+			const tags = selectedTags.map(each => each.value);
+			this.setState({
+				blueprint: {
+					...this.state.blueprint,
+					tags,
+				},
+			});
+		};
+
 		return (
 			<div>
 				<Modal show={this.state.uploadProgressBarVisible}>
@@ -483,9 +511,22 @@ class EditBlueprint extends Component
 							<FormGroup>
 								<Col componentClass={ControlLabel} sm={2}>{'Description (Preview)'}</Col>
 								<Col sm={10}>
-									<Panel >
+									<Panel>
 										<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
 									</Panel>
+								</Col>
+							</FormGroup>
+
+							<FormGroup>
+								<Col componentClass={ControlLabel} sm={2}>{'Tags'}</Col>
+								<Col sm={10}>
+									<Select
+										value={this.state.blueprint.tags}
+										options={this.props.tags.map(value => ({value, label: value}))}
+										onChange={handleTagSelection}
+										multi
+										placeholder='Select at least one tag'
+									/>
 								</Col>
 							</FormGroup>
 

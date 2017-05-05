@@ -46,10 +46,12 @@ class FavoritesGrid extends Component
 				<Row>
 					<PageHeader>{'Viewing My Favorites'}</PageHeader>
 				</Row>
-				<SearchForm
-					searchString={this.state.searchString}
-					onSearchString={this.handleSearchString}
-				/>
+				<Row>
+					<SearchForm
+						searchString={this.state.searchString}
+						onSearchString={this.handleSearchString}
+					/>
+				</Row>
 				<Row>
 					{
 						Object.keys(this.props.userFavorites)

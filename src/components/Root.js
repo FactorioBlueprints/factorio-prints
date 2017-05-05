@@ -1,18 +1,23 @@
+import forOwn from 'lodash/forOwn';
+import isArray from 'lodash/isArray';
+import join from 'lodash/join';
+
 import React, {Component} from 'react';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import {BrowserRouter, Match, Miss} from 'react-router';
+
 import base from '../base';
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
-import MostFavoritedGrid from './MostFavoritedGrid';
-import UserGrid from './UserGrid';
-import FavoritesGrid from './FavoritesGrid';
-import Create from './Create';
-import SingleBlueprint from './SingleBlueprint';
-import EditBlueprint from './EditBlueprint';
-import Intro from './Intro';
-import NoMatch from './NoMatch';
 import Contact from './Contact';
+import Create from './Create';
+import EditBlueprint from './EditBlueprint';
+import FavoritesGrid from './FavoritesGrid';
+import Intro from './Intro';
+import MostFavoritedGrid from './MostFavoritedGrid';
+import NoMatch from './NoMatch';
+import SingleBlueprint from './SingleBlueprint';
+import UserGrid from './UserGrid';
 
 class Root extends Component
 {
@@ -20,16 +25,30 @@ class Root extends Component
 
 	state = {
 		blueprintSummaries: {},
+		tags              : [],
+		tagHierarchy      : {},
+		byTag             : {},
 		user              : null,
 		userFavorites     : {},
 		isModerator       : false,
+		loadingTags       : true,
 	};
 
 	componentWillMount()
 	{
-		this.ref = base.syncState('blueprintSummaries', {
+		this.blueprintSummariesRef = base.syncState('blueprintSummaries', {
 			context: this,
 			state  : 'blueprintSummaries',
+		});
+
+		base.fetch('tags', {
+			context  : this,
+			then     : tagHierarchy =>
+			{
+				const tags = this.buildTagOptions(tagHierarchy);
+				return this.setState({tags, tagHierarchy});
+			},
+			onFailure: console.log,
 		});
 
 		base.auth().onAuthStateChanged((user) =>
@@ -103,7 +122,7 @@ class Root extends Component
 
 	componentWillUnmount()
 	{
-		base.removeBinding(this.ref);
+		base.removeBinding(this.blueprintSummariesRef);
 		this.unbindUserFavs();
 	}
 
@@ -114,6 +133,42 @@ class Root extends Component
 			base.removeBinding(this.userFavoritesRef);
 			this.userFavoritesRef = null;
 		}
+	};
+
+	lazilyFetchTaggedBlueprints = () =>
+	{
+		if (!this.taggedBlueprintsRef)
+		{
+			this.taggedBlueprintsRef = base.bindToState(`/byTag/`, {
+				context  : this,
+				state    : 'byTag',
+				then     : () => this.setState({loadingTags: false}),
+				onFailure: () => this.setState({loadingTags: false}),
+			});
+		}
+	}
+
+	buildTagOptions = (tagHierarchy) =>
+	{
+		const result = [];
+		this.buildTagOptionsRecursive(tagHierarchy, [], result);
+		return result;
+	};
+
+	buildTagOptionsRecursive = (tagHierarchyNode, pathArray, result) =>
+	{
+		forOwn(tagHierarchyNode, (value, key) =>
+		{
+			if (isArray(value))
+			{
+				value.forEach(eachValue => result.push(`${join(pathArray, '/')}/${key}/${eachValue}/`));
+			}
+			else
+			{
+				const newPathArray = [...pathArray, key];
+				this.buildTagOptionsRecursive(value, newPathArray, result);
+			}
+		});
 	};
 
 	renderIntro             = props =>
@@ -127,6 +182,10 @@ class Root extends Component
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
 			user={this.state.user}
+			tags={this.state.tags}
+			lazilyFetchTaggedBlueprints={this.lazilyFetchTaggedBlueprints}
+			byTag={this.state.byTag}
+			loadingTags={this.state.loadingTags}
 		/>;
 	renderMostFavoritedGrid = props =>
 		<MostFavoritedGrid
@@ -166,6 +225,7 @@ class Root extends Component
 			id={blueprintId}
 			user={this.state.user}
 			isModerator={this.state.isModerator}
+			tags={this.state.tags}
 		/>;
 	};
 	renderUser              = props =>
@@ -175,6 +235,34 @@ class Root extends Component
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
 		/>;
+	renderTag              = (props) =>
+	{
+		const {pathname} = props.location;
+		const tagId = pathname.replace(/^\/tagged/, '');
+		/*
+				return <TagGrid
+					{...props}
+					id={tagId}
+					user={this.state.user}
+					blueprintSummaries={this.state.blueprintSummaries}
+					userFavorites={this.state.userFavorites}
+				/>;
+		*/
+
+		this.lazilyFetchTaggedBlueprints();
+
+		return <BlueprintGrid
+			{...props}
+			blueprintSummaries={this.state.blueprintSummaries}
+			userFavorites={this.state.userFavorites}
+			user={this.state.user}
+			tags={this.state.tags}
+			lazilyFetchTaggedBlueprints={this.lazilyFetchTaggedBlueprints}
+			byTag={this.state.byTag}
+			loadingTags={this.state.loadingTags}
+			initiallySelectedTags={[tagId]}
+		/>
+	};
 	renderFavorites         = props =>
 		<FavoritesGrid
 			{...props}
@@ -196,6 +284,7 @@ class Root extends Component
 						<Match pattern='/view/:blueprintId' component={this.renderSingleBlueprint} />
 						<Match pattern='/edit/:blueprintId' component={this.renderEditBlueprint} />
 						<Match pattern='/user/:userId' component={this.renderUser} />
+						<Match pattern='/tagged/:tag' component={this.renderTag} />
 						<Match pattern='/favorites' exactly component={this.renderFavorites} />
 						<Match pattern='/contact' extactly component={Contact} />
 						<Miss component={NoMatch} />

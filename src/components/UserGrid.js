@@ -108,10 +108,12 @@ class UserGrid extends Component
 						{'Viewing Blueprints by '}{displayName || '(Anonymous)'}
 					</PageHeader>
 				</Row>
-				<SearchForm
-					searchString={this.state.searchString}
-					onSearchString={this.handleSearchString}
-				/>
+				<Row>
+					<SearchForm
+						searchString={this.state.searchString}
+						onSearchString={this.handleSearchString}
+					/>
+				</Row>
 				<Row>
 					{
 						Object.keys(blueprints || {})
