@@ -24,16 +24,18 @@ class LuaTableToJsonVisitor extends LuaVisitor
 	{
 		if (ctx.string())
 		{
+			const number = Number(this.visit(ctx.string()));
+			if (!Number.isNaN(number))
+			{
+				return number;
+			}
 			return ctx.string().getText();
 		}
-		else if (ctx.number())
+		if (ctx.number())
 		{
 			return ctx.number().getText();
 		}
-		else
-		{
-			return ctx.NAME().getText();
-		}
+		return ctx.NAME().getText();
 	};
 
 	visitString = (ctx) =>
