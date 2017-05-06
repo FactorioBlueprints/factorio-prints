@@ -56,7 +56,7 @@ class Blueprint
 
 		const blueprint = {
 			icons,
-			entities: entities.map((entity, index) => ({entity_number: index, ...entity})),
+			entities: entities.map((entity, index) => ({entity_number: index + 1, ...entity})),
 			item    : 'blueprint',
 			label   : name,
 			version : 12345567890,
@@ -71,7 +71,7 @@ class Blueprint
 
 		return {
 			icons,
-			entities: (tiles || entities).map((entity, index) => ({entity_number: index, ...entity})),
+			entities: (tiles || entities).map((entity, index) => ({entity_number: index + 1, ...entity})),
 			item    : 'blueprint',
 			label,
 			version : 12345567890,
