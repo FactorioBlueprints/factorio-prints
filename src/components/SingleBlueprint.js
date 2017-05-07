@@ -59,6 +59,7 @@ class SingleBlueprint extends Component
 		showConverted: false,
 		loading      : true,
 		author       : null,
+		blueprint    : {},
 	};
 
 	componentWillMount()
@@ -86,20 +87,43 @@ class SingleBlueprint extends Component
 			base.removeBinding(this.ref);
 		}
 
-		this.ref = base.syncState(`/blueprints/${props.id}`, {
-			context: this,
-			state  : 'blueprint',
-			then   : () =>
+		this.ref = base.listenTo(`/blueprints/${props.id}`, {
+			context  : this,
+			state    : 'blueprint',
+			then     : (blueprint) =>
 			{
-				this.setState({loading: false});
-				base.database().ref(`/users/${this.state.blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
+
+				base.database().ref(`/users/${blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
 				{
 					this.setState({author: snapshot.val()});
 				});
 				// TODO: Remove this once all summary number of favorites are back in sync with the real number of favorites.
-				base.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(this.state.blueprint.numberOfFavorites);
+				base.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(blueprint.numberOfFavorites);
+
+				const cachedState = this.getCachedState(blueprint);
+
+				this.setState({loading: false, blueprint, ...cachedState});
 			},
+			onFailure: console.log,
 		});
+	};
+
+	getCachedState = (blueprint) =>
+	{
+		if (isEmpty(blueprint))
+		{
+			return {};
+		}
+
+		const {image, descriptionMarkdown, blueprintString, author} = blueprint;
+
+		const thumbnail          = buildImageUrl(image.id, image.type, 'l');
+		const renderedMarkdown   = marked(descriptionMarkdown);
+		const ownedByCurrentUser = this.props.user && this.props.user.userId === author.userId;
+		const parsedBlueprint    = this.parseBlueprint(blueprintString);
+		const v15Decoded         = parsedBlueprint && parsedBlueprint.getV15Decoded();
+
+		return {thumbnail, renderedMarkdown, parsedBlueprint, ownedByCurrentUser, v15Decoded};
 	};
 
 	handleFavorite = () =>
@@ -218,21 +242,13 @@ class SingleBlueprint extends Component
 			return <NoMatch />;
 		}
 
-		const {image, createdDate, lastUpdatedDate, descriptionMarkdown, blueprintString, author, title, numberOfFavorites} = blueprint;
-
-		const thumbnail        = buildImageUrl(image.id, image.type, 'l');
-		const renderedMarkdown = marked(descriptionMarkdown);
-		const parsedBlueprint  = this.parseBlueprint(blueprintString);
-
-		const ownedByCurrentUser = this.props.user && this.props.user.userId === author.userId;
-
-		const v15Decoded = parsedBlueprint && parsedBlueprint.getV15Decoded();
+		const {image, createdDate, lastUpdatedDate, author, title, numberOfFavorites} = this.state.blueprint;
 
 		return <Grid>
 			<div className='page-header'>
 				<div className='btn-toolbar pull-right'>
-					{!ownedByCurrentUser && this.renderFavoriteButton()}
-					{(ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
+					{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}
+					{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
 				</div>
 				<h1>{title}</h1>
 			</div>
@@ -240,7 +256,7 @@ class SingleBlueprint extends Component
 				<Col md={4}>
 					<Thumbnail
 						href={image.link}
-						src={thumbnail}
+						src={this.state.thumbnail}
 						target='_blank'
 					/>
 					<Panel header='Info'>
@@ -251,7 +267,7 @@ class SingleBlueprint extends Component
 									<td>
 										<Link to={`/user/${author.userId}`}>
 											{this.state.author || '(Anonymous)'}
-											{ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
+											{this.state.ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
 										</Link>
 									</td>
 								</tr>
@@ -276,16 +292,16 @@ class SingleBlueprint extends Component
 							</tbody>
 						</Table>
 					</Panel>
-					{parsedBlueprint && !parsedBlueprint.isBook() && <Panel header='Requirements'>
+					{this.state.parsedBlueprint && !this.state.parsedBlueprint.isBook() && <Panel header='Requirements'>
 						<Table bordered hover fill>
 							<tbody>
-								{this.entityHistogram(v15Decoded.blueprint).map(pair =>
+								{this.entityHistogram(this.state.v15Decoded.blueprint).map(pair =>
 									<tr key={pair[0]}>
 										<td>{pair[1]}</td>
 										<td>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
 										<td>{pair[0]}</td>
 									</tr>)}
-								{this.itemHistogram(v15Decoded.blueprint).map(pair =>
+								{this.itemHistogram(this.state.v15Decoded.blueprint).map(pair =>
 									<tr key={pair[0]}>
 										<td>{pair[1]}</td>
 										<td>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
@@ -295,27 +311,27 @@ class SingleBlueprint extends Component
 							</tbody>
 						</Table>
 					</Panel>}
-					{parsedBlueprint && <Panel header='Extra Info'>
+					{this.state.parsedBlueprint && <Panel header='Extra Info'>
 						<Table bordered hover fill>
 							<tbody>
 								<tr>
 									<td>{'Name'}</td>
-									<td>{parsedBlueprint.isBook() ? v15Decoded.blueprint_book.label : v15Decoded.blueprint.label}</td>
+									<td>{this.state.parsedBlueprint.isBook() ? this.state.v15Decoded.blueprint_book.label : this.state.v15Decoded.blueprint.label}</td>
 								</tr>
-								{parsedBlueprint.isBook() && v15Decoded.blueprint_book && <tr>
+								{this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint_book && <tr>
 									<td colSpan='3'>
-										{`Blueprint book with ${v15Decoded.blueprint_book.blueprints.length} blueprints.`}
+										{`Blueprint book with ${this.state.v15Decoded.blueprint_book.blueprints.length} blueprints.`}
 									</td>
 								</tr>}
-								{(!parsedBlueprint.isBook() && v15Decoded.blueprint.icons || [])
+								{(!this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint.icons || [])
 									.filter(icon => icon != null)
-									.map(icon =>
+									.map((icon) =>
 									{
 										const iconName = icon.name || icon.signal && icon.signal.name;
 										return <tr key={icon.index}>
 											<td>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
 											<td>{iconName}</td>
-										</tr>
+										</tr>;
 									})
 								}
 							</tbody>
@@ -324,7 +340,7 @@ class SingleBlueprint extends Component
 				</Col>
 				<Col md={8}>
 					<Panel header='Details'>
-						<div dangerouslySetInnerHTML={{__html: renderedMarkdown}} />
+						<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
 					</Panel>
 					<Panel>
 						<ButtonToolbar>
@@ -348,7 +364,7 @@ class SingleBlueprint extends Component
 								}
 							</Button>
 							{
-								parsedBlueprint && parsedBlueprint.isV14() &&
+								this.state.parsedBlueprint && this.state.parsedBlueprint.isV14() &&
 								<Button onClick={this.handleShowHideConverted}>
 									{
 										this.state.showConverted
@@ -367,12 +383,12 @@ class SingleBlueprint extends Component
 					</Panel>}
 					{this.state.showJson && <Panel header='Json Representation'>
 						<div className='json'>
-							{JSON.stringify(v15Decoded, null, 4)}
+							{JSON.stringify(this.state.v15Decoded, null, 4)}
 						</div>
 					</Panel>}
 					{this.state.showConverted && <Panel header='0.15 format Blueprint String (Experimental)'>
 						<div className='blueprintString'>
-							{encodeV15ToBase64(JSON.stringify(v15Decoded))}
+							{encodeV15ToBase64(JSON.stringify(this.state.v15Decoded))}
 						</div>
 					</Panel>}
 				</Col>

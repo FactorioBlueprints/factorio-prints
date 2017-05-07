@@ -5,12 +5,20 @@ class Blueprint
 {
 	constructor(encodedText)
 	{
-		this.encodedText   = encodedText;
-		this.decodedObject = this.convertEncodedTextToObject();
+		this.encodedText = encodedText;
 	}
 
 	isV14 = () => this.encodedText.startsWith('H4sIAAAAAAAA/');
 	isV15 = () => this.encodedText.startsWith('0');
+
+	get decodedObject()
+	{
+		if (this.cachedDecodedObject == null)
+		{
+			this.cachedDecodedObject = this.convertEncodedTextToObject();
+		}
+		return this.cachedDecodedObject;
+	}
 
 	convertEncodedTextToObject = () =>
 	{
