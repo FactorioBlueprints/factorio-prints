@@ -255,7 +255,7 @@ class SingleBlueprint extends Component
 			<Row>
 				<Col md={4}>
 					<Thumbnail
-						href={image.link}
+						href={`https://imgur.com/${image.id}`}
 						src={this.state.thumbnail}
 						target='_blank'
 					/>
