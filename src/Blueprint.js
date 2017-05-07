@@ -45,7 +45,8 @@ class Blueprint
 			return this.decodedObject.blueprint_book !== undefined;
 		}
 
-		throw new Error('Unknown blueprint format');
+		// Unknown format. Return false since most things won't work anyway.
+		return false;
 	};
 
 	convertSingleBlueprint = (decodedObject = this.decodedObject) =>
@@ -136,12 +137,19 @@ class Blueprint
 
 	getV15Decoded = () =>
 	{
-		if (this.isV15())
+		try
 		{
-			return this.decodedObject;
-		}
+			if (this.isV15())
+			{
+				return this.decodedObject;
+			}
 
-		return this.convert();
+			return this.convert();
+		}
+		catch (ignored)
+		{
+			return undefined;
+		}
 	};
 }
 

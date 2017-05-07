@@ -292,7 +292,7 @@ class SingleBlueprint extends Component
 							</tbody>
 						</Table>
 					</Panel>
-					{this.state.parsedBlueprint && !this.state.parsedBlueprint.isBook() && <Panel header='Requirements'>
+					{this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() && <Panel header='Requirements'>
 						<Table bordered hover fill>
 							<tbody>
 								{this.entityHistogram(this.state.v15Decoded.blueprint).map(pair =>
@@ -311,7 +311,7 @@ class SingleBlueprint extends Component
 							</tbody>
 						</Table>
 					</Panel>}
-					{this.state.parsedBlueprint && <Panel header='Extra Info'>
+					{this.state.parsedBlueprint && this.state.v15Decoded && <Panel header='Extra Info'>
 						<Table bordered hover fill>
 							<tbody>
 								<tr>
