@@ -1,25 +1,25 @@
+import firebase from 'firebase';
+import marked from 'marked';
 import React, {Component, PropTypes} from 'react';
+import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
+import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Col from 'react-bootstrap/lib/Col';
 import ControlLabel from 'react-bootstrap/lib/ControlLabel';
 import FormControl from 'react-bootstrap/lib/FormControl';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
 import Grid from 'react-bootstrap/lib/Grid';
+import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import Modal from 'react-bootstrap/lib/Modal';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Panel from 'react-bootstrap/lib/Panel';
-import Row from 'react-bootstrap/lib/Row';
-import Alert from 'react-bootstrap/lib/Alert';
-import Thumbnail from 'react-bootstrap/lib/Thumbnail';
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
-import Modal from 'react-bootstrap/lib/Modal';
-import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
+import Row from 'react-bootstrap/lib/Row';
+import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
-import noImageAvailable from '../gif/No_available_image.gif';
-import marked from 'marked';
 import base from '../base';
-import firebase from 'firebase';
+import noImageAvailable from '../gif/No_available_image.gif';
 
 import Blueprint from '../Blueprint';
 import isEmpty from 'lodash/isEmpty';
@@ -288,29 +288,30 @@ class Create extends Component
 	validateInputs = () =>
 	{
 		const submissionErrors = [];
-		if (!this.state.blueprint.title)
+		const blueprint = this.state.blueprint;
+		if (!blueprint.title)
 		{
 			submissionErrors.push('Title may not be empty');
 		}
-		else if (this.state.blueprint.title.trim().length < 10)
+		else if (blueprint.title.trim().length < 10)
 		{
 			submissionErrors.push('Title must be at least 10 characters');
 		}
 
-		if (!this.state.blueprint.descriptionMarkdown)
+		if (!blueprint.descriptionMarkdown)
 		{
 			submissionErrors.push('Description Markdown may not be empty');
 		}
-		else if (this.state.blueprint.descriptionMarkdown.trim().length < 10)
+		else if (blueprint.descriptionMarkdown.trim().length < 10)
 		{
 			submissionErrors.push('Description Markdown must be at least 10 characters');
 		}
 
-		if (!this.state.blueprint.blueprintString)
+		if (!blueprint.blueprintString)
 		{
 			submissionErrors.push('Blueprint String may not be empty');
 		}
-		else if (this.state.blueprint.blueprintString.trim().length < 10)
+		else if (blueprint.blueprintString.trim().length < 10)
 		{
 			submissionErrors.push('Blueprint String must be at least 10 characters');
 		}
@@ -382,8 +383,6 @@ class Create extends Component
 					</Row>
 				</Col>
 			</FormGroup>
-
-
 		);
 	};
 
@@ -465,11 +464,12 @@ class Create extends Component
 						</Alert>}
 					</Row>
 					<Row>
-						<PageHeader>{'Create a new Blueprint'}</PageHeader>
+						<PageHeader>
+							{'Create a new Blueprint'}
+						</PageHeader>
 					</Row>
 					<Row>
-						<form
-							className='form-horizontal'>
+						<form className='form-horizontal'>
 							<FormGroup controlId='formHorizontalTitle'>
 								<Col componentClass={ControlLabel} sm={2} autoFocus>{'Title'}</Col>
 								<Col sm={10}>
@@ -538,11 +538,18 @@ class Create extends Component
 							<FormGroup>
 								<Col smOffset={2} sm={10}>
 									<ButtonToolbar>
-										<Button bsStyle='primary' onClick={this.handleCreateBlueprint}>
+										<Button
+											bsStyle='primary'
+											bsSize='large'
+											onClick={this.handleCreateBlueprint}
+										>
 											<FontAwesome name='floppy-o' size='lg' />
 											{' Save'}
 										</Button>
-										<Button onClick={this.handleCancel}>
+										<Button
+											bsSize='large'
+											onClick={this.handleCancel}
+										>
 											<FontAwesome name='ban' size='lg' />
 											{' Cancel'}
 										</Button>
