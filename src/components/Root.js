@@ -165,6 +165,7 @@ class Root extends Component
 			{...props}
 			id={props.params.userId}
 			blueprintSummaries={this.state.blueprintSummaries}
+			userFavorites={this.state.userFavorites}
 		/>;
 	renderFavorites         = props =>
 		<FavoritesGrid

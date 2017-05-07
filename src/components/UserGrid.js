@@ -18,6 +18,7 @@ class UserGrid extends Component
 	static propTypes = {
 		id                : PropTypes.string.isRequired,
 		blueprintSummaries: PropTypes.object.isRequired,
+		userFavorites     : PropTypes.object.isRequired,
 	};
 
 	state = {
@@ -85,7 +86,6 @@ class UserGrid extends Component
 		}
 
 		const {blueprints, displayName} = this.state;
-		console.log(displayName);
 		if (isEmpty(blueprints) && isEmpty(displayName))
 		{
 			return <NoMatch />;
@@ -104,7 +104,7 @@ class UserGrid extends Component
 							<BlueprintThumbnail
 								key={key}
 								id={key}
-								isFavorite={false}
+								isFavorite={this.props.userFavorites[key] === true}
 								{...this.props.blueprintSummaries[key]}
 							/>)
 					}
