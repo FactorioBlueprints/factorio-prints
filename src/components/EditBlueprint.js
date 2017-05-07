@@ -68,7 +68,7 @@ class EditBlueprint extends Component
 	{
 		base.database().ref().update({
 			[`/blueprints/${this.props.id}`]                                : null,
-			[`/users/${this.props.user.userId}/blueprints/${this.props.id}`]: null,
+			[`/users/${this.state.blueprint.author.userId}/blueprints/${this.props.id}`]: null,
 			[`/thumbnails/${this.props.id}`]                                : null,
 			[`/blueprintSummaries/${this.props.id}`]                        : null,
 		})
