@@ -81,7 +81,7 @@ class EditBlueprint extends Component
 				}
 				return undefined;
 			})
-			.then(() => this.context.router.transitionTo(`/user/${this.props.user.userId}`))
+			.then(() => this.context.router.transitionTo(`/user/${this.state.blueprint.author.userId}`))
 			.catch(console.log);
 	};
 	handleDescriptionChanged = (event) =>
