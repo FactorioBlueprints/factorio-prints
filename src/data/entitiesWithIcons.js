@@ -213,6 +213,7 @@ const entitiesWithIcons = {
 	'rail': true,
 	'railgun-ammo': true,
 	'railgun': true,
+	'straight-rail': true,
 	'raw-wood': true,
 	'red-asterisk': true,
 	'red-desert-rock-big-icon': true,
