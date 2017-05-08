@@ -34,66 +34,69 @@ class Root extends Component
 
 		base.auth().onAuthStateChanged((user) =>
 		{
-			if (user)
-			{
-				const {uid, email, photoURL, emailVerified, providerData} = user;
-				const providerId = providerData && providerData.length && providerData[0].providerId;
-				const providerDisplayName = providerId ? providerData[0].displayName : undefined;
-
-				base.database()
-					.ref(`/users/${uid}/displayName`)
-					.once('value')
-					.then((snapshot) =>
-					{
-						const databaseDisplayName = snapshot.val();
-						const displayName = databaseDisplayName || providerDisplayName;
-						this.setState({
-							user: {
-								userId: uid,
-								displayName,
-								photoURL,
-								email,
-								emailVerified,
-								providerId,
-							},
-						});
-						if (!databaseDisplayName && providerDisplayName)
-						{
-							base.database()
-								.ref(`/users/${uid}/displayName`)
-								.set(providerDisplayName);
-						}
-					})
-					.catch(console.log);
-
-				const moderatorRef = base.database().ref(`/moderators/${uid}`);
-				moderatorRef.once('value').then((snapshot) =>
-				{
-					const newState = {isModerator: snapshot.val()};
-					this.setState(newState);
-				});
-
-				if (this.userFavoritesRef)
-				{
-					base.removeBinding(this.userFavoritesRef);
-				}
-				this.userFavoritesRef = base.syncState(`/users/${uid}/favorites`, {
-					context: this,
-					state  : 'userFavorites',
-				});
-			}
-			else
+			if (!user)
 			{
 				this.setState({
 					user         : null,
 					userFavorites: {},
 					isModerator  : false,
 				});
+				this.unbindUserFavs();
+			}
+			else
+			{
+				const {uid, email, photoURL, emailVerified, providerData} = user;
+				const providerId = providerData && providerData.length && providerData[0].providerId;
+				const providerDisplayName = providerId ? providerData[0].displayName : undefined;
 
-				if (this.userFavoritesRef)
+				const newState = {};
+
+				const buildUserInformation = (existingUser) =>
 				{
-					base.removeBinding(this.userFavoritesRef);
-				}
+					const existingUserInitialized = existingUser || {};
+					const displayName = existingUserInitialized.displayName || providerDisplayName;
+					return ({
+						...existingUserInitialized,
+						displayName,
+						photoURL,
+						email,
+						emailVerified,
+						providerId,
+					});
+				};
+
+				const userInformationState = ({snapshot}) =>
+				{
+					newState.user = snapshot.val();
+					newState.user.userId = uid;
+				};
+
+				const eraseState = (error) =>
+				{
+					newState.user = null;
+					newState.userFavorites = {};
+					newState.isModerator = false;
+
+					if (error)
+					{
+						console.log(error);
+					}
+				};
+
+				base.database()
+					.ref(`/users/${uid}/`)
+					.transaction(buildUserInformation)
+					.then(userInformationState)
+					.then(() => base.database().ref(`/moderators/${uid}`).once('value'))
+					.then(snapshot => newState.isModerator = snapshot.val())
+					.then(() => this.setState(newState))
+					.catch(eraseState);
+
+				this.unbindUserFavs();
+				this.userFavoritesRef = base.syncState(`/users/${uid}/favorites`, {
+					context: this,
+					state  : 'userFavorites',
+				});
 			}
 		}, console.log);
 	}
@@ -101,12 +104,17 @@ class Root extends Component
 	componentWillUnmount()
 	{
 		base.removeBinding(this.ref);
+		this.unbindUserFavs();
+	}
 
+	unbindUserFavs = () =>
+	{
 		if (this.userFavoritesRef)
 		{
 			base.removeBinding(this.userFavoritesRef);
+			this.userFavoritesRef = null;
 		}
-	}
+	};
 
 	renderIntro             = props =>
 		<div>
