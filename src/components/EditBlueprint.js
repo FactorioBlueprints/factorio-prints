@@ -67,10 +67,10 @@ class EditBlueprint extends Component
 	handleDeleteBlueprint    = () =>
 	{
 		base.database().ref().update({
-			[`/blueprints/${this.props.id}`]                                : null,
+			[`/blueprints/${this.props.id}`]                                            : null,
 			[`/users/${this.state.blueprint.author.userId}/blueprints/${this.props.id}`]: null,
-			[`/thumbnails/${this.props.id}`]                                : null,
-			[`/blueprintSummaries/${this.props.id}`]                        : null,
+			[`/thumbnails/${this.props.id}`]                                            : null,
+			[`/blueprintSummaries/${this.props.id}`]                                    : null,
 		})
 			.then(() =>
 			{

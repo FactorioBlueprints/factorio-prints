@@ -26,7 +26,8 @@
         ".read": "auth != null && auth.uid == $uid",
         ".write": "auth != null && auth.uid == $uid",
         "blueprints": {
-          ".read": "true"
+          ".read": "true",
+          ".write": "root.child('moderators').child(auth.uid).val() === true"
         },
         "displayName": {
           ".read": "true"
