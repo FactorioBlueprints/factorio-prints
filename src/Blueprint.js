@@ -31,7 +31,7 @@ class Blueprint
 			return JSON.parse(decodeV15Base64(this.encodedText));
 		}
 
-		throw new Error('Unknown blueprint format');
+		return undefined;
 	};
 
 	isBook = () =>

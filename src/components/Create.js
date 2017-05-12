@@ -21,9 +21,14 @@ import marked from 'marked';
 import base from '../base';
 import firebase from 'firebase';
 
+import Blueprint from '../Blueprint';
+import isEmpty from 'lodash/isEmpty';
+import some from 'lodash/some';
+
 import scaleImage from '../helpers/ImageScaler';
 
-class Create extends Component {
+class Create extends Component
+{
 	static propTypes = {
 		user: PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
@@ -39,6 +44,7 @@ class Create extends Component {
 		files                   : [],
 		rejectedFiles           : [],
 		submissionErrors        : [],
+		submissionWarnings        : [],
 		uploadProgressBarVisible: false,
 		uploadProgressPercent   : 0,
 		blueprint               : {
@@ -84,6 +90,11 @@ class Create extends Component {
 	{
 		this.setState({submissionErrors: []});
 	};
+
+	handleDismissWarnings = () =>
+	{
+		this.setState({submissionWarnings: []});
+	}
 
 	handleDescriptionChanged = (event) =>
 	{
@@ -169,14 +180,39 @@ class Create extends Component {
 		event.preventDefault();
 
 		const submissionErrors = this.validateInputs();
-
 		if (submissionErrors.length > 0)
 		{
 			this.setState({submissionErrors});
 			return;
 		}
 
-		const file     = this.state.files[0];
+		const submissionWarnings = this.validateWarnings();
+		if (submissionWarnings.length > 0)
+		{
+			this.setState({submissionWarnings});
+			return;
+		}
+
+		this.actuallyCreateBlueprint();
+	};
+
+	handleForceCreateBlueprint = (event) =>
+	{
+		event.preventDefault();
+
+		const submissionErrors = this.validateInputs();
+		if (submissionErrors.length > 0)
+		{
+			this.setState({submissionErrors});
+			return;
+		}
+
+		this.actuallyCreateBlueprint();
+	}
+
+	actuallyCreateBlueprint()
+	{
+		const file = this.state.files[0];
 		const fileName = file.name;
 
 		const fileNameRef = base.storage().ref().child(fileName);
@@ -199,7 +235,7 @@ class Create extends Component {
 					{
 						response.json().then((json) =>
 						{
-							const data  = json.data;
+							const data = json.data;
 							const image = {
 								id        : data.id,
 								link      : data.link,
@@ -209,7 +245,7 @@ class Create extends Component {
 								width     : data.width,
 							};
 
-							const blueprint       = {
+							const blueprint = {
 								...this.state.blueprint,
 								author           : this.props.user,
 								createdDate      : firebase.database.ServerValue.TIMESTAMP,
@@ -233,7 +269,8 @@ class Create extends Component {
 									numberOfFavorites: blueprint.numberOfFavorites,
 								};
 
-								base.database().ref(`/blueprintSummaries/${newBlueprintRef.key}`).set(blueprintSummary).then(() => {
+								base.database().ref(`/blueprintSummaries/${newBlueprintRef.key}`).set(blueprintSummary).then(() =>
+								{
 									base.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
 									{
 										this.setState(Create.initialState);
@@ -246,7 +283,7 @@ class Create extends Component {
 					.catch(this.handleImgurError);
 			});
 		});
-	};
+	}
 
 	validateInputs = () =>
 	{
@@ -283,6 +320,40 @@ class Create extends Component {
 			submissionErrors.push('You must attach exactly one screenshot');
 		}
 		return submissionErrors;
+	}
+
+	validateWarnings = () =>
+	{
+		const submissionWarnings = [];
+
+		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
+		if (blueprint.decodedObject == null)
+		{
+			submissionWarnings.push('Could not parse blueprint.');
+			return submissionWarnings;
+		}
+
+		if (blueprint.isV14())
+		{
+			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
+		}
+
+		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.label))
+		{
+			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
+		}
+
+		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.icons))
+		{
+			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
+		}
+
+		if (blueprint.isBook() && some(blueprint.decodedObject.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.name)))
+		{
+			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
+		}
+
+		return submissionWarnings;
 	}
 
 	handleCancel = () =>
@@ -327,6 +398,7 @@ class Create extends Component {
 				</Jumbotron>
 			);
 		}
+
 		const blueprint = this.state.blueprint;
 		return (
 			<div>
@@ -338,6 +410,37 @@ class Create extends Component {
 						<ProgressBar active now={this.state.uploadProgressPercent} label={`${this.state.uploadProgressPercent}%`} />
 					</Modal.Body>
 				</Modal>
+				<Modal show={!isEmpty(this.state.submissionWarnings)}>
+					<Modal.Header>
+						<Modal.Title>{'Submission warnings'}</Modal.Title>
+					</Modal.Header>
+					<Modal.Body>
+						<p>
+							{'The following warnings occurred while submitting your blueprint. Do you want to save it anyway or go back and make further edits?'}
+						</p>
+						<ul>
+						{
+							this.state.submissionWarnings.map(submissionWarning =>
+								<li key={submissionWarning}>
+									{submissionWarning}
+								</li>)
+						}
+						</ul>
+					</Modal.Body>
+					<Modal.Footer>
+						<ButtonToolbar>
+							<Button bsStyle='danger' onClick={this.handleForceCreateBlueprint}>
+								<FontAwesome name='floppy-o' size='lg' />
+								{' Save'}
+							</Button>
+							<Button bsStyle='primary' onClick={this.handleDismissWarnings}>
+								<FontAwesome name='arrow-left' size='lg' />
+								{' Go back'}
+							</Button>
+						</ButtonToolbar>
+					</Modal.Footer>
+				</Modal>
+
 				<Grid>
 					<Row>
 						{this.state.rejectedFiles.length > 0 && <Alert
@@ -366,8 +469,7 @@ class Create extends Component {
 					</Row>
 					<Row>
 						<form
-							className='form-horizontal'
-							onSubmit={this.handleCreateBlueprint}>
+							className='form-horizontal'>
 							<FormGroup controlId='formHorizontalTitle'>
 								<Col componentClass={ControlLabel} sm={2} autoFocus>{'Title'}</Col>
 								<Col sm={10}>
@@ -436,7 +538,7 @@ class Create extends Component {
 							<FormGroup>
 								<Col smOffset={2} sm={10}>
 									<ButtonToolbar>
-										<Button type='submit' bsStyle='primary'>
+										<Button bsStyle='primary' onClick={this.handleCreateBlueprint}>
 											<FontAwesome name='floppy-o' size='lg' />
 											{' Save'}
 										</Button>
