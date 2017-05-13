@@ -92,16 +92,16 @@ class SingleBlueprint extends Component
 			state    : 'blueprint',
 			then     : (blueprint) =>
 			{
-
-				base.database().ref(`/users/${blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
+				if (!isEmpty(blueprint))
 				{
-					this.setState({author: snapshot.val()});
-				});
-				// TODO: Remove this once all summary number of favorites are back in sync with the real number of favorites.
-				base.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(blueprint.numberOfFavorites);
-
+					base.database().ref(`/users/${blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
+					{
+						this.setState({author: snapshot.val()});
+					});
+					// TODO: Remove this once all summary number of favorites are back in sync with the real number of favorites.
+					base.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(blueprint.numberOfFavorites);
+				}
 				const cachedState = this.getCachedState(blueprint);
-
 				this.setState({loading: false, blueprint, ...cachedState});
 			},
 			onFailure: console.log,
