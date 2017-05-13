@@ -41,18 +41,21 @@ class BlueprintGrid extends Component
 
 	componentWillUnmount()
 	{
+		this.unbindUserBlueprints();
+	}
+
+	unbindUserBlueprints = () =>
+	{
 		if (this.blueprintsRef)
 		{
 			base.removeBinding(this.blueprintsRef);
+			this.blueprintsRef = null;
 		}
 	}
 
 	syncState = (props) =>
 	{
-		if (this.blueprintsRef)
-		{
-			base.removeBinding(this.blueprintsRef);
-		}
+		this.unbindUserBlueprints();
 
 		if (props.user)
 		{
