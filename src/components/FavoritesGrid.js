@@ -36,6 +36,7 @@ class FavoritesGrid extends Component
 				<Row>
 					{
 						Object.keys(this.props.userFavorites)
+							.reverse()
 							.filter(key => this.props.userFavorites[key])
 							.map(key =>
 								<BlueprintThumbnail
