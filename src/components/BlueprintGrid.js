@@ -1,7 +1,12 @@
 import React, {Component, PropTypes} from 'react';
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
+import Col from 'react-bootstrap/lib/Col';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
+import FormControl from 'react-bootstrap/lib/FormControl';
+import FormGroup from 'react-bootstrap/lib/FormGroup';
+import InputGroup from 'react-bootstrap/lib/InputGroup';
+import FontAwesome from 'react-fontawesome';
 
 import get from 'lodash/get';
 
@@ -20,8 +25,9 @@ class BlueprintGrid extends Component
 	};
 
 	state = {
-		blueprints: {},
-		loading   : true,
+		blueprints  : {},
+		loading     : true,
+		searchString: '',
 	};
 
 	componentWillMount()
@@ -51,7 +57,7 @@ class BlueprintGrid extends Component
 			base.removeBinding(this.blueprintsRef);
 			this.blueprintsRef = null;
 		}
-	}
+	};
 
 	syncState = (props) =>
 	{
@@ -68,6 +74,13 @@ class BlueprintGrid extends Component
 		}
 	};
 
+	handleSearchString = (event) =>
+	{
+		event.preventDefault();
+
+		this.setState({searchString: event.target.value});
+	};
+
 	render()
 	{
 		return <Grid>
@@ -75,19 +88,41 @@ class BlueprintGrid extends Component
 				<PageHeader>{'Viewing Most Recent'}</PageHeader>
 			</Row>
 			<Row>
+				<Col md={6} mdOffset={3}>
+					<form>
+						<FormGroup>
+							<InputGroup>
+								<FormControl
+									type='text'
+									placeholder='search titles'
+									value={this.state.searchString}
+									onChange={this.handleSearchString}
+								/>
+								<InputGroup.Addon>
+									<FontAwesome name='search' />
+								</InputGroup.Addon>
+							</InputGroup>
+						</FormGroup>
+					</form>
+				</Col>
+			</Row>
+			<Row>
 				{
-					Object.keys(this.props.blueprintSummaries).reverse().map((key) =>
-					{
-						const isMine = this.state.blueprints[key] === true;
-						return (
-							<BlueprintThumbnail
-								key={key}
-								id={key}
-								isFavorite={this.props.userFavorites[key] === true}
-								isMine={isMine}
-								{...this.props.blueprintSummaries[key]}
-							/>);
-					})
+					Object.keys(this.props.blueprintSummaries)
+						.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
+						.reverse()
+						.map((key) =>
+						{
+							const isMine = this.state.blueprints[key] === true;
+							return (
+								<BlueprintThumbnail
+									key={key}
+									id={key}
+									isFavorite={this.props.userFavorites[key] === true}
+									isMine={isMine}
+									{...this.props.blueprintSummaries[key]}
+								/>);
+						})
 				}
 			</Row>
 		</Grid>;
