@@ -1,10 +1,11 @@
-import get from 'lodash/get';
-import React, {Component, PropTypes} from 'react';
+import PropTypes from 'prop-types';
+import React, {Component} from 'react';
 import Grid from 'react-bootstrap/lib/Grid';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Row from 'react-bootstrap/lib/Row';
 
 import base from '../base';
+import get from 'lodash/get';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import SearchForm from './SearchForm';

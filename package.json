@@ -33,6 +33,7 @@
     "marked": "0.3.6",
     "moment": "2.18.1",
     "pako": "1.0.5",
+    "prop-types": "15.5.10",
     "re-base": "2.7.1",
     "react": "15.4.1",
     "react-bootstrap": "0.30.7",

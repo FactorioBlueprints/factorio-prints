@@ -1,4 +1,5 @@
-import React, {PropTypes} from 'react';
+import PropTypes from 'prop-types';
+import React, {Component} from 'react';
 import FontAwesome from 'react-fontawesome';
 
 const Title = props =>
