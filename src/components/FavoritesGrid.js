@@ -5,14 +5,15 @@ import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import BlueprintThumbnail from './BlueprintThumbnail';
 
-class FavoritesGrid extends Component {
+class FavoritesGrid extends Component
+{
 	static propTypes = {
-		user         : PropTypes.shape({
+		user              : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		blueprintSummaries   : PropTypes.object.isRequired,
-		userFavorites: PropTypes.object.isRequired,
+		blueprintSummaries: PropTypes.object.isRequired,
+		userFavorites     : PropTypes.object.isRequired,
 	};
 
 	render()
@@ -36,7 +37,13 @@ class FavoritesGrid extends Component {
 					{
 						Object.keys(this.props.userFavorites)
 							.filter(key => this.props.userFavorites[key])
-							.map(key => <BlueprintThumbnail key={key} id={key} {...this.props.blueprintSummaries[key]} />)
+							.map(key =>
+								<BlueprintThumbnail
+									key={key}
+									id={key} {...this.props.blueprintSummaries[key]}
+									isFavorite={false}
+									isMine={false}
+								/>)
 					}
 				</Row>
 			</Grid>
