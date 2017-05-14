@@ -344,7 +344,7 @@ class Create extends Component
 			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
 		}
 
-		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.icons))
+		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.icons))
 		{
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
