@@ -33,7 +33,7 @@
     "brace-style": ["error", "allman"],
     "padded-blocks": ["error", "never"],
     "jsx-quotes": ["error", "prefer-single"],
-    "quote-props": ["error", "as-needed", { "numbers": true }],
+    "quote-props": ["error", "consistent-as-needed", { "numbers": true }],
     "spaced-comment": ["error", "always", { "block": { "balanced": true } }],
     "eqeqeq": ["error", "smart"],
     "one-var": ["error", "never"],
@@ -108,6 +108,7 @@
     "newline-per-chained-call": "off",
     "max-statements": "off",
     "max-lines": "off",
+    "no-mixed-operators": "off",
     "no-console": "warn"
   }
 }
