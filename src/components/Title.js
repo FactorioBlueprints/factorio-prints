@@ -1,26 +1,16 @@
-import React, {
-	Component,
-	PropTypes,
-} from 'react';
+import React, {PropTypes} from 'react';
 import FontAwesome from 'react-fontawesome';
 
-class Title extends Component
-{
-	static propTypes = {
-		icon     : PropTypes.string.isRequired,
-		text     : PropTypes.string.isRequired,
-		className: PropTypes.string,
-	};
+const Title = props =>
+	<div>
+		<FontAwesome name={props.icon} size='lg' fixedWidth className={props.className} />
+		{` ${props.text}`}
+	</div>;
 
-	render()
-	{
-		return (
-			<div>
-				<FontAwesome name={this.props.icon} size='lg' fixedWidth className={this.props.className} />
-				{` ${this.props.text}`}
-			</div>
-		);
-	}
-}
+Title.propTypes = {
+	icon     : PropTypes.string.isRequired,
+	text     : PropTypes.string.isRequired,
+	className: PropTypes.string,
+};
 
 export default Title;

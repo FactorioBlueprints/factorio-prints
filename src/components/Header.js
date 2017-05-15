@@ -10,7 +10,8 @@ import {auth} from 'firebase';
 
 import FontAwesome from 'react-fontawesome';
 
-class Header extends Component {
+class Header extends Component
+{
 	static propTypes = {
 		user: PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
@@ -50,7 +51,7 @@ class Header extends Component {
 		{
 			return <img src={this.props.user.photoURL} alt='user' className='user-photo' />;
 		}
-		return <FontAwesome name='user' size='2x' fixedWidth />
+		return <FontAwesome name='user' size='2x' fixedWidth />;
 	};
 
 	getLargeUserPhoto = () =>
@@ -59,7 +60,7 @@ class Header extends Component {
 		{
 			return <img src={this.props.user.photoURL} alt='user' className='user-photo-big pull-left' />;
 		}
-		return <FontAwesome name='user' size='4x' fixedWidth />
+		return <FontAwesome name='user' size='4x' fixedWidth />;
 	};
 
 	getDisplayName = () =>
@@ -96,16 +97,14 @@ class Header extends Component {
 			);
 		}
 
-		const title = (
+		const title =
 			<span>
 				<FontAwesome name='sign-in' size='lg' fixedWidth />
 				{' Sign in / Join'}
-			</span>
-		);
+			</span>;
 
 		return (
-			<NavDropdown title={title}
-						 id='dropdown-login'>
+			<NavDropdown title={title} id='dropdown-login'>
 				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>
 					<FontAwesome name='google' size='lg' fixedWidth />
 					{' Log in with Google'}

@@ -8,12 +8,12 @@ import BlueprintThumbnail from './BlueprintThumbnail';
 class FavoritesGrid extends Component
 {
 	static propTypes = {
+		blueprintSummaries: PropTypes.object.isRequired,
+		userFavorites     : PropTypes.object.isRequired,
 		user              : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		blueprintSummaries: PropTypes.object.isRequired,
-		userFavorites     : PropTypes.object.isRequired,
 	};
 
 	render()

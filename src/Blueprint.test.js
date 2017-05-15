@@ -1,7 +1,8 @@
 import Blueprint from './Blueprint';
 
 it('recognizes v14 strings', () =>
-{ const blueprint = new Blueprint('H4sIAAAAAAAA/6WUwYqDMBCGX0U8J4ux7l5KLn2RktWhBNKJJCNYxHffqN3LNmrjngSZf+bPNz/T2MzYWpnsKgdA0qTBy2FAdQeZQ9868J771mgicDlrrQ8lFuXQSy4+PtlD8moc2VuCYrWenELfWkf8Gwz9GVNOotMRUZkmKhYNa7SDev5Zvug7bMDdnA3ftQ6nkdGjDRrbUdtRnmZcvJj4SjSxtPiXC3EAuThAfF5TsU18b2NF4kgR16xk/JlZkc6i2N7hLpYjKCM29wMrfpOiMRqUTTIRl2+kc2/kHttENiKOZvOsRdK/ddVC+ch0bXG6nl7fUBk5PN9IcM/ZSqsgCrj62d5SUnGyvMou4RXZRRmF9VR2dkCdw+x6Bmx+ACnKUf61BQAA');
+{
+	const blueprint = new Blueprint('H4sIAAAAAAAA/6WUwYqDMBCGX0U8J4ux7l5KLn2RktWhBNKJJCNYxHffqN3LNmrjngSZf+bPNz/T2MzYWpnsKgdA0qTBy2FAdQeZQ9868J771mgicDlrrQ8lFuXQSy4+PtlD8moc2VuCYrWenELfWkf8Gwz9GVNOotMRUZkmKhYNa7SDev5Zvug7bMDdnA3ftQ6nkdGjDRrbUdtRnmZcvJj4SjSxtPiXC3EAuThAfF5TsU18b2NF4kgR16xk/JlZkc6i2N7hLpYjKCM29wMrfpOiMRqUTTIRl2+kc2/kHttENiKOZvOsRdK/ddVC+ch0bXG6nl7fUBk5PN9IcM/ZSqsgCrj62d5SUnGyvMou4RXZRRmF9VR2dkCdw+x6Bmx+ACnKUf61BQAA');
 	expect(blueprint.isV14()).toEqual(true);
 	expect(blueprint.isV15()).toEqual(false);
 });

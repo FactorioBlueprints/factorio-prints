@@ -44,7 +44,7 @@ class Create extends Component
 		files                   : [],
 		rejectedFiles           : [],
 		submissionErrors        : [],
-		submissionWarnings        : [],
+		submissionWarnings      : [],
 		uploadProgressBarVisible: false,
 		uploadProgressPercent   : 0,
 		blueprint               : {
@@ -418,12 +418,12 @@ class Create extends Component
 							{'The following warnings occurred while submitting your blueprint. Do you want to save it anyway or go back and make further edits?'}
 						</p>
 						<ul>
-						{
-							this.state.submissionWarnings.map(submissionWarning =>
-								<li key={submissionWarning}>
-									{submissionWarning}
-								</li>)
-						}
+							{
+								this.state.submissionWarnings.map(submissionWarning =>
+									<li key={submissionWarning}>
+										{submissionWarning}
+									</li>)
+							}
 						</ul>
 					</Modal.Body>
 					<Modal.Footer>

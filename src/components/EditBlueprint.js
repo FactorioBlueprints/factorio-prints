@@ -29,11 +29,11 @@ class EditBlueprint extends Component
 {
 	static propTypes = {
 		id         : PropTypes.string.isRequired,
+		isModerator: PropTypes.bool,
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		isModerator: PropTypes.bool,
 	};
 
 	static contextTypes = {router: PropTypes.object.isRequired};
@@ -163,7 +163,7 @@ class EditBlueprint extends Component
 	validateInputs = () =>
 	{
 		const submissionErrors = [];
-		const blueprint = this.state.blueprint;
+		const {blueprint} = this.state;
 		if (!blueprint.title)
 		{
 			submissionErrors.push('Title may not be empty');
@@ -206,7 +206,7 @@ class EditBlueprint extends Component
 			return;
 		}
 
-		const file     = this.state.files[0];
+		const [file, ]     = this.state.files;
 		let imagePromise;
 		let uploadTask;
 		if (file)

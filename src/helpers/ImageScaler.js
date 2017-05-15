@@ -1,9 +1,10 @@
+/* eslint-disable */
+
 /**
  * ImageUploader.js - a client-side image resize and upload javascript module
  *
  * @author Ross Turner (https://github.com/zsinj)
  */
-
 const applyBilinearInterpolation = (srcCanvasData, destCanvasData, scale) =>
 {
 	function inner(f00, f10, f01, f11, x, y)
@@ -31,12 +32,12 @@ const applyBilinearInterpolation = (srcCanvasData, destCanvasData, scale) =>
 			// Math.ceil can go over bounds
 			ix1                       = Math.ceil(ixv) > srcCanvasData.width - 1 ? srcCanvasData.width - 1 : Math.ceil(ixv);
 			idxD                      = (j + destCanvasData.width * i) * 4;
-			// matrix to vector indices
+			// Matrix to vector indices
 			idxS00                    = (ix0 + srcCanvasData.width * iy0) * 4;
 			idxS10                    = (ix1 + srcCanvasData.width * iy0) * 4;
 			idxS01                    = (ix0 + srcCanvasData.width * iy1) * 4;
 			idxS11                    = (ix1 + srcCanvasData.width * iy1) * 4;
-			// overall coordinates to unit square
+			// Overall coordinates to unit square
 			dx                        = ixv - ix0;
 			dy                        = iyv - iy0;
 			// I let the r, g, b, a on purpose for debugging
@@ -94,7 +95,7 @@ const scaleImage = (img, config) =>
 	canvas.height = img.height;
 	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
 
-	while ((canvas.width >= 2 * config.maxWidth) || (canvas.height >= 2 * config.maxHeight))
+	while (canvas.width >= 2 * config.maxWidth || canvas.height >= 2 * config.maxHeight)
 	{
 		canvas = getHalfScaleCanvas(canvas);
 	}

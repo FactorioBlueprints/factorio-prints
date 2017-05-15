@@ -1,5 +1,7 @@
 import {LuaVisitor} from '../antlr/LuaVisitor';
 
+import constant from 'lodash/constant';
+
 class LuaTableToJsonVisitor extends LuaVisitor
 {
 	visitDictionary = (ctx) =>
@@ -16,8 +18,8 @@ class LuaTableToJsonVisitor extends LuaVisitor
 
 	visitArray  = ctx => ctx.value().map(eachValue => this.visit(eachValue));
 	visitValue  = ctx => this.visit(ctx.children[0]);
-	visitNil    = () => null;
-	visitBool   = () => true;
+	visitNil    = constant(null);
+	visitBool   = constant(true);
 	visitNumber = ctx => Number(ctx.children[0].getText());
 
 	visitKey = (ctx) =>

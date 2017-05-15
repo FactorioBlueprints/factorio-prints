@@ -44,11 +44,11 @@ class SingleBlueprint extends Component
 {
 	static propTypes = {
 		id         : PropTypes.string.isRequired,
+		isModerator: PropTypes.bool,
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-		isModerator: PropTypes.bool,
 	};
 
 	static contextTypes = {router: PropTypes.object.isRequired};
@@ -88,9 +88,9 @@ class SingleBlueprint extends Component
 		}
 
 		this.ref = base.listenTo(`/blueprints/${props.id}`, {
-			context  : this,
-			state    : 'blueprint',
-			then     : (blueprint) =>
+			context: this,
+			state  : 'blueprint',
+			then   : (blueprint) =>
 			{
 				if (!isEmpty(blueprint))
 				{
@@ -211,11 +211,11 @@ class SingleBlueprint extends Component
 			reverse,
 		)(parsedBlueprint.entities);
 
-	itemHistogram = parsedBlueprint =>
+	itemHistogram = (parsedBlueprint) =>
 	{
 		const items       = flatMap(parsedBlueprint.entities, entity => entity.items || []);
 		const itemsByName = groupBy(items, 'item');
-		const result      = mapValues(itemsByName, (array) => sumBy(array, 'count'));
+		const result      = mapValues(itemsByName, array => sumBy(array, 'count'));
 
 		return flow(
 			toPairs,

@@ -1,7 +1,8 @@
 import React, {PropTypes, Component} from 'react';
 import Header from './Header';
 
-class App extends Component {
+class App extends Component
+{
 	static propTypes = {
 		children: PropTypes.node.isRequired,
 		user    : PropTypes.shape({

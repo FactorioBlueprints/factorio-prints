@@ -55,14 +55,14 @@ class Root extends Component
 				{
 					const existingUserInitialized = existingUser || {};
 					const displayName = existingUserInitialized.displayName || providerDisplayName;
-					return ({
+					return {
 						...existingUserInitialized,
 						displayName,
 						photoURL,
 						email,
 						emailVerified,
 						providerId,
-					});
+					};
 				};
 
 				const userInformationState = ({snapshot}) =>
@@ -142,7 +142,7 @@ class Root extends Component
 		/>;
 	renderSingleBlueprint   = (props) =>
 	{
-		const blueprintId = props.params.blueprintId;
+		const {blueprintId} = props.params;
 
 		return (
 			<SingleBlueprint
@@ -155,7 +155,7 @@ class Root extends Component
 	};
 	renderEditBlueprint     = (props) =>
 	{
-		const blueprintId = props.params.blueprintId;
+		const {blueprintId} = props.params;
 
 		if (Object.keys(this.state.blueprintSummaries).length === 0)
 		{

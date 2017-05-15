@@ -34,7 +34,7 @@ BlueprintThumbnail.propTypes = {
 	title            : PropTypes.string.isRequired,
 	numberOfFavorites: PropTypes.number.isRequired,
 	isFavorite       : PropTypes.bool.isRequired,
-	isMine       : PropTypes.bool,
+	isMine           : PropTypes.bool,
 };
 
 export default BlueprintThumbnail;
