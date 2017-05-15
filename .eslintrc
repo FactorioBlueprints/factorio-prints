@@ -47,14 +47,11 @@
     "arrow-spacing": "error",
     "camelcase": ["error", {properties: "never"}],
 
-    "babel/generator-star-spacing": "error",
-    "babel/new-cap": "error",
-    "babel/array-bracket-spacing": "error",
+    "generator-star-spacing": "error",
+    "array-bracket-spacing": "error",
     "babel/object-curly-spacing": "error",
-    "babel/object-shorthand": "error",
-    "babel/no-await-in-loop": "error",
-    "babel/flow-object-type": "error",
-    "babel/func-params-comma-dangle": "error",
+    "object-shorthand": "error",
+    "no-await-in-loop": "error",
 
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
