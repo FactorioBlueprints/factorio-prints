@@ -1,18 +1,13 @@
+import get from 'lodash/get';
 import React, {Component, PropTypes} from 'react';
 import Grid from 'react-bootstrap/lib/Grid';
-import Row from 'react-bootstrap/lib/Row';
-import Col from 'react-bootstrap/lib/Col';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
-import FormControl from 'react-bootstrap/lib/FormControl';
-import FormGroup from 'react-bootstrap/lib/FormGroup';
-import InputGroup from 'react-bootstrap/lib/InputGroup';
-import FontAwesome from 'react-fontawesome';
-
-import get from 'lodash/get';
-
-import BlueprintThumbnail from './BlueprintThumbnail';
+import Row from 'react-bootstrap/lib/Row';
 
 import base from '../base';
+
+import BlueprintThumbnail from './BlueprintThumbnail';
+import SearchForm from './SearchForm';
 
 class BlueprintGrid extends Component
 {
@@ -81,38 +76,16 @@ class BlueprintGrid extends Component
 		this.setState({searchString: event.target.value});
 	};
 
-	handleKeyDown = (event) =>
-	{
-		if (event.key === 'Escape')
-		{
-			event.target.select();
-		}
-	};
-
 	render()
 	{
 		return <Grid>
 			<Row>
 				<PageHeader>{'Viewing Most Recent'}</PageHeader>
 			</Row>
-			<Row>
-				<Col md={6} mdOffset={3}>
-					<FormGroup>
-						<InputGroup>
-							<FormControl
-								type='text'
-								placeholder='search titles'
-								value={this.state.searchString}
-								onChange={this.handleSearchString}
-								onKeyDown={this.handleKeyDown}
-							/>
-							<InputGroup.Addon>
-								<FontAwesome name='search' />
-							</InputGroup.Addon>
-						</InputGroup>
-					</FormGroup>
-				</Col>
-			</Row>
+			<SearchForm
+				searchString={this.state.searchString}
+				onSearchString={this.handleSearchString}
+			/>
 			<Row>
 				{
 					Object.keys(this.props.blueprintSummaries)
