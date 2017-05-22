@@ -81,6 +81,14 @@ class BlueprintGrid extends Component
 		this.setState({searchString: event.target.value});
 	};
 
+	handleKeyDown = (event) =>
+	{
+		if (event.key === 'Escape')
+		{
+			event.target.select();
+		}
+	};
+
 	render()
 	{
 		return <Grid>
@@ -96,6 +104,7 @@ class BlueprintGrid extends Component
 								placeholder='search titles'
 								value={this.state.searchString}
 								onChange={this.handleSearchString}
+								onKeyDown={this.handleKeyDown}
 							/>
 							<InputGroup.Addon>
 								<FontAwesome name='search' />
