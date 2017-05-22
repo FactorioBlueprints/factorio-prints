@@ -89,21 +89,19 @@ class BlueprintGrid extends Component
 			</Row>
 			<Row>
 				<Col md={6} mdOffset={3}>
-					<form>
-						<FormGroup>
-							<InputGroup>
-								<FormControl
-									type='text'
-									placeholder='search titles'
-									value={this.state.searchString}
-									onChange={this.handleSearchString}
-								/>
-								<InputGroup.Addon>
-									<FontAwesome name='search' />
-								</InputGroup.Addon>
-							</InputGroup>
-						</FormGroup>
-					</form>
+					<FormGroup>
+						<InputGroup>
+							<FormControl
+								type='text'
+								placeholder='search titles'
+								value={this.state.searchString}
+								onChange={this.handleSearchString}
+							/>
+							<InputGroup.Addon>
+								<FontAwesome name='search' />
+							</InputGroup.Addon>
+						</InputGroup>
+					</FormGroup>
 				</Col>
 			</Row>
 			<Row>
