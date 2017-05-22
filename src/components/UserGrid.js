@@ -7,6 +7,7 @@ import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import NoMatch from './NoMatch';
+import SearchForm from './SearchForm';
 
 import FontAwesome from 'react-fontawesome';
 import isEmpty from 'lodash/isEmpty';
@@ -25,6 +26,7 @@ class UserGrid extends Component
 		displayName: '',
 		blueprints : {},
 		loading    : true,
+		searchString: '',
 	};
 
 	componentWillMount()
@@ -73,6 +75,13 @@ class UserGrid extends Component
 		});
 	};
 
+	handleSearchString = (event) =>
+	{
+		event.preventDefault();
+
+		this.setState({searchString: event.target.value});
+	};
+
 	render()
 	{
 		if (this.state.loading)
@@ -98,9 +107,16 @@ class UserGrid extends Component
 						{'Viewing Blueprints by '}{displayName || '(Anonymous)'}
 					</PageHeader>
 				</Row>
+				<SearchForm
+					searchString={this.state.searchString}
+					onSearchString={this.handleSearchString}
+				/>
 				<Row>
 					{
-						Object.keys(blueprints || {}).reverse().map(key =>
+						Object.keys(blueprints || {})
+							.reverse()
+							.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
+							.map(key =>
 							<BlueprintThumbnail
 								key={key}
 								id={key}

@@ -4,6 +4,7 @@ import Row from 'react-bootstrap/lib/Row';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import BlueprintThumbnail from './BlueprintThumbnail';
+import SearchForm from './SearchForm';
 
 class FavoritesGrid extends Component
 {
@@ -14,6 +15,17 @@ class FavoritesGrid extends Component
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
+	};
+
+	state = {
+		searchString: '',
+	};
+
+	handleSearchString = (event) =>
+	{
+		event.preventDefault();
+
+		this.setState({searchString: event.target.value});
 	};
 
 	render()
@@ -33,11 +45,16 @@ class FavoritesGrid extends Component
 				<Row>
 					<PageHeader>{'Viewing My Favorites'}</PageHeader>
 				</Row>
+				<SearchForm
+					searchString={this.state.searchString}
+					onSearchString={this.handleSearchString}
+				/>
 				<Row>
 					{
 						Object.keys(this.props.userFavorites)
 							.reverse()
 							.filter(key => this.props.userFavorites[key])
+							.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
 							.map(key =>
 								<BlueprintThumbnail
 									key={key}

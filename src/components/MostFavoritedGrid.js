@@ -6,6 +6,7 @@ import PageHeader from 'react-bootstrap/lib/PageHeader';
 import get from 'lodash/get';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
+import SearchForm from './SearchForm';
 
 import base from '../base';
 
@@ -20,8 +21,9 @@ class MostFavoritedGrid extends Component
 	};
 
 	state = {
-		blueprints: {},
-		loading   : true,
+		blueprints  : {},
+		loading     : true,
+		searchString: '',
 	};
 
 	componentWillMount()
@@ -80,16 +82,28 @@ class MostFavoritedGrid extends Component
 		return 0;
 	};
 
+	handleSearchString = (event) =>
+	{
+		event.preventDefault();
+
+		this.setState({searchString: event.target.value});
+	};
+
 	render()
 	{
 		return <Grid>
 			<Row>
 				<PageHeader>{'Viewing Most Favorited'}</PageHeader>
 			</Row>
+			<SearchForm
+				searchString={this.state.searchString}
+				onSearchString={this.handleSearchString}
+			/>
 			<Row>
 				{
 					Object.keys(this.props.blueprintSummaries)
 						.filter(key => this.props.blueprintSummaries[key].numberOfFavorites > 0)
+						.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
 						.sort(this.compareNumberOfFavorites)
 						.map((key) =>
 						{
