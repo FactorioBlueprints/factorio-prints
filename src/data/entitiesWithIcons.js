@@ -138,7 +138,7 @@ const entitiesWithIcons = {
 	'grenade'                         : true,
 	'gun-turret'                      : true,
 	'hazard-concrete'                 : true,
-	'heat-boiler'                     : true,
+	'heat-exchanger'                  : true,
 	'heat-pipe'                       : true,
 	'heavy-armor'                     : true,
 	'heavy-oil-cracking'              : true,
