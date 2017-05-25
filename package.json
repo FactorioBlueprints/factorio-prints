@@ -20,7 +20,7 @@
     "eslint-plugin-no-loops": "0.3.0",
     "eslint-plugin-promise": "3.5.0",
     "eslint-plugin-react": "7.0.1",
-    "react-scripts": "0.9.5",
+    "react-scripts": "1.0.6",
     "stylus": "0.54.5"
   },
   "dependencies": {
@@ -35,11 +35,11 @@
     "pako": "1.0.5",
     "prop-types": "15.5.10",
     "re-base": "2.7.1",
-    "react": "15.4.1",
+    "react": "15.5.4",
     "react-bootstrap": "0.30.7",
     "react-copy-to-clipboard": "5.0.0",
     "react-disqus-thread": "0.4.0",
-    "react-dom": "15.4.1",
+    "react-dom": "15.5.4",
     "react-dropzone": "3.8.0",
     "react-fontawesome": "1.6.1",
     "react-router": "4.0.0-alpha.6",
