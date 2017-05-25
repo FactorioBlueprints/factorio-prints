@@ -11,11 +11,21 @@ class Contact extends Component
 				<h1>{'Contact me'}</h1>
 				<p>
 					<FontAwesome name='envelope' size='lg' fixedWidth />
-					<a target='_blank' href='mailto:factorio.prints@gmail.com' >{' factorio dot prints at gmail dot com'}</a>
+					<a
+						target='_blank'
+						rel='noopener noreferrer'
+						href='mailto:factorio.prints@gmail.com'>
+						{' factorio dot prints at gmail dot com'}
+					</a>
 				</p>
 				<p>
 					<FontAwesome name='reddit-alien' size='lg' fixedWidth />
-					<a target='_blank' href='https://www.reddit.com/user/FactorioBlueprints/' >{' /u/FactorioBlueprints'}</a>
+					<a
+						target='_blank'
+						rel='noopener noreferrer'
+						href='https://www.reddit.com/user/FactorioBlueprints/'>
+						{' /u/FactorioBlueprints'}
+					</a>
 				</p>
 				<p>{'Please reach out with any feedback, especially to report bugs!'}</p>
 			</Jumbotron>
