@@ -51,6 +51,13 @@
           ".write": "auth != null"
         }
       }
+    },
+    "tags": {
+      ".read": "true"
+    },
+    "byTag": {
+      ".read": "true",
+      ".write": "true"
     }
   }
 }
