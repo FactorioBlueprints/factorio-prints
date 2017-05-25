@@ -340,12 +340,12 @@ class Create extends Component
 			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
 		}
 
-		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.label))
+		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.label))
 		{
 			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
 		}
 
-		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.icons))
+		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.icons))
 		{
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
