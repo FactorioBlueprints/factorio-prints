@@ -28,7 +28,8 @@ class Blueprint
 		}
 		else if (this.isV15())
 		{
-			return JSON.parse(decodeV15Base64(this.encodedText));
+			const jsonString = decodeV15Base64(this.encodedText);
+			return JSON.parse(jsonString);
 		}
 
 		return undefined;

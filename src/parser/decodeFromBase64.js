@@ -35,7 +35,7 @@ export const decodeV15Base64 = (string) =>
 	}
 
 	const unzipped = pako.inflate(arrayBuffer);
-	const jsonCode = new TextDecoder('utf-16le').decode(new Uint16Array(unzipped));
+	const jsonCode = new TextDecoder('utf-8').decode(new Uint8Array(unzipped));
 	return jsonCode;
 };
 
