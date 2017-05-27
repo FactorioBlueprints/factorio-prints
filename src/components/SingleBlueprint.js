@@ -1,20 +1,19 @@
+import flatMap from 'lodash/flatMap';
+import forOwn from 'lodash/forOwn';
 import countBy from 'lodash/fp/countBy';
 import flow from 'lodash/fp/flow';
 import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
+import has from 'lodash/has';
 import isEmpty from 'lodash/isEmpty';
-import groupBy from 'lodash/groupBy';
-import sumBy from 'lodash/sumBy';
-import flatMap from 'lodash/flatMap';
-import mapValues from 'lodash/mapValues';
 
 import marked from 'marked';
 import moment from 'moment';
 
 import PropTypes from 'prop-types';
 
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 
 import Button from 'react-bootstrap/lib/Button';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -32,15 +31,14 @@ import FontAwesome from 'react-fontawesome';
 import {Link} from 'react-router';
 
 import base from '../base';
-
 import Blueprint from '../Blueprint';
-import buildImageUrl from '../helpers/buildImageUrl';
-import NoMatch from './NoMatch';
-import Title from './Title';
 
 import entitiesWithIcons from '../data/entitiesWithIcons';
+import buildImageUrl from '../helpers/buildImageUrl';
 
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
+import NoMatch from './NoMatch';
+import Title from './Title';
 
 class SingleBlueprint extends Component
 {
@@ -215,9 +213,19 @@ class SingleBlueprint extends Component
 
 	itemHistogram = (parsedBlueprint) =>
 	{
+		const result = {};
 		const items       = flatMap(parsedBlueprint.entities, entity => entity.items || []);
-		const itemsByName = groupBy(items, 'item');
-		const result      = mapValues(itemsByName, array => sumBy(array, 'count'));
+		items.forEach((item) =>
+		{
+			if (has(item, 'item') && has(item, 'count'))
+			{
+				result[item.item] = (result[item.item] || 0) + item.count;
+			}
+			else
+			{
+				return forOwn(item, (value, key) => result[key] = (result[key] || 0) + value);
+			}
+		});
 
 		return flow(
 			toPairs,

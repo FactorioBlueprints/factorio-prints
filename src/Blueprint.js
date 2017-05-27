@@ -63,9 +63,23 @@ class Blueprint
 
 		const {icons, name, entities} = decodedObject;
 
+		const convertedEntities = entities.map((entity, index) =>
+		{
+			const result = {
+				...entity,
+				entity_number: index + 1,
+			};
+			if (entity.items)
+			{
+				const convertedItems = entity.items.map(item => ({[item.item]: item.count}));
+				result.items = convertedItems;
+			}
+			return result;
+		});
+
 		const blueprint = {
 			icons,
-			entities: entities.map((entity, index) => ({entity_number: index + 1, ...entity})),
+			entities: convertedEntities,
 			item    : 'blueprint',
 			label   : name,
 			version : 12345567890,
