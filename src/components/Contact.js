@@ -1,4 +1,4 @@
-import {faReddit}             from '@fortawesome/free-brands-svg-icons';
+import {faReddit, faDiscord}  from '@fortawesome/free-brands-svg-icons';
 import {faEnvelope}           from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import React, {PureComponent} from 'react';
@@ -31,7 +31,13 @@ class Contact extends PureComponent
 						{' /u/FactorioBlueprints'}
 					</a>
 				</p>
-				<p>{'Please reach out with any feedback, especially to report bugs!'}</p>
+				<p>
+					<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
+					{' FactorioBlueprints#7181'}
+				</p>
+				<p>
+					Please reach out with any feedback, especially to report bugs!
+				</p>
 			</Jumbotron>
 		);
 	}
