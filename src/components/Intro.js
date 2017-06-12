@@ -13,18 +13,18 @@ const Intro = () =>
 					<a href='https://www.factorio.com/'>{'Factorio'}</a>
 					{'.'}
 				</p>
-				<p>{'Blueprints can be exported from the game using any of these mods.'}</p>
-				<ul>
-					<li>
-						<a href='https://mods.factorio.com/mods/DaveMcW/blueprint-string'>{'Blueprint String'}</a>
-					</li>
-					<li>
-						<a href='https://mods.factorio.com/mods/Choumiko/Foreman'>{'Foreman'}</a>
-					</li>
-					<li>
-						<a href='https://mods.factorio.com/mods/killkrog/KBlueprints'>{"Killkrog's Blueprint Manager"}</a>
-					</li>
-				</ul>
+				<p>
+					{'Blueprints can be exported from the game using the in-game blueprint manager.'}
+					{' ['}<a href='https://www.youtube.com/watch?v=7FD4Gehe29E'>{'Video Tutorial'}</a>{']'}
+				</p>
+				<p>
+					{'There is also limited support for the 0.14 blueprint mods '}
+					<a href='https://mods.factorio.com/mods/DaveMcW/blueprint-string'>{'Blueprint String'}</a>
+					{', '}
+					<a href='https://mods.factorio.com/mods/Choumiko/Foreman'>{'Foreman'}</a>
+					{', and '}
+					<a href='https://mods.factorio.com/mods/killkrog/KBlueprints'>{"Killkrog's Blueprint Manager"}</a>
+				</p>
 			</Row>
 		</Grid>
 	</Well>;
