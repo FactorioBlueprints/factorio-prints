@@ -313,12 +313,12 @@ class EditBlueprint extends Component
 
 	handleDeleteBlueprint    = () =>
 	{
+		const authorId = this.state.blueprint.author.userId;
 		const updates = {
-			[`/blueprints/${this.props.id}`]                                : null,
-			// TODO: Should be author, not current user
-			[`/users/${this.props.user.userId}/blueprints/${this.props.id}`]: null,
-			[`/thumbnails/${this.props.id}`]                                : null,
-			[`/blueprintSummaries/${this.props.id}`]                        : null,
+			[`/blueprints/${this.props.id}`]                  : null,
+			[`/users/${authorId}/blueprints/${this.props.id}`]: null,
+			[`/thumbnails/${this.props.id}`]                  : null,
+			[`/blueprintSummaries/${this.props.id}`]          : null,
 		};
 		this.props.tags.forEach((tag) =>
 		{
@@ -335,7 +335,7 @@ class EditBlueprint extends Component
 				}
 				return undefined;
 			})
-			.then(() => this.context.router.transitionTo(`/user/${this.props.user.userId}`))
+			.then(() => this.context.router.transitionTo(`/user/${authorId}`))
 			.catch(console.log);
 	};
 
