@@ -20,6 +20,8 @@ import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
 
+import forEach from 'lodash/forEach';
+
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import base from '../base';
@@ -260,7 +262,7 @@ class EditBlueprint extends Component
 				[`/blueprints/${this.props.id}/title`]              : this.state.blueprint.title,
 				[`/blueprints/${this.props.id}/blueprintString`]    : this.state.blueprint.blueprintString,
 				[`/blueprints/${this.props.id}/descriptionMarkdown`]: this.state.blueprint.descriptionMarkdown,
-				[`/blueprints/${this.props.id}/tags`]               : this.state.blueprint.tags,
+				[`/blueprints/${this.props.id}/tags`]               : this.state.blueprint.tags || [],
 				[`/blueprints/${this.props.id}/lastUpdatedDate`]    : firebase.database.ServerValue.TIMESTAMP,
 				[`/blueprints/${this.props.id}/image`]              : image,
 				[`/blueprintSummaries/${this.props.id}/title/`]     : this.state.blueprint.title,
@@ -284,7 +286,7 @@ class EditBlueprint extends Component
 			{
 				updates[`/byTag/${tag}/${this.props.id}`] = null;
 			});
-			this.state.blueprint.tags.forEach((tag) => {
+			forEach(this.state.blueprint.tags, (tag) => {
 				updates[`/byTag/${tag}/${this.props.id}`] = true;
 			});
 
