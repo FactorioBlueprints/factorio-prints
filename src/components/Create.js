@@ -485,13 +485,19 @@ class Create extends Component
 							</FormGroup>
 
 							<FormGroup controlId='formHorizontalDescription'>
-								<Col componentClass={ControlLabel} sm={2}>{'Description'}</Col>
+								<Col componentClass={ControlLabel} sm={2}>
+									{'Description '}
+									<a href='https://guides.github.com/features/mastering-markdown/'>
+										{'[Tutorial]'}
+									</a>
+								</Col>
 								<Col sm={10}>
 									<FormControl
 										componentClass='textarea'
-										placeholder='Description (plain text or *markdown*)'
+										placeholder='Description (plain text or *GitHub Flavored Markdown*)'
 										value={blueprint.descriptionMarkdown}
 										onChange={this.handleDescriptionChanged}
+										style={{height: 200}}
 									/>
 								</Col>
 							</FormGroup>
@@ -499,8 +505,11 @@ class Create extends Component
 							<FormGroup>
 								<Col componentClass={ControlLabel} sm={2}>{'Description (Preview)'}</Col>
 								<Col sm={10}>
-									<Panel >
-										<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
+									<Panel>
+										<div
+											style={{height: 200}}
+											dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}}
+										/>
 									</Panel>
 								</Col>
 							</FormGroup>
