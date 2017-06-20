@@ -197,6 +197,7 @@ class Root extends Component
 	renderCreate            = props =>
 		<Create
 			{...props}
+			tags={this.state.tags}
 			user={this.state.user}
 		/>;
 	renderSingleBlueprint   = (props) =>
@@ -223,9 +224,9 @@ class Root extends Component
 		return <EditBlueprint
 			{...props}
 			id={blueprintId}
+			tags={this.state.tags}
 			user={this.state.user}
 			isModerator={this.state.isModerator}
-			tags={this.state.tags}
 		/>;
 	};
 	renderUser              = props =>

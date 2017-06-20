@@ -22,6 +22,9 @@ import FontAwesome from 'react-fontawesome';
 import base from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 
+import Select from 'react-select';
+import 'react-select/dist/react-select.css';
+
 import Blueprint from '../Blueprint';
 import isEmpty from 'lodash/isEmpty';
 import some from 'lodash/some';
@@ -31,6 +34,7 @@ import scaleImage from '../helpers/ImageScaler';
 class Create extends Component
 {
 	static propTypes = {
+		tags        : PropTypes.arrayOf(PropTypes.string).isRequired,
 		user: PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
@@ -258,6 +262,7 @@ class Create extends Component
 								image,
 							};
 							const newBlueprintRef = base.database().ref('/blueprints').push(blueprint);
+							// TODO: Combine all of these database updates into a single call to update
 							base.database().ref(`/users/${this.props.user.userId}/blueprints`).update({[newBlueprintRef.key]: true});
 
 							const thumbnail = this.state.thumbnail;
@@ -327,6 +332,11 @@ class Create extends Component
 	validateWarnings = () =>
 	{
 		const submissionWarnings = [];
+
+		if (isEmpty(this.state.blueprint.tags))
+		{
+			submissionWarnings.push('The blueprint has no tags. Consider adding a few tags.');
+		}
 
 		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
 		if (blueprint.decodedObject == null)
@@ -398,6 +408,17 @@ class Create extends Component
 				</Jumbotron>
 			);
 		}
+
+		const handleTagSelection = (selectedTags) =>
+		{
+			const tags = selectedTags.map(each => each.value);
+			this.setState({
+				blueprint: {
+					...this.state.blueprint,
+					tags,
+				},
+			});
+		};
 
 		const blueprint = this.state.blueprint;
 		return (
@@ -511,6 +532,19 @@ class Create extends Component
 											dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}}
 										/>
 									</Panel>
+								</Col>
+							</FormGroup>
+
+							<FormGroup>
+								<Col componentClass={ControlLabel} sm={2}>{'Tags'}</Col>
+								<Col sm={10}>
+									<Select
+										value={this.state.blueprint.tags}
+										options={this.props.tags.map(value => ({value, label: value}))}
+										onChange={handleTagSelection}
+										multi
+										placeholder='Select at least one tag'
+									/>
 								</Col>
 							</FormGroup>
 
