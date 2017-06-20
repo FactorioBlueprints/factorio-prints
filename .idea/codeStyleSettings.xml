@@ -8,15 +8,23 @@
         <JSCodeStyleSettings>
           <option name="FORCE_SEMICOLON_STYLE" value="true" />
           <option name="ALIGN_OBJECT_PROPERTIES" value="2" />
-          <option name="ALIGN_VAR_STATEMENTS" value="2" />
           <option name="USE_DOUBLE_QUOTES" value="false" />
           <option name="ENFORCE_TRAILING_COMMA" value="WhenMultiline" />
           <option name="IMPORT_SORT_MODULE_NAME" value="true" />
-          <option name="FUNCTION_EXPRESSION_BRACE_STYLE" value="2" />
         </JSCodeStyleSettings>
+        <JSON>
+          <option name="PROPERTY_ALIGNMENT" value="2" />
+        </JSON>
         <XML>
           <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>
+        <codeStyleSettings language="JSON">
+          <indentOptions>
+            <option name="CONTINUATION_INDENT_SIZE" value="4" />
+            <option name="TAB_SIZE" value="2" />
+            <option name="USE_TAB_CHARACTER" value="true" />
+          </indentOptions>
+        </codeStyleSettings>
         <codeStyleSettings language="JavaScript">
           <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
           <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
