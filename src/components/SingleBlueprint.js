@@ -7,6 +7,7 @@ import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
 import isEmpty from 'lodash/isEmpty';
+import concat from 'lodash/concat';
 
 import marked from 'marked';
 import moment from 'moment';
@@ -210,7 +211,7 @@ class SingleBlueprint extends Component
 			toPairs,
 			sortBy(1),
 			reverse,
-		)(parsedBlueprint.entities);
+		)(concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []));
 
 	itemHistogram = (parsedBlueprint) =>
 	{
