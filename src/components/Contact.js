@@ -1,8 +1,8 @@
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import FontAwesome from 'react-fontawesome';
 
-class Contact extends Component
+class Contact extends PureComponent
 {
 	render()
 	{

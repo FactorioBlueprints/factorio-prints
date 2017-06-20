@@ -2,7 +2,7 @@ import forOwn from 'lodash/forOwn';
 import isArray from 'lodash/isArray';
 import join from 'lodash/join';
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import {BrowserRouter, Match, Miss} from 'react-router';
 
@@ -19,7 +19,7 @@ import NoMatch from './NoMatch';
 import SingleBlueprint from './SingleBlueprint';
 import UserGrid from './UserGrid';
 
-class Root extends Component
+class Root extends PureComponent
 {
 	static propTypes = {};
 

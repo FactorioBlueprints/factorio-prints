@@ -1,7 +1,7 @@
 import firebase from 'firebase';
 import marked from 'marked';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, {PureComponent} from 'react';
 import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -31,7 +31,7 @@ import some from 'lodash/some';
 
 import scaleImage from '../helpers/ImageScaler';
 
-class Create extends Component
+class Create extends PureComponent
 {
 	static propTypes = {
 		tags        : PropTypes.arrayOf(PropTypes.string).isRequired,

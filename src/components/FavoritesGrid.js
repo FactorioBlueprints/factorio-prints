@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, {PureComponent} from 'react';
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
@@ -7,7 +7,7 @@ import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import BlueprintThumbnail from './BlueprintThumbnail';
 import SearchForm from './SearchForm';
 
-class FavoritesGrid extends Component
+class FavoritesGrid extends PureComponent
 {
 	static propTypes = {
 		blueprintSummaries: PropTypes.object.isRequired,

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, {PureComponent} from 'react';
 
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
@@ -15,7 +15,7 @@ import isEmpty from 'lodash/isEmpty';
 
 import base from '../base';
 
-class UserGrid extends Component
+class UserGrid extends PureComponent
 {
 	static propTypes = {
 		id                : PropTypes.string.isRequired,

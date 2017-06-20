@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 
 import Col from 'react-bootstrap/lib/Col';
 import FormControl from 'react-bootstrap/lib/FormControl';
@@ -8,7 +8,7 @@ import InputGroup from 'react-bootstrap/lib/InputGroup';
 
 import FontAwesome from 'react-fontawesome';
 
-class SearchForm extends Component
+class SearchForm extends PureComponent
 {
 	static propTypes = {
 		searchString  : PropTypes.string.isRequired,

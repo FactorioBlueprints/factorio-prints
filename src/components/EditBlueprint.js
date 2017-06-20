@@ -1,7 +1,7 @@
 import firebase from 'firebase';
 import marked from 'marked';
 import PropTypes from 'prop-types';
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -31,7 +31,7 @@ import buildImageUrl from '../helpers/buildImageUrl';
 import scaleImage from '../helpers/ImageScaler';
 import NoMatch from './NoMatch';
 
-class EditBlueprint extends Component
+class EditBlueprint extends PureComponent
 {
 	static propTypes = {
 		id          : PropTypes.string.isRequired,

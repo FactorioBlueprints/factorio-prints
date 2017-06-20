@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, {PureComponent} from 'react';
 import Navbar from 'react-bootstrap/lib/Navbar';
 import Nav from 'react-bootstrap/lib/Nav';
 import NavDropdown from 'react-bootstrap/lib/NavDropdown';
@@ -11,7 +11,7 @@ import {auth} from 'firebase';
 
 import FontAwesome from 'react-fontawesome';
 
-class Header extends Component
+class Header extends PureComponent
 {
 	static propTypes = {
 		user: PropTypes.shape({

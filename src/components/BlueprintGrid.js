@@ -1,7 +1,7 @@
 import every from 'lodash/every';
 import get from 'lodash/get';
 import PropTypes from 'prop-types';
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 import Grid from 'react-bootstrap/lib/Grid';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Row from 'react-bootstrap/lib/Row';
@@ -12,7 +12,7 @@ import BlueprintThumbnail from './BlueprintThumbnail';
 import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
-class BlueprintGrid extends Component
+class BlueprintGrid extends PureComponent
 {
 	static propTypes = {
 		blueprintSummaries         : PropTypes.object.isRequired,

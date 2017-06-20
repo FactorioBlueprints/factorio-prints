@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 
 import Col from 'react-bootstrap/lib/Col';
 import Row from 'react-bootstrap/lib/Row';
@@ -7,7 +7,7 @@ import Row from 'react-bootstrap/lib/Row';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 
-class TagForm extends Component
+class TagForm extends PureComponent
 {
 	static propTypes = {
 		tags          : PropTypes.arrayOf(PropTypes.string).isRequired,

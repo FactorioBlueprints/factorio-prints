@@ -14,7 +14,7 @@ import moment from 'moment';
 
 import PropTypes from 'prop-types';
 
-import React, {Component} from 'react';
+import React, {PureComponent} from 'react';
 
 import Button from 'react-bootstrap/lib/Button';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -42,7 +42,7 @@ import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 import NoMatch from './NoMatch';
 import Title from './Title';
 
-class SingleBlueprint extends Component
+class SingleBlueprint extends PureComponent
 {
 	static propTypes = {
 		id         : PropTypes.string.isRequired,
