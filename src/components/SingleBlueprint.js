@@ -274,7 +274,7 @@ class SingleBlueprint extends PureComponent
 					{blueprint.tags && blueprint.tags.length > 0 && <Panel header='Tags'>
 						<h4>
 							{
-								flatMap((blueprint.tags || []), (tag => [<Link to={`/tagged${tag}`}><Label bsStyle='primary'>{tag}</Label></Link>, ' ']))
+								flatMap((blueprint.tags || []), (tag => [<Link key={tag} to={`/tagged${tag}`}><Label bsStyle='primary'>{tag}</Label></Link>, ' ']))
 							}
 						</h4>
 					</Panel>
