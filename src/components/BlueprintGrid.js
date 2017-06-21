@@ -37,7 +37,7 @@ class BlueprintGrid extends PureComponent
 
 	componentWillMount()
 	{
-		this.syncState(this.props);
+		this.bindToState(this.props);
 		this.setState({selectedTags: this.props.initiallySelectedTags || []});
 	}
 
@@ -47,7 +47,7 @@ class BlueprintGrid extends PureComponent
 		const newUserId = get(nextProps, 'user.userId');
 		if (oldUserId !== newUserId)
 		{
-			this.syncState(nextProps);
+			this.bindToState(nextProps);
 		}
 	}
 
@@ -65,14 +65,14 @@ class BlueprintGrid extends PureComponent
 		}
 	};
 
-	syncState = (props) =>
+	bindToState = (props) =>
 	{
 		this.unbindUserBlueprints();
 
 		// TODO: Move this state up to Root as myBlueprints or something, and share the state with TagGrid and other grids
 		if (props.user)
 		{
-			this.blueprintsRef = base.syncState(`/users/${props.user.userId}/blueprints`, {
+			this.blueprintsRef = base.bindToState(`/users/${props.user.userId}/blueprints`, {
 				context  : this,
 				state    : 'blueprints',
 				then     : () => this.setState({loading: false}),

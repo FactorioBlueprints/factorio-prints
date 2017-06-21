@@ -67,14 +67,14 @@ class SingleBlueprint extends PureComponent
 
 	componentWillMount()
 	{
-		this.syncState(this.props);
+		this.bindToState(this.props);
 	}
 
 	componentWillReceiveProps(nextProps)
 	{
 		if (this.props.id !== nextProps.id)
 		{
-			this.syncState(nextProps);
+			this.bindToState(nextProps);
 		}
 	}
 
@@ -83,7 +83,7 @@ class SingleBlueprint extends PureComponent
 		base.removeBinding(this.ref);
 	}
 
-	syncState = (props) =>
+	bindToState = (props) =>
 	{
 		if (this.ref)
 		{

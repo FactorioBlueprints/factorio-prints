@@ -30,7 +30,7 @@ class MostFavoritedGrid extends PureComponent
 
 	componentWillMount()
 	{
-		this.syncState(this.props);
+		this.bindToState(this.props);
 	}
 
 	componentWillReceiveProps(nextProps)
@@ -39,7 +39,7 @@ class MostFavoritedGrid extends PureComponent
 		const newUserId = get(nextProps, 'user.userId');
 		if (oldUserId !== newUserId)
 		{
-			this.syncState(nextProps);
+			this.bindToState(nextProps);
 		}
 	}
 
@@ -51,7 +51,7 @@ class MostFavoritedGrid extends PureComponent
 		}
 	}
 
-	syncState = (props) =>
+	bindToState = (props) =>
 	{
 		if (this.blueprintsRef)
 		{
@@ -60,7 +60,7 @@ class MostFavoritedGrid extends PureComponent
 
 		if (props.user)
 		{
-			this.blueprintsRef = base.syncState(`/users/${props.user.userId}/blueprints`, {
+			this.blueprintsRef = base.bindToState(`/users/${props.user.userId}/blueprints`, {
 				context  : this,
 				state    : 'blueprints',
 				then     : () => this.setState({loading: false}),

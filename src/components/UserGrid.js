@@ -33,14 +33,14 @@ class UserGrid extends PureComponent
 
 	componentWillMount()
 	{
-		this.syncState(this.props);
+		this.bindToState(this.props);
 	}
 
 	componentWillReceiveProps(nextProps)
 	{
 		if (this.props.id !== nextProps.id)
 		{
-			this.syncState(nextProps);
+			this.bindToState(nextProps);
 		}
 	}
 
@@ -50,7 +50,7 @@ class UserGrid extends PureComponent
 		base.removeBinding(this.blueprintsRef);
 	}
 
-	syncState = (props) =>
+	bindToState = (props) =>
 	{
 		if (this.displayNameRef)
 		{
@@ -62,14 +62,14 @@ class UserGrid extends PureComponent
 			base.removeBinding(this.blueprintsRef);
 		}
 
-		this.displayNameRef = base.syncState(`/users/${props.id}/displayName`, {
+		this.displayNameRef = base.bindToState(`/users/${props.id}/displayName`, {
 			context  : this,
 			state    : 'displayName',
 			asString : true,
 			onFailure: console.log,
 		});
 
-		this.blueprintsRef = base.syncState(`/users/${props.id}/blueprints`, {
+		this.blueprintsRef = base.bindToState(`/users/${props.id}/blueprints`, {
 			context  : this,
 			state    : 'blueprints',
 			then     : () => this.setState({loading: false}),
