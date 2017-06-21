@@ -1,17 +1,18 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
 import Header from './Header';
 
 class App extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		children: PropTypes.node.isRequired,
 		user    : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
 		}),
-	};
+	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};
 

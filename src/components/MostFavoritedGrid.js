@@ -1,6 +1,8 @@
 import get from 'lodash/get';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import Grid from 'react-bootstrap/lib/Grid';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Row from 'react-bootstrap/lib/Row';
@@ -12,13 +14,13 @@ import SearchForm from './SearchForm';
 
 class MostFavoritedGrid extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		blueprintSummaries: PropTypes.object.isRequired,
 		userFavorites     : PropTypes.object.isRequired,
 		user              : PropTypes.shape({
 			userId: PropTypes.string.isRequired,
 		}),
-	};
+	});
 
 	state = {
 		blueprints  : {},

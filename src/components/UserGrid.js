@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
@@ -17,11 +18,11 @@ import base from '../base';
 
 class UserGrid extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		id                : PropTypes.string.isRequired,
 		blueprintSummaries: PropTypes.object.isRequired,
 		userFavorites     : PropTypes.object.isRequired,
-	};
+	});
 
 	state = {
 		displayName: '',

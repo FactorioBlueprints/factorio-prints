@@ -2,6 +2,8 @@ import firebase from 'firebase';
 import marked from 'marked';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -33,7 +35,7 @@ import NoMatch from './NoMatch';
 
 class EditBlueprint extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		id          : PropTypes.string.isRequired,
 		isModerator : PropTypes.bool,
 		tags        : PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -41,7 +43,7 @@ class EditBlueprint extends PureComponent
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-	};
+	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};
 

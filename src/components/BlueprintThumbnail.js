@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import Col from 'react-bootstrap/lib/Col';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
@@ -28,7 +30,7 @@ const BlueprintThumbnail = ({
 		</Link>
 	</Col>;
 
-BlueprintThumbnail.propTypes = {
+BlueprintThumbnail.propTypes = forbidExtraProps({
 	id               : PropTypes.string.isRequired,
 	imgurId          : PropTypes.string.isRequired,
 	imgurType        : PropTypes.string.isRequired,
@@ -36,6 +38,6 @@ BlueprintThumbnail.propTypes = {
 	numberOfFavorites: PropTypes.number.isRequired,
 	isFavorite       : PropTypes.bool.isRequired,
 	isMine           : PropTypes.bool,
-};
+});
 
 export default BlueprintThumbnail;

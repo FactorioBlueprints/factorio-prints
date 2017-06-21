@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import FontAwesome from 'react-fontawesome';
 
 const Title = props =>
@@ -8,10 +10,10 @@ const Title = props =>
 		{` ${props.text}`}
 	</div>;
 
-Title.propTypes = {
+Title.propTypes = forbidExtraProps({
 	icon     : PropTypes.string.isRequired,
 	text     : PropTypes.string.isRequired,
 	className: PropTypes.string,
-};
+});
 
 export default Title;

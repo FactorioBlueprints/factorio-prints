@@ -178,7 +178,6 @@ class Root extends PureComponent
 		</div>;
 	renderBlueprintGrid     = props =>
 		<BlueprintGrid
-			{...props}
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
 			user={this.state.user}
@@ -189,14 +188,12 @@ class Root extends PureComponent
 		/>;
 	renderMostFavoritedGrid = props =>
 		<MostFavoritedGrid
-			{...props}
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
 			user={this.state.user}
 		/>;
 	renderCreate            = props =>
 		<Create
-			{...props}
 			tags={this.state.tags}
 			user={this.state.user}
 		/>;
@@ -206,7 +203,6 @@ class Root extends PureComponent
 
 		return (
 			<SingleBlueprint
-				{...props}
 				id={blueprintId}
 				user={this.state.user}
 				isModerator={this.state.isModerator}
@@ -222,7 +218,6 @@ class Root extends PureComponent
 			return <Jumbotron><h1>{'Loading data'}</h1></Jumbotron>;
 		}
 		return <EditBlueprint
-			{...props}
 			id={blueprintId}
 			tags={this.state.tags}
 			user={this.state.user}
@@ -231,7 +226,6 @@ class Root extends PureComponent
 	};
 	renderUser              = props =>
 		<UserGrid
-			{...props}
 			id={props.params.userId}
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
@@ -240,20 +234,9 @@ class Root extends PureComponent
 	{
 		const {pathname} = props.location;
 		const tagId = pathname.replace(/^\/tagged/, '');
-		/*
-				return <TagGrid
-					{...props}
-					id={tagId}
-					user={this.state.user}
-					blueprintSummaries={this.state.blueprintSummaries}
-					userFavorites={this.state.userFavorites}
-				/>;
-		*/
-
 		this.lazilyFetchTaggedBlueprints();
 
 		return <BlueprintGrid
-			{...props}
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
 			user={this.state.user}
@@ -266,7 +249,6 @@ class Root extends PureComponent
 	};
 	renderFavorites         = props =>
 		<FavoritesGrid
-			{...props}
 			user={this.state.user}
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}

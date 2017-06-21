@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Col from 'react-bootstrap/lib/Col';
 import Row from 'react-bootstrap/lib/Row';
@@ -9,11 +10,11 @@ import 'react-select/dist/react-select.css';
 
 class TagForm extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		tags          : PropTypes.arrayOf(PropTypes.string).isRequired,
 		selectedTags  : PropTypes.arrayOf(PropTypes.string).isRequired,
 		onTagSelection: PropTypes.func.isRequired,
-	};
+	});
 
 	render()
 	{

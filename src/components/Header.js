@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import Navbar from 'react-bootstrap/lib/Navbar';
 import Nav from 'react-bootstrap/lib/Nav';
 import NavDropdown from 'react-bootstrap/lib/NavDropdown';
@@ -13,13 +15,13 @@ import FontAwesome from 'react-fontawesome';
 
 class Header extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		user: PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
 		}),
-	};
+	});
 
 	constructor()
 	{

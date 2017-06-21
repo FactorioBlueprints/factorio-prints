@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
@@ -9,14 +11,14 @@ import SearchForm from './SearchForm';
 
 class FavoritesGrid extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		blueprintSummaries: PropTypes.object.isRequired,
 		userFavorites     : PropTypes.object.isRequired,
 		user              : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-	};
+	});
 
 	state = {
 		searchString: '',

@@ -24,6 +24,7 @@
     "stylus": "0.54.5"
   },
   "dependencies": {
+    "airbnb-prop-types": "2.6.1",
     "antlr4": "4.7.0",
     "atob": "2.0.3",
     "bootstrap": "3.3.7",

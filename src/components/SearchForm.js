@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Col from 'react-bootstrap/lib/Col';
 import FormControl from 'react-bootstrap/lib/FormControl';
@@ -10,10 +11,10 @@ import FontAwesome from 'react-fontawesome';
 
 class SearchForm extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		searchString  : PropTypes.string.isRequired,
 		onSearchString: PropTypes.func.isRequired,
-	};
+	});
 
 	handleKeyDown = (event) =>
 	{

@@ -15,6 +15,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Button from 'react-bootstrap/lib/Button';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
@@ -44,14 +45,14 @@ import Title from './Title';
 
 class SingleBlueprint extends PureComponent
 {
-	static propTypes = {
+	static propTypes = forbidExtraProps({
 		id         : PropTypes.string.isRequired,
 		isModerator: PropTypes.bool,
 		user       : PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 		}),
-	};
+	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};
 
