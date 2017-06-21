@@ -21,7 +21,7 @@ import Row from 'react-bootstrap/lib/Row';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
-import base from '../base';
+import base, {app} from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 
 import Select from 'react-select';
@@ -263,9 +263,9 @@ class Create extends PureComponent
 								fileName,
 								image,
 							};
-							const newBlueprintRef = base.database().ref('/blueprints').push(blueprint);
+							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
 							// TODO: Combine all of these database updates into a single call to update
-							base.database().ref(`/users/${this.props.user.userId}/blueprints`).update({[newBlueprintRef.key]: true});
+							app.database().ref(`/users/${this.props.user.userId}/blueprints`).update({[newBlueprintRef.key]: true});
 
 							const thumbnail = this.state.thumbnail;
 							newBlueprintRef.then(() =>
@@ -277,9 +277,9 @@ class Create extends PureComponent
 									numberOfFavorites: blueprint.numberOfFavorites,
 								};
 
-								base.database().ref(`/blueprintSummaries/${newBlueprintRef.key}`).set(blueprintSummary).then(() =>
+								app.database().ref(`/blueprintSummaries/${newBlueprintRef.key}`).set(blueprintSummary).then(() =>
 								{
-									base.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
+									app.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
 									{
 										this.setState(Create.initialState);
 										this.context.router.transitionTo(`/view/${newBlueprintRef.key}`);

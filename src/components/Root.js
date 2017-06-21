@@ -6,7 +6,7 @@ import React, {PureComponent} from 'react';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import {BrowserRouter, Match, Miss} from 'react-router';
 
-import base from '../base';
+import base, {app} from '../base';
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
 import Contact from './Contact';
@@ -36,7 +36,7 @@ class Root extends PureComponent
 
 	componentWillMount()
 	{
-		this.blueprintSummariesRef = base.syncState('blueprintSummaries', {
+		this.blueprintSummariesRef = base.bindToState('blueprintSummaries', {
 			context: this,
 			state  : 'blueprintSummaries',
 		});
@@ -51,7 +51,7 @@ class Root extends PureComponent
 			onFailure: console.log,
 		});
 
-		base.auth().onAuthStateChanged((user) =>
+		app.auth().onAuthStateChanged((user) =>
 		{
 			if (!user)
 			{
@@ -102,17 +102,17 @@ class Root extends PureComponent
 					}
 				};
 
-				base.database()
+				app.database()
 					.ref(`/users/${uid}/`)
 					.transaction(buildUserInformation)
 					.then(userInformationState)
-					.then(() => base.database().ref(`/moderators/${uid}`).once('value'))
+					.then(() => app.database().ref(`/moderators/${uid}`).once('value'))
 					.then(snapshot => newState.isModerator = snapshot.val())
 					.then(() => this.setState(newState))
 					.catch(eraseState);
 
 				this.unbindUserFavs();
-				this.userFavoritesRef = base.syncState(`/users/${uid}/favorites`, {
+				this.userFavoritesRef = base.bindToState(`/users/${uid}/favorites`, {
 					context: this,
 					state  : 'userFavorites',
 				});

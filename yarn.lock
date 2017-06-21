@@ -1676,15 +1676,7 @@ create-hmac@^1.1.0, create-hmac@^1.1.2, create-hmac@^1.1.4:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-create-react-class@^15.5.2:
-  version "15.5.3"
-  resolved "https://registry.yarnpkg.com/create-react-class/-/create-react-class-15.5.3.tgz#fb0f7cae79339e9a179e194ef466efa3923820fe"
-  dependencies:
-    fbjs "^0.8.9"
-    loose-envify "^1.3.1"
-    object-assign "^4.1.1"
-
-create-react-class@^15.6.0:
+create-react-class@^15.5.2, create-react-class@^15.6.0:
   version "15.6.0"
   resolved "https://registry.yarnpkg.com/create-react-class/-/create-react-class-15.6.0.tgz#ab448497c26566e1e29413e883207d57cfe7bed4"
   dependencies:
@@ -2695,9 +2687,9 @@ find-up@^2.0.0, find-up@^2.1.0:
   dependencies:
     locate-path "^2.0.0"
 
-firebase@3.9.0, firebase@^3.5.2:
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/firebase/-/firebase-3.9.0.tgz#c4237f50f58eeb25081b1839d6cbf175f8f7ed9b"
+firebase@4.1.2, firebase@^4.0.0:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/firebase/-/firebase-4.1.2.tgz#b213ab229eb65e31bdbd1d262059b1bb1edfac1f"
   dependencies:
     dom-storage "^2.0.2"
     faye-websocket "0.9.3"
@@ -5183,11 +5175,11 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-re-base@2.7.1:
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/re-base/-/re-base-2.7.1.tgz#9c02420627db7a0e59ba807e96bef8255af3a788"
+re-base@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/re-base/-/re-base-3.0.2.tgz#d054f8487735a890fd3b6b42aa5ecf184d874588"
   dependencies:
-    firebase "^3.5.2"
+    firebase "^4.0.0"
 
 react-bootstrap@0.31.0:
   version "0.31.0"

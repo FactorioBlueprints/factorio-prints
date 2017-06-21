@@ -33,7 +33,7 @@ import ReactDisqusThread from 'react-disqus-thread';
 import FontAwesome from 'react-fontawesome';
 import {Link} from 'react-router';
 
-import base from '../base';
+import base, {app} from '../base';
 import Blueprint from '../Blueprint';
 
 import entitiesWithIcons from '../data/entitiesWithIcons';
@@ -97,12 +97,12 @@ class SingleBlueprint extends PureComponent
 			{
 				if (!isEmpty(blueprint))
 				{
-					base.database().ref(`/users/${blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
+					app.database().ref(`/users/${blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
 					{
 						this.setState({author: snapshot.val()});
 					});
 					// TODO: Remove this once all summary number of favorites are back in sync with the real number of favorites.
-					base.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(blueprint.numberOfFavorites);
+					app.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(blueprint.numberOfFavorites);
 				}
 				const cachedState = this.getCachedState(blueprint);
 				this.setState({loading: false, blueprint, ...cachedState});
@@ -142,7 +142,7 @@ class SingleBlueprint extends PureComponent
 			[`/blueprintSummaries/${this.props.id}/numberOfFavorites`]: newNumberOfFavorites,
 			[`/users/${userId}/favorites/${this.props.id}`]           : wasFavorite ? null : true,
 		};
-		base.database().ref().update(updates);
+		app.database().ref().update(updates);
 	};
 
 	handleShowHideBase64 = (event) =>

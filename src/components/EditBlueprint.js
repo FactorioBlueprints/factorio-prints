@@ -26,7 +26,7 @@ import forEach from 'lodash/forEach';
 
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
-import base from '../base';
+import base, {app} from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 import buildImageUrl from '../helpers/buildImageUrl';
 
@@ -67,7 +67,7 @@ class EditBlueprint extends PureComponent
 
 	componentWillMount()
 	{
-		const blueprintRef = base.database().ref(`/blueprints/${this.props.id}`);
+		const blueprintRef = app.database().ref(`/blueprints/${this.props.id}`);
 		blueprintRef.once('value').then((snapshot) =>
 		{
 			const blueprint = snapshot.val();
@@ -292,7 +292,7 @@ class EditBlueprint extends PureComponent
 				updates[`/byTag/${tag}/${this.props.id}`] = true;
 			});
 
-			base.database().ref().update(updates);
+			app.database().ref().update(updates);
 		})
 			.then(() => this.context.router.transitionTo(`/view/${this.props.id}`))
 			.catch(console.log);
@@ -328,7 +328,7 @@ class EditBlueprint extends PureComponent
 		{
 			updates[`/byTag/${tag}/${this.props.id}`] = null;
 		});
-		base.database().ref().update(updates)
+		app.database().ref().update(updates)
 			.then(() =>
 			{
 				if (this.state.blueprint.fileName)
