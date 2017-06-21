@@ -24,9 +24,9 @@ class BlueprintGrid extends PureComponent
 		loadingTags                : PropTypes.bool.isRequired,
 		initiallySelectedTags      : PropTypes.arrayOf(PropTypes.string),
 		userFavorites              : PropTypes.object.isRequired,
-		user                       : PropTypes.shape({
+		user                       : PropTypes.shape(forbidExtraProps({
 			userId: PropTypes.string.isRequired,
-		}),
+		})),
 	});
 
 	state = {

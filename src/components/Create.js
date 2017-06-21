@@ -37,10 +37,10 @@ class Create extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		tags: PropTypes.arrayOf(PropTypes.string).isRequired,
-		user: PropTypes.shape({
+		user: PropTypes.shape(forbidExtraProps({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
-		}),
+		})),
 	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};

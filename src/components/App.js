@@ -7,11 +7,11 @@ class App extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		children: PropTypes.node.isRequired,
-		user    : PropTypes.shape({
+		user    : PropTypes.shape(forbidExtraProps({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
-		}),
+		})),
 	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};

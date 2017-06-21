@@ -15,11 +15,11 @@ import {app} from '../base';
 class Header extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user: PropTypes.shape({
+		user: PropTypes.shape(forbidExtraProps({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
-		}),
+		})),
 	});
 
 	constructor()

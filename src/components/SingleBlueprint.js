@@ -51,10 +51,10 @@ class SingleBlueprint extends PureComponent
 	static propTypes = forbidExtraProps({
 		id         : PropTypes.string.isRequired,
 		isModerator: PropTypes.bool,
-		user       : PropTypes.shape({
+		user       : PropTypes.shape(forbidExtraProps({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
-		}),
+		})),
 	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};

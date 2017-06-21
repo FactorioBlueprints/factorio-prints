@@ -39,10 +39,10 @@ class EditBlueprint extends PureComponent
 		id          : PropTypes.string.isRequired,
 		isModerator : PropTypes.bool,
 		tags        : PropTypes.arrayOf(PropTypes.string).isRequired,
-		user        : PropTypes.shape({
+		user        : PropTypes.shape(forbidExtraProps({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
-		}),
+		})),
 	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};

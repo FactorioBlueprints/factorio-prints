@@ -23,9 +23,9 @@ class MostFavoritedGrid extends PureComponent
 		byTag                      : PropTypes.object.isRequired,
 		loadingTags                : PropTypes.bool.isRequired,
 		userFavorites              : PropTypes.object.isRequired,
-		user                       : PropTypes.shape({
+		user                       : PropTypes.shape(forbidExtraProps({
 			userId: PropTypes.string.isRequired,
-		}),
+		})),
 	});
 
 	state = {

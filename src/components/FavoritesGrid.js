@@ -14,10 +14,10 @@ class FavoritesGrid extends PureComponent
 	static propTypes = forbidExtraProps({
 		blueprintSummaries: PropTypes.object.isRequired,
 		userFavorites     : PropTypes.object.isRequired,
-		user              : PropTypes.shape({
+		user              : PropTypes.shape(forbidExtraProps({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
-		}),
+		})),
 	});
 
 	state = {
