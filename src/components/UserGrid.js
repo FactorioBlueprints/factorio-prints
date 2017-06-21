@@ -65,7 +65,7 @@ class UserGrid extends PureComponent
 		this.displayNameRef = base.bindToState(`/users/${props.id}/displayName`, {
 			context  : this,
 			state    : 'displayName',
-			asString : true,
+			defaultValue : '',
 			onFailure: console.log,
 		});
 
