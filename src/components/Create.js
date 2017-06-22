@@ -1,8 +1,10 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
 import firebase from 'firebase';
+import isEmpty from 'lodash/isEmpty';
+import some from 'lodash/some';
 import marked from 'marked';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
@@ -21,22 +23,20 @@ import Row from 'react-bootstrap/lib/Row';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
-import base, {app} from '../base';
-import noImageAvailable from '../gif/No_available_image.gif';
 
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
+import base, {app} from '../base';
 
 import Blueprint from '../Blueprint';
-import isEmpty from 'lodash/isEmpty';
-import some from 'lodash/some';
+import noImageAvailable from '../gif/No_available_image.gif';
 
 import scaleImage from '../helpers/ImageScaler';
 
 class Create extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		tags        : PropTypes.arrayOf(PropTypes.string).isRequired,
+		tags: PropTypes.arrayOf(PropTypes.string).isRequired,
 		user: PropTypes.shape({
 			userId     : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
@@ -182,11 +182,89 @@ class Create extends PureComponent
 		this.setState({uploadProgressPercent});
 	};
 
+	validateInputs = () =>
+	{
+		const submissionErrors = [];
+		const {blueprint} = this.state;
+		if (!blueprint.title)
+		{
+			submissionErrors.push('Title may not be empty');
+		}
+		else if (blueprint.title.trim().length < 10)
+		{
+			submissionErrors.push('Title must be at least 10 characters');
+		}
+
+		if (!blueprint.descriptionMarkdown)
+		{
+			submissionErrors.push('Description Markdown may not be empty');
+		}
+		else if (blueprint.descriptionMarkdown.trim().length < 10)
+		{
+			submissionErrors.push('Description Markdown must be at least 10 characters');
+		}
+
+		if (!blueprint.blueprintString)
+		{
+			submissionErrors.push('Blueprint String may not be empty');
+		}
+		else if (blueprint.blueprintString.trim().length < 10)
+		{
+			submissionErrors.push('Blueprint String must be at least 10 characters');
+		}
+
+		if (this.state.files.length !== 1)
+		{
+			submissionErrors.push('You must attach exactly one screenshot');
+		}
+		return submissionErrors;
+	};
+
+	validateWarnings = () =>
+	{
+		const submissionWarnings = [];
+
+		if (isEmpty(this.state.blueprint.tags))
+		{
+			submissionWarnings.push('The blueprint has no tags. Consider adding a few tags.');
+		}
+
+		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
+		if (blueprint.decodedObject == null)
+		{
+			submissionWarnings.push('Could not parse blueprint.');
+			return submissionWarnings;
+		}
+
+		if (blueprint.isV14())
+		{
+			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
+		}
+
+		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.label))
+		{
+			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
+		}
+
+		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.icons))
+		{
+			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
+		}
+
+		if (blueprint.isBook() && some(blueprint.decodedObject.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.name)))
+		{
+			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
+		}
+
+		return submissionWarnings;
+	};
+
 	handleCreateBlueprint = (event) =>
 	{
 		event.preventDefault();
 
 		const submissionErrors = this.validateInputs();
+
 		if (submissionErrors.length > 0)
 		{
 			this.setState({submissionErrors});
@@ -217,9 +295,9 @@ class Create extends PureComponent
 		this.actuallyCreateBlueprint();
 	}
 
-	actuallyCreateBlueprint()
+	actuallyCreateBlueprint = () =>
 	{
-		const file = this.state.files[0];
+		const [file]     = this.state.files;
 		const fileName = file.name;
 
 		const fileNameRef = base.storage().ref().child(fileName);
@@ -291,83 +369,6 @@ class Create extends PureComponent
 					.catch(this.handleImgurError);
 			});
 		});
-	}
-
-	validateInputs = () =>
-	{
-		const submissionErrors = [];
-		const blueprint = this.state.blueprint;
-		if (!blueprint.title)
-		{
-			submissionErrors.push('Title may not be empty');
-		}
-		else if (blueprint.title.trim().length < 10)
-		{
-			submissionErrors.push('Title must be at least 10 characters');
-		}
-
-		if (!blueprint.descriptionMarkdown)
-		{
-			submissionErrors.push('Description Markdown may not be empty');
-		}
-		else if (blueprint.descriptionMarkdown.trim().length < 10)
-		{
-			submissionErrors.push('Description Markdown must be at least 10 characters');
-		}
-
-		if (!blueprint.blueprintString)
-		{
-			submissionErrors.push('Blueprint String may not be empty');
-		}
-		else if (blueprint.blueprintString.trim().length < 10)
-		{
-			submissionErrors.push('Blueprint String must be at least 10 characters');
-		}
-
-		if (this.state.files.length !== 1)
-		{
-			submissionErrors.push('You must attach exactly one screenshot');
-		}
-		return submissionErrors;
-	}
-
-	validateWarnings = () =>
-	{
-		const submissionWarnings = [];
-
-		if (isEmpty(this.state.blueprint.tags))
-		{
-			submissionWarnings.push('The blueprint has no tags. Consider adding a few tags.');
-		}
-
-		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
-		if (blueprint.decodedObject == null)
-		{
-			submissionWarnings.push('Could not parse blueprint.');
-			return submissionWarnings;
-		}
-
-		if (blueprint.isV14())
-		{
-			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
-		}
-
-		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.label))
-		{
-			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
-		}
-
-		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.icons))
-		{
-			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
-		}
-
-		if (blueprint.isBook() && some(blueprint.decodedObject.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.name)))
-		{
-			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
-		}
-
-		return submissionWarnings;
 	}
 
 	handleCancel = () =>
@@ -520,7 +521,7 @@ class Create extends PureComponent
 										placeholder='Description (plain text or *GitHub Flavored Markdown*)'
 										value={blueprint.descriptionMarkdown}
 										onChange={this.handleDescriptionChanged}
-										style={{height: 200}}
+										style={{minHeight: 200}}
 									/>
 								</Col>
 							</FormGroup>
@@ -530,23 +531,10 @@ class Create extends PureComponent
 								<Col sm={10}>
 									<Panel>
 										<div
-											style={{height: 200}}
+											style={{minHeight: 200}}
 											dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}}
 										/>
 									</Panel>
-								</Col>
-							</FormGroup>
-
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Tags'}</Col>
-								<Col sm={10}>
-									<Select
-										value={this.state.blueprint.tags}
-										options={this.props.tags.map(value => ({value, label: value}))}
-										onChange={handleTagSelection}
-										multi
-										placeholder='Select at least one tag'
-									/>
 								</Col>
 							</FormGroup>
 
@@ -560,6 +548,19 @@ class Create extends PureComponent
 										value={blueprint.blueprintString}
 										className='blueprintString'
 										onChange={this.handleChange}
+									/>
+								</Col>
+							</FormGroup>
+
+							<FormGroup>
+								<Col componentClass={ControlLabel} sm={2}>{'Tags'}</Col>
+								<Col sm={10}>
+									<Select
+										value={this.state.blueprint.tags}
+										options={this.props.tags.map(value => ({value, label: value}))}
+										onChange={handleTagSelection}
+										multi
+										placeholder='Select at least one tag'
 									/>
 								</Col>
 							</FormGroup>
