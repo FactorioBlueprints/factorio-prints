@@ -301,7 +301,7 @@ class EditBlueprint extends PureComponent
 
 	handleCancel = () =>
 	{
-		this.context.router.transitionTo('/blueprints');
+		this.context.router.transitionTo(`/view/${this.props.id}`);
 	};
 
 	handleShowConfirmDelete  = (event) =>
