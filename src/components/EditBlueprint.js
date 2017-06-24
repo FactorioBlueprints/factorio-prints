@@ -1,8 +1,10 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
 import firebase from 'firebase';
+
+import forEach from 'lodash/forEach';
 import marked from 'marked';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Alert from 'react-bootstrap/lib/Alert';
 import Button from 'react-bootstrap/lib/Button';
@@ -22,11 +24,9 @@ import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
 
-import forEach from 'lodash/forEach';
-
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
-import base, {app} from '../base';
+import {app} from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 import buildImageUrl from '../helpers/buildImageUrl';
 
@@ -220,7 +220,7 @@ class EditBlueprint extends PureComponent
 		let uploadTask;
 		if (file)
 		{
-			const fileNameRef = base.storage().ref().child(file.name);
+			const fileNameRef = app.storage().ref().child(file.name);
 			imagePromise = fileNameRef.getDownloadURL()
 				.then(() =>
 				{
@@ -334,7 +334,7 @@ class EditBlueprint extends PureComponent
 				if (this.state.blueprint.fileName)
 				{
 					// TODO also delete imgur image
-					const fileNameRef = base.storage().ref().child(this.state.blueprint.fileName);
+					const fileNameRef = app.storage().ref().child(this.state.blueprint.fileName);
 					return fileNameRef.delete();
 				}
 				return undefined;

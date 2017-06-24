@@ -26,7 +26,7 @@ import FontAwesome from 'react-fontawesome';
 
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
-import base, {app} from '../base';
+import {app} from '../base';
 
 import Blueprint from '../Blueprint';
 import noImageAvailable from '../gif/No_available_image.gif';
@@ -300,7 +300,7 @@ class Create extends PureComponent
 		const [file]     = this.state.files;
 		const fileName = file.name;
 
-		const fileNameRef = base.storage().ref().child(fileName);
+		const fileNameRef = app.storage().ref().child(fileName);
 		fileNameRef.getDownloadURL().then(() =>
 		{
 			this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
