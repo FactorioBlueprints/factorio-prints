@@ -91,13 +91,13 @@ class Blueprint
 
 	convertSingleBookEntry = (decodedObject) =>
 	{
-		const {label, tiles, entities, icons} = decodedObject;
+		const {label, name, tiles, entities, icons} = decodedObject;
 
 		return {
 			icons,
 			entities: (tiles || entities).map((entity, index) => ({entity_number: index + 1, ...entity})),
 			item    : 'blueprint',
-			label,
+			label   : label || name,
 			version : 12345567890,
 		};
 	};
@@ -114,26 +114,35 @@ class Blueprint
 			throw new Error();
 		}
 
-		if (decodedObject.data)
+		const convertEmbeddedBlueprints = (rawBlueprints, label) =>
 		{
-			const {data: {label, active, main}} = decodedObject;
-			const blueprints                    = active ? [active, ...main] : main;
-
-			const convertedBlueprints = blueprints.map((blueprint, index) => (
-				{
+			const blueprints = rawBlueprints.map((blueprint, index) =>
+				({
 					blueprint: this.convertSingleBookEntry(blueprint),
 					index,
 				}));
 
-			const blueprint_book = {
-				blueprints  : convertedBlueprints,
-				item        : 'blueprint-book',
-				label,
-				active_index: 0,
-				version     : 12345567890,
+			return {
+				blueprint_book: {
+					blueprints,
+					item        : 'blueprint-book',
+					label,
+					active_index: 0,
+					version     : 12345567890,
+				},
 			};
+		};
 
-			return {blueprint_book};
+		if (decodedObject.data)
+		{
+			const {data: {label, active, main}} = decodedObject;
+			const blueprints                    = active ? [active, ...main] : main;
+			return convertEmbeddedBlueprints(blueprints, label);
+		}
+		if (decodedObject.book)
+		{
+			const {book: [/* Empty first slot */, ...blueprints], name: label}  = decodedObject;
+			return convertEmbeddedBlueprints(blueprints, label);
 		}
 		return {blueprint_book: {blueprints: []}};
 	};
