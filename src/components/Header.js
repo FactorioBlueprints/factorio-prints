@@ -1,17 +1,16 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
+import {auth} from 'firebase';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {forbidExtraProps} from 'airbnb-prop-types';
-
-import Navbar from 'react-bootstrap/lib/Navbar';
-import Nav from 'react-bootstrap/lib/Nav';
-import NavDropdown from 'react-bootstrap/lib/NavDropdown';
 import Dropdown from 'react-bootstrap/lib/Dropdown';
 import MenuItem from 'react-bootstrap/lib/MenuItem';
-import {Link} from 'react-router';
-import base from '../base';
-import {auth} from 'firebase';
-
+import Nav from 'react-bootstrap/lib/Nav';
+import Navbar from 'react-bootstrap/lib/Navbar';
+import NavDropdown from 'react-bootstrap/lib/NavDropdown';
 import FontAwesome from 'react-fontawesome';
+import {Link} from 'react-router';
+
+import {app} from '../base';
 
 class Header extends PureComponent
 {
@@ -40,12 +39,12 @@ class Header extends PureComponent
 
 	authenticate = (provider) =>
 	{
-		base.auth().signInWithPopup(provider).catch(error => console.error({error}));
+		app.auth().signInWithPopup(provider).catch(error => console.error({error}));
 	};
 
 	handleLogout = () =>
 	{
-		base.auth().signOut();
+		app.auth().signOut();
 	};
 
 	getSmallUserPhoto = () =>
