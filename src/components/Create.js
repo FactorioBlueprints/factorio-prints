@@ -251,7 +251,7 @@ class Create extends PureComponent
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
 
-		if (blueprint.isBook() && some(blueprint.decodedObject.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.name)))
+		if (blueprint.isBook() && some(blueprint.decodedObject.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.blueprint.label)))
 		{
 			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 		}
