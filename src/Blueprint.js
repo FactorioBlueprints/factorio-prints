@@ -1,5 +1,8 @@
 import decodeV14Base64, {decodeV15Base64} from './parser/decodeFromBase64';
 import luaTableToJsonObject from './parser/luaTableToJsonObject';
+import sortBy from 'lodash/sortBy';
+import toPairs from 'lodash/toPairs';
+import isArray from 'lodash/isArray';
 
 class Blueprint
 {
@@ -141,7 +144,17 @@ class Blueprint
 		}
 		if (decodedObject.book)
 		{
-			const {book: [/* Empty first slot */, ...blueprints], name: label}  = decodedObject;
+			if (isArray(decodedObject.book))
+			{
+				const {book: [/* Empty first slot */, ...blueprints], name: label}  = decodedObject;
+				return convertEmbeddedBlueprints(blueprints, label);
+			}
+
+			const pairs = toPairs(decodedObject.book);
+			const sortedPairs = sortBy(pairs, 0);
+			const blueprints = sortedPairs.map(pair => pair[1]);
+			const label = decodedObject.label;
+
 			return convertEmbeddedBlueprints(blueprints, label);
 		}
 		return {blueprint_book: {blueprints: []}};
