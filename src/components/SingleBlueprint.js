@@ -101,8 +101,6 @@ class SingleBlueprint extends PureComponent
 					{
 						this.setState({author: snapshot.val()});
 					});
-					// TODO: Remove this once all summary number of favorites are back in sync with the real number of favorites.
-					app.database().ref(`/blueprintSummaries/${this.props.id}/numberOfFavorites`).set(blueprint.numberOfFavorites);
 				}
 				const cachedState = this.getCachedState(blueprint);
 				this.setState({loading: false, blueprint, ...cachedState});
