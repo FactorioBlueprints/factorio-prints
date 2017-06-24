@@ -337,11 +337,17 @@ class SingleBlueprint extends PureComponent
 									<td>{'Name'}</td>
 									<td>{this.state.parsedBlueprint.isBook() ? this.state.v15Decoded.blueprint_book.label : this.state.v15Decoded.blueprint.label}</td>
 								</tr>
-								{this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint_book && <tr>
-									<td colSpan='3'>
-										{`Blueprint book with ${this.state.v15Decoded.blueprint_book.blueprints.length} blueprints.`}
-									</td>
-								</tr>}
+								{
+									this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint_book.blueprints.map((eachBlueprint, index) =>
+										<tr key={index}>
+											<td>
+												{index + 1}
+											</td>
+											<td>
+												{eachBlueprint.blueprint.label}
+											</td>
+										</tr>)
+								}
 								{(!this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint.icons || [])
 									.filter(icon => icon != null)
 									.map((icon) =>
