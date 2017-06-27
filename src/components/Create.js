@@ -241,17 +241,18 @@ class Create extends PureComponent
 			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
 		}
 
-		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.label))
+		const v15Decoded = blueprint.getV15Decoded();
+		if (!blueprint.isBook() && isEmpty(v15Decoded.blueprint.label))
 		{
 			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
 		}
 
-		if (!blueprint.isBook() && isEmpty(blueprint.decodedObject.blueprint.icons))
+		if (!blueprint.isBook() && isEmpty(v15Decoded.blueprint.icons))
 		{
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
 
-		if (blueprint.isBook() && some(blueprint.decodedObject.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.blueprint.label)))
+		if (blueprint.isBook() && some(v15Decoded.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.blueprint.label)))
 		{
 			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 		}
