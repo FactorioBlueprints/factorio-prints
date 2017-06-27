@@ -348,10 +348,12 @@ class SingleBlueprint extends PureComponent
 											</td>
 										</tr>)
 								}
-								{(!this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint.icons || [])
+								{ // eslint-disable-next-line
+								(!this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint.icons || [])
 									.filter(icon => icon != null)
 									.map((icon) =>
 									{
+										// eslint-disable-next-line
 										const iconName = icon.name || icon.signal && icon.signal.name;
 										return <tr key={icon.index}>
 											<td>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
