@@ -20,11 +20,11 @@
     "eslint-plugin-no-loops": "0.3.0",
     "eslint-plugin-promise": "3.5.0",
     "eslint-plugin-react": "7.1.0",
-    "react-scripts": "1.0.7",
+    "react-scripts": "1.0.8",
     "stylus": "0.54.5"
   },
   "dependencies": {
-    "airbnb-prop-types": "2.6.1",
+    "airbnb-prop-types": "2.7.0",
     "antlr4": "4.7.0",
     "atob": "2.0.3",
     "bootstrap": "3.3.7",
