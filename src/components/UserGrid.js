@@ -25,9 +25,9 @@ class UserGrid extends PureComponent
 	});
 
 	state = {
-		displayName: '',
-		blueprints : {},
-		loading    : true,
+		displayName : '',
+		blueprints  : {},
+		loading     : true,
 		searchString: '',
 	};
 
@@ -63,10 +63,10 @@ class UserGrid extends PureComponent
 		}
 
 		this.displayNameRef = base.bindToState(`/users/${props.id}/displayName`, {
-			context  : this,
-			state    : 'displayName',
-			defaultValue : '',
-			onFailure: console.log,
+			context     : this,
+			state       : 'displayName',
+			defaultValue: '',
+			onFailure   : console.log,
 		});
 
 		this.blueprintsRef = base.bindToState(`/users/${props.id}/blueprints`, {
@@ -120,13 +120,14 @@ class UserGrid extends PureComponent
 						Object.keys(blueprints || {})
 							.reverse()
 							.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
-							.map(key =>
-							<BlueprintThumbnail
-								key={key}
-								id={key}
-								isFavorite={this.props.userFavorites[key] === true}
-								{...this.props.blueprintSummaries[key]}
-							/>)
+							.map(key => (
+								<BlueprintThumbnail
+									key={key}
+									id={key}
+									isFavorite={this.props.userFavorites[key] === true}
+									{...this.props.blueprintSummaries[key]}
+								/>
+							))
 					}
 				</Row>
 			</Grid>
