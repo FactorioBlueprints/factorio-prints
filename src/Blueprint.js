@@ -3,6 +3,7 @@ import luaTableToJsonObject from './parser/luaTableToJsonObject';
 import sortBy from 'lodash/sortBy';
 import toPairs from 'lodash/toPairs';
 import isArray from 'lodash/isArray';
+import isNull from 'lodash/isNull';
 
 class Blueprint
 {
@@ -94,6 +95,11 @@ class Blueprint
 
 	convertSingleBookEntry = (decodedObject) =>
 	{
+		if (isNull(decodedObject))
+		{
+			return null;
+		}
+
 		const {label, name, tiles, entities, icons} = decodedObject;
 
 		return {

@@ -344,7 +344,8 @@ class SingleBlueprint extends PureComponent
 												{index + 1}
 											</td>
 											<td>
-												{eachBlueprint.blueprint.label}
+												{/* Old 0.14 blueprint books could have empty slots */}
+												{eachBlueprint.blueprint ? eachBlueprint.blueprint.label : 'Empty slot in book'}
 											</td>
 										</tr>)
 								}
