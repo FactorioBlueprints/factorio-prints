@@ -191,6 +191,10 @@ class Root extends PureComponent
 			blueprintSummaries={this.state.blueprintSummaries}
 			userFavorites={this.state.userFavorites}
 			user={this.state.user}
+			tags={this.state.tags}
+			lazilyFetchTaggedBlueprints={this.lazilyFetchTaggedBlueprints}
+			byTag={this.state.byTag}
+			loadingTags={this.state.loadingTags}
 		/>;
 	renderCreate            = props =>
 		<Create

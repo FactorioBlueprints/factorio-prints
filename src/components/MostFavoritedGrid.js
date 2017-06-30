@@ -1,3 +1,4 @@
+import every from 'lodash/every';
 import get from 'lodash/get';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -11,13 +12,18 @@ import base from '../base';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import SearchForm from './SearchForm';
+import TagForm from './TagForm';
 
 class MostFavoritedGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		blueprintSummaries: PropTypes.object.isRequired,
-		userFavorites     : PropTypes.object.isRequired,
-		user              : PropTypes.shape({
+		blueprintSummaries         : PropTypes.object.isRequired,
+		tags                       : PropTypes.arrayOf(PropTypes.string).isRequired,
+		lazilyFetchTaggedBlueprints: PropTypes.func.isRequired,
+		byTag                      : PropTypes.object.isRequired,
+		loadingTags                : PropTypes.bool.isRequired,
+		userFavorites              : PropTypes.object.isRequired,
+		user                       : PropTypes.shape({
 			userId: PropTypes.string.isRequired,
 		}),
 	});
@@ -26,11 +32,13 @@ class MostFavoritedGrid extends PureComponent
 		blueprints  : {},
 		loading     : true,
 		searchString: '',
+		selectedTags: [],
 	};
 
 	componentWillMount()
 	{
 		this.bindToState(this.props);
+		this.setState({selectedTags: this.props.initiallySelectedTags || []});
 	}
 
 	componentWillReceiveProps(nextProps)
@@ -45,19 +53,23 @@ class MostFavoritedGrid extends PureComponent
 
 	componentWillUnmount()
 	{
-		if (this.blueprintsRef)
-		{
-			base.removeBinding(this.blueprintsRef);
-		}
+		this.unbindUserBlueprints();
 	}
 
-	bindToState = (props) =>
+	unbindUserBlueprints = () =>
 	{
 		if (this.blueprintsRef)
 		{
 			base.removeBinding(this.blueprintsRef);
+			this.blueprintsRef = null;
 		}
+	};
 
+	bindToState = (props) =>
+	{
+		this.unbindUserBlueprints();
+
+		// TODO: Move this state up to Root as myBlueprints or something, and share the state with TagGrid and other grids
 		if (props.user)
 		{
 			this.blueprintsRef = base.bindToState(`/users/${props.user.userId}/blueprints`, {
@@ -91,6 +103,12 @@ class MostFavoritedGrid extends PureComponent
 		this.setState({searchString: event.target.value});
 	};
 
+	handleTagSelection = (selectedTags) =>
+	{
+		this.props.lazilyFetchTaggedBlueprints();
+		this.setState({selectedTags: selectedTags.map(each => each.value)});
+	};
+
 	render()
 	{
 		return <Grid>
@@ -102,12 +120,23 @@ class MostFavoritedGrid extends PureComponent
 					searchString={this.state.searchString}
 					onSearchString={this.handleSearchString}
 				/>
+				<TagForm
+					tags={this.props.tags}
+					selectedTags={this.state.selectedTags}
+					onTagSelection={this.handleTagSelection}
+				/>
 			</Row>
 			<Row>
 				{
 					Object.keys(this.props.blueprintSummaries)
 						.filter(key => this.props.blueprintSummaries[key].numberOfFavorites > 0)
 						.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
+						.filter(key => this.props.loadingTags || every(this.state.selectedTags, (selectedTag) =>
+						{
+							const pathElements     = selectedTag.split('/').filter(each => each !== '');
+							const blueprintsTagged = get(this.props.byTag, pathElements);
+							return blueprintsTagged[key] === true;
+						}))
 						.sort(this.compareNumberOfFavorites)
 						.map((key) =>
 						{
