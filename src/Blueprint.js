@@ -66,8 +66,19 @@ class Blueprint
 			throw new Error();
 		}
 
-		const {icons, name, entities} = decodedObject;
+		const decode = () =>
+		{
+			if (decodedObject.data)
+			{
+				const {icons, label, entities} = decodedObject.data;
+				return {icons, label, entities};
+			}
 
+			const {icons, name: label, entities} = decodedObject;
+			return {icons, label, entities};
+		};
+
+		const {icons, label, entities} = decode();
 		const convertedEntities = entities.map((entity, index) =>
 		{
 			const result = {
@@ -86,7 +97,7 @@ class Blueprint
 			icons,
 			entities: convertedEntities,
 			item    : 'blueprint',
-			label   : name,
+			label,
 			version : 12345567890,
 		};
 
