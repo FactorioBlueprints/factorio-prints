@@ -8,6 +8,7 @@ import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
 import isEmpty from 'lodash/isEmpty';
 import concat from 'lodash/concat';
+import range from 'lodash/range';
 
 import marked from 'marked';
 import moment from 'moment';
@@ -273,7 +274,7 @@ class SingleBlueprint extends PureComponent
 					{blueprint.tags && blueprint.tags.length > 0 && <Panel header='Tags'>
 						<h4>
 							{
-								flatMap((blueprint.tags || []), (tag => [<Link key={tag} to={`/tagged${tag}`}><Label bsStyle='primary'>{tag}</Label></Link>, ' ']))
+								flatMap(blueprint.tags || [], tag => [<Link key={tag} to={`/tagged${tag}`}><Label bsStyle='primary'>{tag}</Label></Link>, ' '])
 							}
 						</h4>
 					</Panel>
@@ -293,15 +294,17 @@ class SingleBlueprint extends PureComponent
 								<tr>
 									<td><FontAwesome name='calendar' size='lg' fixedWidth />{' Created'}</td>
 									<td>
-										<span
-											title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(createdDate).fromNow()}</span>
+										<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+											{moment(createdDate).fromNow()}
+										</span>
 									</td>
 								</tr>
 								<tr>
 									<td><FontAwesome name='clock-o' size='lg' fixedWidth />{' Last Updated'}</td>
 									<td>
-										<span
-											title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(lastUpdatedDate).fromNow()}</span>
+										<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+											{moment(lastUpdatedDate).fromNow()}
+										</span>
 									</td>
 								</tr>
 								<tr>
@@ -313,51 +316,49 @@ class SingleBlueprint extends PureComponent
 					</Panel>
 					{this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() && <Panel header='Requirements'>
 						<Table bordered hover fill>
+							<colgroup>
+								<col span='1' style={{width: '1%'}} />
+								<col span='1' style={{width: '1%'}} />
+								<col span='1' />
+							</colgroup>
+
 							<tbody>
 								{this.entityHistogram(this.state.v15Decoded.blueprint).map(pair =>
 									<tr key={pair[0]}>
-										<td>{pair[1]}</td>
-										<td>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
+										<td className='icon'>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
+										<td className='number'>{pair[1]}</td>
 										<td>{pair[0]}</td>
 									</tr>)}
 								{this.itemHistogram(this.state.v15Decoded.blueprint).map(pair =>
 									<tr key={pair[0]}>
-										<td>{pair[1]}</td>
-										<td>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
+										<td className='icon'>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
+										<td className='number'>{pair[1]}</td>
 										<td>{pair[0]}</td>
 									</tr>)
 								}
 							</tbody>
 						</Table>
 					</Panel>}
-					{this.state.parsedBlueprint && this.state.v15Decoded && <Panel header='Extra Info'>
+					{this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() && <Panel header='Extra Info'>
 						<Table bordered hover fill>
+							<colgroup>
+								<col span='1' style={{width: '1%'}} />
+								<col span='1' />
+							</colgroup>
+
 							<tbody>
 								<tr>
-									<td>{'Name'}</td>
-									<td>{this.state.parsedBlueprint.isBook() ? this.state.v15Decoded.blueprint_book.label : this.state.v15Decoded.blueprint.label}</td>
+									<td colSpan={2}>{this.state.v15Decoded.blueprint.label}</td>
 								</tr>
-								{
-									this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint_book.blueprints.map((eachBlueprint, index) =>
-										<tr key={index}>
-											<td>
-												{index + 1}
-											</td>
-											<td>
-												{/* Old 0.14 blueprint books could have empty slots */}
-												{eachBlueprint.blueprint ? eachBlueprint.blueprint.label : 'Empty slot in book'}
-											</td>
-										</tr>)
-								}
 								{ // eslint-disable-next-line
-								(!this.state.parsedBlueprint.isBook() && this.state.v15Decoded.blueprint.icons || [])
+								(this.state.v15Decoded.blueprint.icons || [])
 									.filter(icon => icon != null)
 									.map((icon) =>
 									{
 										// eslint-disable-next-line
 										const iconName = icon.name || icon.signal && icon.signal.name;
 										return <tr key={icon.index}>
-											<td>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
+											<td className='icon'>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
 											<td>{iconName}</td>
 										</tr>;
 									})
@@ -404,6 +405,49 @@ class SingleBlueprint extends PureComponent
 							}
 						</ButtonToolbar>
 					</Panel>
+					{this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBook() && <Panel header='Extra Info'>
+						<Table bordered hover fill>
+							<colgroup>
+								<col span='1' style={{width: '1%'}} />
+								<col span='1' style={{width: '1%'}} />
+								<col span='1' style={{width: '1%'}} />
+								<col span='1' style={{width: '1%'}} />
+								<col span='1'  />
+							</colgroup>
+							<tbody>
+								<tr>
+									<td colSpan={4}>{'Book'}</td>
+									<td>{this.state.v15Decoded.blueprint_book.label}</td>
+								</tr>
+								{
+									this.state.v15Decoded.blueprint_book.blueprints.map((eachBlueprint, index) =>
+										<tr key={index}>
+											{
+												range(4).map((index) => {
+													if (eachBlueprint.blueprint.icons
+														&& eachBlueprint.blueprint.icons.length > index
+														&& eachBlueprint.blueprint.icons[index] != null)
+													{
+														const icon = eachBlueprint.blueprint.icons[index];
+														// eslint-disable-next-line
+														const iconName = icon.name || icon.signal && icon.signal.name;
+														return <td className='icon' key={index}>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>;
+													}
+													else
+													{
+														return <td className='icon' key={index}></td>
+													}
+												})
+											}
+											<td>
+												{/* Old 0.14 blueprint books could have empty slots */}
+												{eachBlueprint.blueprint ? eachBlueprint.blueprint.label : 'Empty slot in book'}
+											</td>
+										</tr>)
+								}
+							</tbody>
+						</Table>
+					</Panel>}
 					{this.state.showBlueprint && <Panel header='Blueprint String'>
 						<div className='blueprintString'>
 							{blueprint.blueprintString}
