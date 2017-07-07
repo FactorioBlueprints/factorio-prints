@@ -4,6 +4,7 @@ import join from 'lodash/join';
 
 import React, {PureComponent} from 'react';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import DocumentTitle from 'react-document-title';
 import {BrowserRouter, Match, Miss} from 'react-router';
 
 import base, {app} from '../base';
@@ -262,6 +263,7 @@ class Root extends PureComponent
 	{
 		return <shell className='app-shell primary-content'>
 			<BrowserRouter>
+				<DocumentTitle title='Factorio Prints'>
 				<App user={this.state.user}>
 					<div>
 						<Match pattern='/' exactly render={this.renderIntro} />
@@ -277,6 +279,7 @@ class Root extends PureComponent
 						<Miss component={NoMatch} />
 					</div>
 				</App>
+				</DocumentTitle>
 			</BrowserRouter>
 		</shell>;
 	}
