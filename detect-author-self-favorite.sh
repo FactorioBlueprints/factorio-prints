@@ -1,0 +1,1 @@
+jq --raw-output '.blueprints | map_values({author: .author.userId, favorites: (if .favorites? == null then [] else (.favorites | keys) end)}) | to_entries | .[] | . as {$key, value: {$author, $favorites}} | {$key, $author, $favorites} | select($favorites | contains([$author])) | "http://localhost:3000/view/" + .key' < factorio-blueprints-export.json
