@@ -246,7 +246,6 @@ class EditBlueprint extends PureComponent
 				.then(data =>
 					({
 						id        : data.id,
-						link      : data.link,
 						deletehash: data.deletehash,
 						type      : data.type,
 						height    : data.height,
@@ -270,6 +269,7 @@ class EditBlueprint extends PureComponent
 				[`/blueprintSummaries/${this.props.id}/title/`]     : this.state.blueprint.title,
 				[`/blueprintSummaries/${this.props.id}/imgurId/`]   : image.id,
 				[`/blueprintSummaries/${this.props.id}/imgurType/`] : image.type,
+				// TODO: What about height, width, and deletehash?
 			};
 
 			if (file)

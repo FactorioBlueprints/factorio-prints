@@ -324,7 +324,6 @@ class Create extends PureComponent
 							const data = json.data;
 							const image = {
 								id        : data.id,
-								link      : data.link,
 								deletehash: data.deletehash,
 								type      : data.type,
 								height    : data.height,
