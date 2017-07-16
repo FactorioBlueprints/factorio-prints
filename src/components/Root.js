@@ -87,8 +87,8 @@ class Root extends PureComponent
 
 				const userInformationState = ({snapshot}) =>
 				{
-					newState.user = snapshot.val();
-					newState.user.userId = uid;
+					const {displayName} = snapshot.val();
+					newState.user = {userId: uid, displayName};
 				};
 
 				const eraseState = (error) =>
