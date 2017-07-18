@@ -62,9 +62,9 @@ class Create extends PureComponent
 	};
 
 	static imgurHeaders = {
-		Accept        : 'application/json',
-		'Content-Type': 'application/json',
-		Authorization : 'Client-ID 46a3f144b6a0882',
+		'Accept'       : 'application/json',
+		'Content-Type' : 'application/json',
+		'Authorization': 'Client-ID 46a3f144b6a0882',
 	};
 
 	state = Create.initialState;

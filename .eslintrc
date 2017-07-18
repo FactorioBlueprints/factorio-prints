@@ -43,7 +43,7 @@
     "no-extra-parens": "error",
     "semi": "error",
     "no-useless-constructor": "error",
-    "operator-linebreak": "error",
+    "operator-linebreak": ["error", "before"],
     "arrow-spacing": "error",
     "camelcase": ["error", {properties: "never"}],
 
@@ -58,7 +58,7 @@
     "react/react-in-jsx-scope": "error",
     "react/no-unused-prop-types": ["error", {"skipShapeProps": true}],
     "react/no-multi-comp": ["error", {"ignoreStateless": true}],
-    "react/jsx-closing-bracket-location": ["error", {"selfClosing": "line-aligned", "nonEmpty": "after-props"}],
+    "react/jsx-closing-bracket-location": ["error", {"selfClosing": "tag-aligned", "nonEmpty": "after-props"}],
     "react/jsx-filename-extension": "off",
     "react/prop-types": "warn",
     "react/forbid-component-props": "off",
@@ -90,6 +90,7 @@
     "no-warning-comments": "warn",
     "id-length": "warn",
     "class-methods-use-this": "warn",
+    "no-console": "warn",
     "arrow-parens": ["error", "as-needed", {"requireForBlockBody": true}],
     "dot-location": ["error", "property"],
 
@@ -111,6 +112,6 @@
     "max-statements": "off",
     "max-lines": "off",
     "no-mixed-operators": "off",
-    "no-console": "warn"
+	"wrap-regex": "off",
   }
 }
