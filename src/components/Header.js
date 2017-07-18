@@ -8,15 +8,17 @@ import Nav from 'react-bootstrap/lib/Nav';
 import Navbar from 'react-bootstrap/lib/Navbar';
 import NavDropdown from 'react-bootstrap/lib/NavDropdown';
 import FontAwesome from 'react-fontawesome';
+import {connect} from 'react-redux';
 import {Link} from 'react-router';
 
 import {app} from '../base';
+import * as selectors from '../selectors';
 
 class Header extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		user: PropTypes.shape(forbidExtraProps({
-			userId     : PropTypes.string.isRequired,
+			uid        : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
 		})),
@@ -26,10 +28,10 @@ class Header extends PureComponent
 	{
 		super();
 
-		this.googleProvider   = new auth.GoogleAuthProvider();
+		this.googleProvider = new auth.GoogleAuthProvider();
 		this.facebookProvider = new auth.FacebookAuthProvider();
-		this.twitterProvider  = new auth.TwitterAuthProvider();
-		this.githubProvider   = new auth.GithubAuthProvider();
+		this.twitterProvider = new auth.TwitterAuthProvider();
+		this.githubProvider = new auth.GithubAuthProvider();
 
 		// Choose between multiple google accounts
 		// http://stackoverflow.com/a/40551683/23572
@@ -99,11 +101,11 @@ class Header extends PureComponent
 			);
 		}
 
-		const title =
-			<span>
+		const title
+			= (<span>
 				<FontAwesome name='sign-in' size='lg' fixedWidth />
-				{' Sign in / Join'}
-			</span>;
+			{' Sign in / Join'}
+			</span>);
 
 		return (
 			<NavDropdown title={title} id='dropdown-login'>
@@ -132,12 +134,44 @@ class Header extends PureComponent
 
 				<Navbar.Collapse>
 					<Nav>
-						<li><Link to='/blueprints'><FontAwesome name='clock-o' size='lg' fixedWidth />{' Most Recent'}</Link></li>
-						<li><Link to='/top'><FontAwesome name='trophy' size='lg' fixedWidth />{' Most Favorited'}</Link></li>
-						<li><Link to='/create'><FontAwesome name='plus-square' size='lg' fixedWidth />{' Create'}</Link></li>
-						{this.props.user && <li><Link to={'/favorites'}><FontAwesome name='heart' size='lg' fixedWidth />{' My Favorites'}</Link></li>}
-						{this.props.user && <li><Link to={`/user/${this.props.user.userId}`}><FontAwesome name='user' size='lg' fixedWidth />{' My Blueprints'}</Link></li>}
-						<li><Link to='/contact'><FontAwesome name='envelope' size='lg' fixedWidth />{' Contact me'}</Link></li>
+						<li>
+							<Link to='/blueprints'>
+								<FontAwesome name='clock-o' size='lg' fixedWidth />
+								{' Most Recent'}
+							</Link>
+						</li>
+						<li>
+							<Link to='/top'>
+								<FontAwesome name='trophy' size='lg' fixedWidth />
+								{' Most Favorited'}
+								</Link>
+						</li>
+						<li>
+							<Link to='/create'>
+								<FontAwesome name='plus-square' size='lg' fixedWidth />
+								{' Create'}
+							</Link>
+						</li>
+						{this.props.user
+						&& <li>
+							<Link to={'/favorites'}>
+								<FontAwesome name='heart' size='lg' fixedWidth />
+								{' My Favorites'}
+							</Link>
+						</li>}
+						{this.props.user
+						&& <li>
+							<Link to={`/user/${this.props.user.uid}`}>
+								<FontAwesome name='user' size='lg' fixedWidth />
+								{' My Blueprints'}
+							</Link>
+						</li>}
+						<li>
+							<Link to='/contact'>
+								<FontAwesome name='envelope' size='lg' fixedWidth />
+								{' Contact me'}
+							</Link>
+						</li>
 					</Nav>
 					<Nav pullRight>
 						{this.renderAuthentication()}
@@ -148,4 +182,9 @@ class Header extends PureComponent
 	}
 }
 
-export default Header;
+const mapStateToProps = storeState =>
+	({
+		user: selectors.getUser(storeState),
+	});
+
+export default connect(mapStateToProps, {})(Header);

@@ -1,144 +1,134 @@
-import every from 'lodash/every';
-import get from 'lodash/get';
+import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Grid from 'react-bootstrap/lib/Grid';
+import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Row from 'react-bootstrap/lib/Row';
 
-import base from '../base';
+import FontAwesome from 'react-fontawesome';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {filterOnTags, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
+
+import * as selectors from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
+import ReactPaginate from 'react-paginate';
+
+import {userSchema, blueprintSummariesSchema} from '../propTypes';
+
+const PAGE_SIZE = 60;
+
 class BlueprintGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		blueprintSummaries         : PropTypes.object.isRequired,
-		tags                       : PropTypes.arrayOf(PropTypes.string).isRequired,
-		lazilyFetchTaggedBlueprints: PropTypes.func.isRequired,
-		byTag                      : PropTypes.object.isRequired,
-		loadingTags                : PropTypes.bool.isRequired,
-		initiallySelectedTags      : PropTypes.arrayOf(PropTypes.string),
-		userFavorites              : PropTypes.object.isRequired,
-		user                       : PropTypes.shape(forbidExtraProps({
-			userId: PropTypes.string.isRequired,
-		})),
+		initialTag                   : PropTypes.string,
+		subscribeToBlueprintSummaries: PropTypes.func.isRequired,
+		subscribeToUser              : PropTypes.func.isRequired,
+		filterOnTags                 : PropTypes.func.isRequired,
+		user                         : userSchema,
+		blueprintSummaries           : blueprintSummariesSchema,
+		pageCount                    : PropTypes.number.isRequired,
+		filteredBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 	});
 
 	state = {
-		blueprints  : {},
-		loading     : true,
-		searchString: '',
-		selectedTags: [],
+		currentPage: 0,
 	};
 
 	componentWillMount()
 	{
-		this.bindToState(this.props);
-		this.setState({selectedTags: this.props.initiallySelectedTags || []});
-	}
-
-	componentWillReceiveProps(nextProps)
-	{
-		const oldUserId = get(this.props, 'user.userId');
-		const newUserId = get(nextProps, 'user.userId');
-		if (oldUserId !== newUserId)
+		this.props.subscribeToBlueprintSummaries();
+		if (this.props.initialTag)
 		{
-			this.bindToState(nextProps);
+			this.props.filterOnTags([this.props.initialTag]);
+		}
+		if (this.props.user)
+		{
+			this.props.subscribeToUser(this.props.user.uid);
 		}
 	}
 
-	componentWillUnmount()
+	handlePageClick = ({selected}) =>
 	{
-		this.unbindUserBlueprints();
+		window.scrollTo(0, 0);
+		this.setState({currentPage: selected});
 	}
-
-	unbindUserBlueprints = () =>
-	{
-		if (this.blueprintsRef)
-		{
-			base.removeBinding(this.blueprintsRef);
-			this.blueprintsRef = null;
-		}
-	};
-
-	bindToState = (props) =>
-	{
-		this.unbindUserBlueprints();
-
-		// TODO: Move this state up to Root as myBlueprints or something, and share the state with TagGrid and other grids
-		if (props.user)
-		{
-			this.blueprintsRef = base.bindToState(`/users/${props.user.userId}/blueprints`, {
-				context  : this,
-				state    : 'blueprints',
-				then     : () => this.setState({loading: false}),
-				onFailure: () => this.setState({loading: false}),
-			});
-		}
-	};
-
-	handleSearchString = (event) =>
-	{
-		event.preventDefault();
-
-		this.setState({searchString: event.target.value});
-	};
-
-	handleTagSelection = (selectedTags) =>
-	{
-		this.props.lazilyFetchTaggedBlueprints();
-		this.setState({selectedTags: selectedTags.map(each => each.value)});
-	};
 
 	render()
 	{
+		if (this.props.blueprintSummariesLoading)
+		{
+			return <Jumbotron>
+				<h1>
+					<FontAwesome name='cog' spin />
+					{' Loading data'}
+				</h1>
+			</Jumbotron>;
+		}
+
+		const startIndex = PAGE_SIZE * this.state.currentPage;
+		const endIndex = startIndex + PAGE_SIZE;
+
 		return <Grid>
 			<Row>
-				<PageHeader>{'Viewing Most Recent'}</PageHeader>
+				<PageHeader>
+					{'Viewing Most Recent'}
+				</PageHeader>
 			</Row>
 			<Row>
-				<SearchForm
-					searchString={this.state.searchString}
-					onSearchString={this.handleSearchString}
-				/>
-				<TagForm
-					tags={this.props.tags}
-					selectedTags={this.state.selectedTags}
-					onTagSelection={this.handleTagSelection}
-				/>
+				<SearchForm />
+				<TagForm />
 			</Row>
 			<Row>
 				{
-					Object.keys(this.props.blueprintSummaries)
-						.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
-						.filter(key => this.props.loadingTags || every(this.state.selectedTags, (selectedTag) =>
-						{
-							const pathElements     = selectedTag.split('/').filter(each => each !== '');
-							const blueprintsTagged = get(this.props.byTag, pathElements);
-							return blueprintsTagged[key] === true;
-						}))
-						.reverse()
-						.map((key) =>
-						{
-							const isMine = this.state.blueprints[key] === true;
-							return (
-								<BlueprintThumbnail
-									key={key}
-									id={key}
-									isFavorite={this.props.userFavorites[key] === true}
-									isMine={isMine}
-									{...this.props.blueprintSummaries[key]}
-								/>);
-						})
+					this.props.filteredBlueprintSummaries.slice(startIndex, endIndex)
+						.map(key => <BlueprintThumbnail key={key} id={key} />)
 				}
+			</Row>
+			<Row>
+				<ReactPaginate
+					previousLabel={"<"}
+					nextLabel={">"}
+					pageCount={this.props.pageCount}
+					marginPagesDisplayed={2}
+					pageRangeDisplayed={5}
+					onPageChange={this.handlePageClick}
+					breakLabel={<span>...</span>}
+					breakClassName={"break-me"}
+					containerClassName={"pagination"}
+					subContainerClassName={"pages pagination"}
+					activeClassName={"active"}
+				/>
 			</Row>
 		</Grid>;
 	}
 }
 
-export default BlueprintGrid;
+const mapStateToProps = (storeState) =>
+{
+	const filteredBlueprintSummaries = selectors.getFilteredBlueprintSummaries(storeState);
+	return {
+		user                      : selectors.getFilteredUser(storeState),
+		blueprintSummaries        : selectors.getBlueprintSummariesData(storeState),
+		filteredBlueprintSummaries,
+		pageCount                 : filteredBlueprintSummaries.length / PAGE_SIZE,
+	};
+};
+
+const mapDispatchToProps = (dispatch) =>
+{
+	const actionCreators = {
+		subscribeToBlueprintSummaries,
+		filterOnTags,
+		subscribeToUser,
+	};
+	return bindActionCreators(actionCreators, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(BlueprintGrid);

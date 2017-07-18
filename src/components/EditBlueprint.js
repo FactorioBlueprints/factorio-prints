@@ -21,6 +21,7 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
 import difference from 'lodash/difference';
+import isEqual from 'lodash/isEqual';
 
 import marked from 'marked';
 import PropTypes from 'prop-types';
@@ -47,6 +48,8 @@ import FontAwesome from 'react-fontawesome';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import {app} from '../base';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import Blueprint from '../Blueprint';
 
@@ -56,6 +59,12 @@ import buildImageUrl from '../helpers/buildImageUrl';
 
 import scaleImage from '../helpers/ImageScaler';
 import NoMatch from './NoMatch';
+
+import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
+
+import * as selectors from '../selectors';
+
+import {userSchema, blueprintSchema} from '../propTypes';
 
 const expressBeltTypes = [
 	'express-splitter',
@@ -102,16 +111,20 @@ marked.setOptions({
 class EditBlueprint extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		id          : PropTypes.string.isRequired,
-		isModerator : PropTypes.bool,
-		tags        : PropTypes.arrayOf(PropTypes.string).isRequired,
-		user        : PropTypes.shape(forbidExtraProps({
-			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string,
-		})),
+		id                   : PropTypes.string.isRequired,
+		tags                 : PropTypes.arrayOf(PropTypes.string).isRequired,
+		subscribeToBlueprint : PropTypes.func.isRequired,
+		subscribeToModerators: PropTypes.func.isRequired,
+		subscribeToTags      : PropTypes.func.isRequired,
+		isModerator          : PropTypes.bool.isRequired,
+		user                 : userSchema,
+		blueprint            : blueprintSchema,
+		loading              : PropTypes.bool.isRequired,
 	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};
+
+	static emptyTags = [];
 
 	state = {
 		thumbnail               : undefined,
@@ -123,7 +136,6 @@ class EditBlueprint extends PureComponent
 		uploadProgressBarVisible: false,
 		uploadProgressPercent   : 0,
 		deletionModalVisible    : false,
-		loading                 : true,
 	};
 
 	static imgurHeaders = {
@@ -134,26 +146,38 @@ class EditBlueprint extends PureComponent
 
 	componentWillMount()
 	{
-		const blueprintRef = app.database().ref(`/blueprints/${this.props.id}`);
-		blueprintRef.once('value').then((snapshot) =>
+		this.props.subscribeToBlueprint(this.props.id);
+		this.props.subscribeToTags();
+		if (!isEmpty(this.props.user))
 		{
-			const blueprint = snapshot.val();
-			if (blueprint)
-			{
-				blueprint.tags = blueprint.tags || [];
-			}
-			const renderedMarkdown = blueprint ? marked(blueprint.descriptionMarkdown) : undefined;
-			const parsedBlueprint = blueprint ? this.parseBlueprint(blueprint.blueprintString) : undefined;
-			const v15Decoded = parsedBlueprint && parsedBlueprint.getV15Decoded();
+			this.props.subscribeToModerators();
+		}
+
+		if (this.props.blueprint)
+		{
+			const blueprint = {
+				...this.props.blueprint,
+				tags: this.props.blueprint.tags || EditBlueprint.emptyTags,
+			};
+			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
+			const parsedBlueprint = this.parseBlueprint(blueprint.blueprintString);
+			const v15Decoded = parsedBlueprint.getV15Decoded();
 
 			this.setState({
-				renderedMarkdown,
 				blueprint,
+				renderedMarkdown,
 				parsedBlueprint,
 				v15Decoded,
-				loading: false,
 			});
-		}).catch(console.log);
+		}
+	}
+
+	componentWillReceiveProps(nextProps)
+	{
+		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
+		{
+			nextProps.subscribeToModerators();
+		}
 	}
 
 	handleDismissAlert = () =>
@@ -419,7 +443,7 @@ class EditBlueprint extends PureComponent
 				[`/blueprints/${this.props.id}/title`]              : this.state.blueprint.title,
 				[`/blueprints/${this.props.id}/blueprintString`]    : this.state.blueprint.blueprintString,
 				[`/blueprints/${this.props.id}/descriptionMarkdown`]: this.state.blueprint.descriptionMarkdown,
-				[`/blueprints/${this.props.id}/tags`]               : this.state.blueprint.tags || [],
+				[`/blueprints/${this.props.id}/tags`]               : this.state.blueprint.tags,
 				[`/blueprints/${this.props.id}/lastUpdatedDate`]    : firebase.database.ServerValue.TIMESTAMP,
 				[`/blueprints/${this.props.id}/image`]              : image,
 				[`/blueprintSummaries/${this.props.id}/title/`]     : this.state.blueprint.title,
@@ -861,8 +885,6 @@ class EditBlueprint extends PureComponent
 
 		const generateAllTagSuggestions = (entityHistogram, entityCounts, recipeHistogram, recipeCounts, allGameEntities) =>
 		{
-			console.log({recipeCounts, entityCounts, parsedBlueprint: this.state.parsedBlueprint, v15Decoded: this.state.v15Decoded});
-
 			generateTagSuggestionsFromProduction(recipeCounts, entityCounts);
 			generateTagSuggestionsFromEntityHistogram(entityHistogram, entityCounts);
 			generateTagSuggestionsFromEntityCounts(entityCounts);
@@ -982,12 +1004,12 @@ class EditBlueprint extends PureComponent
 			return (
 				<Jumbotron>
 					<h1>{'Create a Blueprint'}</h1>
-					<p>{'Please log in with Google, Facebook, Twitter, or GitHub in order to add a Blueprint.'}</p>
+					<p>{'Please log in with Google or GitHub in order to edit a Blueprint.'}</p>
 				</Jumbotron>
 			);
 		}
 
-		if (this.state.loading)
+		if (this.props.loading)
 		{
 			return <Jumbotron>
 				<h1>
@@ -1003,7 +1025,7 @@ class EditBlueprint extends PureComponent
 			return <NoMatch />;
 		}
 
-		const ownedByCurrentUser = this.props.user && this.props.user.userId === blueprint.author.userId;
+		const ownedByCurrentUser = this.props.user && this.props.user.uid === blueprint.author.userId;
 		if (!ownedByCurrentUser && !this.props.isModerator)
 		{
 			return <Jumbotron><h1>{'You are not the author of this blueprint.'}</h1></Jumbotron>;
@@ -1160,7 +1182,6 @@ class EditBlueprint extends PureComponent
 									<ButtonToolbar>
 										{
 											tagSuggestions.map((tagSuggestion) => {
-												const disabled = this.state.blueprint.tags.includes(tagSuggestion);
 												return <Button bsStyle='primary' key={tagSuggestion} onClick={() => this.addTag(tagSuggestion)}>
 													<FontAwesome name='tag' />
 													{' '}
@@ -1241,4 +1262,20 @@ class EditBlueprint extends PureComponent
 	}
 }
 
-export default EditBlueprint;
+const mapStateToProps = (storeState, ownProps) =>
+{
+	return ({
+		user       : selectors.getFilteredUser(storeState),
+		isModerator: selectors.getIsModerator(storeState),
+		blueprint  : selectors.getBlueprintDataById(storeState, ownProps),
+		loading    : selectors.getBlueprintLoadingById(storeState, ownProps),
+		tags       : selectors.getTags(storeState),
+	});
+};
+
+const mapDispatchToProps = (dispatch) => {
+	return bindActionCreators({subscribeToBlueprint, subscribeToModerators, subscribeToTags}, dispatch)
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditBlueprint);
+

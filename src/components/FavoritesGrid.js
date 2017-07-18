@@ -1,35 +1,63 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Grid from 'react-bootstrap/lib/Grid';
-import Row from 'react-bootstrap/lib/Row';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import PageHeader from 'react-bootstrap/lib/PageHeader';
+import Row from 'react-bootstrap/lib/Row';
+
+import FontAwesome from 'react-fontawesome';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {filterOnTags, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
+
+import * as selectors from '../selectors';
+
 import BlueprintThumbnail from './BlueprintThumbnail';
 import SearchForm from './SearchForm';
+import TagForm from './TagForm';
+
+import ReactPaginate from 'react-paginate';
+
+import {userSchema, blueprintSummariesSchema} from '../propTypes';
+
+const PAGE_SIZE = 60;
 
 class FavoritesGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		blueprintSummaries: PropTypes.object.isRequired,
-		userFavorites     : PropTypes.object.isRequired,
-		user              : PropTypes.shape(forbidExtraProps({
-			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string,
-		})),
+		subscribeToBlueprintSummaries: PropTypes.func.isRequired,
+		subscribeToUser              : PropTypes.func.isRequired,
+		filterOnTags                 : PropTypes.func.isRequired,
+		user                         : userSchema,
+		blueprintSummaries           : blueprintSummariesSchema,
+		pageCount                    : PropTypes.number.isRequired,
+		myFavoriteBlueprintSummaries : PropTypes.arrayOf(PropTypes.string.isRequired),
 	});
 
 	state = {
-		searchString: '',
+		currentPage: 0,
 	};
 
-	handleSearchString = (event) =>
+	componentWillMount()
 	{
-		event.preventDefault();
+		this.props.subscribeToBlueprintSummaries();
+		if (this.props.initialTag)
+		{
+			this.props.filterOnTags([this.props.initialTag]);
+		}
+		if (this.props.user)
+		{
+			this.props.subscribeToUser(this.props.user.uid);
+		}
+	}
 
-		this.setState({searchString: event.target.value});
-	};
+	handlePageClick = ({selected}) =>
+	{
+		window.scrollTo(0, 0);
+		this.setState({currentPage: selected});
+	}
 
 	render()
 	{
@@ -38,40 +66,80 @@ class FavoritesGrid extends PureComponent
 			return (
 				<Jumbotron>
 					<h1>{'My Favorites'}</h1>
-					<p>{'Please log in with Google, Facebook, Twitter, or GitHub in order to view your favorite blueprints.'}</p>
+					<p>{'Please log in with Google or GitHub in order to view your favorite blueprints.'}</p>
 				</Jumbotron>
 			);
 		}
 
+		if (this.props.blueprintSummariesLoading)
+		{
+			return <Jumbotron>
+				<h1>
+					<FontAwesome name='cog' spin />
+					{' Loading data'}
+				</h1>
+			</Jumbotron>;
+		}
+
+		const startIndex = PAGE_SIZE * this.state.currentPage;
+		const endIndex = startIndex + PAGE_SIZE;
+
 		return (
 			<Grid>
 				<Row>
-					<PageHeader>{'Viewing My Favorites'}</PageHeader>
+					<PageHeader>
+						{'Viewing My Favorites'}
+					</PageHeader>
 				</Row>
 				<Row>
-					<SearchForm
-						searchString={this.state.searchString}
-						onSearchString={this.handleSearchString}
-					/>
+					<SearchForm />
+					<TagForm />
 				</Row>
 				<Row>
 					{
-						Object.keys(this.props.userFavorites)
-							.reverse()
-							.filter(key => this.props.userFavorites[key])
-							.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
-							.map(key =>
-								<BlueprintThumbnail
-									key={key}
-									id={key} {...this.props.blueprintSummaries[key]}
-									isFavorite={false}
-									isMine={false}
-								/>)
+						this.props.myFavoriteBlueprintSummaries.slice(startIndex, endIndex)
+							.map(key => <BlueprintThumbnail key={key} id={key} />)
 					}
 				</Row>
+			<Row>
+				<ReactPaginate
+					previousLabel={"<"}
+					nextLabel={">"}
+					pageCount={this.props.pageCount}
+					marginPagesDisplayed={2}
+					pageRangeDisplayed={5}
+					onPageChange={this.handlePageClick}
+					breakLabel={<span>...</span>}
+					breakClassName={"break-me"}
+					containerClassName={"pagination"}
+					subContainerClassName={"pages pagination"}
+					activeClassName={"active"}
+				/>
+			</Row>
 			</Grid>
 		);
 	}
 }
 
-export default FavoritesGrid;
+const mapStateToProps = (storeState) =>
+{
+	const myFavoriteBlueprintSummaries = selectors.getMyFavoriteBlueprintSummaries(storeState);
+	return {
+		user                      : selectors.getFilteredUser(storeState),
+		blueprintSummaries        : selectors.getBlueprintSummariesData(storeState),
+		myFavoriteBlueprintSummaries,
+		pageCount                 : myFavoriteBlueprintSummaries.length / PAGE_SIZE,
+	};
+};
+
+const mapDispatchToProps = (dispatch) =>
+{
+	const actionCreators = {
+		subscribeToBlueprintSummaries,
+		filterOnTags,
+		subscribeToUser,
+	};
+	return bindActionCreators(actionCreators, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(FavoritesGrid);

@@ -1,43 +1,70 @@
-import PropTypes from 'prop-types';
-import React from 'react';
 import {forbidExtraProps} from 'airbnb-prop-types';
+import PropTypes from 'prop-types';
+import React, {PureComponent} from 'react';
 
 import Col from 'react-bootstrap/lib/Col';
-import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
+import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Tooltip from 'react-bootstrap/lib/Tooltip';
-import {Link} from 'react-router';
 import FontAwesome from 'react-fontawesome';
+import {connect} from 'react-redux';
+import {Link} from 'react-router';
 import buildImageUrl from '../helpers/buildImageUrl';
 
-const BlueprintThumbnail = ({
-	id,
-	imgurId,
-	imgurType,
-	title,
-	numberOfFavorites,
-	isFavorite,
-	isMine,
-}) =>
-	<Col xs={6} sm={6} md={2}>
-		<Link to={`/view/${id}`}>
-			<Thumbnail src={buildImageUrl(imgurId, imgurType, 'b')}>
-				<OverlayTrigger placement='bottom' overlay={<Tooltip id='thumbnail-title-tooltip'>{title}</Tooltip>}>
-					<p className={`truncate ${isMine ? 'text-primary' : 'text-default'}`}>{title}</p>
-				</OverlayTrigger>
-				<p><FontAwesome name='heart' className={isFavorite ? 'text-primary' : 'text-default'} /> {numberOfFavorites}</p>
-			</Thumbnail>
-		</Link>
-	</Col>;
+import * as selectors from '../selectors';
 
-BlueprintThumbnail.propTypes = forbidExtraProps({
-	id               : PropTypes.string.isRequired,
-	imgurId          : PropTypes.string.isRequired,
-	imgurType        : PropTypes.string.isRequired,
-	title            : PropTypes.string.isRequired,
-	numberOfFavorites: PropTypes.number.isRequired,
-	isFavorite       : PropTypes.bool.isRequired,
-	isMine           : PropTypes.bool,
-});
+class BlueprintThumbnail extends PureComponent
+{
+	static propTypes = forbidExtraProps({
+		id               : PropTypes.string.isRequired,
+		myBlueprints     : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
+		myFavorites      : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
+		blueprintSummaries           : PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
+			title            : PropTypes.string.isRequired,
+			imgurId          : PropTypes.string.isRequired,
+			imgurType        : PropTypes.string.isRequired,
+			numberOfFavorites: PropTypes.number.isRequired,
+		})).isRequired),
+	});
 
-export default BlueprintThumbnail;
+	render()
+	{
+		const isFavorite = this.props.myFavorites[this.props.id] === true;
+		const isMine = this.props.myBlueprints[this.props.id] === true;
+		const blueprintSummary = this.props.blueprintSummaries[this.props.id];
+		const {title, numberOfFavorites, imgurId, imgurType} = blueprintSummary;
+
+		const tooltip = <Tooltip id='thumbnail-title-tooltip'>{title}</Tooltip>;
+		const imageUrl = buildImageUrl(imgurId, imgurType, 'b');
+
+		const mineStyle = isMine ? 'text-primary' : 'text-default';
+		const favoriteStyle = isFavorite ? 'text-primary' : 'text-default';
+
+		return (
+			<Col xs={6} sm={6} md={2}>
+				<Link to={`/view/${this.props.id}`}>
+					<Thumbnail src={imageUrl}>
+						<OverlayTrigger placement='bottom' overlay={tooltip}>
+							<p className={`truncate ${mineStyle}`}>{title}</p>
+						</OverlayTrigger>
+						<p>
+							<FontAwesome name='heart' className={favoriteStyle} />
+							{numberOfFavorites}
+						</p>
+					</Thumbnail>
+				</Link>
+			</Col>
+		);
+	}
+}
+
+const mapStateToProps = (storeState) =>
+{
+	return {
+		myBlueprints      : selectors.getMyBlueprints(storeState),
+		myFavorites       : selectors.getMyFavorites(storeState),
+		blueprintSummaries: selectors.getBlueprintSummariesData(storeState),
+	};
+};
+
+export default connect(mapStateToProps, {})(BlueprintThumbnail);

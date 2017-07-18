@@ -1,92 +1,57 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
+import isEmpty from 'lodash/isEmpty';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {forbidExtraProps} from 'airbnb-prop-types';
 
 import Grid from 'react-bootstrap/lib/Grid';
-import Row from 'react-bootstrap/lib/Row';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import PageHeader from 'react-bootstrap/lib/PageHeader';
+import Row from 'react-bootstrap/lib/Row';
+
+import FontAwesome from 'react-fontawesome';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {filterOnTags, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
+
+import * as selectors from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import NoMatch from './NoMatch';
 import SearchForm from './SearchForm';
+import TagForm from './TagForm';
 
-import FontAwesome from 'react-fontawesome';
-import isEmpty from 'lodash/isEmpty';
-
-import base from '../base';
+import {userSchema, blueprintSummariesSchema} from '../propTypes';
 
 class UserGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		id                : PropTypes.string.isRequired,
-		blueprintSummaries: PropTypes.object.isRequired,
-		userFavorites     : PropTypes.object.isRequired,
+		id                           : PropTypes.string.isRequired,
+		displayName                  : PropTypes.string,
+		displayNameLoading           : PropTypes.bool.isRequired,
+		userBlueprintsLoading        : PropTypes.bool.isRequired,
+		subscribeToBlueprintSummaries: PropTypes.func.isRequired,
+		subscribeToUser              : PropTypes.func.isRequired,
+		filterOnTags                 : PropTypes.func.isRequired,
+		user                         : userSchema,
+		blueprintSummaries           : blueprintSummariesSchema,
+		filteredBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 	});
-
-	state = {
-		displayName : '',
-		blueprints  : {},
-		loading     : true,
-		searchString: '',
-	};
 
 	componentWillMount()
 	{
-		this.bindToState(this.props);
-	}
-
-	componentWillReceiveProps(nextProps)
-	{
-		if (this.props.id !== nextProps.id)
+		this.props.subscribeToBlueprintSummaries();
+		// Logged in user
+		if (this.props.user)
 		{
-			this.bindToState(nextProps);
+			this.props.subscribeToUser(this.props.user.uid);
 		}
+		// Blueprint author
+		this.props.subscribeToUser(this.props.id);
 	}
-
-	componentWillUnmount()
-	{
-		base.removeBinding(this.displayNameRef);
-		base.removeBinding(this.blueprintsRef);
-	}
-
-	bindToState = (props) =>
-	{
-		if (this.displayNameRef)
-		{
-			base.removeBinding(this.displayNameRef);
-		}
-
-		if (this.blueprintsRef)
-		{
-			base.removeBinding(this.blueprintsRef);
-		}
-
-		this.displayNameRef = base.bindToState(`/users/${props.id}/displayName`, {
-			context     : this,
-			state       : 'displayName',
-			defaultValue: '',
-			onFailure   : console.log,
-		});
-
-		this.blueprintsRef = base.bindToState(`/users/${props.id}/blueprints`, {
-			context  : this,
-			state    : 'blueprints',
-			then     : () => this.setState({loading: false}),
-			onFailure: () => this.setState({loading: false}),
-		});
-	};
-
-	handleSearchString = (event) =>
-	{
-		event.preventDefault();
-
-		this.setState({searchString: event.target.value});
-	};
 
 	render()
 	{
-		if (this.state.loading)
+		if (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading)
 		{
 			return <Jumbotron>
 				<h1>
@@ -96,43 +61,51 @@ class UserGrid extends PureComponent
 			</Jumbotron>;
 		}
 
-		const {blueprints, displayName} = this.state;
-		if (isEmpty(blueprints) && isEmpty(displayName))
+		if (isEmpty(this.props.userBlueprints) && isEmpty(this.props.displayName))
 		{
 			return <NoMatch />;
 		}
 
-		return (
-			<Grid>
-				<Row>
-					<PageHeader>
-						{'Viewing Blueprints by '}{displayName || '(Anonymous)'}
-					</PageHeader>
-				</Row>
-				<Row>
-					<SearchForm
-						searchString={this.state.searchString}
-						onSearchString={this.handleSearchString}
-					/>
-				</Row>
-				<Row>
-					{
-						Object.keys(blueprints || {})
-							.reverse()
-							.filter(key => this.props.blueprintSummaries[key].title.toLowerCase().includes(this.state.searchString.toLowerCase()))
-							.map(key => (
-								<BlueprintThumbnail
-									key={key}
-									id={key}
-									isFavorite={this.props.userFavorites[key] === true}
-									{...this.props.blueprintSummaries[key]}
-								/>
-							))
-					}
-				</Row>
-			</Grid>
-		);
+		return <Grid>
+			<Row>
+				<PageHeader>
+					{'Viewing Blueprints by '}{this.props.displayName || '(Anonymous)'}
+				</PageHeader>
+			</Row>
+			<Row>
+				<SearchForm />
+				<TagForm />
+			</Row>
+			<Row>
+				{
+					this.props.filteredBlueprintSummaries
+						.map(key => <BlueprintThumbnail key={key} id={key} />)
+				}
+			</Row>
+		</Grid>;
 	}
 }
 
-export default UserGrid;
+const mapStateToProps = (storeState, props) =>
+{
+	return {
+		user                      : selectors.getFilteredUser(storeState),
+		filteredBlueprintSummaries: selectors.getUserFilteredBlueprintSummaries(storeState, props),
+		blueprintSummaries        : selectors.getBlueprintSummariesData(storeState),
+		displayName               : selectors.getUserDisplayName(storeState, props),
+		displayNameLoading        : selectors.getUserDisplayNameLoading(storeState, props),
+		userBlueprintsLoading     : selectors.getUserBlueprintsLoading(storeState, props),
+	};
+};
+
+const mapDispatchToProps = (dispatch) =>
+{
+	const actionCreators = {
+		subscribeToBlueprintSummaries,
+		filterOnTags,
+		subscribeToUser,
+	};
+	return bindActionCreators(actionCreators, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserGrid);

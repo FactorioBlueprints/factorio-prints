@@ -10,6 +10,7 @@ import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
 import isEmpty from 'lodash/isEmpty';
 import range from 'lodash/range';
+import isEqual from 'lodash/isEqual';
 
 import marked from 'marked';
 import moment from 'moment';
@@ -34,9 +35,13 @@ import ReactDisqusThread from 'react-disqus-thread';
 
 import DocumentTitle from 'react-document-title';
 import FontAwesome from 'react-fontawesome';
+import {connect} from 'react-redux';
 import {Link} from 'react-router';
+import {bindActionCreators} from 'redux';
 
-import base, {app} from '../base';
+import {subscribeToBlueprint, subscribeToModerators} from '../actions/actionCreators';
+
+import {app} from '../base';
 import Blueprint from '../Blueprint';
 
 import entitiesWithIcons from '../data/entitiesWithIcons';
@@ -45,6 +50,10 @@ import buildImageUrl from '../helpers/buildImageUrl';
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 import NoMatch from './NoMatch';
 import Title from './Title';
+
+import * as selectors from '../selectors';
+
+import {userSchema, blueprintSchema} from '../propTypes';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => {
@@ -71,12 +80,15 @@ marked.setOptions({
 class SingleBlueprint extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		id         : PropTypes.string.isRequired,
-		isModerator: PropTypes.bool,
-		user       : PropTypes.shape(forbidExtraProps({
-			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string,
-		})),
+		id                   : PropTypes.string.isRequired,
+		subscribeToBlueprint : PropTypes.func.isRequired,
+		// TODO: Only bother if we're logged in
+		subscribeToModerators: PropTypes.func.isRequired,
+		loading              : PropTypes.bool.isRequired,
+		myFavorites          : PropTypes.objectOf(PropTypes.bool.isRequired),
+		user                 : userSchema,
+		blueprint            : blueprintSchema,
+		isModerator          : PropTypes.bool.isRequired,
 	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};
@@ -85,85 +97,73 @@ class SingleBlueprint extends PureComponent
 		showBlueprint: false,
 		showJson     : false,
 		showConverted: false,
-		loading      : true,
-		author       : null,
-		blueprint    : {},
 	};
 
 	componentWillMount()
 	{
-		this.bindToState(this.props);
+		this.props.subscribeToBlueprint(this.props.id);
+		if (!isEmpty(this.props.user))
+		{
+			this.props.subscribeToModerators();
+		}
+		this.cacheState(this.props);
+	}
+
+	componentDidMount()
+	{
+		window.scrollTo(0, 0);
 	}
 
 	componentWillReceiveProps(nextProps)
 	{
-		if (this.props.id !== nextProps.id)
+		if (!isEqual(this.props.blueprint, nextProps.blueprint))
 		{
-			this.bindToState(nextProps);
+			this.cacheState(nextProps);
+		}
+
+		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
+		{
+			nextProps.subscribeToModerators();
 		}
 	}
 
-	componentWillUnmount()
+	cacheState = (props) =>
 	{
-		base.removeBinding(this.ref);
-	}
-
-	bindToState = (props) =>
-	{
-		if (this.ref)
+		if (isEmpty(props.blueprint))
 		{
-			base.removeBinding(this.ref);
+			this.setState({
+				thumbnail         : undefined,
+				renderedMarkdown  : undefined,
+				parsedBlueprint   : undefined,
+				ownedByCurrentUser: undefined,
+				v15Decoded        : undefined,
+			});
+			return;
 		}
 
-		this.ref = base.listenTo(`/blueprints/${props.id}`, {
-			context: this,
-			state  : 'blueprint',
-			then   : (blueprint) =>
-			{
-				if (!isEmpty(blueprint))
-				{
-					app.database().ref(`/users/${blueprint.author.userId}/displayName`).once('value').then((snapshot) =>
-					{
-						this.setState({author: snapshot.val()});
-					});
-				}
-				const cachedState = this.getCachedState(blueprint);
-				this.setState({loading: false, blueprint, ...cachedState});
-			},
-			onFailure: console.log,
-		});
-	};
-
-	getCachedState = (blueprint) =>
-	{
-		if (isEmpty(blueprint))
-		{
-			return {};
-		}
-
-		const {image, descriptionMarkdown, blueprintString, author} = blueprint;
+		const {image, descriptionMarkdown, blueprintString, author: {authorId}} = props.blueprint;
 
 		const thumbnail          = buildImageUrl(image.id, image.type, 'l');
 		const renderedMarkdown   = marked(descriptionMarkdown);
-		const ownedByCurrentUser = this.props.user && this.props.user.userId === author.userId;
+		const ownedByCurrentUser = props.user && props.user.uid === authorId;
 		const parsedBlueprint    = this.parseBlueprint(blueprintString);
 		const v15Decoded         = parsedBlueprint && parsedBlueprint.getV15Decoded();
 
-		return {thumbnail, renderedMarkdown, parsedBlueprint, ownedByCurrentUser, v15Decoded};
+		this.setState({thumbnail, renderedMarkdown, parsedBlueprint, ownedByCurrentUser, v15Decoded});
 	};
 
 	handleFavorite = () =>
 	{
-		const {userId}                       = this.props.user;
-		const {favorites, numberOfFavorites} = this.state.blueprint;
-		const wasFavorite                    = favorites && favorites[userId];
+		const {uid}                          = this.props.user;
+		const {favorites, numberOfFavorites} = this.props.blueprint;
+		const wasFavorite                    = favorites && favorites[uid];
 		const newNumberOfFavorites           = numberOfFavorites + (wasFavorite ? -1 : 1);
 
 		const updates = {
 			[`/blueprints/${this.props.id}/numberOfFavorites`]        : newNumberOfFavorites,
-			[`/blueprints/${this.props.id}/favorites/${userId}`]      : wasFavorite ? null : true,
+			[`/blueprints/${this.props.id}/favorites/${uid}`]         : wasFavorite ? null : true,
 			[`/blueprintSummaries/${this.props.id}/numberOfFavorites`]: newNumberOfFavorites,
-			[`/users/${userId}/favorites/${this.props.id}`]           : wasFavorite ? null : true,
+			[`/users/${uid}/favorites/${this.props.id}`]              : wasFavorite ? null : true,
 		};
 		app.database().ref().update(updates);
 	};
@@ -195,8 +195,8 @@ class SingleBlueprint extends PureComponent
 			return <div />;
 		}
 
-		const {favorites} = this.state.blueprint;
-		const myFavorite  = favorites && user && favorites[user.userId];
+		const {favorites} = this.props.blueprint;
+		const myFavorite  = favorites && user && favorites[user.uid];
 		const iconName    = myFavorite ? 'heart' : 'heart-o';
 		const iconClass   = myFavorite ? 'text-primary' : 'text-default';
 
@@ -262,25 +262,31 @@ class SingleBlueprint extends PureComponent
 
 	render()
 	{
-		if (this.state.loading)
-		{
-			return <DocumentTitle title='Factorio Prints: Loading Data'>
-				<Jumbotron>
-					<h1>
-						<FontAwesome name='cog' spin />
-						{' Loading data'}
-					</h1>
-				</Jumbotron>
-			</DocumentTitle>;
-		}
-
-		const {blueprint} = this.state;
+		const {blueprint} = this.props;
 		if (isEmpty(blueprint))
 		{
-			return <DocumentTitle title='Factorio Prints: 404'><NoMatch /></DocumentTitle>;
+			if (this.props.loading === false)
+			{
+				return (
+					<DocumentTitle title='Factorio Prints: 404'>
+						<NoMatch />
+					</DocumentTitle>
+				);
+			}
+
+			return (
+				<DocumentTitle title='Factorio Prints: Loading Data'>
+					<Jumbotron>
+						<h1>
+							<FontAwesome name='cog' spin />
+							{' Loading data'}
+						</h1>
+					</Jumbotron>
+				</DocumentTitle>
+			);
 		}
 
-		const {image, createdDate, lastUpdatedDate, author, title, numberOfFavorites} = this.state.blueprint;
+		const {image, createdDate, lastUpdatedDate, author: {userId: authorId, displayName}, title, numberOfFavorites} = blueprint;
 
 		return <DocumentTitle title={`Factorio Prints: ${title}`}>
 			<Grid>
@@ -312,8 +318,8 @@ class SingleBlueprint extends PureComponent
 									<tr>
 										<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
 										<td>
-											<Link to={`/user/${author.userId}`}>
-												{this.state.author || '(Anonymous)'}
+											<Link to={`/user/${authorId}`}>
+												{displayName || '(Anonymous)'}
 												{this.state.ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
 											</Link>
 										</td>
@@ -321,17 +327,17 @@ class SingleBlueprint extends PureComponent
 									<tr>
 										<td><FontAwesome name='calendar' size='lg' fixedWidth />{' Created'}</td>
 										<td>
-										<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-											{moment(createdDate).fromNow()}
-										</span>
+											<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+												{moment(createdDate).fromNow()}
+											</span>
 										</td>
 									</tr>
 									<tr>
 										<td><FontAwesome name='clock-o' size='lg' fixedWidth />{' Last Updated'}</td>
 										<td>
-										<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-											{moment(lastUpdatedDate).fromNow()}
-										</span>
+											<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+												{moment(lastUpdatedDate).fromNow()}
+											</span>
 										</td>
 									</tr>
 									<tr>
@@ -420,14 +426,14 @@ class SingleBlueprint extends PureComponent
 									}
 								</Button>
 								{
-									this.state.parsedBlueprint && this.state.parsedBlueprint.isV14() &&
-									<Button onClick={this.handleShowHideConverted}>
+									this.state.parsedBlueprint && this.state.parsedBlueprint.isV14()
+									&& <Button onClick={this.handleShowHideConverted}>
 										{
 											this.state.showConverted
 												? <Title icon='toggle-on' text='Hide 0.15 blueprint' className='text-success' />
 												: <Title icon='toggle-off' text='Convert to 0.15 blueprint' />
 										}
-									</Button>
+            </Button>
 
 								}
 							</ButtonToolbar>
@@ -504,4 +510,27 @@ class SingleBlueprint extends PureComponent
 	}
 }
 
-export default SingleBlueprint;
+const mapStateToProps = (storeState, ownProps) =>
+{
+	const id = ownProps.match.params.blueprintId;
+	return {
+		id,
+		user       : selectors.getFilteredUser(storeState),
+		isModerator: selectors.getIsModerator(storeState),
+		blueprint  : selectors.getBlueprintDataById(storeState, {id}),
+		loading    : selectors.getBlueprintLoadingById(storeState, {id}),
+		myFavorites: selectors.getMyFavorites(storeState),
+	};
+};
+
+const mapDispatchToProps = (dispatch) =>
+{
+	const actionCreators = {
+		subscribeToBlueprint,
+		subscribeToModerators,
+	};
+	return bindActionCreators(actionCreators, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SingleBlueprint);
+

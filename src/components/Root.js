@@ -1,13 +1,20 @@
-import forOwn from 'lodash/forOwn';
-import isArray from 'lodash/isArray';
-import join from 'lodash/join';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
+import PropTypes from 'prop-types';
 
 import React, {PureComponent} from 'react';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 import DocumentTitle from 'react-document-title';
+import {connect} from 'react-redux';
 import {BrowserRouter, Match, Miss} from 'react-router';
+import {bindActionCreators} from 'redux';
 
-import base, {app} from '../base';
+import {
+	authStateChanged,
+	subscribeToBlueprintSummaries,
+} from '../actions/actionCreators';
+
+import {app} from '../base';
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
 import Contact from './Contact';
@@ -22,46 +29,29 @@ import UserGrid from './UserGrid';
 
 class Root extends PureComponent
 {
-	static propTypes = {};
-
-	state = {
-		blueprintSummaries: {},
-		tags              : [],
-		tagHierarchy      : {},
-		byTag             : {},
-		user              : null,
-		userFavorites     : {},
-		isModerator       : false,
-		loadingTags       : true,
-	};
+	static propTypes = forbidExtraProps({
+		subscribeToBlueprintSummaries: PropTypes.func.isRequired,
+		authStateChanged             : PropTypes.func.isRequired,
+		blueprintSummaries           : PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
+			title            : PropTypes.string.isRequired,
+			imgurId          : PropTypes.string.isRequired,
+			imgurType        : PropTypes.string.isRequired,
+			numberOfFavorites: PropTypes.number.isRequired,
+		})).isRequired),
+	});
 
 	componentWillMount()
 	{
-		this.blueprintSummariesRef = base.bindToState('blueprintSummaries', {
-			context: this,
-			state  : 'blueprintSummaries',
-		});
-
-		base.fetch('tags', {
-			context  : this,
-			then     : tagHierarchy =>
-			{
-				const tags = this.buildTagOptions(tagHierarchy);
-				return this.setState({tags, tagHierarchy});
-			},
-			onFailure: console.log,
-		});
+		this.props.subscribeToBlueprintSummaries();
 
 		app.auth().onAuthStateChanged((user) =>
 		{
+			this.props.authStateChanged(user);
 			if (!user)
 			{
 				this.setState({
 					user         : null,
-					userFavorites: {},
-					isModerator  : false,
 				});
-				this.unbindUserFavs();
 			}
 			else
 			{
@@ -94,8 +84,6 @@ class Root extends PureComponent
 				const eraseState = (error) =>
 				{
 					newState.user = null;
-					newState.userFavorites = {};
-					newState.isModerator = false;
 
 					if (error)
 					{
@@ -112,151 +100,28 @@ class Root extends PureComponent
 					.then(() => this.setState(newState))
 					.catch(eraseState);
 
-				this.unbindUserFavs();
-				this.userFavoritesRef = base.bindToState(`/users/${uid}/favorites`, {
-					context: this,
-					state  : 'userFavorites',
-				});
 			}
 		}, console.log);
 	}
-
-	componentWillUnmount()
-	{
-		base.removeBinding(this.blueprintSummariesRef);
-		this.unbindUserFavs();
-	}
-
-	unbindUserFavs = () =>
-	{
-		if (this.userFavoritesRef)
-		{
-			base.removeBinding(this.userFavoritesRef);
-			this.userFavoritesRef = null;
-		}
-	};
-
-	lazilyFetchTaggedBlueprints = () =>
-	{
-		if (!this.taggedBlueprintsRef)
-		{
-			this.taggedBlueprintsRef = base.bindToState(`/byTag/`, {
-				context  : this,
-				state    : 'byTag',
-				then     : () => this.setState({loadingTags: false}),
-				onFailure: () => this.setState({loadingTags: false}),
-			});
-		}
-	}
-
-	buildTagOptions = (tagHierarchy) =>
-	{
-		const result = [];
-		this.buildTagOptionsRecursive(tagHierarchy, [], result);
-		return result;
-	};
-
-	buildTagOptionsRecursive = (tagHierarchyNode, pathArray, result) =>
-	{
-		forOwn(tagHierarchyNode, (value, key) =>
-		{
-			if (isArray(value))
-			{
-				value.forEach(eachValue => result.push(`${join(pathArray, '/')}/${key}/${eachValue}/`));
-			}
-			else
-			{
-				const newPathArray = [...pathArray, key];
-				this.buildTagOptionsRecursive(value, newPathArray, result);
-			}
-		});
-	};
 
 	renderIntro             = props =>
 		<div>
 			{this.state.user === null && <Intro />}
 			{this.renderBlueprintGrid(props)}
 		</div>;
-	renderBlueprintGrid     = props =>
-		<BlueprintGrid
-			blueprintSummaries={this.state.blueprintSummaries}
-			userFavorites={this.state.userFavorites}
-			user={this.state.user}
-			tags={this.state.tags}
-			lazilyFetchTaggedBlueprints={this.lazilyFetchTaggedBlueprints}
-			byTag={this.state.byTag}
-			loadingTags={this.state.loadingTags}
-		/>;
-	renderMostFavoritedGrid = props =>
-		<MostFavoritedGrid
-			blueprintSummaries={this.state.blueprintSummaries}
-			userFavorites={this.state.userFavorites}
-			user={this.state.user}
-			tags={this.state.tags}
-			lazilyFetchTaggedBlueprints={this.lazilyFetchTaggedBlueprints}
-			byTag={this.state.byTag}
-			loadingTags={this.state.loadingTags}
-		/>;
-	renderCreate            = props =>
-		<Create
-			tags={this.state.tags}
-			user={this.state.user}
-		/>;
-	renderSingleBlueprint   = (props) =>
-	{
-		const {blueprintId} = props.params;
-
-		return (
-			<SingleBlueprint
-				id={blueprintId}
-				user={this.state.user}
-				isModerator={this.state.isModerator}
-			/>
-		);
-	};
-	renderEditBlueprint     = (props) =>
-	{
-		const {blueprintId} = props.params;
-
-		if (Object.keys(this.state.blueprintSummaries).length === 0)
-		{
-			return <Jumbotron><h1>{'Loading data'}</h1></Jumbotron>;
-		}
-		return <EditBlueprint
-			id={blueprintId}
-			tags={this.state.tags}
-			user={this.state.user}
-			isModerator={this.state.isModerator}
-		/>;
-	};
-	renderUser              = props =>
-		<UserGrid
-			id={props.params.userId}
-			blueprintSummaries={this.state.blueprintSummaries}
-			userFavorites={this.state.userFavorites}
-		/>;
 	renderTag              = (props) =>
 	{
 		const {pathname} = props.location;
 		const tagId = pathname.replace(/^\/tagged/, '');
-		this.lazilyFetchTaggedBlueprints();
 
 		return <BlueprintGrid
-			blueprintSummaries={this.state.blueprintSummaries}
-			userFavorites={this.state.userFavorites}
 			user={this.state.user}
-			tags={this.state.tags}
-			lazilyFetchTaggedBlueprints={this.lazilyFetchTaggedBlueprints}
-			byTag={this.state.byTag}
-			loadingTags={this.state.loadingTags}
-			initiallySelectedTags={[tagId]}
+			initialTag={tagId}
 		/>
 	};
 	renderFavorites         = props =>
 		<FavoritesGrid
 			user={this.state.user}
-			blueprintSummaries={this.state.blueprintSummaries}
-			userFavorites={this.state.userFavorites}
 		/>;
 
 	render()
@@ -285,4 +150,26 @@ class Root extends PureComponent
 	}
 }
 
-export default Root;
+const mapStateToProps = (state) =>
+{
+	const {
+		blueprintSummaries: {
+			data: blueprintSummariesData,
+		},
+	} = state;
+
+	return {
+		blueprintSummaries: blueprintSummariesData,
+	};
+};
+
+const mapDispatchToProps = (dispatch) =>
+{
+	const actionCreators = {
+		subscribeToBlueprintSummaries,
+		authStateChanged,
+	};
+	return bindActionCreators(actionCreators, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Root);

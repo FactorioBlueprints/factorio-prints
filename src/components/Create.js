@@ -28,10 +28,16 @@ import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import {app} from '../base';
 
+import {connect} from 'react-redux';
+
+import * as selectors from '../selectors';
+
 import Blueprint from '../Blueprint';
 import noImageAvailable from '../gif/No_available_image.gif';
 
 import scaleImage from '../helpers/ImageScaler';
+
+import {userSchema} from '../propTypes';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => {
@@ -58,11 +64,12 @@ marked.setOptions({
 class Create extends PureComponent
 {
 	static propTypes = forbidExtraProps({
+		user: userSchema,
 		tags: PropTypes.arrayOf(PropTypes.string).isRequired,
-		user: PropTypes.shape(forbidExtraProps({
-			userId     : PropTypes.string.isRequired,
-			displayName: PropTypes.string,
-		})),
+		tagOptions: PropTypes.arrayOf(PropTypes.shape(forbidExtraProps({
+			value: PropTypes.string.isRequired,
+			label: PropTypes.string.isRequired,
+		})).isRequired).isRequired,
 	});
 
 	static contextTypes = {router: PropTypes.object.isRequired};
@@ -354,7 +361,10 @@ class Create extends PureComponent
 
 							const blueprint = {
 								...this.state.blueprint,
-								author           : this.props.user,
+								author           : {
+									userId     : this.props.user.uid,
+									displayName: this.props.user.displayName,
+								},
 								createdDate      : firebase.database.ServerValue.TIMESTAMP,
 								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
 								favorites        : {},
@@ -365,7 +375,7 @@ class Create extends PureComponent
 							};
 							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
 							// TODO: Combine all of these database updates into a single call to update
-							app.database().ref(`/users/${this.props.user.userId}/blueprints`).update({[newBlueprintRef.key]: true});
+							app.database().ref(`/users/${this.props.user.uid}/blueprints`).update({[newBlueprintRef.key]: true});
 
 							const thumbnail = this.state.thumbnail;
 							newBlueprintRef.then(() =>
@@ -429,7 +439,7 @@ class Create extends PureComponent
 			return (
 				<Jumbotron>
 					<h1>{'Create a Blueprint'}</h1>
-					<p>{'Please log in with Google, Facebook, Twitter, or GitHub in order to add a Blueprint.'}</p>
+					<p>{'Please log in with Google or GitHub in order to add a Blueprint.'}</p>
 				</Jumbotron>
 			);
 		}
@@ -631,4 +641,13 @@ class Create extends PureComponent
 	}
 }
 
-export default Create;
+const mapStateToProps = (storeState) =>
+{
+	return {
+		user      : selectors.getFilteredUser(storeState),
+		tags      : selectors.getTags(storeState),
+		tagOptions: selectors.getTagsOptions(storeState),
+	};
+};
+
+export default connect(mapStateToProps, {})(Create);
