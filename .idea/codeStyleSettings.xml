@@ -11,6 +11,7 @@
           <option name="USE_DOUBLE_QUOTES" value="false" />
           <option name="ENFORCE_TRAILING_COMMA" value="WhenMultiline" />
           <option name="IMPORT_SORT_MODULE_NAME" value="true" />
+          <option name="FUNCTION_EXPRESSION_BRACE_STYLE" value="2" />
         </JSCodeStyleSettings>
         <JSON>
           <option name="PROPERTY_ALIGNMENT" value="2" />
