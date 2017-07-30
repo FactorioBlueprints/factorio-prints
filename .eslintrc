@@ -113,5 +113,7 @@
     "max-lines": "off",
     "no-mixed-operators": "off",
 	"wrap-regex": "off",
+	"jsx-a11y/href-no-hash": "off",
+	"jsx-a11y/anchor-is-valid": ["warn", { "aspects": ["invalidHref"] }]
   }
 }
