@@ -20,7 +20,7 @@ import NoMatch from './NoMatch';
 import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
-import {userSchema, blueprintSummariesSchema} from '../propTypes';
+import {userSchema, blueprintSummariesSchema, locationSchema} from '../propTypes';
 
 class UserGrid extends PureComponent
 {
@@ -35,6 +35,18 @@ class UserGrid extends PureComponent
 		user                         : userSchema,
 		blueprintSummaries           : blueprintSummariesSchema,
 		filteredBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+		match                : PropTypes.shape(forbidExtraProps({
+			params           : PropTypes.shape(forbidExtraProps({
+				userId       : PropTypes.string.isRequired,
+			})).isRequired,
+			path             : PropTypes.string.isRequired,
+			url              : PropTypes.string.isRequired,
+			isExact          : PropTypes.bool.isRequired,
+		})).isRequired,
+		location             : locationSchema,
+		history              : PropTypes.object.isRequired,
+		staticContext        : PropTypes.shape(forbidExtraProps({
+		})),
 	});
 
 	componentWillMount()
@@ -86,15 +98,17 @@ class UserGrid extends PureComponent
 	}
 }
 
-const mapStateToProps = (storeState, props) =>
+const mapStateToProps = (storeState, ownProps) =>
 {
+	const id = ownProps.match.params.userId;
 	return {
+		id,
 		user                      : selectors.getFilteredUser(storeState),
-		filteredBlueprintSummaries: selectors.getUserFilteredBlueprintSummaries(storeState, props),
+		filteredBlueprintSummaries: selectors.getUserFilteredBlueprintSummaries(storeState, {id}),
 		blueprintSummaries        : selectors.getBlueprintSummariesData(storeState),
-		displayName               : selectors.getUserDisplayName(storeState, props),
-		displayNameLoading        : selectors.getUserDisplayNameLoading(storeState, props),
-		userBlueprintsLoading     : selectors.getUserBlueprintsLoading(storeState, props),
+		displayName               : selectors.getUserDisplayName(storeState, {id}),
+		displayNameLoading        : selectors.getUserDisplayNameLoading(storeState, {id}),
+		userBlueprintsLoading     : selectors.getUserBlueprintsLoading(storeState, {id}),
 	};
 };
 

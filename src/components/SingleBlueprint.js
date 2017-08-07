@@ -36,7 +36,7 @@ import ReactDisqusThread from 'react-disqus-thread';
 import DocumentTitle from 'react-document-title';
 import FontAwesome from 'react-fontawesome';
 import {connect} from 'react-redux';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 import {bindActionCreators} from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators} from '../actions/actionCreators';
@@ -53,7 +53,7 @@ import Title from './Title';
 
 import * as selectors from '../selectors';
 
-import {userSchema, blueprintSchema} from '../propTypes';
+import {userSchema, blueprintSchema, locationSchema, historySchema} from '../propTypes';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => {
@@ -89,9 +89,19 @@ class SingleBlueprint extends PureComponent
 		user                 : userSchema,
 		blueprint            : blueprintSchema,
 		isModerator          : PropTypes.bool.isRequired,
+		match                : PropTypes.shape(forbidExtraProps({
+			params           : PropTypes.shape(forbidExtraProps({
+				blueprintId  : PropTypes.string.isRequired,
+			})).isRequired,
+			path             : PropTypes.string.isRequired,
+			url              : PropTypes.string.isRequired,
+			isExact          : PropTypes.bool.isRequired,
+		})).isRequired,
+		location             : locationSchema,
+		history              : historySchema,
+		staticContext        : PropTypes.shape(forbidExtraProps({
+		})),
 	});
-
-	static contextTypes = {router: PropTypes.object.isRequired};
 
 	state = {
 		showBlueprint: false,
@@ -208,12 +218,18 @@ class SingleBlueprint extends PureComponent
 		);
 	};
 
+	transitionToEdit = () =>
+	{
+		this.props.history.push(`/edit/${this.props.id}`);
+	}
+
 	renderEditButton = () =>
 		<Button
 			bsSize='large'
 			className='pull-right'
-			onClick={() => this.context.router.transitionTo(`/edit/${this.props.id}`)}>
-			<FontAwesome name='edit' />{' Edit'}
+			onClick={this.transitionToEdit}>
+			<FontAwesome name='edit' />
+			{' Edit'}
 		</Button>;
 
 	parseBlueprint = (blueprintString) =>
@@ -265,23 +281,23 @@ class SingleBlueprint extends PureComponent
 		const {blueprint} = this.props;
 		if (isEmpty(blueprint))
 		{
-			if (this.props.loading === false)
+			if (this.props.loading === true || this.props.loading === undefined)
 			{
 				return (
-					<DocumentTitle title='Factorio Prints: 404'>
-						<NoMatch />
+					<DocumentTitle title='Factorio Prints: Loading Data'>
+						<Jumbotron>
+							<h1>
+								<FontAwesome name='cog' spin />
+								{' Loading data'}
+							</h1>
+						</Jumbotron>
 					</DocumentTitle>
 				);
 			}
 
 			return (
-				<DocumentTitle title='Factorio Prints: Loading Data'>
-					<Jumbotron>
-						<h1>
-							<FontAwesome name='cog' spin />
-							{' Loading data'}
-						</h1>
-					</Jumbotron>
+				<DocumentTitle title='Factorio Prints: 404'>
+					<NoMatch />
 				</DocumentTitle>
 			);
 		}

@@ -64,7 +64,7 @@ import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../a
 
 import * as selectors from '../selectors';
 
-import {userSchema, blueprintSchema} from '../propTypes';
+import {userSchema, blueprintSchema, locationSchema, historySchema} from '../propTypes';
 
 const expressBeltTypes = [
 	'express-splitter',
@@ -120,9 +120,19 @@ class EditBlueprint extends PureComponent
 		user                 : userSchema,
 		blueprint            : blueprintSchema,
 		loading              : PropTypes.bool.isRequired,
+		match                : PropTypes.shape(forbidExtraProps({
+			params           : PropTypes.shape(forbidExtraProps({
+				blueprintId  : PropTypes.string.isRequired,
+			})).isRequired,
+			path             : PropTypes.string.isRequired,
+			url              : PropTypes.string.isRequired,
+			isExact          : PropTypes.bool.isRequired,
+		})).isRequired,
+		location             : locationSchema,
+		history              : historySchema,
+		staticContext        : PropTypes.shape(forbidExtraProps({
+		})),
 	});
-
-	static contextTypes = {router: PropTypes.object.isRequired};
 
 	static emptyTags = [];
 
@@ -474,14 +484,14 @@ class EditBlueprint extends PureComponent
 
 			app.database().ref().update(updates);
 		})
-			.then(() => this.context.router.transitionTo(`/view/${this.props.id}`))
+			.then(() => this.props.history.push(`/view/${this.props.id}`))
 			.catch(console.log);
 		// TODO: Delete old images from storage and imgur
 	};
 
 	handleCancel = () =>
 	{
-		this.context.router.transitionTo(`/view/${this.props.id}`);
+		this.props.history.push(`/view/${this.props.id}`);
 	};
 
 	handleShowConfirmDelete  = (event) =>
@@ -519,7 +529,7 @@ class EditBlueprint extends PureComponent
 				}
 				return undefined;
 			})
-			.then(() => this.context.router.transitionTo(`/user/${authorId}`))
+			.then(() => this.props.history.push(`/user/${authorId}`))
 			.catch(console.log);
 	};
 
@@ -715,6 +725,7 @@ class EditBlueprint extends PureComponent
 			}
 
 			// Most common item
+			// eslint-disable-next-line 
 			if (entityHistogram[0][0] === 'small-lamp' || entityCounts['small-lamp'] > 100 && entityHistogram[1] && entityHistogram[1][0] === 'small-lamp')
 			{
 				tagSuggestions.push('/circuit/indicator/');
@@ -835,12 +846,7 @@ class EditBlueprint extends PureComponent
 
 			const allVanilla = every(allGameEntities, (each) =>
 			{
-				const result = entitiesWithIcons[each] === true;
-				if (!result)
-				{
-					console.log(each, 'not vanilla');
-				}
-				return result;
+				return entitiesWithIcons[each] === true;
 			});
 			if (allVanilla)
 			{
@@ -1264,10 +1270,12 @@ class EditBlueprint extends PureComponent
 
 const mapStateToProps = (storeState, ownProps) =>
 {
+	const id = ownProps.match.params.blueprintId;
 	return ({
+		id,
 		user       : selectors.getFilteredUser(storeState),
 		isModerator: selectors.getIsModerator(storeState),
-		blueprint  : selectors.getBlueprintDataById(storeState, ownProps),
+		blueprint  : selectors.getBlueprintDataById(storeState, {id}),
 		loading    : selectors.getBlueprintLoadingById(storeState, ownProps),
 		tags       : selectors.getTags(storeState),
 	});

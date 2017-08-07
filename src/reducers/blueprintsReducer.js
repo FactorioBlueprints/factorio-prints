@@ -3,7 +3,7 @@ import {RECEIVED_BLUEPRINT, SUBSCRIBED_TO_BLUEPRINT} from '../actions/actionType
 export const initialBlueprintState =
 {
 	loading: false,
-	data   : {},
+	data   : undefined,
 };
 
 const blueprintReducer = (state = initialBlueprintState, action) =>

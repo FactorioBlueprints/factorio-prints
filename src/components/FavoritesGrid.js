@@ -20,7 +20,7 @@ import TagForm from './TagForm';
 
 import ReactPaginate from 'react-paginate';
 
-import {userSchema, blueprintSummariesSchema} from '../propTypes';
+import {userSchema, blueprintSummariesSchema, locationSchema, historySchema} from '../propTypes';
 
 const PAGE_SIZE = 60;
 
@@ -34,6 +34,17 @@ class FavoritesGrid extends PureComponent
 		blueprintSummaries           : blueprintSummariesSchema,
 		pageCount                    : PropTypes.number.isRequired,
 		myFavoriteBlueprintSummaries : PropTypes.arrayOf(PropTypes.string.isRequired),
+		match                : PropTypes.shape(forbidExtraProps({
+			params           : PropTypes.shape(forbidExtraProps({
+			})).isRequired,
+			path             : PropTypes.string.isRequired,
+			url              : PropTypes.string.isRequired,
+			isExact          : PropTypes.bool.isRequired,
+		})).isRequired,
+		location             : locationSchema,
+		history              : historySchema,
+		staticContext        : PropTypes.shape(forbidExtraProps({
+		})),
 	});
 
 	state = {

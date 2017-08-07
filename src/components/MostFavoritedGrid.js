@@ -19,7 +19,7 @@ import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
 import ReactPaginate from 'react-paginate';
-import {userSchema, blueprintSummariesSchema} from '../propTypes';
+import {userSchema, blueprintSummariesSchema, locationSchema} from '../propTypes';
 
 const PAGE_SIZE = 60;
 
@@ -33,6 +33,17 @@ class MostFavoritedGrid extends PureComponent
 		blueprintSummaries           : blueprintSummariesSchema,
 		pageCount                    : PropTypes.number.isRequired,
 		favoriteBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+		match                : PropTypes.shape(forbidExtraProps({
+			params           : PropTypes.shape(forbidExtraProps({
+			})).isRequired,
+			path             : PropTypes.string.isRequired,
+			url              : PropTypes.string.isRequired,
+			isExact          : PropTypes.bool.isRequired,
+		})).isRequired,
+		location             : locationSchema,
+		history              : PropTypes.object.isRequired,
+		staticContext        : PropTypes.shape(forbidExtraProps({
+		})),
 	});
 
 	state = {

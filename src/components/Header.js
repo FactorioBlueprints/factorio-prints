@@ -9,7 +9,7 @@ import Navbar from 'react-bootstrap/lib/Navbar';
 import NavDropdown from 'react-bootstrap/lib/NavDropdown';
 import FontAwesome from 'react-fontawesome';
 import {connect} from 'react-redux';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 
 import {app} from '../base';
 import * as selectors from '../selectors';
@@ -183,8 +183,8 @@ class Header extends PureComponent
 }
 
 const mapStateToProps = storeState =>
-	({
-		user: selectors.getUser(storeState),
-	});
+({
+	user: selectors.getUser(storeState),
+});
 
 export default connect(mapStateToProps, {})(Header);

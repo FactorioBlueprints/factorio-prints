@@ -21,11 +21,6 @@ import {
 	AUTH_STATE_CHANGED,
 } from '../actions/actionTypes';
 
-const log = (action) =>
-{
-	console.log('log saga:', action);
-};
-
 function* rootSaga()
 {
 	// yield takeEvery('*', log);

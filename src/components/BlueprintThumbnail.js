@@ -8,7 +8,7 @@ import Thumbnail from 'react-bootstrap/lib/Thumbnail';
 import Tooltip from 'react-bootstrap/lib/Tooltip';
 import FontAwesome from 'react-fontawesome';
 import {connect} from 'react-redux';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 import buildImageUrl from '../helpers/buildImageUrl';
 
 import * as selectors from '../selectors';

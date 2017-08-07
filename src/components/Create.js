@@ -37,7 +37,7 @@ import noImageAvailable from '../gif/No_available_image.gif';
 
 import scaleImage from '../helpers/ImageScaler';
 
-import {userSchema} from '../propTypes';
+import {userSchema, locationSchema, historySchema} from '../propTypes';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => {
@@ -70,9 +70,18 @@ class Create extends PureComponent
 			value: PropTypes.string.isRequired,
 			label: PropTypes.string.isRequired,
 		})).isRequired).isRequired,
+		match                : PropTypes.shape(forbidExtraProps({
+			params           : PropTypes.shape(forbidExtraProps({
+			})).isRequired,
+			path             : PropTypes.string.isRequired,
+			url              : PropTypes.string.isRequired,
+			isExact          : PropTypes.bool.isRequired,
+		})).isRequired,
+		location             : locationSchema,
+		history              : historySchema,
+		staticContext        : PropTypes.shape(forbidExtraProps({
+		})),
 	});
-
-	static contextTypes = {router: PropTypes.object.isRequired};
 
 	static initialState = {
 		thumbnail               : '',
@@ -392,7 +401,7 @@ class Create extends PureComponent
 									app.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
 									{
 										this.setState(Create.initialState);
-										this.context.router.transitionTo(`/view/${newBlueprintRef.key}`);
+										this.props.history.push(`/view/${newBlueprintRef.key}`);
 									});
 								});
 							});
@@ -406,7 +415,7 @@ class Create extends PureComponent
 	handleCancel = () =>
 	{
 		localStorage.removeItem('factorio-blueprint-create-form');
-		this.context.router.transitionTo('/blueprints');
+		this.props.history.push('/blueprints');
 	};
 
 	renderPreview = () =>

@@ -1,10 +1,33 @@
-import React from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
+import isEmpty from 'lodash/isEmpty';
+
+import React, {PureComponent} from 'react';
 import Well from 'react-bootstrap/lib/Well';
 import Grid from 'react-bootstrap/lib/Grid';
 import Row from 'react-bootstrap/lib/Row';
 
-const Intro = () =>
-	<Well>
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+
+import * as selectors from '../selectors';
+
+import {userSchema} from '../propTypes';
+
+class Intro extends PureComponent
+{
+	static propTypes = forbidExtraProps({
+		user: userSchema,
+	});
+
+	render()
+	{
+		if (!isEmpty(this.props.user))
+		{
+			return false;
+		}
+
+		return <Well>
 		<Grid>
 			<Row>
 				<h1>{'Factorio Prints'}</h1>
@@ -28,5 +51,19 @@ const Intro = () =>
 			</Row>
 		</Grid>
 	</Well>;
+	}
+}
 
-export default Intro;
+const mapStateToProps = (storeState) =>
+{
+	return {
+		user: selectors.getFilteredUser(storeState),
+	};
+};
+
+const mapDispatchToProps = (dispatch) =>
+{
+	return bindActionCreators({}, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Intro);
