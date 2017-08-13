@@ -31,7 +31,7 @@ const preloadedState = loadState();
 // Mount it on the Store
 const store = createStore(
 	rootReducer,
-	preloadedState,
+	// preloadedState,
 	composeEnhancers(applyMiddleware(sagaMiddleware)));
 
 store.subscribe(throttle(() =>
