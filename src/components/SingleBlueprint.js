@@ -1,3 +1,5 @@
+/* eslint-disable react/no-array-index-key */
+
 import {forbidExtraProps} from 'airbnb-prop-types';
 import concat from 'lodash/concat';
 import flatMap from 'lodash/flatMap';
@@ -9,8 +11,8 @@ import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
 import isEmpty from 'lodash/isEmpty';
-import range from 'lodash/range';
 import isEqual from 'lodash/isEqual';
+import range from 'lodash/range';
 
 import marked from 'marked';
 import moment from 'moment';
@@ -48,33 +50,31 @@ import entitiesWithIcons from '../data/entitiesWithIcons';
 import buildImageUrl from '../helpers/buildImageUrl';
 
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
+
+import {blueprintSchema, historySchema, locationSchema, userSchema} from '../propTypes';
+
+import * as selectors from '../selectors';
 import NoMatch from './NoMatch';
 import Title from './Title';
 
-import * as selectors from '../selectors';
-
-import {userSchema, blueprintSchema, locationSchema, historySchema} from '../propTypes';
-
 const renderer = new marked.Renderer();
-renderer.table = (header, body) => {
-	return '<table class="table table-striped table-bordered">\n'
-		+ '<thead>\n'
-		+ header
-		+ '</thead>\n'
-		+ '<tbody>\n'
-		+ body
-		+ '</tbody>\n'
-		+ '</table>\n';
-};
+renderer.table = (header, body) => `<table class="table table-striped table-bordered">
+<thead>
+${header}</thead>
+<tbody>
+${body}</tbody>
+</table>
+`;
+
 marked.setOptions({
 	renderer,
-	gfm: true,
-	tables: true,
-	breaks: false,
-	pedantic: false,
-	sanitize: false,
-	smartLists: true,
-	smartypants: false
+	gfm        : true,
+	tables     : true,
+	breaks     : false,
+	pedantic   : false,
+	sanitize   : false,
+	smartLists : true,
+	smartypants: false,
 });
 
 class SingleBlueprint extends PureComponent
@@ -89,18 +89,17 @@ class SingleBlueprint extends PureComponent
 		user                 : userSchema,
 		blueprint            : blueprintSchema,
 		isModerator          : PropTypes.bool.isRequired,
-		match                : PropTypes.shape(forbidExtraProps({
-			params           : PropTypes.shape(forbidExtraProps({
-				blueprintId  : PropTypes.string.isRequired,
-			})).isRequired,
-			path             : PropTypes.string.isRequired,
-			url              : PropTypes.string.isRequired,
-			isExact          : PropTypes.bool.isRequired,
-		})).isRequired,
 		location             : locationSchema,
 		history              : historySchema,
-		staticContext        : PropTypes.shape(forbidExtraProps({
-		})),
+		staticContext        : PropTypes.shape(forbidExtraProps({})),
+		match                : PropTypes.shape(forbidExtraProps({
+			params : PropTypes.shape(forbidExtraProps({
+				blueprintId: PropTypes.string.isRequired,
+			})).isRequired,
+			path   : PropTypes.string.isRequired,
+			url    : PropTypes.string.isRequired,
+			isExact: PropTypes.bool.isRequired,
+		})).isRequired,
 	});
 
 	state = {
@@ -196,41 +195,10 @@ class SingleBlueprint extends PureComponent
 		this.setState({showConverted: !this.state.showConverted});
 	};
 
-	renderFavoriteButton = () =>
-	{
-		const {user} = this.props;
-
-		if (!user)
-		{
-			return <div />;
-		}
-
-		const {favorites} = this.props.blueprint;
-		const myFavorite  = favorites && user && favorites[user.uid];
-		const iconName    = myFavorite ? 'heart' : 'heart-o';
-		const iconClass   = myFavorite ? 'text-primary' : 'text-default';
-
-		return (
-			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
-				<FontAwesome name={iconName} className={iconClass} />
-				{' Favorite'}
-			</Button>
-		);
-	};
-
-	transitionToEdit = () =>
+	handleTransitionToEdit = () =>
 	{
 		this.props.history.push(`/edit/${this.props.id}`);
-	}
-
-	renderEditButton = () =>
-		<Button
-			bsSize='large'
-			className='pull-right'
-			onClick={this.transitionToEdit}>
-			<FontAwesome name='edit' />
-			{' Edit'}
-		</Button>;
+	};
 
 	parseBlueprint = (blueprintString) =>
 	{
@@ -256,7 +224,7 @@ class SingleBlueprint extends PureComponent
 	itemHistogram = (parsedBlueprint) =>
 	{
 		const result = {};
-		const items       = flatMap(parsedBlueprint.entities, entity => entity.items || []);
+		const items  = flatMap(parsedBlueprint.entities, entity => entity.items || []);
 		items.forEach((item) =>
 		{
 			if (has(item, 'item') && has(item, 'count'))
@@ -265,7 +233,7 @@ class SingleBlueprint extends PureComponent
 			}
 			else
 			{
-				return forOwn(item, (value, key) => result[key] = (result[key] || 0) + value);
+				forOwn(item, (value, key) => result[key] = (result[key] || 0) + value);
 			}
 		});
 
@@ -274,6 +242,39 @@ class SingleBlueprint extends PureComponent
 			sortBy(1),
 			reverse,
 		)(result);
+	};
+
+	renderEditButton = () => (
+		<Button
+			bsSize='large'
+			className='pull-right'
+			onClick={this.handleTransitionToEdit}
+		>
+			<FontAwesome name='edit' />
+			{' Edit'}
+		</Button>
+	);
+
+	renderFavoriteButton = () =>
+	{
+		const {user} = this.props;
+
+		if (!user)
+		{
+			return <div />;
+		}
+
+		const {favorites} = this.props.blueprint;
+		const myFavorite  = favorites && user && favorites[user.uid];
+		const iconName    = myFavorite ? 'heart' : 'heart-o';
+		const iconClass   = myFavorite ? 'text-primary' : 'text-default';
+
+		return (
+			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
+				<FontAwesome name={iconName} className={iconClass} />
+				{' Favorite'}
+			</Button>
+		);
 	};
 
 	render()
@@ -295,234 +296,282 @@ class SingleBlueprint extends PureComponent
 				);
 			}
 
-			return (
-				<DocumentTitle title='Factorio Prints: 404'>
-					<NoMatch />
-				</DocumentTitle>
-			);
+			return <NoMatch />;
 		}
 
 		const {image, createdDate, lastUpdatedDate, author: {userId: authorId, displayName}, title, numberOfFavorites} = blueprint;
 
-		return <DocumentTitle title={`Factorio Prints: ${title}`}>
-			<Grid>
-				<div className='page-header'>
-					<div className='btn-toolbar pull-right'>
-						{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}
-						{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
+		return (
+			<DocumentTitle title={`Factorio Prints: ${title}`}>
+				<Grid>
+					<div className='page-header'>
+						<div className='btn-toolbar pull-right'>
+							{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}
+							{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
+						</div>
+						<h1>{title}</h1>
 					</div>
-					<h1>{title}</h1>
-				</div>
-				<Row>
-					<Col md={4}>
-						<Thumbnail
-							href={`https://imgur.com/${image.id}`}
-							src={this.state.thumbnail}
-							target='_blank'
-						/>
-						{blueprint.tags && blueprint.tags.length > 0 && <Panel header='Tags'>
-							<h4>
-								{
-									flatMap(blueprint.tags || [], tag => [<Link key={tag} to={`/tagged${tag}`}><Label bsStyle='primary'>{tag}</Label></Link>, ' '])
-								}
-							</h4>
-						</Panel>
-						}
-						<Panel header='Info'>
-							<Table bordered hover fill>
-								<tbody>
-									<tr>
-										<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
-										<td>
-											<Link to={`/user/${authorId}`}>
-												{displayName || '(Anonymous)'}
-												{this.state.ownedByCurrentUser && <span className='pull-right'><b>{'(You)'}</b></span>}
-											</Link>
-										</td>
-									</tr>
-									<tr>
-										<td><FontAwesome name='calendar' size='lg' fixedWidth />{' Created'}</td>
-										<td>
-											<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-												{moment(createdDate).fromNow()}
-											</span>
-										</td>
-									</tr>
-									<tr>
-										<td><FontAwesome name='clock-o' size='lg' fixedWidth />{' Last Updated'}</td>
-										<td>
-											<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
-												{moment(lastUpdatedDate).fromNow()}
-											</span>
-										</td>
-									</tr>
-									<tr>
-										<td><FontAwesome name='heart' size='lg' fixedWidth />{' Favorites'}</td>
-										<td>{numberOfFavorites}</td>
-									</tr>
-								</tbody>
-							</Table>
-						</Panel>
-						{this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() && <Panel header='Requirements'>
-							<Table bordered hover fill>
-								<colgroup>
-									<col span='1' style={{width: '1%'}} />
-									<col span='1' style={{width: '1%'}} />
-									<col span='1' />
-								</colgroup>
-
-								<tbody>
-									{this.entityHistogram(this.state.v15Decoded.blueprint).map(pair =>
-										<tr key={pair[0]}>
-											<td className='icon'>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
-											<td className='number'>{pair[1]}</td>
-											<td>{pair[0]}</td>
-										</tr>)}
-									{this.itemHistogram(this.state.v15Decoded.blueprint).map(pair =>
-										<tr key={pair[0]}>
-											<td className='icon'>{entitiesWithIcons[pair[0]] ? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} /> : ''}</td>
-											<td className='number'>{pair[1]}</td>
-											<td>{pair[0]}</td>
-										</tr>)
-									}
-								</tbody>
-							</Table>
-						</Panel>}
-						{this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() && <Panel header='Extra Info'>
-							<Table bordered hover fill>
-								<colgroup>
-									<col span='1' style={{width: '1%'}} />
-									<col span='1' />
-								</colgroup>
-
-								<tbody>
-									<tr>
-										<td colSpan={2}>{this.state.v15Decoded.blueprint.label}</td>
-									</tr>
-									{ // eslint-disable-next-line
-										(this.state.v15Decoded.blueprint.icons || [])
-											.filter(icon => icon != null)
-											.map((icon) =>
-											{
-												// eslint-disable-next-line
-												const iconName = icon.name || icon.signal && icon.signal.name;
-												return <tr key={icon.index}>
-													<td className='icon'>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
-													<td>{iconName}</td>
-												</tr>;
-											})
-									}
-								</tbody>
-							</Table>
-						</Panel>}
-					</Col>
-					<Col md={8}>
-						<Panel header='Details'>
-							<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
-						</Panel>
-						<Panel>
-							<ButtonToolbar>
-								<CopyToClipboard text={blueprint.blueprintString}>
-									<Button bsStyle='primary'>
-										<Title icon='clipboard' text='Copy to Clipboard' />
-									</Button>
-								</CopyToClipboard>
-								<Button onClick={this.handleShowHideBase64}>
-									{
-										this.state.showBlueprint
-											? <Title icon='toggle-on' text='Hide Blueprint' className='text-success' />
-											: <Title icon='toggle-off' text='Show Blueprint' />
-									}
-								</Button>
-								<Button onClick={this.handleShowHideJson}>
-									{
-										this.state.showJson
-											? <Title icon='toggle-on' text='Hide Json' className='text-success' />
-											: <Title icon='toggle-off' text='Show Json' />
-									}
-								</Button>
-								{
-									this.state.parsedBlueprint && this.state.parsedBlueprint.isV14()
-									&& <Button onClick={this.handleShowHideConverted}>
+					<Row>
+						<Col md={4}>
+							<Thumbnail
+								href={`https://imgur.com/${image.id}`}
+								src={this.state.thumbnail}
+								target='_blank'
+							/>
+							{
+								blueprint.tags && blueprint.tags.length > 0 && <Panel header='Tags'>
+									<h4>
 										{
-											this.state.showConverted
-												? <Title icon='toggle-on' text='Hide 0.15 blueprint' className='text-success' />
-												: <Title icon='toggle-off' text='Convert to 0.15 blueprint' />
+											flatMap(blueprint.tags || [], tag => [
+												<Link key={tag} to={`/tagged${tag}`}>
+													<Label bsStyle='primary'>
+														{tag}
+													</Label>
+												</Link>,
+												' ',
+											])
 										}
-            </Button>
+									</h4>
+								</Panel>
+							}
+							<Panel header='Info'>
+								<Table bordered hover fill>
+									<tbody>
+										<tr>
+											<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
+											<td>
+												<Link to={`/user/${authorId}`}>
+													{displayName || '(Anonymous)'}
+													{
+														this.state.ownedByCurrentUser &&
+														<span className='pull-right'>
+															<b>{'(You)'}</b>
+														</span>
+													}
+												</Link>
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<FontAwesome name='calendar' size='lg' fixedWidth />
+												{' Created'}</td>
+											<td>
+												<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+													{moment(createdDate).fromNow()}
+												</span>
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<FontAwesome name='clock-o' size='lg' fixedWidth />
+												{' Last Updated'}
+											</td>
+											<td>
+												<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+													{moment(lastUpdatedDate).fromNow()}
+												</span>
+											</td>
+										</tr>
+										<tr>
+											<td><FontAwesome name='heart' size='lg' fixedWidth />{' Favorites'}</td>
+											<td>{numberOfFavorites}</td>
+										</tr>
+									</tbody>
+								</Table>
+							</Panel>
+							{
+								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() &&
+								<Panel header='Requirements'>
+									<Table bordered hover fill>
+										<colgroup>
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' />
+										</colgroup>
 
-								}
-							</ButtonToolbar>
-						</Panel>
-						{this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBook() && <Panel header='Extra Info'>
-							<Table bordered hover fill>
-								<colgroup>
-									<col span='1' style={{width: '1%'}} />
-									<col span='1' style={{width: '1%'}} />
-									<col span='1' style={{width: '1%'}} />
-									<col span='1' style={{width: '1%'}} />
-									<col span='1'  />
-								</colgroup>
-								<tbody>
-									<tr>
-										<td colSpan={4}>{'Book'}</td>
-										<td>{this.state.v15Decoded.blueprint_book.label}</td>
-									</tr>
-									{
-										this.state.v15Decoded.blueprint_book.blueprints.map((eachBlueprint, index) =>
-											<tr key={index}>
-												{
-													range(4).map((index) => {
-														if (eachBlueprint.blueprint.icons
-															&& eachBlueprint.blueprint.icons.length > index
-															&& eachBlueprint.blueprint.icons[index] != null)
-														{
-															const icon = eachBlueprint.blueprint.icons[index];
-															// eslint-disable-next-line
-															const iconName = icon.name || icon.signal && icon.signal.name;
-															return <td className='icon' key={index}>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>;
-														}
-														else
-														{
-															return <td className='icon' key={index}></td>
-														}
+										<tbody>
+											{
+												this.entityHistogram(this.state.v15Decoded.blueprint).map(pair => (
+													<tr key={pair[0]}>
+														<td className='icon'>
+															{
+																entitiesWithIcons[pair[0]]
+																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	: ''
+															}
+														</td>
+														<td className='number'>{pair[1]}</td>
+														<td>{pair[0]}</td>
+													</tr>
+												))
+											}
+											{
+												this.itemHistogram(this.state.v15Decoded.blueprint).map(pair => (
+													<tr key={pair[0]}>
+														<td className='icon'>
+															{
+																entitiesWithIcons[pair[0]]
+																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	: ''
+															}
+														</td>
+														<td className='number'>{pair[1]}</td>
+														<td>{pair[0]}</td>
+													</tr>
+												))
+											}
+										</tbody>
+									</Table>
+								</Panel>
+							}
+							{
+								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() &&
+								<Panel header='Extra Info'>
+									<Table bordered hover fill>
+										<colgroup>
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' />
+										</colgroup>
+
+										<tbody>
+											<tr>
+												<td colSpan={2}>{this.state.v15Decoded.blueprint.label}</td>
+											</tr>
+											{
+												(this.state.v15Decoded.blueprint.icons || [])
+													.filter(icon => icon !== null)
+													.map((icon) =>
+													{
+														// eslint-disable-next-line
+														const iconName = icon.name || icon.signal && icon.signal.name;
+														return (
+															<tr key={icon.index}>
+																<td className='icon'>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
+																<td>{iconName}</td>
+															</tr>
+														);
 													})
-												}
-												<td>
-													{/* Old 0.14 blueprint books could have empty slots */}
-													{eachBlueprint.blueprint ? eachBlueprint.blueprint.label : 'Empty slot in book'}
-												</td>
-											</tr>)
+											}
+										</tbody>
+									</Table>
+								</Panel>
+							}
+						</Col>
+						<Col md={8}>
+							<Panel header='Details'>
+								<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
+							</Panel>
+							<Panel>
+								<ButtonToolbar>
+									<CopyToClipboard text={blueprint.blueprintString}>
+										<Button bsStyle='primary'>
+											<Title icon='clipboard' text='Copy to Clipboard' />
+										</Button>
+									</CopyToClipboard>
+									<Button onClick={this.handleShowHideBase64}>
+										{
+											this.state.showBlueprint
+												? <Title icon='toggle-on' text='Hide Blueprint' className='text-success' />
+												: <Title icon='toggle-off' text='Show Blueprint' />
+										}
+									</Button>
+									<Button onClick={this.handleShowHideJson}>
+										{
+											this.state.showJson
+												? <Title icon='toggle-on' text='Hide Json' className='text-success' />
+												: <Title icon='toggle-off' text='Show Json' />
+										}
+									</Button>
+									{
+										this.state.parsedBlueprint && this.state.parsedBlueprint.isV14()
+										&& <Button onClick={this.handleShowHideConverted}>
+											{
+												this.state.showConverted
+													? <Title icon='toggle-on' text='Hide 0.15 blueprint' className='text-success' />
+													: <Title icon='toggle-off' text='Convert to 0.15 blueprint' />
+											}
+										</Button>
 									}
-								</tbody>
-							</Table>
-						</Panel>}
-						{this.state.showBlueprint && <Panel header='Blueprint String'>
-							<div className='blueprintString'>
-								{blueprint.blueprintString}
-							</div>
-						</Panel>}
-						{this.state.showJson && <Panel header='Json Representation'>
-							<div className='json'>
-								{JSON.stringify(this.state.v15Decoded, null, 4)}
-							</div>
-						</Panel>}
-						{this.state.showConverted && <Panel header='0.15 format Blueprint String (Experimental)'>
-							<div className='blueprintString'>
-								{encodeV15ToBase64(JSON.stringify(this.state.v15Decoded))}
-							</div>
-						</Panel>}
-					</Col>
-				</Row>
-				<Row>
-					<ReactDisqusThread
-						shortname='factorio-blueprints'
-						identifier={this.props.id}
-						title={blueprint.title}
-					/>
-				</Row>
-			</Grid>
-		</DocumentTitle>;
+								</ButtonToolbar>
+							</Panel>
+							{
+								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBook() &&
+								<Panel header='Extra Info'>
+									<Table bordered hover fill>
+										<colgroup>
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' />
+										</colgroup>
+										<tbody>
+											<tr>
+												<td colSpan={4}>{'Book'}</td>
+												<td>{this.state.v15Decoded.blueprint_book.label}</td>
+											</tr>
+											{
+												this.state.v15Decoded.blueprint_book.blueprints.map((eachBlueprint, blueprintIndex) => (
+													<tr key={blueprintIndex}>
+														{
+															range(4).map((iconIndex) =>
+															{
+																if (eachBlueprint.blueprint.icons
+																	&& eachBlueprint.blueprint.icons.length > iconIndex
+																	&& eachBlueprint.blueprint.icons[iconIndex] !== null)
+																{
+																	const icon     = eachBlueprint.blueprint.icons[iconIndex];
+																	// eslint-disable-next-line
+																	const iconName = icon.name || icon.signal && icon.signal.name;
+																	return <td className='icon' key={iconIndex}>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>;
+																}
+																return <td className='icon' key={iconIndex} />;
+															})
+														}
+														<td>
+															{/* Old 0.14 blueprint books could have empty slots */}
+															{eachBlueprint.blueprint ? eachBlueprint.blueprint.label : 'Empty slot in book'}
+														</td>
+													</tr>
+												))
+											}
+										</tbody>
+									</Table>
+								</Panel>
+							}
+							{
+								this.state.showBlueprint && <Panel header='Blueprint String'>
+									<div className='blueprintString'>
+										{blueprint.blueprintString}
+									</div>
+								</Panel>
+							}
+							{
+								this.state.showJson && <Panel header='Json Representation'>
+									<div className='json'>
+										{JSON.stringify(this.state.v15Decoded, null, 4)}
+									</div>
+								</Panel>
+							}
+							{
+								this.state.showConverted && <Panel header='0.15 format Blueprint String (Experimental)'>
+									<div className='blueprintString'>
+										{encodeV15ToBase64(JSON.stringify(this.state.v15Decoded))}
+									</div>
+								</Panel>
+							}
+						</Col>
+					</Row>
+					<Row>
+						<ReactDisqusThread
+							shortname='factorio-blueprints'
+							identifier={this.props.id}
+							title={blueprint.title}
+						/>
+					</Row>
+				</Grid>
+			</DocumentTitle>
+		);
 	}
 }
 

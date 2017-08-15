@@ -9,13 +9,15 @@ class App extends PureComponent
 
 	render()
 	{
-		return <div>
-			<div className='container-fluid'>
-				<div className='row application-context-container'>
-					{this.props.children}
+		return (
+			<div>
+				<div className='container-fluid'>
+					<div className='row application-context-container'>
+						{this.props.children}
+					</div>
 				</div>
 			</div>
-		</div>;
+		);
 	}
 }
 

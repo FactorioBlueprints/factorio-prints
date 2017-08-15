@@ -22,7 +22,7 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 		displayName: PropTypes.string.isRequired,
 		userId     : PropTypes.string.isRequired,
 	})).isRequired,
-	image              : PropTypes.shape(forbidExtraProps({
+	image: PropTypes.shape(forbidExtraProps({
 		id        : PropTypes.string.isRequired,
 		deletehash: PropTypes.string.isRequired,
 		height    : PropTypes.number.isRequired,
@@ -44,11 +44,11 @@ export const byTagSchema = PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
 })).isRequired).isRequired;
 
 export const locationSchema = PropTypes.shape(forbidExtraProps({
-	pathname         : PropTypes.string.isRequired,
-	search           : PropTypes.string.isRequired,
-	hash             : PropTypes.string.isRequired,
-	state            : PropTypes.string,
-	key              : PropTypes.string,
+	pathname: PropTypes.string.isRequired,
+	search  : PropTypes.string.isRequired,
+	hash    : PropTypes.string.isRequired,
+	state   : PropTypes.string,
+	key     : PropTypes.string,
 })).isRequired;
 
 export const historySchema = PropTypes.shape({

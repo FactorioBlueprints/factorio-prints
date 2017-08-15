@@ -13,9 +13,9 @@ const tagReducer = (state = initialState, action) =>
 		case RECEIVED_TAG:
 			return {
 				...state,
-				loading: false,
-				byTagRef : action.byTagRef,
-				data   : action.byTag,
+				loading : false,
+				byTagRef: action.byTagRef,
+				data    : action.byTag,
 			};
 		case SUBSCRIBED_TO_TAG:
 			return {

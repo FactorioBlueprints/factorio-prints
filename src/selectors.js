@@ -3,21 +3,22 @@ import get from 'lodash/get';
 import mapValues from 'lodash/mapValues';
 import orderBy from 'lodash/orderBy';
 import {createSelector} from 'reselect';
-import {initialUserState} from './reducers/usersReducer';
 import {initialBlueprintState} from './reducers/blueprintsReducer';
+import {initialUserState} from './reducers/usersReducer';
 
-export const getUid = storeState => get(storeState, ['auth', 'user', 'uid']);
-export const getDisplayName = storeState => get(storeState, ['auth', 'user', 'displayName']);
-export const getPhotoURL = storeState => get(storeState, ['auth', 'user', 'photoURL']);
-export const getUsers = storeState => storeState.users;
-export const getBlueprintSummariesData = storeState => storeState.blueprintSummaries.data;
-export const getRawByTag = storeState => storeState.byTag;
-export const getTags = storeState => storeState.tags.data;
-export const getLoadingTags = storeState => storeState.tags.loading;
-export const getFilteredTags = storeState => storeState.filteredTags;
-export const getMyFavorites = storeState => storeState.auth.myFavorites.data;
-export const getTitleFilter = storeState => storeState.titleFilter;
-export const getModerators = storeState => storeState.moderators.data;
+export const getUid                       = storeState => get(storeState, ['auth', 'user', 'uid']);
+export const getDisplayName               = storeState => get(storeState, ['auth', 'user', 'displayName']);
+export const getPhotoURL                  = storeState => get(storeState, ['auth', 'user', 'photoURL']);
+export const getUsers                     = storeState => storeState.users;
+export const getBlueprintSummariesData    = storeState => storeState.blueprintSummaries.data;
+export const getBlueprintSummariesLoading = storeState => storeState.blueprintSummaries.loading;
+export const getRawByTag                  = storeState => storeState.byTag;
+export const getTags                      = storeState => storeState.tags.data;
+export const getLoadingTags               = storeState => storeState.tags.loading;
+export const getFilteredTags              = storeState => storeState.filteredTags;
+export const getMyFavorites               = storeState => storeState.auth.myFavorites.data;
+export const getTitleFilter               = storeState => storeState.titleFilter;
+export const getModerators                = storeState => storeState.moderators.data;
 
 export const getIsModerator = createSelector(
 	[getUid, getModerators],
@@ -70,34 +71,34 @@ export const getFilteredBlueprintSummaries = createSelector(
 			.reverse(),
 );
 
-export const getBlueprintById = (storeState, props) => get(storeState, ['blueprints', props.id], initialBlueprintState);
-export const getBlueprintDataById = createSelector(
+export const getBlueprintById        = (storeState, props) => get(storeState, ['blueprints', props.id], initialBlueprintState);
+export const getBlueprintDataById    = createSelector(
 	[getBlueprintById],
 	blueprint => blueprint.data);
 export const getBlueprintLoadingById = createSelector(
 	[getBlueprintById],
 	blueprint => blueprint.loading);
 
-export const getUserById = (storeState, props) => get(storeState, ['users', props.id], initialUserState);
-export const getUserBlueprints = createSelector(
+export const getUserById               = (storeState, props) => get(storeState, ['users', props.id], initialUserState);
+export const getUserBlueprints         = createSelector(
 	[getUserById],
 	user => user.blueprints.data);
-export const getUserBlueprintsLoading = createSelector(
+export const getUserBlueprintsLoading  = createSelector(
 	[getUserById],
 	user => user.blueprints.loading);
-export const getUserDisplayName = createSelector(
+export const getUserDisplayName        = createSelector(
 	[getUserById],
 	user => user.displayName.data);
 export const getUserDisplayNameLoading = createSelector(
 	[getUserById],
 	user => user.displayName.loading);
 
-const emptyUserBlueprints = [];
+const emptyUserBlueprints                      = [];
 export const getUserFilteredBlueprintSummaries = createSelector(
 	[getUserBlueprints, getBlueprintSummariesData, getTitleFilter, getLoadingTags, getFilteredTags, getByTag],
 	(userBlueprints, blueprintSummaries, titleFilter, loadingTags, filteredTags, byTag) =>
 	{
-    	if (!userBlueprints)
+		if (!userBlueprints)
 		{
 			return emptyUserBlueprints;
 		}
@@ -106,18 +107,18 @@ export const getUserFilteredBlueprintSummaries = createSelector(
 			.filter(key => loadingTags
 				|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', key], false) === true))
 			.reverse();
-	}
+	},
 );
 
 export const getFavoriteBlueprintSummaries = createSelector(
 	[getBlueprintSummariesData, getTitleFilter, getLoadingTags, getFilteredTags, getByTag],
 	(blueprintSummaries, titleFilter, loadingTags, filteredTags, byTag) =>
 	{
-		const filtered =  Object.keys(blueprintSummaries)
+		const filtered = Object.keys(blueprintSummaries)
 			.filter(key => blueprintSummaries[key].numberOfFavorites > 0)
 			.filter(key => blueprintSummaries[key].title.toLowerCase().includes(titleFilter.toLowerCase()))
 			.filter(key => loadingTags
-				|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', key], false) === true))
+				|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', key], false) === true));
 		return orderBy(filtered, [key => blueprintSummaries[key].numberOfFavorites], ['desc']);
 	},
 );
@@ -135,6 +136,6 @@ export const getMyFavoriteBlueprintSummaries = createSelector(
 
 export const getTagsOptions = createSelector(
 	[getTags],
-	tags => tags.map(value => ({value, label: value}))
+	tags => tags.map(value => ({value, label: value})),
 );
 

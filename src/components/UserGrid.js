@@ -11,16 +11,15 @@ import Row from 'react-bootstrap/lib/Row';
 import FontAwesome from 'react-fontawesome';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {filterOnTags, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
 
+import {filterOnTags, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
+import {blueprintSummariesSchema, locationSchema, userSchema} from '../propTypes';
 import * as selectors from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import NoMatch from './NoMatch';
 import SearchForm from './SearchForm';
 import TagForm from './TagForm';
-
-import {userSchema, blueprintSummariesSchema, locationSchema} from '../propTypes';
 
 class UserGrid extends PureComponent
 {
@@ -34,19 +33,20 @@ class UserGrid extends PureComponent
 		filterOnTags                 : PropTypes.func.isRequired,
 		user                         : userSchema,
 		blueprintSummaries           : blueprintSummariesSchema,
+		blueprintSummariesLoading    : PropTypes.bool,
 		filteredBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-		match                : PropTypes.shape(forbidExtraProps({
-			params           : PropTypes.shape(forbidExtraProps({
-				userId       : PropTypes.string.isRequired,
+		location                     : locationSchema,
+		history                      : PropTypes.object.isRequired,
+		staticContext                : PropTypes.shape(forbidExtraProps({})),
+		match                        : PropTypes.shape(forbidExtraProps({
+			params : PropTypes.shape(forbidExtraProps({
+				userId: PropTypes.string.isRequired,
 			})).isRequired,
-			path             : PropTypes.string.isRequired,
-			url              : PropTypes.string.isRequired,
-			isExact          : PropTypes.bool.isRequired,
+			path   : PropTypes.string.isRequired,
+			url    : PropTypes.string.isRequired,
+			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location             : locationSchema,
-		history              : PropTypes.object.isRequired,
-		staticContext        : PropTypes.shape(forbidExtraProps({
-		})),
+
 	});
 
 	componentWillMount()
@@ -63,38 +63,42 @@ class UserGrid extends PureComponent
 
 	render()
 	{
-		if (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading)
+		if (this.props.blueprintSummariesLoading && (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading))
 		{
-			return <Jumbotron>
-				<h1>
-					<FontAwesome name='cog' spin />
-					{' Loading data'}
-				</h1>
-			</Jumbotron>;
+			return (
+				<Jumbotron>
+					<h1>
+						<FontAwesome name='cog' spin />
+						{' Loading data'}
+					</h1>
+				</Jumbotron>
+			);
 		}
 
-		if (isEmpty(this.props.userBlueprints) && isEmpty(this.props.displayName))
+		if (isEmpty(this.props.displayName))
 		{
 			return <NoMatch />;
 		}
 
-		return <Grid>
-			<Row>
-				<PageHeader>
-					{'Viewing Blueprints by '}{this.props.displayName || '(Anonymous)'}
-				</PageHeader>
-			</Row>
-			<Row>
-				<SearchForm />
-				<TagForm />
-			</Row>
-			<Row>
-				{
-					this.props.filteredBlueprintSummaries
-						.map(key => <BlueprintThumbnail key={key} id={key} />)
-				}
-			</Row>
-		</Grid>;
+		return (
+			<Grid>
+				<Row>
+					<PageHeader>
+						{'Viewing Blueprints by '}{this.props.displayName || '(Anonymous)'}
+					</PageHeader>
+				</Row>
+				<Row>
+					<SearchForm />
+					<TagForm />
+				</Row>
+				<Row>
+					{
+						this.props.filteredBlueprintSummaries
+							.map(key => <BlueprintThumbnail key={key} id={key} />)
+					}
+				</Row>
+			</Grid>
+		);
 	}
 }
 
@@ -106,6 +110,7 @@ const mapStateToProps = (storeState, ownProps) =>
 		user                      : selectors.getFilteredUser(storeState),
 		filteredBlueprintSummaries: selectors.getUserFilteredBlueprintSummaries(storeState, {id}),
 		blueprintSummaries        : selectors.getBlueprintSummariesData(storeState),
+		blueprintSummariesLoading : selectors.getBlueprintSummariesLoading(storeState),
 		displayName               : selectors.getUserDisplayName(storeState, {id}),
 		displayNameLoading        : selectors.getUserDisplayNameLoading(storeState, {id}),
 		userBlueprintsLoading     : selectors.getUserBlueprintsLoading(storeState, {id}),

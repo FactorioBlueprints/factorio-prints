@@ -23,7 +23,7 @@ const myFavoritesData = uid =>
 		};
 	});
 
-export default function *authSaga({user})
+const authSaga = function*({user})
 {
 	if (!isEmpty(user))
 	{
@@ -44,3 +44,5 @@ export default function *authSaga({user})
 		}
 	}
 }
+
+export default authSaga;

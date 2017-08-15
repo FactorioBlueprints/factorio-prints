@@ -30,7 +30,7 @@ const blueprintData = blueprintId =>
 		};
 	});
 
-export function* subscribeToBlueprintSaga({blueprintId})
+export const subscribeToBlueprintSaga = function*({blueprintId})
 {
 	const getBlueprint = state => state.blueprints[blueprintId];
 
@@ -52,7 +52,7 @@ export function* subscribeToBlueprintSaga({blueprintId})
 			console.log(`Unsubscribed from ${blueprintId}`);
 		}
 	}
-}
+};
 
 const blueprintSummariesData = () =>
 	eventChannel((emit) =>
@@ -74,7 +74,7 @@ const blueprintSummariesData = () =>
 		};
 	});
 
-export function* subscribeToSummariesSaga()
+export const subscribeToSummariesSaga = function*()
 {
 	const getSummaries = state => state.blueprintSummaries;
 
@@ -96,7 +96,7 @@ export function* subscribeToSummariesSaga()
 			console.log('Unsubscribed from blueprintSummaries');
 		}
 	}
-}
+};
 
 const tagsData = () =>
 	eventChannel((emit) =>
@@ -141,7 +141,7 @@ const buildTagOptions = (tagHierarchy) =>
 	return result;
 };
 
-export function* subscribeToTagsSaga()
+export const subscribeToTagsSaga = function*()
 {
 	const getTags = state => state.tags;
 
@@ -164,9 +164,9 @@ export function* subscribeToTagsSaga()
 			console.log('Unsubscribed from tags');
 		}
 	}
-}
+};
 
-const tagData = (tagId) =>
+const tagData = tagId =>
 	eventChannel((emit) =>
 	{
 		const byTagRef = app.database().ref(`/byTag${tagId}`);
@@ -186,7 +186,7 @@ const tagData = (tagId) =>
 		};
 	});
 
-export function* subscribeToTagSaga({tagId})
+export const subscribeToTagSaga = function*({tagId})
 {
 	const getByTag = state => state.byTag[tagId];
 
@@ -208,7 +208,7 @@ export function* subscribeToTagSaga({tagId})
 			console.log(`Unsubscribed from tag ${tagId}`);
 		}
 	}
-}
+};
 
 const displayNameData = userId =>
 	eventChannel((emit) =>
@@ -230,7 +230,7 @@ const displayNameData = userId =>
 		};
 	});
 
-export function* subscribeToDisplayNameSaga({userId})
+export const subscribeToDisplayNameSaga = function*({userId})
 {
 	const getUser = state => state.users[userId];
 
@@ -252,7 +252,7 @@ export function* subscribeToDisplayNameSaga({userId})
 			console.log(`Unsubscribed from ${userId}'s displayName`);
 		}
 	}
-}
+};
 
 const userBlueprintsData = userId =>
 	eventChannel((emit) =>
@@ -274,7 +274,7 @@ const userBlueprintsData = userId =>
 		};
 	});
 
-export function* subscribeToUserBlueprintsSaga({userId})
+export const subscribeToUserBlueprintsSaga = function*({userId})
 {
 	const getUser = state => state.users[userId];
 
@@ -296,7 +296,7 @@ export function* subscribeToUserBlueprintsSaga({userId})
 			console.log(`Unsubscribed from ${userId}'s blueprints`);
 		}
 	}
-}
+};
 
 const moderatorsData = () =>
 	eventChannel((emit) =>
@@ -318,7 +318,7 @@ const moderatorsData = () =>
 		};
 	});
 
-export function* subscribeToModeratorsSaga()
+export const subscribeToModeratorsSaga = function*()
 {
 	const getModerators = state => state.moderators;
 
@@ -340,5 +340,5 @@ export function* subscribeToModeratorsSaga()
 			console.log('Unsubscribed from moderators');
 		}
 	}
-}
+};
 

@@ -1,7 +1,10 @@
+/* eslint-disable dot-notation */
 import {forbidExtraProps} from 'airbnb-prop-types';
 import firebase from 'firebase';
 import update from 'immutability-helper';
+
 import concat from 'lodash/concat';
+import difference from 'lodash/difference';
 import every from 'lodash/every';
 import flatMap from 'lodash/flatMap';
 import forEach from 'lodash/forEach';
@@ -18,10 +21,9 @@ import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
 import identity from 'lodash/identity';
 import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
-import difference from 'lodash/difference';
-import isEqual from 'lodash/isEqual';
 
 import marked from 'marked';
 import PropTypes from 'prop-types';
@@ -42,29 +44,26 @@ import Panel from 'react-bootstrap/lib/Panel';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 import Row from 'react-bootstrap/lib/Row';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
+
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
+import {connect} from 'react-redux';
 
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
-import {app} from '../base';
-import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
+import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
+import {app} from '../base';
 import Blueprint from '../Blueprint';
-
 import entitiesWithIcons from '../data/entitiesWithIcons';
 import noImageAvailable from '../gif/No_available_image.gif';
 import buildImageUrl from '../helpers/buildImageUrl';
-
 import scaleImage from '../helpers/ImageScaler';
-import NoMatch from './NoMatch';
-
-import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
-
+import {blueprintSchema, historySchema, locationSchema, userSchema} from '../propTypes';
 import * as selectors from '../selectors';
 
-import {userSchema, blueprintSchema, locationSchema, historySchema} from '../propTypes';
+import NoMatch from './NoMatch';
 
 const expressBeltTypes = [
 	'express-splitter',
@@ -84,29 +83,58 @@ const slowBeltTypes = [
 	'underground-belt',
 ];
 
-const allBeltTypes = [...expressBeltTypes, ...fastBeltTypes, ...slowBeltTypes];
+const allBeltTypes = [
+	...expressBeltTypes,
+	...fastBeltTypes,
+	...slowBeltTypes,
+];
 
 const renderer = new marked.Renderer();
-renderer.table = (header, body) => {
-	return '<table class="table table-striped table-bordered">\n'
-		+ '<thead>\n'
-		+ header
-		+ '</thead>\n'
-		+ '<tbody>\n'
-		+ body
-		+ '</tbody>\n'
-		+ '</table>\n';
-};
+renderer.table = (header, body) => `<table class="table table-striped table-bordered">
+<thead>
+${header}</thead>
+<tbody>
+${body}</tbody>
+</table>
+`;
+
 marked.setOptions({
 	renderer,
-	gfm: true,
-	tables: true,
-	breaks: false,
-	pedantic: false,
-	sanitize: false,
-	smartLists: true,
-	smartypants: false
+	gfm        : true,
+	tables     : true,
+	breaks     : false,
+	pedantic   : false,
+	sanitize   : false,
+	smartLists : true,
+	smartypants: false,
 });
+
+class TagSuggestionButton extends PureComponent
+{
+	static propTypes = forbidExtraProps({
+		tagSuggestion: PropTypes.string.isRequired,
+		addTag       : PropTypes.func.isRequired,
+	});
+
+	handleClick = () =>
+	{
+		this.props.addTag(this.props.tagSuggestion);
+	};
+
+	render()
+	{
+		return (
+			<Button
+				bsStyle='primary'
+				onClick={this.handleClick}
+			>
+				<FontAwesome name='tag' />
+				{' '}
+				{this.props.tagSuggestion}
+			</Button>
+		);
+	}
+}
 
 class EditBlueprint extends PureComponent
 {
@@ -121,20 +149,25 @@ class EditBlueprint extends PureComponent
 		blueprint            : blueprintSchema,
 		loading              : PropTypes.bool.isRequired,
 		match                : PropTypes.shape(forbidExtraProps({
-			params           : PropTypes.shape(forbidExtraProps({
-				blueprintId  : PropTypes.string.isRequired,
+			params : PropTypes.shape(forbidExtraProps({
+				blueprintId: PropTypes.string.isRequired,
 			})).isRequired,
-			path             : PropTypes.string.isRequired,
-			url              : PropTypes.string.isRequired,
-			isExact          : PropTypes.bool.isRequired,
+			path   : PropTypes.string.isRequired,
+			url    : PropTypes.string.isRequired,
+			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
 		location             : locationSchema,
 		history              : historySchema,
-		staticContext        : PropTypes.shape(forbidExtraProps({
-		})),
+		staticContext        : PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static emptyTags = [];
+
+	static imgurHeaders = {
+		'Accept'       : 'application/json',
+		'Content-Type' : 'application/json',
+		'Authorization': 'Client-ID 46a3f144b6a0882',
+	};
 
 	state = {
 		thumbnail               : undefined,
@@ -146,12 +179,6 @@ class EditBlueprint extends PureComponent
 		uploadProgressBarVisible: false,
 		uploadProgressPercent   : 0,
 		deletionModalVisible    : false,
-	};
-
-	static imgurHeaders = {
-		Accept        : 'application/json',
-		'Content-Type': 'application/json',
-		Authorization : 'Client-ID 46a3f144b6a0882',
 	};
 
 	componentWillMount()
@@ -183,9 +210,10 @@ class EditBlueprint extends PureComponent
 				...props.blueprint,
 				tags: props.blueprint.tags || EditBlueprint.emptyTags,
 			};
+
 			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
-			const parsedBlueprint = this.parseBlueprint(blueprint.blueprintString);
-			const v15Decoded = parsedBlueprint.getV15Decoded();
+			const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString);
+			const v15Decoded       = parsedBlueprint.getV15Decoded();
 
 			this.setState({
 				blueprint,
@@ -253,8 +281,7 @@ class EditBlueprint extends PureComponent
 
 	handleChange = (event) =>
 	{
-		const name = event.target.name;
-		const value = event.target.value;
+		const {name, value} = event.target;
 
 		const newState = {
 			blueprint: {
@@ -266,7 +293,7 @@ class EditBlueprint extends PureComponent
 		if (name === 'blueprintString')
 		{
 			newState.parsedBlueprint = this.parseBlueprint(value);
-			newState.v15Decoded = newState.parsedBlueprint && newState.parsedBlueprint.getV15Decoded();
+			newState.v15Decoded      = newState.parsedBlueprint && newState.parsedBlueprint.getV15Decoded();
 		}
 
 		this.setState(newState);
@@ -304,7 +331,7 @@ class EditBlueprint extends PureComponent
 	validateInputs = () =>
 	{
 		const submissionErrors = [];
-		const {blueprint} = this.state;
+		const {blueprint}      = this.state;
 		if (!blueprint.title)
 		{
 			submissionErrors.push('Title may not be empty');
@@ -345,7 +372,7 @@ class EditBlueprint extends PureComponent
 		}
 
 		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
-		if (blueprint.decodedObject == null)
+		if (blueprint.decodedObject === null)
 		{
 			submissionWarnings.push('Could not parse blueprint.');
 			return submissionWarnings;
@@ -411,13 +438,13 @@ class EditBlueprint extends PureComponent
 
 	actuallySaveBlueprintEdits = () =>
 	{
-		const [file]     = this.state.files;
+		const [file] = this.state.files;
 		let imagePromise;
 		let uploadTask;
 		if (file)
 		{
 			const fileNameRef = app.storage().ref().child(file.name);
-			imagePromise = fileNameRef.getDownloadURL()
+			imagePromise      = fileNameRef.getDownloadURL()
 				.then(() =>
 				{
 					this.setState({submissionErrors: [`File with name ${file.name} already exists.`]});
@@ -470,11 +497,11 @@ class EditBlueprint extends PureComponent
 
 			if (file)
 			{
-				updates[`/blueprints/${this.props.id}/fileName/`]              = file.name;
+				updates[`/blueprints/${this.props.id}/fileName/`] = file.name;
 			}
 			if (uploadTask)
 			{
-				updates[`/blueprints/${this.props.id}/imageUrl/`]              = uploadTask.snapshot.downloadURL;
+				updates[`/blueprints/${this.props.id}/imageUrl/`] = uploadTask.snapshot.downloadURL;
 			}
 			if (this.state.thumbnail)
 			{
@@ -484,7 +511,8 @@ class EditBlueprint extends PureComponent
 			{
 				updates[`/byTag/${tag}/${this.props.id}`] = null;
 			});
-			forEach(this.state.blueprint.tags, (tag) => {
+			forEach(this.state.blueprint.tags, (tag) =>
+			{
 				updates[`/byTag/${tag}/${this.props.id}`] = true;
 			});
 
@@ -500,21 +528,21 @@ class EditBlueprint extends PureComponent
 		this.props.history.push(`/view/${this.props.id}`);
 	};
 
-	handleShowConfirmDelete  = (event) =>
+	handleShowConfirmDelete = (event) =>
 	{
 		event.preventDefault();
 		this.setState({deletionModalVisible: true});
 	};
 
-	handleHideConfirmDelete  = () =>
+	handleHideConfirmDelete = () =>
 	{
 		this.setState({deletionModalVisible: false});
 	};
 
-	handleDeleteBlueprint    = () =>
+	handleDeleteBlueprint = () =>
 	{
 		const authorId = this.state.blueprint.author.userId;
-		const updates = {
+		const updates  = {
 			[`/blueprints/${this.props.id}`]                  : null,
 			[`/users/${authorId}/blueprints/${this.props.id}`]: null,
 			[`/thumbnails/${this.props.id}`]                  : null,
@@ -563,7 +591,7 @@ class EditBlueprint extends PureComponent
 	itemHistogram = (parsedBlueprint) =>
 	{
 		const result = {};
-		const items       = flatMap(parsedBlueprint.entities, entity => entity.items || []);
+		const items  = flatMap(parsedBlueprint.entities, entity => entity.items || []);
 		items.forEach((item) =>
 		{
 			if (has(item, 'item') && has(item, 'count'))
@@ -572,7 +600,7 @@ class EditBlueprint extends PureComponent
 			}
 			else
 			{
-				return forOwn(item, (value, key) => result[key] = (result[key] || 0) + value);
+				forOwn(item, (value, key) => result[key] = (result[key] || 0) + value);
 			}
 		});
 
@@ -647,11 +675,11 @@ class EditBlueprint extends PureComponent
 			}
 			else if (recipeCounts['construction-robot']
 				|| recipeCounts['flying-robot-frame']
-				|| recipeCounts['logistic-robot'] )
+				|| recipeCounts['logistic-robot'])
 			{
 				tagSuggestions.push('/production/robots/');
 			}
-			else if (recipeCounts['battery'] > 0)
+			else if (recipeCounts.battery > 0)
 			{
 				tagSuggestions.push('/production/batteries/');
 			}
@@ -719,13 +747,13 @@ class EditBlueprint extends PureComponent
 				return;
 			}
 
-			if (every(entityHistogram, (pair) => allBeltTypes.includes(pair[0])))
+			if (every(entityHistogram, pair => allBeltTypes.includes(pair[0])))
 			{
 				tagSuggestions.push('/belt/balancer/');
 
 				const checkBeltSpeed = (beltTypes, tag) =>
 				{
-					if (every(entityHistogram, (pair) => beltTypes.includes(pair[0])))
+					if (every(entityHistogram, pair => beltTypes.includes(pair[0])))
 					{
 						tagSuggestions.push(tag);
 					}
@@ -737,7 +765,7 @@ class EditBlueprint extends PureComponent
 			}
 
 			// Most common item
-			// eslint-disable-next-line 
+			// eslint-disable-next-line
 			if (entityHistogram[0][0] === 'small-lamp' || entityCounts['small-lamp'] > 100 && entityHistogram[1] && entityHistogram[1][0] === 'small-lamp')
 			{
 				tagSuggestions.push('/circuit/indicator/');
@@ -856,21 +884,18 @@ class EditBlueprint extends PureComponent
 				return;
 			}
 
-			const allVanilla = every(allGameEntities, (each) =>
-			{
-				return entitiesWithIcons[each] === true;
-			});
+			const allVanilla = every(allGameEntities, each => entitiesWithIcons[each] === true);
 			if (allVanilla)
 			{
 				tagSuggestions.push('/mods/vanilla/');
 				return;
 			}
 
-			const creativeMod = some(allGameEntities, each => each.startsWith('creative-mode'));
-			const warehousingMod = entityCounts['storehouse-storage'] > 0
+			const creativeMod             = some(allGameEntities, each => each.startsWith('creative-mode'));
+			const bobsMod                 = some(allGameEntities, each => each.startsWith('electronics-machine') || each.startsWith('bob-'));
+			const angelsMod               = some(allGameEntities, each => each.startsWith('angels-'));
+			const warehousingMod          = entityCounts['storehouse-storage'] > 0
 				|| entityCounts['warehouse-storage'] > 0;
-			const bobsMod = some(allGameEntities, each => each.startsWith('electronics-machine') || each.startsWith('bob-'));
-			const angelsMod = some(allGameEntities, each => each.startsWith('angels-'));
 			const lightedElectricPolesMod = entityCounts['lighted-small-electric-pole'] > 0
 				|| entityCounts['lighted-medium-electric-pole'] > 0
 				|| entityCounts['lighted-big-electric-pole'] > 0;
@@ -921,7 +946,6 @@ class EditBlueprint extends PureComponent
 					sortBy(1),
 					reverse,
 				)(this.state.v15Decoded.blueprint_book.blueprints);
-				const entityCounts = fromPairs(entityHistogram);
 
 				const recipeHistogram = flow(
 					fpFlatMap('blueprint.entities'),
@@ -932,8 +956,10 @@ class EditBlueprint extends PureComponent
 					sortBy(1),
 					reverse,
 				)(this.state.v15Decoded.blueprint_book.blueprints);
-				const recipeCounts = fromPairs(recipeHistogram);
+
+				const entityCounts    = fromPairs(entityHistogram);
 				const allGameEntities = Object.keys(entityCounts);
+				const recipeCounts    = fromPairs(recipeHistogram);
 
 				generateAllTagSuggestions(entityHistogram, entityCounts, recipeHistogram, recipeCounts, allGameEntities);
 			}
@@ -947,13 +973,16 @@ class EditBlueprint extends PureComponent
 					sortBy(1),
 					reverse,
 				)(this.state.v15Decoded.blueprint.entities);
-				const recipeCounts = fromPairs(recipeHistogram);
 
+				const recipeCounts    = fromPairs(recipeHistogram);
 				const entityHistogram = this.entityHistogram(this.state.v15Decoded.blueprint);
-				const entityCounts = fromPairs(entityHistogram);
-				const itemHistogram = this.itemHistogram(this.state.v15Decoded.blueprint);
-				const itemCounts = fromPairs(itemHistogram);
-				const allGameEntities = [...Object.keys(entityCounts), ...Object.keys(itemCounts)];
+				const entityCounts    = fromPairs(entityHistogram);
+				const itemHistogram   = this.itemHistogram(this.state.v15Decoded.blueprint);
+				const itemCounts      = fromPairs(itemHistogram);
+				const allGameEntities = [
+					...Object.keys(entityCounts),
+					...Object.keys(itemCounts),
+				];
 
 				console.log({recipeCounts, itemCounts});
 
@@ -976,7 +1005,7 @@ class EditBlueprint extends PureComponent
 	renderOldThumbnail = () =>
 	{
 		const {id, type} = this.state.blueprint.image;
-		const thumbnail          = buildImageUrl(id, type, 'b');
+		const thumbnail  = buildImageUrl(id, type, 'b');
 
 		return (
 			<FormGroup controlId='formHorizontalBlueprint'>
@@ -1031,15 +1060,17 @@ class EditBlueprint extends PureComponent
 
 		if (this.props.loading)
 		{
-			return <Jumbotron>
-				<h1>
-					<FontAwesome name='cog' spin />
-					{' Loading data'}
-				</h1>
-			</Jumbotron>;
+			return (
+				<Jumbotron>
+					<h1>
+						<FontAwesome name='cog' spin />
+						{' Loading data'}
+					</h1>
+				</Jumbotron>
+			);
 		}
 
-		const blueprint = this.state.blueprint;
+		const {blueprint} = this.state;
 		if (!blueprint)
 		{
 			return <NoMatch />;
@@ -1060,7 +1091,11 @@ class EditBlueprint extends PureComponent
 						<Modal.Title>Image Upload Progress</Modal.Title>
 					</Modal.Header>
 					<Modal.Body>
-						<ProgressBar active now={this.state.uploadProgressPercent} label={`${this.state.uploadProgressPercent}%`} />
+						<ProgressBar
+							active
+							now={this.state.uploadProgressPercent}
+							label={`${this.state.uploadProgressPercent}%`}
+						/>
 					</Modal.Body>
 				</Modal>
 				<Modal show={!isEmpty(this.state.submissionWarnings)}>
@@ -1073,10 +1108,11 @@ class EditBlueprint extends PureComponent
 						</p>
 						<ul>
 							{
-								this.state.submissionWarnings.map(submissionWarning =>
+								this.state.submissionWarnings.map(submissionWarning => (
 									<li key={submissionWarning}>
 										{submissionWarning}
-									</li>)
+									</li>
+								))
 							}
 						</ul>
 					</Modal.Body>
@@ -1110,36 +1146,55 @@ class EditBlueprint extends PureComponent
 				</Modal>
 				<Grid>
 					<Row>
-						{this.state.rejectedFiles.length > 0 && <Alert
-							bsStyle='warning'
-							className='alert-fixed'
-							onDismiss={this.handleDismissAlert}>
-							<h4>{'Error uploading files'}</h4>
-							<ul>
-								{this.state.rejectedFiles.map(rejectedFile => <li
-									key={rejectedFile.name}>{rejectedFile.name}</li>)}
-							</ul>
-						</Alert>}
-						{this.state.submissionErrors.length > 0 && <Alert
-							bsStyle='danger'
-							className='alert-fixed'
-							onDismiss={this.handleDismissError}>
-							<h4>{'Error editing blueprint'}</h4>
-							<ul>
-								{this.state.submissionErrors.map(submissionError => <li
-									key={submissionError}>{submissionError}</li>)}
-							</ul>
-						</Alert>}
+						{
+							this.state.rejectedFiles.length > 0 && <Alert
+								bsStyle='warning'
+								className='alert-fixed'
+								onDismiss={this.handleDismissAlert}
+							>
+								<h4>{'Error uploading files'}</h4>
+								<ul>
+									{
+										this.state.rejectedFiles.map(rejectedFile => (
+											<li key={rejectedFile.name}>
+												{rejectedFile.name}
+											</li>
+										))
+									}
+								</ul>
+							</Alert>
+						}
+						{
+							this.state.submissionErrors.length > 0 && <Alert
+								bsStyle='danger'
+								className='alert-fixed'
+								onDismiss={this.handleDismissError}
+							>
+								<h4>{'Error editing blueprint'}</h4>
+								<ul>
+									{
+										this.state.submissionErrors.map(submissionError => (
+											<li key={submissionError}>
+												{submissionError}
+											</li>
+										))
+									}
+								</ul>
+							</Alert>
+						}
 					</Row>
 					<Row>
 						<PageHeader>
-							{'Editing: '}{blueprint.title}
+							{'Editing: '}
+							{blueprint.title}
 						</PageHeader>
 					</Row>
 					<Row>
 						<form className='form-horizontal'>
 							<FormGroup controlId='formHorizontalTitle'>
-								<Col componentClass={ControlLabel} sm={2} autoFocus>{'Title'}</Col>
+								<Col componentClass={ControlLabel} sm={2} autoFocus>
+									{'Title'}
+								</Col>
 								<Col sm={10}>
 									<FormControl
 										type='text'
@@ -1195,23 +1250,24 @@ class EditBlueprint extends PureComponent
 								</Col>
 							</FormGroup>
 
-							{tagSuggestions.length > 0 &&
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Tag Suggestions'}</Col>
-								<Col sm={10}>
-									<ButtonToolbar>
-										{
-											tagSuggestions.map((tagSuggestion) => {
-												return <Button bsStyle='primary' key={tagSuggestion} onClick={() => this.addTag(tagSuggestion)}>
-													<FontAwesome name='tag' />
-													{' '}
-													{tagSuggestion}
-												</Button>;
-											})
-										}
-									</ButtonToolbar>
-								</Col>
-							</FormGroup>
+							{
+								tagSuggestions.length > 0
+								&& <FormGroup>
+									<Col componentClass={ControlLabel} sm={2}>{'Tag Suggestions'}</Col>
+									<Col sm={10}>
+										<ButtonToolbar>
+											{
+												tagSuggestions.map(tagSuggestion => (
+													<TagSuggestionButton
+														key={tagSuggestion}
+														tagSuggestion={tagSuggestion}
+														addTag={this.addTag}
+													/>
+												))
+											}
+										</ButtonToolbar>
+									</Col>
+								</FormGroup>
 							}
 
 							<FormGroup>
@@ -1237,8 +1293,11 @@ class EditBlueprint extends PureComponent
 											accept=' image/*'
 											maxSize={10000000}
 											className='dropzone'
-											onDrop={this.handleDrop}>
-											<div>{'Drop an image file here, or click to open the file chooser.'}</div>
+											onDrop={this.handleDrop}
+										>
+											<div>
+												{'Drop an image file here, or click to open the file chooser.'}
+											</div>
 										</Dropzone>
 									</div>
 								</Col>
@@ -1257,15 +1316,16 @@ class EditBlueprint extends PureComponent
 											<FontAwesome name='floppy-o' size='lg' />
 											{' Save'}
 										</Button>
-										{this.props.isModerator &&
-										<Button
-											bsStyle='danger'
-											bsSize='large'
-											onClick={this.handleShowConfirmDelete}
-										>
-											<FontAwesome name='trash-o' size='lg' />
-											{' Delete'}
-										</Button>}
+										{
+											this.props.isModerator && <Button
+												bsStyle='danger'
+												bsSize='large'
+												onClick={this.handleShowConfirmDelete}
+											>
+												<FontAwesome name='trash-o' size='lg' />
+												{' Delete'}
+											</Button>
+										}
 										<Button
 											bsSize='large'
 											onClick={this.handleCancel}
@@ -1278,26 +1338,27 @@ class EditBlueprint extends PureComponent
 							</FormGroup>
 						</form>
 					</Row>
-				</Grid></div>);
+				</Grid>
+			</div>
+		);
 	}
 }
 
 const mapStateToProps = (storeState, ownProps) =>
 {
 	const id = ownProps.match.params.blueprintId;
-	return ({
+	return {
 		id,
 		user       : selectors.getFilteredUser(storeState),
 		isModerator: selectors.getIsModerator(storeState),
 		blueprint  : selectors.getBlueprintDataById(storeState, {id}),
 		loading    : selectors.getBlueprintLoadingById(storeState, ownProps),
 		tags       : selectors.getTags(storeState),
-	});
+	};
 };
 
-const mapDispatchToProps = (dispatch) => {
-	return bindActionCreators({subscribeToBlueprint, subscribeToModerators, subscribeToTags}, dispatch)
-};
+const mapDispatchToProps = dispatch =>
+	bindActionCreators({subscribeToBlueprint, subscribeToModerators, subscribeToTags}, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditBlueprint);
 

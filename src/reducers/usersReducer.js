@@ -12,7 +12,7 @@ export const initialUserState =
 			loading: false,
 			data   : undefined,
 		},
-		blueprints : {
+		blueprints: {
 			loading: false,
 			data   : {},
 		},

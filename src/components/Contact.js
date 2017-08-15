@@ -14,7 +14,8 @@ class Contact extends PureComponent
 					<a
 						target='_blank'
 						rel='noopener noreferrer'
-						href='mailto:factorio.prints@gmail.com'>
+						href='mailto:factorio.prints@gmail.com'
+					>
 						{' factorio dot prints at gmail dot com'}
 					</a>
 				</p>
@@ -23,7 +24,8 @@ class Contact extends PureComponent
 					<a
 						target='_blank'
 						rel='noopener noreferrer'
-						href='https://www.reddit.com/user/FactorioBlueprints/'>
+						href='https://www.reddit.com/user/FactorioBlueprints/'
+					>
 						{' /u/FactorioBlueprints'}
 					</a>
 				</p>

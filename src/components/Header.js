@@ -28,10 +28,10 @@ class Header extends PureComponent
 	{
 		super();
 
-		this.googleProvider = new auth.GoogleAuthProvider();
+		this.googleProvider   = new auth.GoogleAuthProvider();
 		this.facebookProvider = new auth.FacebookAuthProvider();
-		this.twitterProvider = new auth.TwitterAuthProvider();
-		this.githubProvider = new auth.GithubAuthProvider();
+		this.twitterProvider  = new auth.TwitterAuthProvider();
+		this.githubProvider   = new auth.GithubAuthProvider();
 
 		// Choose between multiple google accounts
 		// http://stackoverflow.com/a/40551683/23572
@@ -101,11 +101,12 @@ class Header extends PureComponent
 			);
 		}
 
-		const title
-			= (<span>
+		const title = (
+			<span>
 				<FontAwesome name='sign-in' size='lg' fixedWidth />
-			{' Sign in / Join'}
-			</span>);
+				{' Sign in / Join'}
+			</span>
+		);
 
 		return (
 			<NavDropdown title={title} id='dropdown-login'>
@@ -144,7 +145,7 @@ class Header extends PureComponent
 							<Link to='/top'>
 								<FontAwesome name='trophy' size='lg' fixedWidth />
 								{' Most Favorited'}
-								</Link>
+							</Link>
 						</li>
 						<li>
 							<Link to='/create'>
@@ -182,8 +183,7 @@ class Header extends PureComponent
 	}
 }
 
-const mapStateToProps = storeState =>
-({
+const mapStateToProps = storeState => ({
 	user: selectors.getUser(storeState),
 });
 

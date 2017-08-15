@@ -156,7 +156,10 @@ class Blueprint
 		if (decodedObject.data)
 		{
 			const {data: {label, active, main}} = decodedObject;
-			const blueprints                    = active ? [active, ...main] : main;
+			const blueprints                    = active ? [
+				active,
+				...main,
+			] : main;
 			return convertEmbeddedBlueprints(blueprints, label);
 		}
 		if (decodedObject.book)

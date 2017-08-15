@@ -2,8 +2,8 @@ import {RECEIVED_MODERATORS, SUBSCRIBED_TO_MODERATORS} from '../actions/actionTy
 
 const initialState =
 {
-	loading     : false,
-	data        : {},
+	loading: false,
+	data   : {},
 };
 
 const moderatorsReducer = (state = initialState, action) =>

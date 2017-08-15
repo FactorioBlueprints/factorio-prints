@@ -33,7 +33,7 @@ class TagForm extends PureComponent
 		const filteredTagStrings = filteredTags.map(each => each.value);
 		filteredTagStrings.forEach(this.props.subscribeToTag);
 		this.props.filterOnTags(filteredTagStrings);
-		this.setState({filteredTags: filteredTags});
+		this.setState({filteredTags});
 	};
 
 	render()

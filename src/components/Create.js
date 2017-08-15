@@ -1,7 +1,9 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 import firebase from 'firebase';
+
 import isEmpty from 'lodash/isEmpty';
 import some from 'lodash/some';
+
 import marked from 'marked';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -21,66 +23,59 @@ import Panel from 'react-bootstrap/lib/Panel';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 import Row from 'react-bootstrap/lib/Row';
 import Thumbnail from 'react-bootstrap/lib/Thumbnail';
+
 import Dropzone from 'react-dropzone';
 import FontAwesome from 'react-fontawesome';
-
+import {connect} from 'react-redux';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
-import {app} from '../base';
 
-import {connect} from 'react-redux';
+import {app} from '../base';
+import Blueprint from '../Blueprint';
+import noImageAvailable from '../gif/No_available_image.gif';
+import scaleImage from '../helpers/ImageScaler';
+import {historySchema, locationSchema, userSchema} from '../propTypes';
 
 import * as selectors from '../selectors';
 
-import Blueprint from '../Blueprint';
-import noImageAvailable from '../gif/No_available_image.gif';
-
-import scaleImage from '../helpers/ImageScaler';
-
-import {userSchema, locationSchema, historySchema} from '../propTypes';
-
 const renderer = new marked.Renderer();
-renderer.table = (header, body) => {
-	return '<table class="table table-striped table-bordered">\n'
-		+ '<thead>\n'
-		+ header
-		+ '</thead>\n'
-		+ '<tbody>\n'
-		+ body
-		+ '</tbody>\n'
-		+ '</table>\n';
-};
+renderer.table = (header, body) => `<table class="table table-striped table-bordered">
+<thead>
+${header}</thead>
+<tbody>
+${body}</tbody>
+</table>
+`;
+
 marked.setOptions({
 	renderer,
-	gfm: true,
-	tables: true,
-	breaks: false,
-	pedantic: false,
-	sanitize: false,
-	smartLists: true,
-	smartypants: false
+	gfm        : true,
+	tables     : true,
+	breaks     : false,
+	pedantic   : false,
+	sanitize   : false,
+	smartLists : true,
+	smartypants: false,
 });
 
 class Create extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user: userSchema,
-		tags: PropTypes.arrayOf(PropTypes.string).isRequired,
-		tagOptions: PropTypes.arrayOf(PropTypes.shape(forbidExtraProps({
+		user         : userSchema,
+		tags         : PropTypes.arrayOf(PropTypes.string).isRequired,
+		tagOptions   : PropTypes.arrayOf(PropTypes.shape(forbidExtraProps({
 			value: PropTypes.string.isRequired,
 			label: PropTypes.string.isRequired,
 		})).isRequired).isRequired,
-		match                : PropTypes.shape(forbidExtraProps({
-			params           : PropTypes.shape(forbidExtraProps({
-			})).isRequired,
-			path             : PropTypes.string.isRequired,
-			url              : PropTypes.string.isRequired,
-			isExact          : PropTypes.bool.isRequired,
+		match        : PropTypes.shape(forbidExtraProps({
+			params : PropTypes.shape(forbidExtraProps({})).isRequired,
+			path   : PropTypes.string.isRequired,
+			url    : PropTypes.string.isRequired,
+			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location             : locationSchema,
-		history              : historySchema,
-		staticContext        : PropTypes.shape(forbidExtraProps({
-		})),
+		location     : locationSchema,
+		history      : historySchema,
+		staticContext: PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static initialState = {
@@ -139,7 +134,7 @@ class Create extends PureComponent
 	handleDismissWarnings = () =>
 	{
 		this.setState({submissionWarnings: []});
-	}
+	};
 
 	handleDescriptionChanged = (event) =>
 	{
@@ -223,7 +218,7 @@ class Create extends PureComponent
 	validateInputs = () =>
 	{
 		const submissionErrors = [];
-		const {blueprint} = this.state;
+		const {blueprint}      = this.state;
 		if (!blueprint.title)
 		{
 			submissionErrors.push('Title may not be empty');
@@ -332,11 +327,11 @@ class Create extends PureComponent
 		}
 
 		this.actuallyCreateBlueprint();
-	}
+	};
 
 	actuallyCreateBlueprint = () =>
 	{
-		const [file]     = this.state.files;
+		const [file]   = this.state.files;
 		const fileName = file.name;
 
 		const fileNameRef = app.storage().ref().child(fileName);
@@ -359,7 +354,7 @@ class Create extends PureComponent
 					{
 						response.json().then((json) =>
 						{
-							const data = json.data;
+							const data  = json.data;
 							const image = {
 								id        : data.id,
 								deletehash: data.deletehash,
@@ -382,6 +377,7 @@ class Create extends PureComponent
 								fileName,
 								image,
 							};
+
 							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
 							// TODO: Combine all of these database updates into a single call to update
 							app.database().ref(`/users/${this.props.user.uid}/blueprints`).update({[newBlueprintRef.key]: true});
@@ -410,7 +406,7 @@ class Create extends PureComponent
 					.catch(this.handleImgurError);
 			});
 		});
-	}
+	};
 
 	handleCancel = () =>
 	{
@@ -472,7 +468,11 @@ class Create extends PureComponent
 						<Modal.Title>Image Upload Progress</Modal.Title>
 					</Modal.Header>
 					<Modal.Body>
-						<ProgressBar active now={this.state.uploadProgressPercent} label={`${this.state.uploadProgressPercent}%`} />
+						<ProgressBar
+							active
+							now={this.state.uploadProgressPercent}
+							label={`${this.state.uploadProgressPercent}%`}
+						/>
 					</Modal.Body>
 				</Modal>
 				<Modal show={!isEmpty(this.state.submissionWarnings)}>
@@ -485,10 +485,11 @@ class Create extends PureComponent
 						</p>
 						<ul>
 							{
-								this.state.submissionWarnings.map(submissionWarning =>
+								this.state.submissionWarnings.map(submissionWarning => (
 									<li key={submissionWarning}>
 										{submissionWarning}
-									</li>)
+									</li>
+								))
 							}
 						</ul>
 					</Modal.Body>
@@ -508,26 +509,42 @@ class Create extends PureComponent
 
 				<Grid>
 					<Row>
-						{this.state.rejectedFiles.length > 0 && <Alert
-							bsStyle='warning'
-							className='alert-fixed'
-							onDismiss={this.handleDismissAlert}>
-							<h4>{'Error uploading files'}</h4>
-							<ul>
-								{this.state.rejectedFiles.map(rejectedFile => <li
-									key={rejectedFile.name}>{rejectedFile.name}</li>)}
-							</ul>
-						</Alert>}
-						{this.state.submissionErrors.length > 0 && <Alert
-							bsStyle='danger'
-							className='alert-fixed'
-							onDismiss={this.handleDismissError}>
-							<h4>{'Error submitting blueprint'}</h4>
-							<ul>
-								{this.state.submissionErrors.map(submissionError => <li
-									key={submissionError}>{submissionError}</li>)}
-							</ul>
-						</Alert>}
+						{
+							this.state.rejectedFiles.length > 0 && <Alert
+								bsStyle='warning'
+								className='alert-fixed'
+								onDismiss={this.handleDismissAlert}
+							>
+								<h4>{'Error uploading files'}</h4>
+								<ul>
+									{
+										this.state.rejectedFiles.map(rejectedFile => (
+											<li key={rejectedFile.name}>
+												{rejectedFile.name}
+											</li>
+										))
+									}
+								</ul>
+							</Alert>
+						}
+						{
+							this.state.submissionErrors.length > 0 && <Alert
+								bsStyle='danger'
+								className='alert-fixed'
+								onDismiss={this.handleDismissError}
+							>
+								<h4>{'Error submitting blueprint'}</h4>
+								<ul>
+									{
+										this.state.submissionErrors.map(submissionError => (
+											<li key={submissionError}>
+												{submissionError}
+											</li>
+										))
+									}
+								</ul>
+							</Alert>
+						}
 					</Row>
 					<Row>
 						<PageHeader>
@@ -614,7 +631,8 @@ class Create extends PureComponent
 											accept=' image/*'
 											maxSize={10000000}
 											className='dropzone'
-											onDrop={this.handleDrop}>
+											onDrop={this.handleDrop}
+										>
 											<div>{'Drop an image file here, or click to open the file chooser.'}</div>
 										</Dropzone>
 									</div>
@@ -646,17 +664,15 @@ class Create extends PureComponent
 							</FormGroup>
 						</form>
 					</Row>
-				</Grid></div>);
+				</Grid>
+			</div>);
 	}
 }
 
-const mapStateToProps = (storeState) =>
-{
-	return {
-		user      : selectors.getFilteredUser(storeState),
-		tags      : selectors.getTags(storeState),
-		tagOptions: selectors.getTagsOptions(storeState),
-	};
-};
+const mapStateToProps = storeState => ({
+	user      : selectors.getFilteredUser(storeState),
+	tags      : selectors.getTags(storeState),
+	tagOptions: selectors.getTagsOptions(storeState),
+});
 
 export default connect(mapStateToProps, {})(Create);

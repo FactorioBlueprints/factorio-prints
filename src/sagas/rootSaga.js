@@ -1,4 +1,5 @@
 import {takeEvery} from 'redux-saga/effects';
+
 import {
 	subscribeToBlueprintSaga,
 	subscribeToSummariesSaga,
@@ -21,9 +22,8 @@ import {
 	AUTH_STATE_CHANGED,
 } from '../actions/actionTypes';
 
-function* rootSaga()
+const rootSaga = function*()
 {
-	// yield takeEvery('*', log);
 	yield takeEvery(SUBSCRIBE_TO_BLUEPRINT, subscribeToBlueprintSaga);
 	yield takeEvery(SUBSCRIBE_TO_SUMMARIES, subscribeToSummariesSaga);
 	yield takeEvery(SUBSCRIBE_TO_MODERATORS, subscribeToModeratorsSaga);

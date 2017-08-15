@@ -16,10 +16,10 @@ import * as selectors from '../selectors';
 class BlueprintThumbnail extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		id               : PropTypes.string.isRequired,
-		myBlueprints     : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
-		myFavorites      : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
-		blueprintSummaries           : PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
+		id                : PropTypes.string.isRequired,
+		myBlueprints      : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
+		myFavorites       : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
+		blueprintSummaries: PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
 			title            : PropTypes.string.isRequired,
 			imgurId          : PropTypes.string.isRequired,
 			imgurType        : PropTypes.string.isRequired,
@@ -58,13 +58,10 @@ class BlueprintThumbnail extends PureComponent
 	}
 }
 
-const mapStateToProps = (storeState) =>
-{
-	return {
-		myBlueprints      : selectors.getMyBlueprints(storeState),
-		myFavorites       : selectors.getMyFavorites(storeState),
-		blueprintSummaries: selectors.getBlueprintSummariesData(storeState),
-	};
-};
+const mapStateToProps = storeState => ({
+	myBlueprints      : selectors.getMyBlueprints(storeState),
+	myFavorites       : selectors.getMyFavorites(storeState),
+	blueprintSummaries: selectors.getBlueprintSummariesData(storeState),
+});
 
 export default connect(mapStateToProps, {})(BlueprintThumbnail);

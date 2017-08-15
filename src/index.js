@@ -60,25 +60,25 @@ store.subscribe(throttle(() =>
 	saveState({
 		blueprints        : mapValues(pickBy(blueprints, ({data}) => !isEmpty(data)), ({data}) => ({data})),
 		blueprintSummaries: {
-			data   : blueprintSummariesData,
+			data: blueprintSummariesData,
 		},
-		tags              : {
-			data   : tagsData,
+		tags: {
+			data: tagsData,
 			tagHierarchy,
 		},
-		byTag             : mapValues(byTag, ({data}) => ({data})),
+		byTag: mapValues(byTag, ({data}) => ({data})),
 		filteredTags,
-		auth              : {
+		auth : {
 			myFavorites: {
-				data   : myFavoritesData,
+				data: myFavoritesData,
 			},
 		},
-		users             : mapValues(pickBy(users, ({data}) => !isEmpty(data)), ({displayName: {data: displayNameData}, blueprints: {data: blueprintsData}}) =>
+		users: mapValues(pickBy(users, ({data}) => !isEmpty(data)), ({displayName: {data: displayNameData}, blueprints: {data: blueprintsData}}) =>
 			({
 				displayName: {
 					data: displayNameData,
 				},
-				blueprints : {
+				blueprints: {
 					data: blueprintsData,
 				},
 			})),
