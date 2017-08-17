@@ -163,11 +163,25 @@ class EditBlueprint extends PureComponent
 			this.props.subscribeToModerators();
 		}
 
-		if (this.props.blueprint)
+		this.cacheBlueprintState(this.props);
+	}
+
+	componentWillReceiveProps(nextProps)
+	{
+		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
+		{
+			nextProps.subscribeToModerators();
+		}
+		this.cacheBlueprintState(nextProps);
+	}
+
+	cacheBlueprintState = (props) =>
+	{
+		if (props.blueprint)
 		{
 			const blueprint = {
-				...this.props.blueprint,
-				tags: this.props.blueprint.tags || EditBlueprint.emptyTags,
+				...props.blueprint,
+				tags: props.blueprint.tags || EditBlueprint.emptyTags,
 			};
 			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
 			const parsedBlueprint = this.parseBlueprint(blueprint.blueprintString);
@@ -180,15 +194,7 @@ class EditBlueprint extends PureComponent
 				v15Decoded,
 			});
 		}
-	}
-
-	componentWillReceiveProps(nextProps)
-	{
-		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
-		{
-			nextProps.subscribeToModerators();
-		}
-	}
+	};
 
 	handleDismissAlert = () =>
 	{
@@ -942,6 +948,8 @@ class EditBlueprint extends PureComponent
 				const itemHistogram = this.itemHistogram(this.state.v15Decoded.blueprint);
 				const itemCounts = fromPairs(itemHistogram);
 				const allGameEntities = [...Object.keys(entityCounts), ...Object.keys(itemCounts)];
+
+				console.log({recipeCounts, itemCounts});
 
 				generateAllTagSuggestions(entityHistogram, entityCounts, recipeHistogram, recipeCounts, allGameEntities);
 			}
