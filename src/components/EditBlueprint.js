@@ -629,6 +629,12 @@ class EditBlueprint extends PureComponent
 			{
 				tagSuggestions.push('/production/science/');
 			}
+			else if (recipeCounts['low-density-structure'] > 0
+				|| recipeCounts['rocket-fuel'] > 0
+				|| recipeCounts['rocket-control-unit'] > 0)
+			{
+				tagSuggestions.push('/production/rocket parts/');
+			}
 			else if (recipeCounts['speed-module-3'] > 0
 				|| recipeCounts['productivity-module-3'] > 0
 				|| recipeCounts['effectivity-module-3'] > 0)
