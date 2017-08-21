@@ -51,6 +51,7 @@ import entitiesWithIcons from '../data/entitiesWithIcons';
 import buildImageUrl from '../helpers/buildImageUrl';
 
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
+import GoogleAd from './GoogleAd';
 
 import {blueprintSchema, historySchema, locationSchema, userSchema} from '../propTypes';
 
@@ -470,6 +471,7 @@ class SingleBlueprint extends PureComponent
 									</Table>
 								</Panel>
 							}
+							<GoogleAd />
 						</Col>
 						<Col md={8}>
 							<Panel header='Details'>
