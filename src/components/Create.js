@@ -2,6 +2,7 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import firebase from 'firebase';
 
 import isEmpty from 'lodash/isEmpty';
+import forEach from 'lodash/forEach';
 import some from 'lodash/some';
 
 import marked from 'marked';
@@ -29,9 +30,11 @@ import FontAwesome from 'react-fontawesome';
 import {connect} from 'react-redux';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
+import {bindActionCreators} from 'redux';
 
 import {app} from '../base';
 import Blueprint from '../Blueprint';
+import {subscribeToTags} from '../actions/actionCreators';
 import noImageAvailable from '../gif/No_available_image.gif';
 import scaleImage from '../helpers/ImageScaler';
 import {historySchema, locationSchema, userSchema} from '../propTypes';
@@ -62,6 +65,7 @@ class Create extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		user         : userSchema,
+		subscribeToTags: PropTypes.func.isRequired,
 		tags         : PropTypes.arrayOf(PropTypes.string).isRequired,
 		tagOptions   : PropTypes.arrayOf(PropTypes.shape(forbidExtraProps({
 			value: PropTypes.string.isRequired,
@@ -104,6 +108,7 @@ class Create extends PureComponent
 
 	componentWillMount()
 	{
+		this.props.subscribeToTags();
 		const localStorageRef = localStorage.getItem('factorio-blueprint-create-form');
 		if (localStorageRef)
 		{
@@ -338,7 +343,8 @@ class Create extends PureComponent
 		fileNameRef.getDownloadURL().then(() =>
 		{
 			this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
-		}, () =>
+		})
+		.catch(() =>
 		{
 			this.setState({uploadProgressBarVisible: true});
 			const uploadTask = fileNameRef.put(file);
@@ -350,58 +356,58 @@ class Create extends PureComponent
 					body   : file,
 				})
 					.then(this.processStatus)
-					.then((response) =>
+					.then(response => response.json())
+					.then(({data}) =>
 					{
-						response.json().then((json) =>
-						{
-							const data  = json.data;
-							const image = {
-								id        : data.id,
-								deletehash: data.deletehash,
-								type      : data.type,
-								height    : data.height,
-								width     : data.width,
-							};
+						const image = {
+							id        : data.id,
+							deletehash: data.deletehash,
+							type      : data.type,
+							height    : data.height,
+							width     : data.width,
+						};
 
-							const blueprint = {
-								...this.state.blueprint,
-								author           : {
-									userId     : this.props.user.uid,
-									displayName: this.props.user.displayName,
-								},
-								createdDate      : firebase.database.ServerValue.TIMESTAMP,
-								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-								favorites        : {},
-								numberOfFavorites: 0,
-								imageUrl         : uploadTask.snapshot.downloadURL,
-								fileName,
-								image,
-							};
+						const blueprint = {
+							...this.state.blueprint,
+							author           : {
+								userId     : this.props.user.uid,
+								displayName: this.props.user.displayName,
+							},
+							createdDate      : firebase.database.ServerValue.TIMESTAMP,
+							lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+							favorites        : {},
+							numberOfFavorites: 0,
+							imageUrl         : uploadTask.snapshot.downloadURL,
+							fileName,
+							image,
+						};
 
-							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
-							// TODO: Combine all of these database updates into a single call to update
-							app.database().ref(`/users/${this.props.user.uid}/blueprints`).update({[newBlueprintRef.key]: true});
+						const blueprintSummary = {
+							imgurId          : blueprint.image.id,
+							imgurType        : blueprint.image.type,
+							title            : blueprint.title,
+							numberOfFavorites: blueprint.numberOfFavorites,
+						};
+						const {thumbnail} = this.state;
 
-							const thumbnail = this.state.thumbnail;
-							newBlueprintRef.then(() =>
+						const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
+						const updates = {
+							[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
+							[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
+							[`/thumbnails/${newBlueprintRef.key}`]                             : thumbnail,
+						};
+						forEach(blueprint.tags, (tag) =>
 							{
-								const blueprintSummary = {
-									imgurId          : blueprint.image.id,
-									imgurType        : blueprint.image.type,
-									title            : blueprint.title,
-									numberOfFavorites: blueprint.numberOfFavorites,
-								};
-
-								app.database().ref(`/blueprintSummaries/${newBlueprintRef.key}`).set(blueprintSummary).then(() =>
-								{
-									app.database().ref(`/thumbnails/${newBlueprintRef.key}`).set(thumbnail).then(() =>
-									{
-										this.setState(Create.initialState);
-										this.props.history.push(`/view/${newBlueprintRef.key}`);
-									});
-								});
+								updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
 							});
-						});
+
+						console.log({updates});
+						app.database().ref().update(updates)
+							.then(() =>
+							{
+								this.setState(Create.initialState);
+								this.props.history.push(`/view/${newBlueprintRef.key}`);
+							})
 					})
 					.catch(this.handleImgurError);
 			});
@@ -675,4 +681,10 @@ const mapStateToProps = storeState => ({
 	tagOptions: selectors.getTagsOptions(storeState),
 });
 
-export default connect(mapStateToProps, {})(Create);
+const mapDispatchToProps = (dispatch) =>
+{
+	const actionCreators = {subscribeToTags};
+	return bindActionCreators(actionCreators, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Create);

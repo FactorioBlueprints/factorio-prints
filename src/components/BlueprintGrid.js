@@ -13,7 +13,7 @@ import ReactPaginate from 'react-paginate';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {filterOnTags, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
+import {filterOnTags, subscribeToTag, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
 import {blueprintSummariesSchema, locationSchema, userSchema} from '../propTypes';
 import * as selectors from '../selectors';
 
@@ -30,6 +30,7 @@ class BlueprintGrid extends PureComponent
 		subscribeToBlueprintSummaries: PropTypes.func.isRequired,
 		subscribeToUser              : PropTypes.func.isRequired,
 		filterOnTags                 : PropTypes.func.isRequired,
+		subscribeToTag               : PropTypes.func.isRequired,
 		user                         : userSchema,
 		blueprintSummaries           : blueprintSummariesSchema,
 		blueprintSummariesLoading    : PropTypes.bool,
@@ -56,6 +57,7 @@ class BlueprintGrid extends PureComponent
 		if (this.props.initialTag)
 		{
 			this.props.filterOnTags([this.props.initialTag]);
+			this.props.subscribeToTag(this.props.initialTag);
 		}
 		if (this.props.user)
 		{
@@ -138,6 +140,7 @@ const mapStateToProps = (storeState) =>
 const mapDispatchToProps = (dispatch) =>
 {
 	const actionCreators = {
+		subscribeToTag,
 		subscribeToBlueprintSummaries,
 		filterOnTags,
 		subscribeToUser,
