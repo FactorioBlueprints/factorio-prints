@@ -18,6 +18,7 @@ import {
 	SUBSCRIBE_TO_MODERATORS,
 	SUBSCRIBE_TO_TAGS,
 	SUBSCRIBE_TO_USER,
+	SUBSCRIBE_TO_USER_DISPLAY_NAME,
 	SUBSCRIBE_TO_TAG,
 	AUTH_STATE_CHANGED,
 } from '../actions/actionTypes';
@@ -31,6 +32,7 @@ const rootSaga = function*()
 	yield takeEvery(SUBSCRIBE_TO_TAG, subscribeToTagSaga);
 	yield takeEvery(SUBSCRIBE_TO_USER, subscribeToDisplayNameSaga);
 	yield takeEvery(SUBSCRIBE_TO_USER, subscribeToUserBlueprintsSaga);
+	yield takeEvery(SUBSCRIBE_TO_USER_DISPLAY_NAME, subscribeToDisplayNameSaga);
 	yield takeEvery(AUTH_STATE_CHANGED, authSaga);
 }
 

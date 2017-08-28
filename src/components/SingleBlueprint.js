@@ -13,6 +13,7 @@ import has from 'lodash/has';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import range from 'lodash/range';
+import get from 'lodash/get';
 
 import marked from 'marked';
 import moment from 'moment';
@@ -41,7 +42,7 @@ import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
 import {bindActionCreators} from 'redux';
 
-import {subscribeToBlueprint, subscribeToModerators} from '../actions/actionCreators';
+import {subscribeToBlueprint, subscribeToModerators, subscribeToUser} from '../actions/actionCreators';
 
 import {app} from '../base';
 import Blueprint from '../Blueprint';
@@ -81,7 +82,10 @@ class SingleBlueprint extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		id                   : PropTypes.string.isRequired,
+		displayName          : PropTypes.string,
+		displayNameLoading   : PropTypes.bool.isRequired,
 		subscribeToBlueprint : PropTypes.func.isRequired,
+		subscribeToUser      : PropTypes.func.isRequired,
 		// TODO: Only bother if we're logged in
 		subscribeToModerators: PropTypes.func.isRequired,
 		loading              : PropTypes.bool.isRequired,
@@ -150,7 +154,9 @@ class SingleBlueprint extends PureComponent
 			return;
 		}
 
-		const {image, descriptionMarkdown, blueprintString, author: {authorId}} = props.blueprint;
+		const {image, descriptionMarkdown, blueprintString, author: {userId: authorId}} = props.blueprint;
+		// Blueprint author
+		this.props.subscribeToUser(authorId);
 
 		const thumbnail          = buildImageUrl(image.id, image.type, 'l');
 		const renderedMarkdown   = marked(descriptionMarkdown);
@@ -299,7 +305,7 @@ class SingleBlueprint extends PureComponent
 			return <NoMatch />;
 		}
 
-		const {image, createdDate, lastUpdatedDate, author: {userId: authorId, displayName}, title, numberOfFavorites} = blueprint;
+		const {image, createdDate, lastUpdatedDate, author: {userId: authorId}, title, numberOfFavorites} = blueprint;
 
 		return (
 			<DocumentTitle title={`Factorio Prints: ${title}`}>
@@ -341,7 +347,7 @@ class SingleBlueprint extends PureComponent
 											<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
 											<td>
 												<Link to={`/user/${authorId}`}>
-													{displayName || '(Anonymous)'}
+													{this.props.displayNameLoading && 'Author name loading' || this.props.displayName || '(Anonymous)'}
 													{
 														this.state.ownedByCurrentUser &&
 														<span className='pull-right'>
@@ -578,6 +584,8 @@ class SingleBlueprint extends PureComponent
 const mapStateToProps = (storeState, ownProps) =>
 {
 	const id = ownProps.match.params.blueprintId;
+	const blueprint = selectors.getBlueprintDataById(storeState, {id});
+
 	return {
 		id,
 		user       : selectors.getFilteredUser(storeState),
@@ -585,6 +593,8 @@ const mapStateToProps = (storeState, ownProps) =>
 		blueprint  : selectors.getBlueprintDataById(storeState, {id}),
 		loading    : selectors.getBlueprintLoadingById(storeState, {id}),
 		myFavorites: selectors.getMyFavorites(storeState),
+		displayName        : selectors.getUserDisplayName(storeState, {id: get(blueprint, ['author', 'userId'])}),
+		displayNameLoading : selectors.getUserDisplayNameLoading(storeState, {id}),
 	};
 };
 
@@ -593,6 +603,7 @@ const mapDispatchToProps = (dispatch) =>
 	const actionCreators = {
 		subscribeToBlueprint,
 		subscribeToModerators,
+		subscribeToUser,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };

@@ -5,6 +5,7 @@ import {
 	SUBSCRIBE_TO_TAGS,
 	SUBSCRIBE_TO_TAG,
 	SUBSCRIBE_TO_USER,
+	SUBSCRIBE_TO_USER_DISPLAY_NAME,
 	AUTH_STATE_CHANGED,
 	FILTER_ON_TAGS,
 	FILTER_ON_TITLE,
@@ -40,6 +41,12 @@ export const subscribeToTag = tagId =>
 export const subscribeToUser = userId =>
 ({
 	type: SUBSCRIBE_TO_USER,
+	userId,
+});
+
+export const subscribeToUserDisplayName = userId =>
+({
+	type: SUBSCRIBE_TO_USER_DISPLAY_NAME,
 	userId,
 });
 
