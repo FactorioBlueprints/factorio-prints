@@ -10,7 +10,7 @@
     "babel-plugin-lodash": "3.2.11",
     "babel-preset-es2015": "6.24.1",
     "concurrently": "3.5.0",
-    "eslint": "4.5.0",
+    "eslint": "4.6.0",
     "eslint-find-rules": "3.1.1",
     "eslint-plugin-babel": "4.1.2",
     "eslint-plugin-filenames": "1.2.0",
@@ -18,8 +18,8 @@
     "eslint-plugin-jsx-a11y": "5.1.1",
     "eslint-plugin-lodash": "2.4.5",
     "eslint-plugin-promise": "3.5.0",
-    "eslint-plugin-react": "7.2.1",
-    "react-scripts": "1.0.11",
+    "eslint-plugin-react": "7.3.0",
+    "react-scripts": "1.0.12",
     "stylus": "0.54.5"
   },
   "dependencies": {
@@ -28,7 +28,7 @@
     "atob": "2.0.3",
     "bootstrap": "3.3.7",
     "firebase": "4.3.0",
-    "history": "4.6.3",
+    "history": "4.7.2",
     "immutability-helper": "2.3.1",
     "lodash": "4.17.4",
     "marked": "0.3.6",
