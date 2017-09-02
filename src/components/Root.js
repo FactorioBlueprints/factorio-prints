@@ -12,6 +12,7 @@ import {app} from '../base';
 import App from './App';
 import BlueprintGrid from './BlueprintGrid';
 import Contact from './Contact';
+import Account from './Account';
 import Create from './Create';
 import EditBlueprint from './EditBlueprint';
 import FavoritesGrid from './FavoritesGrid';
@@ -47,6 +48,7 @@ class Root extends PureComponent
 					return {
 						...existingUserInitialized,
 						displayName,
+						providerDisplayName,
 						photoURL,
 						email,
 						emailVerified,
@@ -83,7 +85,7 @@ class Root extends PureComponent
 					<App>
 						<BrowserRouter>
 							<div>
-								<Header />
+								<Route path='/' component={Header} />
 								<Switch>
 									<Route path='/'           exact render={this.renderIntro} />
 									<Route path='/blueprints' exact component={BlueprintGrid} />
@@ -92,6 +94,7 @@ class Root extends PureComponent
 
 									<Route path='/favorites'  exact component={FavoritesGrid} />
 									<Route path='/contact'    exact component={Contact} />
+									<Route path='/account'    exact component={Account} />
 									<Route path='/view/:blueprintId'  component={SingleBlueprint} />
 									<Route path='/edit/:blueprintId'  component={EditBlueprint} />
 									<Route path='/user/:userId'       component={UserGrid} />

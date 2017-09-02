@@ -7,6 +7,7 @@ import {
 	SUBSCRIBE_TO_USER,
 	SUBSCRIBE_TO_USER_DISPLAY_NAME,
 	AUTH_STATE_CHANGED,
+	EDITED_DISPLAY_NAME,
 	FILTER_ON_TAGS,
 	FILTER_ON_TITLE,
 } from './actionTypes';
@@ -54,6 +55,12 @@ export const authStateChanged = user =>
 ({
 	type: AUTH_STATE_CHANGED,
 	user,
+});
+
+export const editedDisplayName = displayName =>
+({
+	type: EDITED_DISPLAY_NAME,
+	displayName,
 });
 
 export const filterOnTags = tags =>

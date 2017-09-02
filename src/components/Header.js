@@ -10,8 +10,10 @@ import NavDropdown from 'react-bootstrap/lib/NavDropdown';
 import FontAwesome from 'react-fontawesome';
 import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
+import {bindActionCreators} from 'redux';
 
 import {app} from '../base';
+import {historySchema, locationSchema} from '../propTypes';
 import * as selectors from '../selectors';
 
 class Header extends PureComponent
@@ -22,6 +24,15 @@ class Header extends PureComponent
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
 		})),
+		match        : PropTypes.shape(forbidExtraProps({
+			params : PropTypes.shape(forbidExtraProps({})).isRequired,
+			path   : PropTypes.string.isRequired,
+			url    : PropTypes.string.isRequired,
+			isExact: PropTypes.bool.isRequired,
+		})).isRequired,
+		location             : locationSchema,
+		history              : historySchema,
+		staticContext        : PropTypes.shape(forbidExtraProps({})),
 	});
 
 	constructor()
@@ -43,6 +54,11 @@ class Header extends PureComponent
 	{
 		app.auth().signInWithPopup(provider).catch(error => console.error({error}));
 	};
+
+	handleEdit = () =>
+	{
+		this.props.history.push('/account');
+	}
 
 	handleLogout = () =>
 	{
@@ -89,6 +105,12 @@ class Header extends PureComponent
 						<MenuItem className='user-photo-container'>
 							{this.getLargeUserPhoto()}
 							{this.getDisplayName()}
+						</MenuItem>
+						<MenuItem>
+							<button className='btn btn-block btn-primary' onClick={this.handleEdit}>
+								<FontAwesome name='wrench' size='lg' fixedWidth />
+								{' Edit'}
+							</button>
 						</MenuItem>
 						<MenuItem>
 							<button className='btn btn-block btn-primary' onClick={this.handleLogout}>
@@ -187,4 +209,10 @@ const mapStateToProps = storeState => ({
 	user: selectors.getUser(storeState),
 });
 
-export default connect(mapStateToProps, {})(Header);
+const mapDispatchToProps = (dispatch) =>
+{
+	const actionCreators = {};
+	return bindActionCreators(actionCreators, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header);

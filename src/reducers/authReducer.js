@@ -1,5 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
-import {AUTH_STATE_CHANGED, RECEIVED_MY_FAVORITES} from '../actions/actionTypes';
+import {AUTH_STATE_CHANGED, RECEIVED_MY_FAVORITES, EDITED_DISPLAY_NAME} from '../actions/actionTypes';
 
 const initialState =
 {
@@ -27,6 +27,15 @@ const authReducer = (state = initialState, action) =>
 				...state,
 				loggedIn: true,
 				user,
+			};
+		case EDITED_DISPLAY_NAME:
+			const {displayName} = action;
+			return {
+				...state,
+				user: {
+					...state.user,
+					displayName,
+				}
 			};
 		case RECEIVED_MY_FAVORITES:
 			return {
