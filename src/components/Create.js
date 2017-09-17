@@ -371,8 +371,8 @@ class Create extends PureComponent
 							...this.state.blueprint,
 							author           : {
 								userId     : this.props.user.uid,
-								displayName: this.props.user.displayName,
 							},
+							authorId         : this.props.user.uid,
 							createdDate      : firebase.database.ServerValue.TIMESTAMP,
 							lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
 							favorites        : {},

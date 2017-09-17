@@ -18,8 +18,9 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 	lastUpdatedDate    : PropTypes.number.isRequired,
 	numberOfFavorites  : PropTypes.number.isRequired,
 	tags               : PropTypes.arrayOf(PropTypes.string.isRequired),
+	authorId           : PropTypes.string,
 	author             : PropTypes.shape(forbidExtraProps({
-		displayName: PropTypes.string.isRequired,
+		displayName: PropTypes.string,
 		userId     : PropTypes.string.isRequired,
 	})).isRequired,
 	image: PropTypes.shape(forbidExtraProps({
