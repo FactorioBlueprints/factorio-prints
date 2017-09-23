@@ -13,7 +13,7 @@ import ReactPaginate from 'react-paginate';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {filterOnTags, subscribeToTag, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
+import {filterOnTags, subscribeToBlueprintSummaries, subscribeToTag, subscribeToUser} from '../actions/actionCreators';
 import {blueprintSummariesSchema, locationSchema, userSchema} from '../propTypes';
 import * as selectors from '../selectors';
 
@@ -37,14 +37,14 @@ class BlueprintGrid extends PureComponent
 		pageCount                    : PropTypes.number.isRequired,
 		filteredBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 		location                     : locationSchema,
-		history                      : PropTypes.object.isRequired,
+		history                      : PropTypes.object,
 		staticContext                : PropTypes.shape(forbidExtraProps({})),
 		match                        : PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
-		})).isRequired,
+		})),
 	});
 
 	state = {

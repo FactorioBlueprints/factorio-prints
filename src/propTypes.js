@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
 import {forbidExtraProps} from 'airbnb-prop-types';
+import PropTypes from 'prop-types';
 
 export const userSchema = PropTypes.shape(forbidExtraProps({
 	uid        : PropTypes.string.isRequired,
@@ -12,8 +12,7 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 	blueprintString    : PropTypes.string.isRequired,
 	createdDate        : PropTypes.number.isRequired,
 	descriptionMarkdown: PropTypes.string.isRequired,
-	favorites          : PropTypes.objectOf(PropTypes.bool.isRequired),
-	fileName           : PropTypes.string.isRequired,
+	fileName           : PropTypes.string,
 	imageUrl           : PropTypes.string.isRequired,
 	lastUpdatedDate    : PropTypes.number.isRequired,
 	numberOfFavorites  : PropTypes.number.isRequired,
@@ -50,7 +49,7 @@ export const locationSchema = PropTypes.shape(forbidExtraProps({
 	hash    : PropTypes.string.isRequired,
 	state   : PropTypes.string,
 	key     : PropTypes.string,
-})).isRequired;
+}));
 
 export const historySchema = PropTypes.shape({
 	push: PropTypes.func.isRequired,
