@@ -1,8 +1,9 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 import firebase from 'firebase';
-
-import isEmpty from 'lodash/isEmpty';
+import update from 'immutability-helper';
+import difference from 'lodash/difference';
 import forEach from 'lodash/forEach';
+import isEmpty from 'lodash/isEmpty';
 import some from 'lodash/some';
 
 import marked from 'marked';
@@ -32,14 +33,16 @@ import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import {bindActionCreators} from 'redux';
 
+import {subscribeToTags} from '../actions/actionCreators';
 import {app} from '../base';
 import Blueprint from '../Blueprint';
-import {subscribeToTags} from '../actions/actionCreators';
 import noImageAvailable from '../gif/No_available_image.gif';
+import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import scaleImage from '../helpers/ImageScaler';
 import {historySchema, locationSchema, userSchema} from '../propTypes';
 
 import * as selectors from '../selectors';
+import TagSuggestionButton from './TagSuggestionButton';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -64,23 +67,31 @@ marked.setOptions({
 class Create extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user         : userSchema,
+		user           : userSchema,
 		subscribeToTags: PropTypes.func.isRequired,
-		tags         : PropTypes.arrayOf(PropTypes.string).isRequired,
-		tagOptions   : PropTypes.arrayOf(PropTypes.shape(forbidExtraProps({
+		tags           : PropTypes.arrayOf(PropTypes.string).isRequired,
+		tagOptions     : PropTypes.arrayOf(PropTypes.shape(forbidExtraProps({
 			value: PropTypes.string.isRequired,
 			label: PropTypes.string.isRequired,
 		})).isRequired).isRequired,
-		match        : PropTypes.shape(forbidExtraProps({
+		match          : PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location     : locationSchema,
-		history      : historySchema,
-		staticContext: PropTypes.shape(forbidExtraProps({})),
+		location       : locationSchema,
+		history        : historySchema,
+		staticContext  : PropTypes.shape(forbidExtraProps({})),
 	});
+
+	static emptyTags = [];
+
+	static imgurHeaders = {
+		'Accept'       : 'application/json',
+		'Content-Type' : 'application/json',
+		'Authorization': 'Client-ID 46a3f144b6a0882',
+	};
 
 	static initialState = {
 		thumbnail               : '',
@@ -98,12 +109,6 @@ class Create extends PureComponent
 		},
 	};
 
-	static imgurHeaders = {
-		'Accept'       : 'application/json',
-		'Content-Type' : 'application/json',
-		'Authorization': 'Client-ID 46a3f144b6a0882',
-	};
-
 	state = Create.initialState;
 
 	componentWillMount()
@@ -112,12 +117,8 @@ class Create extends PureComponent
 		const localStorageRef = localStorage.getItem('factorio-blueprint-create-form');
 		if (localStorageRef)
 		{
-			const blueprint        = JSON.parse(localStorageRef);
-			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
-			this.setState({
-				renderedMarkdown,
-				blueprint,
-			});
+			const blueprint = JSON.parse(localStorageRef);
+			this.cacheBlueprintState(blueprint);
 		}
 	}
 
@@ -125,6 +126,28 @@ class Create extends PureComponent
 	{
 		localStorage.setItem('factorio-blueprint-create-form', JSON.stringify(nextState.blueprint));
 	}
+
+	cacheBlueprintState = (blueprint) =>
+	{
+		if (blueprint)
+		{
+			const newBlueprint = {
+				...blueprint,
+				tags: blueprint.tags || Create.emptyTags,
+			};
+
+			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
+			const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString);
+			const v15Decoded       = parsedBlueprint.getV15Decoded();
+
+			this.setState({
+				blueprint: newBlueprint,
+				renderedMarkdown,
+				parsedBlueprint,
+				v15Decoded,
+			});
+		}
+	};
 
 	handleDismissAlert = () =>
 	{
@@ -183,12 +206,22 @@ class Create extends PureComponent
 
 	handleChange = (event) =>
 	{
-		this.setState({
+		const {name, value} = event.target;
+
+		const newState = {
 			blueprint: {
 				...this.state.blueprint,
-				[event.target.name]: event.target.value,
+				[name]: value,
 			},
-		});
+		};
+
+		if (name === 'blueprintString')
+		{
+			newState.parsedBlueprint = this.parseBlueprint(value);
+			newState.v15Decoded      = newState.parsedBlueprint && newState.parsedBlueprint.getV15Decoded();
+		}
+
+		this.setState(newState);
 	};
 
 	processStatus = (response) =>
@@ -268,7 +301,7 @@ class Create extends PureComponent
 		}
 
 		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
-		if (blueprint.decodedObject == null)
+		if (isEmpty(blueprint.decodedObject))
 		{
 			submissionWarnings.push('Could not parse blueprint.');
 			return submissionWarnings;
@@ -279,18 +312,16 @@ class Create extends PureComponent
 			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
 		}
 
-		const v15Decoded = blueprint.getV15Decoded();
-		if (!blueprint.isBook() && isEmpty(v15Decoded.blueprint.label))
+		if (!blueprint.isBook() && isEmpty(this.state.v15Decoded.blueprint.label))
 		{
 			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
 		}
-
-		if (!blueprint.isBook() && isEmpty(v15Decoded.blueprint.icons))
+		if (!blueprint.isBook() && isEmpty(this.state.v15Decoded.blueprint.icons))
 		{
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
 
-		if (blueprint.isBook() && some(v15Decoded.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.blueprint.label)))
+		if (blueprint.isBook() && some(this.state.v15Decoded.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.blueprint.label)))
 		{
 			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 		}
@@ -344,80 +375,110 @@ class Create extends PureComponent
 		{
 			this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
 		})
-		.catch(() =>
-		{
-			this.setState({uploadProgressBarVisible: true});
-			const uploadTask = fileNameRef.put(file);
-			uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, () =>
+			.catch(() =>
 			{
-				fetch('https://api.imgur.com/3/upload.json', {
-					method : 'POST',
-					headers: Create.imgurHeaders,
-					body   : file,
-				})
-					.then(this.processStatus)
-					.then(response => response.json())
-					.then(({data}) =>
-					{
-						const image = {
-							id        : data.id,
-							deletehash: data.deletehash,
-							type      : data.type,
-							height    : data.height,
-							width     : data.width,
-						};
+				this.setState({uploadProgressBarVisible: true});
+				const uploadTask = fileNameRef.put(file);
+				uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, () =>
+				{
+					fetch('https://api.imgur.com/3/upload.json', {
+						method : 'POST',
+						headers: Create.imgurHeaders,
+						body   : file,
+					})
+						.then(this.processStatus)
+						.then(response => response.json())
+						.then(({data}) =>
+						{
+							const image = {
+								id        : data.id,
+								deletehash: data.deletehash,
+								type      : data.type,
+								height    : data.height,
+								width     : data.width,
+							};
 
-						const blueprint = {
-							...this.state.blueprint,
-							author           : {
-								userId     : this.props.user.uid,
-							},
-							authorId         : this.props.user.uid,
-							createdDate      : firebase.database.ServerValue.TIMESTAMP,
-							lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-							favorites        : {},
-							numberOfFavorites: 0,
-							imageUrl         : uploadTask.snapshot.downloadURL,
-							fileName,
-							image,
-						};
+							const blueprint = {
+								...this.state.blueprint,
+								author           : {
+									userId: this.props.user.uid,
+								},
+								authorId         : this.props.user.uid,
+								createdDate      : firebase.database.ServerValue.TIMESTAMP,
+								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+								favorites        : {},
+								numberOfFavorites: 0,
+								imageUrl         : uploadTask.snapshot.downloadURL,
+								fileName,
+								image,
+							};
 
-						const blueprintSummary = {
-							imgurId          : blueprint.image.id,
-							imgurType        : blueprint.image.type,
-							title            : blueprint.title,
-							numberOfFavorites: blueprint.numberOfFavorites,
-						};
-						const {thumbnail} = this.state;
+							const blueprintSummary = {
+								imgurId          : blueprint.image.id,
+								imgurType        : blueprint.image.type,
+								title            : blueprint.title,
+								numberOfFavorites: blueprint.numberOfFavorites,
+							};
+							const {thumbnail}      = this.state;
 
-						const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
-						const updates = {
-							[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
-							[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
-							[`/thumbnails/${newBlueprintRef.key}`]                             : thumbnail,
-						};
-						forEach(blueprint.tags, (tag) =>
+							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
+							const updates         = {
+								[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
+								[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
+								[`/thumbnails/${newBlueprintRef.key}`]                             : thumbnail,
+							};
+							forEach(blueprint.tags, (tag) =>
 							{
 								updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
 							});
 
-						console.log({updates});
-						app.database().ref().update(updates)
-							.then(() =>
-							{
-								this.setState(Create.initialState);
-								this.props.history.push(`/view/${newBlueprintRef.key}`);
-							})
-					})
-					.catch(this.handleImgurError);
+							app.database().ref().update(updates)
+								.then(() =>
+								{
+									this.setState(Create.initialState);
+									this.props.history.push(`/view/${newBlueprintRef.key}`);
+								});
+						})
+						.catch(this.handleImgurError);
+				});
 			});
-		});
 	};
 
 	handleCancel = () =>
 	{
 		localStorage.removeItem('factorio-blueprint-create-form');
 		this.props.history.push('/blueprints');
+	};
+
+	parseBlueprint = (blueprintString) =>
+	{
+		try
+		{
+			return new Blueprint(blueprintString);
+		}
+		catch (ignored)
+		{
+			console.log(ignored);
+			return undefined;
+		}
+	};
+
+	handleTagSelection = (selectedTags) =>
+	{
+		const tags = selectedTags.map(each => each.value);
+		this.setState({
+			blueprint: {
+				...this.state.blueprint,
+				tags,
+			},
+		});
+	};
+
+	addTag = (tag) =>
+	{
+		this.setState(update(this.state, {
+			blueprint: {tags: {$push: [tag]}},
+		}));
 	};
 
 	renderPreview = () =>
@@ -455,18 +516,13 @@ class Create extends PureComponent
 			);
 		}
 
-		const handleTagSelection = (selectedTags) =>
-		{
-			const tags = selectedTags.map(each => each.value);
-			this.setState({
-				blueprint: {
-					...this.state.blueprint,
-					tags,
-				},
-			});
-		};
+		const {blueprint}          = this.state;
+		const allTagSuggestions    = generateTagSuggestions(
+			this.state.blueprint.title,
+			this.state.parsedBlueprint,
+			this.state.v15Decoded);
+		const unusedTagSuggestions = difference(allTagSuggestions, this.state.blueprint.tags);
 
-		const blueprint = this.state.blueprint;
 		return (
 			<div>
 				<Modal show={this.state.uploadProgressBarVisible}>
@@ -616,13 +672,33 @@ class Create extends PureComponent
 								</Col>
 							</FormGroup>
 
+							{
+								unusedTagSuggestions.length > 0
+								&& <FormGroup>
+									<Col componentClass={ControlLabel} sm={2}>{'Tag Suggestions'}</Col>
+									<Col sm={10}>
+										<ButtonToolbar>
+											{
+												unusedTagSuggestions.map(tagSuggestion => (
+													<TagSuggestionButton
+														key={tagSuggestion}
+														tagSuggestion={tagSuggestion}
+														addTag={this.addTag}
+													/>
+												))
+											}
+										</ButtonToolbar>
+									</Col>
+								</FormGroup>
+							}
+
 							<FormGroup>
 								<Col componentClass={ControlLabel} sm={2}>{'Tags'}</Col>
 								<Col sm={10}>
 									<Select
 										value={this.state.blueprint.tags}
 										options={this.props.tags.map(value => ({value, label: value}))}
-										onChange={handleTagSelection}
+										onChange={this.handleTagSelection}
 										multi
 										placeholder='Select at least one tag'
 									/>
@@ -639,7 +715,9 @@ class Create extends PureComponent
 											className='dropzone'
 											onDrop={this.handleDrop}
 										>
-											<div>{'Drop an image file here, or click to open the file chooser.'}</div>
+											<div>
+												{'Drop an image file here, or click to open the file chooser.'}
+											</div>
 										</Dropzone>
 									</div>
 								</Col>
@@ -671,7 +749,8 @@ class Create extends PureComponent
 						</form>
 					</Row>
 				</Grid>
-			</div>);
+			</div>
+		);
 	}
 }
 
