@@ -9,11 +9,11 @@ import flow from 'lodash/fp/flow';
 import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
+import get from 'lodash/get';
 import has from 'lodash/has';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import range from 'lodash/range';
-import get from 'lodash/get';
 
 import marked from 'marked';
 import moment from 'moment';
@@ -42,7 +42,7 @@ import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
 import {bindActionCreators} from 'redux';
 
-import {subscribeToBlueprint, subscribeToModerators, subscribeToUser} from '../actions/actionCreators';
+import {subscribeToBlueprint, subscribeToModerators, subscribeToUserDisplayName} from '../actions/actionCreators';
 
 import {app} from '../base';
 import Blueprint from '../Blueprint';
@@ -81,22 +81,22 @@ marked.setOptions({
 class SingleBlueprint extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		id                   : PropTypes.string.isRequired,
-		displayName          : PropTypes.string,
-		displayNameLoading   : PropTypes.bool.isRequired,
-		subscribeToBlueprint : PropTypes.func.isRequired,
-		subscribeToUser      : PropTypes.func.isRequired,
+		id                        : PropTypes.string.isRequired,
+		displayName               : PropTypes.string,
+		displayNameLoading        : PropTypes.bool.isRequired,
+		subscribeToBlueprint      : PropTypes.func.isRequired,
+		subscribeToUserDisplayName: PropTypes.func.isRequired,
 		// TODO: Only bother if we're logged in
-		subscribeToModerators: PropTypes.func.isRequired,
-		loading              : PropTypes.bool.isRequired,
-		myFavorites          : PropTypes.objectOf(PropTypes.bool.isRequired),
-		user                 : userSchema,
-		blueprint            : blueprintSchema,
-		isModerator          : PropTypes.bool.isRequired,
-		location             : locationSchema,
-		history              : historySchema,
-		staticContext        : PropTypes.shape(forbidExtraProps({})),
-		match                : PropTypes.shape(forbidExtraProps({
+		subscribeToModerators     : PropTypes.func.isRequired,
+		loading                   : PropTypes.bool.isRequired,
+		myFavorites               : PropTypes.objectOf(PropTypes.bool.isRequired),
+		user                      : userSchema,
+		blueprint                 : blueprintSchema,
+		isModerator               : PropTypes.bool.isRequired,
+		location                  : locationSchema,
+		history                   : historySchema,
+		staticContext             : PropTypes.shape(forbidExtraProps({})),
+		match                     : PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({
 				blueprintId: PropTypes.string.isRequired,
 			})).isRequired,
@@ -156,7 +156,7 @@ class SingleBlueprint extends PureComponent
 
 		const {image, descriptionMarkdown, blueprintString, author: {userId: authorId}} = props.blueprint;
 		// Blueprint author
-		this.props.subscribeToUser(authorId);
+		this.props.subscribeToUserDisplayName(authorId);
 
 		const thumbnail          = buildImageUrl(image.id, image.type, 'l');
 		const renderedMarkdown   = marked(descriptionMarkdown);
@@ -362,7 +362,8 @@ class SingleBlueprint extends PureComponent
 												<FontAwesome name='calendar' size='lg' fixedWidth />
 												{' Created'}</td>
 											<td>
-												<span title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+												<span
+													title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
 													{moment(createdDate).fromNow()}
 												</span>
 											</td>
@@ -373,7 +374,8 @@ class SingleBlueprint extends PureComponent
 												{' Last Updated'}
 											</td>
 											<td>
-												<span title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+												<span
+													title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
 													{moment(lastUpdatedDate).fromNow()}
 												</span>
 											</td>
@@ -402,7 +404,8 @@ class SingleBlueprint extends PureComponent
 														<td className='icon'>
 															{
 																entitiesWithIcons[pair[0]]
-																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	?
+																	<img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
 																	: ''
 															}
 														</td>
@@ -417,7 +420,8 @@ class SingleBlueprint extends PureComponent
 														<td className='icon'>
 															{
 																entitiesWithIcons[pair[0]]
-																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	?
+																	<img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
 																	: ''
 															}
 														</td>
@@ -452,7 +456,9 @@ class SingleBlueprint extends PureComponent
 														const iconName = icon.name || icon.signal && icon.signal.name;
 														return (
 															<tr key={icon.index}>
-																<td className='icon'>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>
+																<td className='icon'>{entitiesWithIcons[iconName] ?
+																	<img src={`/icons/${iconName}.png`}
+																		 alt={iconName} /> : ''}</td>
 																<td>{iconName}</td>
 															</tr>
 														);
@@ -477,7 +483,8 @@ class SingleBlueprint extends PureComponent
 									<Button onClick={this.handleShowHideBase64}>
 										{
 											this.state.showBlueprint
-												? <Title icon='toggle-on' text='Hide Blueprint' className='text-success' />
+												? <Title icon='toggle-on' text='Hide Blueprint'
+														 className='text-success' />
 												: <Title icon='toggle-off' text='Show Blueprint' />
 										}
 									</Button>
@@ -493,7 +500,8 @@ class SingleBlueprint extends PureComponent
 										&& <Button onClick={this.handleShowHideConverted}>
 											{
 												this.state.showConverted
-													? <Title icon='toggle-on' text='Hide 0.15 blueprint' className='text-success' />
+													? <Title icon='toggle-on' text='Hide 0.15 blueprint'
+															 className='text-success' />
 													: <Title icon='toggle-off' text='Convert to 0.15 blueprint' />
 											}
 										</Button>
@@ -529,7 +537,10 @@ class SingleBlueprint extends PureComponent
 																	const icon     = eachBlueprint.blueprint.icons[iconIndex];
 																	// eslint-disable-next-line
 																	const iconName = icon.name || icon.signal && icon.signal.name;
-																	return <td className='icon' key={iconIndex}>{entitiesWithIcons[iconName] ? <img src={`/icons/${iconName}.png`} alt={iconName} /> : ''}</td>;
+																	return <td className='icon'
+																			   key={iconIndex}>{entitiesWithIcons[iconName] ?
+																		<img src={`/icons/${iconName}.png`}
+																			 alt={iconName} /> : ''}</td>;
 																}
 																return <td className='icon' key={iconIndex} />;
 															})
@@ -583,18 +594,18 @@ class SingleBlueprint extends PureComponent
 
 const mapStateToProps = (storeState, ownProps) =>
 {
-	const id = ownProps.match.params.blueprintId;
+	const id        = ownProps.match.params.blueprintId;
 	const blueprint = selectors.getBlueprintDataById(storeState, {id});
 
 	return {
 		id,
-		user       : selectors.getFilteredUser(storeState),
-		isModerator: selectors.getIsModerator(storeState),
-		blueprint  : selectors.getBlueprintDataById(storeState, {id}),
-		loading    : selectors.getBlueprintLoadingById(storeState, {id}),
-		myFavorites: selectors.getMyFavorites(storeState),
-		displayName        : selectors.getUserDisplayName(storeState, {id: get(blueprint, ['author', 'userId'])}),
-		displayNameLoading : selectors.getUserDisplayNameLoading(storeState, {id}),
+		user              : selectors.getFilteredUser(storeState),
+		isModerator       : selectors.getIsModerator(storeState),
+		blueprint         : selectors.getBlueprintDataById(storeState, {id}),
+		loading           : selectors.getBlueprintLoadingById(storeState, {id}),
+		myFavorites       : selectors.getMyFavorites(storeState),
+		displayName       : selectors.getUserDisplayName(storeState, {id: get(blueprint, ['author', 'userId'])}),
+		displayNameLoading: selectors.getUserDisplayNameLoading(storeState, {id}),
 	};
 };
 
@@ -603,7 +614,7 @@ const mapDispatchToProps = (dispatch) =>
 	const actionCreators = {
 		subscribeToBlueprint,
 		subscribeToModerators,
-		subscribeToUser,
+		subscribeToUserDisplayName,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };
