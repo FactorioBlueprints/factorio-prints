@@ -169,10 +169,10 @@ class SingleBlueprint extends PureComponent
 
 	handleFavorite = () =>
 	{
-		const {uid}                          = this.props.user;
-		const {favorites, numberOfFavorites} = this.props.blueprint;
-		const wasFavorite                    = favorites && favorites[uid];
-		const newNumberOfFavorites           = numberOfFavorites + (wasFavorite ? -1 : 1);
+		const {uid}                = this.props.user;
+		const {numberOfFavorites}  = this.props.blueprint;
+		const wasFavorite          = this.props.myFavorites[this.props.id];
+		const newNumberOfFavorites = numberOfFavorites + (wasFavorite ? -1 : 1);
 
 		const updates = {
 			[`/blueprints/${this.props.id}/numberOfFavorites`]        : newNumberOfFavorites,
@@ -270,8 +270,7 @@ class SingleBlueprint extends PureComponent
 			return <div />;
 		}
 
-		const {favorites} = this.props.blueprint;
-		const myFavorite  = favorites && user && favorites[user.uid];
+		const myFavorite  = this.props.myFavorites[this.props.id];
 		const iconName    = myFavorite ? 'heart' : 'heart-o';
 		const iconClass   = myFavorite ? 'text-primary' : 'text-default';
 

@@ -11,12 +11,19 @@ const blueprintReducer = (state = initialBlueprintState, action) =>
 	switch (action.type)
 	{
 		case RECEIVED_BLUEPRINT:
+		{
+			const {blueprint} = action;
+			if (blueprint && blueprint.favorites)
+			{
+				delete blueprint.favorites;
+			}
 			return {
 				...state,
 				loading     : false,
 				blueprintRef: action.blueprintRef,
 				data        : action.blueprint,
 			};
+		}
 		case SUBSCRIBED_TO_BLUEPRINT:
 			return {
 				...state,
