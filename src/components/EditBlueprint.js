@@ -415,15 +415,16 @@ class EditBlueprint extends PureComponent
 		imagePromise.then((image) =>
 		{
 			const updates = {
-				[`/blueprints/${this.props.id}/title`]              : this.state.blueprint.title,
-				[`/blueprints/${this.props.id}/blueprintString`]    : this.state.blueprint.blueprintString,
-				[`/blueprints/${this.props.id}/descriptionMarkdown`]: this.state.blueprint.descriptionMarkdown,
-				[`/blueprints/${this.props.id}/tags`]               : this.state.blueprint.tags,
-				[`/blueprints/${this.props.id}/lastUpdatedDate`]    : firebase.database.ServerValue.TIMESTAMP,
-				[`/blueprints/${this.props.id}/image`]              : image,
-				[`/blueprintSummaries/${this.props.id}/title/`]     : this.state.blueprint.title,
-				[`/blueprintSummaries/${this.props.id}/imgurId/`]   : image.id,
-				[`/blueprintSummaries/${this.props.id}/imgurType/`] : image.type,
+				[`/blueprints/${this.props.id}/title`]                   : this.state.blueprint.title,
+				[`/blueprints/${this.props.id}/blueprintString`]         : this.state.blueprint.blueprintString,
+				[`/blueprints/${this.props.id}/descriptionMarkdown`]     : this.state.blueprint.descriptionMarkdown,
+				[`/blueprints/${this.props.id}/tags`]                    : this.state.blueprint.tags,
+				[`/blueprints/${this.props.id}/lastUpdatedDate`]         : firebase.database.ServerValue.TIMESTAMP,
+				[`/blueprints/${this.props.id}/image`]                   : image,
+				[`/blueprintSummaries/${this.props.id}/title/`]          : this.state.blueprint.title,
+				[`/blueprintSummaries/${this.props.id}/imgurId/`]        : image.id,
+				[`/blueprintSummaries/${this.props.id}/imgurType/`]      : image.type,
+				[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: firebase.database.ServerValue.TIMESTAMP,
 				// TODO: What about height, width, and deletehash?
 			};
 

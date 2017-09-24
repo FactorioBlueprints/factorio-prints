@@ -418,6 +418,7 @@ class Create extends PureComponent
 								imgurType        : blueprint.image.type,
 								title            : blueprint.title,
 								numberOfFavorites: blueprint.numberOfFavorites,
+								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
 							};
 							const {thumbnail}      = this.state;
 

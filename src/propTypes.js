@@ -36,6 +36,7 @@ export const blueprintSummariesSchema = PropTypes.objectOf(PropTypes.shape(forbi
 	imgurId          : PropTypes.string.isRequired,
 	imgurType        : PropTypes.string.isRequired,
 	numberOfFavorites: PropTypes.number.isRequired,
+	lastUpdatedDate  : PropTypes.number,
 })).isRequired).isRequired;
 
 export const byTagSchema = PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
