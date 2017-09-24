@@ -15,7 +15,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -152,27 +151,27 @@ public class DataValidator
             MutableMap<UserId, User> cleansedUsers,
             MutableMap<BlueprintKey, JsonBlueprint> jsonBlueprints)
     {
-        jsonBlueprints.forEachKeyValue(new Procedure2<BlueprintKey, JsonBlueprint>()
-        {
-            @Override
-            public void value(BlueprintKey blueprintKey, JsonBlueprint jsonBlueprint)
+        jsonBlueprints.forEachKeyValue((blueprintKey, jsonBlueprint) -> {
+            UserId userId = jsonBlueprint.getAuthor().getUserId();
+            UserId authorId = jsonBlueprint.getAuthorId();
+            if (authorId != null && !userId.equals(authorId))
             {
-                UserId userId = jsonBlueprint.getAuthor().getUserId();
-                User author = cleansedUsers.get(userId);
-                Blueprint blueprint = cleansedBlueprints.get(blueprintKey);
-                if (blueprint.getAuthor() != author)
+                throw new AssertionError();
+            }
+            User author = cleansedUsers.get(userId);
+            Blueprint blueprint = cleansedBlueprints.get(blueprintKey);
+            if (blueprint.getAuthor() != author)
+            {
+                if (blueprint.getAuthor() == null)
                 {
-                    if (blueprint.getAuthor() == null)
-                    {
-                        LOGGER.info("Blueprint {} missing author {}", blueprint.getTitle(), author.getDisplayName());
-                        DataValidator.this.blueprintsMissingAuthor++;
-                        blueprint.setAuthor(author);
-                        author.addAuthoredBlueprint(blueprint);
-                    }
-                    else
-                    {
-                        throw new AssertionError();
-                    }
+                    LOGGER.info("Blueprint {} missing author {}", blueprint.getTitle(), author.getDisplayName());
+                    this.blueprintsMissingAuthor++;
+                    blueprint.setAuthor(author);
+                    author.addAuthoredBlueprint(blueprint);
+                }
+                else
+                {
+                    throw new AssertionError();
                 }
             }
         });
@@ -483,6 +482,7 @@ public class DataValidator
                                 null,
                                 null,
                                 null),
+                        blueprint.getAuthor().getUserId(),
                         blueprint.getCreatedDate(),
                         blueprint.getLastUpdatedDate(),
                         MapAdapter.<UserId, Boolean>adapt(new LinkedHashMap<>()).collectKeysAndValues(

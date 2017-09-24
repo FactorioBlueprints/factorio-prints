@@ -22,6 +22,7 @@ public class JsonBlueprint
     private final String imageUrl;
 
     private final JsonAuthor author;
+    private final UserId authorId;
 
     private final Instant createdDate;
     private final Instant lastUpdatedDate;
@@ -43,6 +44,7 @@ public class JsonBlueprint
             JsonImage image,
             String imageUrl,
             JsonAuthor author,
+            UserId authorId,
             Instant createdDate,
             Instant lastUpdatedDate,
             Map<UserId, Boolean> favorites,
@@ -57,6 +59,7 @@ public class JsonBlueprint
         this.image = image;
         this.imageUrl = imageUrl;
         this.author = author;
+        this.authorId = authorId;
         this.createdDate = createdDate;
         this.lastUpdatedDate = lastUpdatedDate;
         this.favorites = favorites == null ? new LinkedHashMap<>() : favorites;
@@ -98,6 +101,11 @@ public class JsonBlueprint
     public JsonAuthor getAuthor()
     {
         return this.author;
+    }
+
+    public UserId getAuthorId()
+    {
+        return this.authorId;
     }
 
     public Instant getCreatedDate()
