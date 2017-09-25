@@ -174,6 +174,7 @@ class SingleBlueprint extends PureComponent
 		const wasFavorite          = this.props.myFavorites[this.props.id];
 		const newNumberOfFavorites = numberOfFavorites + (wasFavorite ? -1 : 1);
 
+		console.log(this.props.myFavorites, wasFavorite);
 		const updates = {
 			[`/blueprints/${this.props.id}/numberOfFavorites`]        : newNumberOfFavorites,
 			[`/blueprints/${this.props.id}/favorites/${uid}`]         : wasFavorite ? null : true,

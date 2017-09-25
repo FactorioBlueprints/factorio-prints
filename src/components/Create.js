@@ -182,10 +182,7 @@ class Create extends PureComponent
 		this.setState({
 			files    : acceptedFiles,
 			rejectedFiles,
-			blueprint: {
-				...this.state.blueprint,
-				imageUrl: acceptedFiles.length > 1 && acceptedFiles[0].preview,
-			},
+			imageUrl: acceptedFiles.length > 1 && acceptedFiles[0].preview,
 		});
 
 		if (acceptedFiles.length === 0)
@@ -408,7 +405,6 @@ class Create extends PureComponent
 								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
 								favorites        : {},
 								numberOfFavorites: 0,
-								imageUrl         : uploadTask.snapshot.downloadURL,
 								fileName,
 								image,
 							};
@@ -426,7 +422,8 @@ class Create extends PureComponent
 							const updates         = {
 								[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
 								[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
-								[`/thumbnails/${newBlueprintRef.key}`]                             : thumbnail,
+								[`/blueprintsPrivate/${newBlueprintRef.key}/thumbnail`]            : thumbnail,
+								[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : uploadTask.snapshot.downloadURL,
 							};
 							forEach(blueprint.tags, (tag) =>
 							{
@@ -495,7 +492,7 @@ class Create extends PureComponent
 				<Col sm={10}>
 					<Row>
 						<Col xs={6} md={3}>
-							<Thumbnail src={this.state.thumbnail || this.state.blueprint.imageUrl || noImageAvailable}>
+							<Thumbnail src={this.state.thumbnail || this.state.imageUrl || noImageAvailable}>
 								<h4 className='truncate'>{this.state.blueprint.title}</h4>
 							</Thumbnail>
 						</Col>

@@ -424,8 +424,9 @@ class EditBlueprint extends PureComponent
 				[`/blueprintSummaries/${this.props.id}/title/`]          : this.state.blueprint.title,
 				[`/blueprintSummaries/${this.props.id}/imgurId/`]        : image.id,
 				[`/blueprintSummaries/${this.props.id}/imgurType/`]      : image.type,
+				[`/blueprintSummaries/${this.props.id}/height/`]         : image.height,
+				[`/blueprintSummaries/${this.props.id}/width/`]          : image.width,
 				[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: firebase.database.ServerValue.TIMESTAMP,
-				// TODO: What about height, width, and deletehash?
 			};
 
 			if (file)
@@ -434,11 +435,13 @@ class EditBlueprint extends PureComponent
 			}
 			if (uploadTask)
 			{
-				updates[`/blueprints/${this.props.id}/imageUrl/`] = uploadTask.snapshot.downloadURL;
+				updates[`/blueprints/${this.props.id}/imageUrl/`]        = uploadTask.snapshot.downloadURL;
+				updates[`/blueprintPrivates/${this.props.id}/imageUrl/`] = uploadTask.snapshot.downloadURL;
 			}
 			if (this.state.thumbnail)
 			{
-				updates[`/thumbnails/${this.props.id}`] = this.state.thumbnail;
+				updates[`/blueprintPrivates/${this.props.id}/thumbnail`] = this.state.thumbnail;
+				updates[`/thumbnails/${this.props.id}`]                  = this.state.thumbnail;
 			}
 			this.props.tags.forEach((tag) =>
 			{
