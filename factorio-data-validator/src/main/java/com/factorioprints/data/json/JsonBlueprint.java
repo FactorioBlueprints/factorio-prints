@@ -1,5 +1,8 @@
 package com.factorioprints.data.json;
 
+import com.factorioprints.data.json.JsonAuthor;
+import com.factorioprints.data.json.JsonImage;
+import com.factorioprints.data.json.UserId;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -13,26 +16,34 @@ import java.util.Map;
 @JsonPropertyOrder(alphabetic = true)
 public class JsonBlueprint
 {
+    // TODO: Remove title, it's redundant with blueprint summary
     private final String title;
     private final String blueprintString;
     private final String descriptionMarkdown;
     private final List<String> tags;
 
+    // TODO: Remove parts of blueprint.image that are redundant with blueprint summaries
     private final JsonImage image;
+    // TODO: Is imageUrl used?
     private final String imageUrl;
 
+    // TODO: Remove blueprint.author
     private final JsonAuthor author;
     private final UserId authorId;
 
     private final Instant createdDate;
     private final Instant lastUpdatedDate;
 
+    @Deprecated
     private final Map<UserId, Boolean> favorites;
 
+    // TODO: Remove numberOfFavorites, it's redundant with blueprint summary
     private final int numberOfFavorites;
 
+    // TODO: Move fileName elsewhere
     private final String fileName;
 
+    // TODO: Move thumbnails elsewhere
     @Deprecated
     private final String thumbnail;
 
@@ -47,6 +58,7 @@ public class JsonBlueprint
             UserId authorId,
             Instant createdDate,
             Instant lastUpdatedDate,
+            @Deprecated
             Map<UserId, Boolean> favorites,
             int numberOfFavorites,
             String fileName,
@@ -118,6 +130,7 @@ public class JsonBlueprint
         return this.lastUpdatedDate;
     }
 
+    @Deprecated
     public Map<UserId, Boolean> getFavorites()
     {
         return this.favorites;

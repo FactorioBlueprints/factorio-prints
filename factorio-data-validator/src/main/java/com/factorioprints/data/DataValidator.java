@@ -50,6 +50,7 @@ public class DataValidator
     private int usersWhoFavoritedOwn;
     private int userMissingAuthoredBlueprint;
     private int blueprintsMissingAuthor;
+    public static final Instant EPOCH = Instant.parse("2017-01-01T00:00:00.000Z");
 
     public static void main(String[] args) throws IOException
     {
@@ -101,6 +102,7 @@ public class DataValidator
         MutableMap<UserId, Boolean> jsonModerators = MapAdapter.adapt(sourceDatabase.getModerators());
         MutableMap<String, List<String>> jsonTags = MapAdapter.adapt(sourceDatabase.getTags());
         MutableMap<BlueprintKey, String> jsonThumbnails = MapAdapter.adapt(sourceDatabase.getThumbnails());
+        MutableMap<BlueprintKey, JsonBlueprintPrivate> jsonBlueprintPrivates = MapAdapter.adapt(sourceDatabase.getBlueprintPrivates());
 
         MutableMap<BlueprintKey, Blueprint> cleansedBlueprints = this.cleanseBlueprints(jsonBlueprints);
         this.totalBlueprints = cleansedBlueprints.size();
@@ -119,6 +121,11 @@ public class DataValidator
 
         MutableListMultimap<String, Blueprint> cleansedTags = this.cleanseTags(jsonTags, jsonByTag, cleansedBlueprints);
 
+        MutableMap<BlueprintKey, BlueprintPrivates> cleansedBlueprintPrivates = this.cleanseBlueprintPrivates(
+                cleansedBlueprints,
+                jsonThumbnails,
+                jsonBlueprintPrivates);
+
         this.usersWithNoDisplayName = cleansedUsers.count(user -> user.getDisplayName() == null && user.getProviderDisplayName() == null);
         this.usersWithProviderDisplayName = cleansedUsers.count(user -> user.getDisplayName() == null && user.getProviderDisplayName() != null);
         this.usersWithNoEmailAddress = cleansedUsers.count(user -> user.getEmail() == null);
@@ -136,7 +143,41 @@ public class DataValidator
                 cleansedTags,
                 jsonModerators,
                 jsonTags,
-                jsonThumbnails);
+                jsonThumbnails,
+                cleansedBlueprintPrivates);
+    }
+
+    private MutableMap<BlueprintKey, BlueprintPrivates> cleanseBlueprintPrivates(
+            MutableMap<BlueprintKey, Blueprint> cleansedBlueprints,
+            MutableMap<BlueprintKey, String> jsonThumbnails,
+            MutableMap<BlueprintKey, JsonBlueprintPrivate> jsonBlueprintPrivates)
+    {
+        MutableMap<BlueprintKey, BlueprintPrivates> result = MapAdapter.adapt(new LinkedHashMap<>());
+
+        jsonBlueprintPrivates.forEach((blueprintKey, jsonBlueprintPrivate) -> result.put(blueprintKey, new BlueprintPrivates(
+                jsonBlueprintPrivate.getFileName(),
+                jsonBlueprintPrivate.getImageUrl(),
+                jsonBlueprintPrivate.getThumbnail(),
+                jsonBlueprintPrivate.getDeletehash())));
+
+        cleansedBlueprints.forEach((blueprintKey, blueprint) -> {
+            BlueprintPrivates existingBlueprintPrivates = result.get(blueprintKey);
+            BlueprintPrivates blueprintPrivatesFromData = new BlueprintPrivates(
+                    blueprint.getFileName(),
+                    blueprint.getImageUrl(),
+                    jsonThumbnails.get(blueprintKey),
+                    blueprint.getImage().getDeletehash());
+            if (existingBlueprintPrivates == null)
+            {
+                result.put(blueprintKey, blueprintPrivatesFromData);
+            }
+            else if (!existingBlueprintPrivates.equals(blueprintPrivatesFromData))
+            {
+                throw new AssertionError();
+            }
+        });
+
+        return result;
     }
 
     private MutableMap<BlueprintKey, Blueprint> cleanseBlueprints(MutableMap<BlueprintKey, JsonBlueprint> jsonBlueprints)
@@ -228,9 +269,9 @@ public class DataValidator
                     .collect(cleansedUsers::get)
                     .reject(user -> blueprint.getAuthor() == user)
                     .into(SetAdapter.adapt(new LinkedHashSet<>()));
-            MutableSet<User> favoritesEmbeddedinUsers = blueprint.getFavorites().asLazy().into(SetAdapter.adapt(new LinkedHashSet<>()));
-            MutableSet<User> onlyEmbeddedInUser = Sets.difference(favoritesEmbeddedinUsers, favoritesEmbeddedInBlueprint);
-            MutableSet<User> onlyEmbeddedInBlueprint = Sets.difference(favoritesEmbeddedInBlueprint, favoritesEmbeddedinUsers);
+            MutableSet<User> favoritesEmbeddedInUsers = blueprint.getFavorites().asLazy().into(SetAdapter.adapt(new LinkedHashSet<>()));
+            MutableSet<User> onlyEmbeddedInUser = Sets.difference(favoritesEmbeddedInUsers, favoritesEmbeddedInBlueprint);
+            MutableSet<User> onlyEmbeddedInBlueprint = Sets.difference(favoritesEmbeddedInBlueprint, favoritesEmbeddedInUsers);
 
             if (onlyEmbeddedInUser.notEmpty())
             {
@@ -287,12 +328,14 @@ public class DataValidator
                         throw new AssertionError();
                     }
 
+                    Instant lastUpdatedDate = jsonBlueprintSummary.getLastUpdatedDate();
                     return new BlueprintSummary(
                             blueprintKey,
                             jsonBlueprintSummary.getTitle(),
                             jsonBlueprintSummary.getImgurId(),
                             jsonBlueprintSummary.getImgurType(),
-                            blueprintFavoritesSize);
+                            blueprintFavoritesSize,
+                            lastUpdatedDate == null ? EPOCH : lastUpdatedDate);
                 });
         return blueprintSummaries.toList().toImmutable();
     }
@@ -453,8 +496,8 @@ public class DataValidator
                         blueprintSummary.getTitle(),
                         blueprintSummary.getImgurId(),
                         blueprintSummary.getImgurType(),
-                        blueprintSummary.getNumberOfFavorites()
-                ));
+                        blueprintSummary.getNumberOfFavorites(),
+                        blueprintSummary.getLastUpdatedDate()));
 
         MutableMap<BlueprintKey, Blueprint> cleansedBlueprints = factorioDatabase.getCleansedBlueprints();
         MutableMap<BlueprintKey, JsonBlueprint> blueprints = MapAdapter.adapt(new LinkedHashMap<>());
@@ -485,10 +528,7 @@ public class DataValidator
                         blueprint.getAuthor().getUserId(),
                         blueprint.getCreatedDate(),
                         blueprint.getLastUpdatedDate(),
-                        MapAdapter.<UserId, Boolean>adapt(new LinkedHashMap<>()).collectKeysAndValues(
-                                blueprint.getFavorites(),
-                                User::getUserId,
-                                user -> true),
+                        null,
                         blueprint.getNumberOfFavorites(),
                         blueprint.getFileName(),
                         null
@@ -530,6 +570,14 @@ public class DataValidator
                                 Blueprint::getKey,
                                 blueprint -> true)));
 
+        MutableMap<BlueprintKey, JsonBlueprintPrivate> blueprintPrivates = MapAdapter.adapt(new LinkedHashMap<>());
+        factorioDatabase.getCleansedBlueprintPrivates()
+                .forEach((blueprintKey, eachBlueprintPrivates) -> blueprintPrivates.put(blueprintKey, new JsonBlueprintPrivate(
+                        eachBlueprintPrivates.getFileName(),
+                        eachBlueprintPrivates.getImageUrl(),
+                        eachBlueprintPrivates.getThumbnail(),
+                        eachBlueprintPrivates.getDeletehash())));
+
         return new JsonFactorioDatabase(
                 blueprintSummaries,
                 blueprints,
@@ -537,7 +585,8 @@ public class DataValidator
                 users,
                 factorioDatabase.getJsonModerators(),
                 factorioDatabase.getJsonTags(),
-                factorioDatabase.getJsonThumbnails());
+                factorioDatabase.getJsonThumbnails(),
+                blueprintPrivates);
     }
 
     private static class MyDefaultPrettyPrinter extends DefaultPrettyPrinter

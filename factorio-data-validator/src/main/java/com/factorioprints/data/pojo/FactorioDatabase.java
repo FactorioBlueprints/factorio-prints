@@ -1,12 +1,14 @@
 package com.factorioprints.data.pojo;
 
 import com.factorioprints.data.json.BlueprintKey;
+import com.factorioprints.data.json.JsonBlueprintPrivate;
 import com.factorioprints.data.json.UserId;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 
 import java.util.List;
+import java.util.Map;
 
 public class FactorioDatabase
 {
@@ -17,6 +19,7 @@ public class FactorioDatabase
     private final MutableMap<UserId, Boolean> jsonModerators;
     private final MutableMap<String, List<String>> jsonTags;
     private final MutableMap<BlueprintKey, String> jsonThumbnails;
+    private final MutableMap<BlueprintKey, BlueprintPrivates> cleansedBlueprintPrivates;
 
     public FactorioDatabase(
             MutableMap<BlueprintKey, Blueprint> cleansedBlueprints,
@@ -25,7 +28,8 @@ public class FactorioDatabase
             MutableListMultimap<String, Blueprint> cleansedTags,
             MutableMap<UserId, Boolean> jsonModerators,
             MutableMap<String, List<String>> jsonTags,
-            MutableMap<BlueprintKey, String> jsonThumbnails)
+            MutableMap<BlueprintKey, String> jsonThumbnails,
+            MutableMap<BlueprintKey, BlueprintPrivates> cleansedBlueprintPrivates)
     {
         this.cleansedBlueprints = cleansedBlueprints;
         this.cleansedUsers = cleansedUsers;
@@ -34,6 +38,7 @@ public class FactorioDatabase
         this.jsonModerators = jsonModerators;
         this.jsonTags = jsonTags;
         this.jsonThumbnails = jsonThumbnails;
+        this.cleansedBlueprintPrivates = cleansedBlueprintPrivates;
     }
 
     public MutableMap<BlueprintKey, Blueprint> getCleansedBlueprints()
@@ -69,5 +74,10 @@ public class FactorioDatabase
     public MutableMap<BlueprintKey, String> getJsonThumbnails()
     {
         return this.jsonThumbnails;
+    }
+
+    public MutableMap<BlueprintKey, BlueprintPrivates> getCleansedBlueprintPrivates()
+    {
+        return this.cleansedBlueprintPrivates;
     }
 }
