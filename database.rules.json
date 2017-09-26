@@ -1,63 +1,70 @@
 {
-  "rules": {
-    "blueprints": {
-      ".read": "true",
-      "$blueprint": {
-        ".write": "!data.exists() || data.child('author').child('userId').val() === auth.uid && newData.exists() || root.child('moderators').child(auth.uid).val() === true",
-        ".validate": "newData.hasChildren(['author'])",
-        "author": {
-          ".validate": "newData.child('userId').isString()",
-          "userId": {
-            ".validate": "newData.val() === auth.uid"
-          }
-        },
-        "favorites": {
-          "$uid": {
-            ".write": "auth != null && auth.uid == $uid"
-          }
-        },
-        "numberOfFavorites": {
-          ".write": "auth != null"
-        }
-      }
-    },
-    "users": {
-      "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null && auth.uid == $uid",
-        "blueprints": {
-          ".read": "true",
-          ".write": "root.child('moderators').child(auth.uid).val() === true"
-        },
-        "displayName": {
-          ".read": "true"
-        }
-      }
-    },
-    "moderators": {
-      ".read": "true"
-    },
-    "thumbnails": {
-      ".read": "true",
-      "$blueprint": {
-        ".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true"
-      }
-    },
-    "blueprintSummaries": {
-      ".read": "true",
-      "$blueprint": {
-        ".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
-        "numberOfFavorites": {
-          ".write": "auth != null"
-        }
-      }
-    },
-    "tags": {
-      ".read": "true"
-    },
-    "byTag": {
-      ".read": "true",
-      ".write": "true"
-    }
-  }
+	"rules": {
+		"blueprints"        : {
+			".read"     : "true",
+			"$blueprint": {
+				".write"           : "!data.exists() || data.child('author').child('userId').val() === auth.uid && newData.exists() || root.child('moderators').child(auth.uid).val() === true",
+				".validate"        : "newData.hasChildren(['author'])",
+				"author"           : {
+					".validate": "newData.child('userId').isString()",
+					"userId"   : {
+						".validate": "newData.val() === auth.uid"
+					}
+				},
+				"favorites"        : {
+					"$uid": {
+						".write": "auth != null && auth.uid == $uid"
+					}
+				},
+				"numberOfFavorites": {
+					".write": "auth != null"
+				}
+			}
+		},
+		"users"             : {
+			"$uid": {
+				".read"      : "auth != null && auth.uid == $uid",
+				".write"     : "auth != null && auth.uid == $uid",
+				"blueprints" : {
+					".read" : "true",
+					".write": "root.child('moderators').child(auth.uid).val() === true"
+				},
+				"displayName": {
+					".read": "true"
+				}
+			}
+		},
+		"moderators"        : {
+			".read": "true"
+		},
+		"thumbnails"        : {
+			".read"     : "true",
+			"$blueprint": {
+				".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true"
+			}
+		},
+		"blueprintSummaries": {
+			".read"     : "true",
+			".indexOn"  : "lastUpdatedDate",
+			"$blueprint": {
+				".write"           : "root.child('blueprints').child($blueprint).child('authorId').val() === auth.uid || root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
+				"numberOfFavorites": {
+					".write": "auth != null"
+				}
+			}
+		},
+		"blueprintsPrivate" : {
+			".read"     : "true",
+			"$blueprint": {
+				".write": "root.child('blueprints').child($blueprint).child('authorId').val() === auth.uid || root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true"
+			}
+		},
+		"tags"              : {
+			".read": "true"
+		},
+		"byTag"             : {
+			".read" : "true",
+			".write": "true"
+		}
+	}
 }
