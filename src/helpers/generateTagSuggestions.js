@@ -132,6 +132,10 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		{
 			tagSuggestions.push('/production/advanced circuit (red)/');
 		}
+		else if (recipeCounts['plastic-bar'] > 0)
+		{
+			tagSuggestions.push('/production/plastic/');
+		}
 		else if (recipeCounts['coal-liquefaction'] > 0)
 		{
 			tagSuggestions.push('/production/coal liquification/');
