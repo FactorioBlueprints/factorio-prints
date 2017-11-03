@@ -436,11 +436,11 @@ class EditBlueprint extends PureComponent
 			if (uploadTask)
 			{
 				updates[`/blueprints/${this.props.id}/imageUrl/`]        = uploadTask.snapshot.downloadURL;
-				updates[`/blueprintPrivates/${this.props.id}/imageUrl/`] = uploadTask.snapshot.downloadURL;
+				updates[`/blueprintsPrivate/${this.props.id}/imageUrl/`] = uploadTask.snapshot.downloadURL;
 			}
 			if (this.state.thumbnail)
 			{
-				updates[`/blueprintPrivates/${this.props.id}/thumbnail`] = this.state.thumbnail;
+				updates[`/blueprintsPrivate/${this.props.id}/thumbnail`] = this.state.thumbnail;
 				updates[`/thumbnails/${this.props.id}`]                  = this.state.thumbnail;
 			}
 			this.props.tags.forEach((tag) =>
