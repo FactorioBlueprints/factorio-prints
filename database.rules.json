@@ -3,8 +3,8 @@
 		"blueprints"        : {
 			".read"     : "true",
 			"$blueprint": {
-				".write"           : "!data.exists() || data.child('author').child('userId').val() === auth.uid && newData.exists() || root.child('moderators').child(auth.uid).val() === true",
-				".validate"        : "newData.hasChildren(['author'])",
+				".write"           : "!data.exists() || (data.child('authorId').val() === auth.uid || data.child('author').child('userId').val() === auth.uid) && newData.exists() || root.child('moderators').child(auth.uid).val() === true",
+				".validate"        : "newData.hasChildren(['author']) || newData.hasChildren(['authorId'])",
 				"author"           : {
 					".validate": "newData.child('userId').isString()",
 					"userId"   : {
