@@ -1,0 +1,89 @@
+{
+	"belt"      : [
+		"balancer",
+		"prioritizer",
+		"tap",
+		"transport belt (yellow)",
+		"fast transport belt (red)",
+		"express transport belt (blue)"
+	],
+	"general"   : [
+		"early game",
+		"mid game",
+		"late game (megabase)",
+		"beaconized",
+		"tileable",
+		"compact",
+		"marathon",
+		"storage"
+	],
+	"mods"      : [
+		"angels",
+		"bobs",
+		"creative",
+		"factorissimo",
+		"warehousing",
+		"lighted-electric-poles",
+		"other",
+		"vanilla"
+	],
+	"power"     : [
+		"nuclear",
+		"kovarex enrichment",
+		"solar",
+		"steam",
+		"accumulator"
+	],
+	"production": [
+		"oil processing",
+		"coal liquification",
+		"electronic circuit (green)",
+		"advanced circuit (red)",
+		"processing unit (blue)",
+		"batteries",
+		"rocket parts",
+		"science",
+		"research (labs)",
+		"belts",
+		"smelting",
+		"mining",
+		"uranium",
+		"plastic",
+		"modules",
+		"mall (make everything)",
+		"inserters",
+		"guns and ammo",
+		"robots",
+		"other",
+		"belt based",
+		"logistic (bot) based"
+	],
+	"train"     : [
+		"loading station",
+		"unloading station",
+		"pax",
+		"junction",
+		"roundabout",
+		"crossing",
+		"stacker",
+		"track",
+		"left-hand-drive",
+		"right-hand-drive"
+	],
+	"circuit"   : [
+		"indicator",
+		"counter"
+	],
+	"version"   : [
+		"0,14",
+		"0,15",
+		"0,16",
+		"unknown"
+	],
+	"moderation": [
+		"scheduled for deletion",
+		"screenshot missing alt info",
+		"uncropped screenshot",
+		"add english translation"
+	]
+}

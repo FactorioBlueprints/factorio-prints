@@ -1,1 +1,1 @@
-firebase database:set /tags tags.json
+firebase database:set /tags data/tags.json
