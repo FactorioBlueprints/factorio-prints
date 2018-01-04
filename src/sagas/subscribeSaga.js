@@ -128,7 +128,10 @@ const buildTagOptionsRecursive = (tagHierarchyNode, pathArray, result) =>
 		}
 		else
 		{
-			const newPathArray = [...pathArray, key];
+			const newPathArray = [
+				...pathArray,
+				key,
+			];
 			buildTagOptionsRecursive(value, newPathArray, result);
 		}
 	});
@@ -260,7 +263,7 @@ const userBlueprintsData = userId =>
 		const userBlueprintsRef = app.database().ref(`/users/${userId}/blueprints/`);
 		const onValueChange = (dataSnapshot) =>
 		{
-			const userBlueprints = dataSnapshot.val();
+			const userBlueprints = dataSnapshot.val() || {};
 			emit({userBlueprints, userBlueprintsRef});
 		};
 
@@ -288,7 +291,11 @@ export const subscribeToUserBlueprintsSaga = function*({userId})
 			while (true)
 			{
 				const {userBlueprints, userBlueprintsRef} = yield take(channel);
-				yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS, userBlueprints, userBlueprintsRef, userId});
+				yield put({
+					type: actionTypes.RECEIVED_USER_BLUEPRINTS,
+					userBlueprints,
+					userBlueprintsRef,
+					userId});
 			}
 		}
 		finally

@@ -100,7 +100,7 @@ export const getUserFilteredBlueprintSummaries = createSelector(
 	{
 		if (!userBlueprints)
 		{
-			return emptyUserBlueprints;
+			return undefined;
 		}
 		return Object.keys(userBlueprints)
 			.filter(key => blueprintSummaries[key].title.toLowerCase().includes(titleFilter.toLowerCase()))

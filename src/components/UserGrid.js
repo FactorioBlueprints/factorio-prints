@@ -1,5 +1,5 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import isEmpty from 'lodash/isEmpty';
+import isUndefined from 'lodash/isUndefined';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 
@@ -34,7 +34,7 @@ class UserGrid extends PureComponent
 		user                         : userSchema,
 		blueprintSummaries           : blueprintSummariesSchema,
 		blueprintSummariesLoading    : PropTypes.bool,
-		filteredBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+		filteredBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired),
 		location                     : locationSchema,
 		history                      : PropTypes.object.isRequired,
 		staticContext                : PropTypes.shape(forbidExtraProps({})),
@@ -75,7 +75,7 @@ class UserGrid extends PureComponent
 			);
 		}
 
-		if (isEmpty(this.props.displayName))
+		if (isUndefined(this.props.filteredBlueprintSummaries))
 		{
 			return <NoMatch />;
 		}
