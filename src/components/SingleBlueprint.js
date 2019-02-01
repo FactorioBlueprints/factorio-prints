@@ -51,11 +51,11 @@ import entitiesWithIcons from '../data/entitiesWithIcons';
 import buildImageUrl from '../helpers/buildImageUrl';
 
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
-import GoogleAd from './GoogleAd';
 
 import {blueprintSchema, historySchema, locationSchema, userSchema} from '../propTypes';
 
 import * as selectors from '../selectors';
+import GoogleAd from './GoogleAd';
 import NoMatch from './NoMatch';
 import Title from './Title';
 
@@ -404,11 +404,10 @@ class SingleBlueprint extends PureComponent
 											{
 												this.entityHistogram(this.state.v15Decoded.blueprint).map(pair => (
 													<tr key={pair[0]}>
-														<td className='icon'>
+														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
 															{
 																entitiesWithIcons[pair[0]]
-																	?
-																	<img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
 																	: ''
 															}
 														</td>
@@ -420,11 +419,10 @@ class SingleBlueprint extends PureComponent
 											{
 												this.itemHistogram(this.state.v15Decoded.blueprint).map(pair => (
 													<tr key={pair[0]}>
-														<td className='icon'>
+														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
 															{
 																entitiesWithIcons[pair[0]]
-																	?
-																	<img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]}/>
 																	: ''
 															}
 														</td>
@@ -459,9 +457,13 @@ class SingleBlueprint extends PureComponent
 														const iconName = icon.name || icon.signal && icon.signal.name;
 														return (
 															<tr key={icon.index}>
-																<td className='icon'>{entitiesWithIcons[iconName] ?
-																	<img src={`/icons/${iconName}.png`}
-																		 alt={iconName} /> : ''}</td>
+																<td className={`icon icon-${iconName}`}>
+																	{
+																		entitiesWithIcons[iconName]
+																			? <img src={`/icons/${iconName}.png`} alt={iconName} />
+																			: ''
+																	}
+																</td>
 																<td>{iconName}</td>
 															</tr>
 														);
@@ -487,8 +489,7 @@ class SingleBlueprint extends PureComponent
 									<Button onClick={this.handleShowHideBase64}>
 										{
 											this.state.showBlueprint
-												? <Title icon='toggle-on' text='Hide Blueprint'
-														 className='text-success' />
+												? <Title icon='toggle-on' text='Hide Blueprint' className='text-success' />
 												: <Title icon='toggle-off' text='Show Blueprint' />
 										}
 									</Button>
@@ -504,8 +505,7 @@ class SingleBlueprint extends PureComponent
 										&& <Button onClick={this.handleShowHideConverted}>
 											{
 												this.state.showConverted
-													? <Title icon='toggle-on' text='Hide 0.15 blueprint'
-															 className='text-success' />
+													? <Title icon='toggle-on' text='Hide 0.15 blueprint' className='text-success' />
 													: <Title icon='toggle-off' text='Convert to 0.15 blueprint' />
 											}
 										</Button>
@@ -541,10 +541,15 @@ class SingleBlueprint extends PureComponent
 																	const icon     = eachBlueprint.blueprint.icons[iconIndex];
 																	// eslint-disable-next-line
 																	const iconName = icon.name || icon.signal && icon.signal.name;
-																	return <td className='icon'
-																			   key={iconIndex}>{entitiesWithIcons[iconName] ?
-																		<img src={`/icons/${iconName}.png`}
-																			 alt={iconName} /> : ''}</td>;
+																	return (
+																		<td className={`icon icon-${iconName}`} key={iconIndex}>
+																			{
+																				entitiesWithIcons[iconName]
+																					? <img src={`/icons/${iconName}.png`} alt={iconName} />
+																					: ''
+																			}
+																		</td>
+																	);
 																}
 																return <td className='icon' key={iconIndex} />;
 															})
