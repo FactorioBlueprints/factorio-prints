@@ -1,25 +1,39 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
-import {auth} from 'firebase';
-import PropTypes from 'prop-types';
+import {faGithub, faGoogle}   from '@fortawesome/free-brands-svg-icons';
+import {
+	faClock,
+	faCogs,
+	faEnvelope,
+	faHeart,
+	faPlusSquare,
+	faSignInAlt,
+	faSignOutAlt,
+	faTrophy,
+	faUser,
+	faWrench,
+}                             from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import Dropdown from 'react-bootstrap/lib/Dropdown';
-import MenuItem from 'react-bootstrap/lib/MenuItem';
-import Nav from 'react-bootstrap/lib/Nav';
-import Navbar from 'react-bootstrap/lib/Navbar';
-import NavDropdown from 'react-bootstrap/lib/NavDropdown';
-import FontAwesome from 'react-fontawesome';
-import {connect} from 'react-redux';
-import {Link} from 'react-router-dom';
-import {bindActionCreators} from 'redux';
+import Dropdown               from 'react-bootstrap/lib/Dropdown';
+import MenuItem               from 'react-bootstrap/lib/MenuItem';
+import Nav                    from 'react-bootstrap/lib/Nav';
+import Navbar                 from 'react-bootstrap/lib/Navbar';
+import NavDropdown            from 'react-bootstrap/lib/NavDropdown';
+import {connect}              from 'react-redux';
+import {Link}                 from 'react-router-dom';
+import {bindActionCreators}   from 'redux';
 
-import {app} from '../base';
+import {app}                           from '../base';
 import {historySchema, locationSchema} from '../propTypes';
-import * as selectors from '../selectors';
+import * as selectors                  from '../selectors';
 
 class Header extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user: PropTypes.shape(forbidExtraProps({
+		user         : PropTypes.shape(forbidExtraProps({
 			uid        : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
@@ -30,30 +44,25 @@ class Header extends PureComponent
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location             : locationSchema,
-		history              : historySchema,
-		staticContext        : PropTypes.shape(forbidExtraProps({})),
+		location     : locationSchema,
+		history      : historySchema,
+		staticContext: PropTypes.shape(forbidExtraProps({})),
 	});
 
 	constructor()
 	{
 		super();
 
-		this.googleProvider   = new auth.GoogleAuthProvider();
-		this.facebookProvider = new auth.FacebookAuthProvider();
-		this.twitterProvider  = new auth.TwitterAuthProvider();
-		this.githubProvider   = new auth.GithubAuthProvider();
+		this.googleProvider   = new firebase.auth.GoogleAuthProvider();
+		this.facebookProvider = new firebase.auth.FacebookAuthProvider();
+		this.twitterProvider  = new firebase.auth.TwitterAuthProvider();
+		this.githubProvider   = new firebase.auth.GithubAuthProvider();
 
 		// Choose between multiple google accounts
 		// http://stackoverflow.com/a/40551683/23572
 		this.googleProvider.setCustomParameters({prompt: 'consent select_account'});
 		this.githubProvider.setCustomParameters({allow_signup: true});
 	}
-
-	authenticate = (provider) =>
-	{
-		app.auth().signInWithPopup(provider).catch(error => console.error({error}));
-	};
 
 	handleEdit = () =>
 	{
@@ -71,7 +80,7 @@ class Header extends PureComponent
 		{
 			return <img src={this.props.user.photoURL} alt='user' className='user-photo' />;
 		}
-		return <FontAwesome name='user' size='2x' fixedWidth />;
+		return <FontAwesomeIcon icon={faUser} size='2x' fixedWidth />;
 	};
 
 	getLargeUserPhoto = () =>
@@ -80,7 +89,7 @@ class Header extends PureComponent
 		{
 			return <img src={this.props.user.photoURL} alt='user' className='user-photo-big pull-left' />;
 		}
-		return <FontAwesome name='user' size='4x' fixedWidth />;
+		return <FontAwesomeIcon icon={faUser} size='4x' fixedWidth />;
 	};
 
 	getDisplayName = () =>
@@ -90,6 +99,11 @@ class Header extends PureComponent
 			return <h4><b>{this.props.user.displayName}</b></h4>;
 		}
 		return false;
+	};
+
+	authenticate = (provider) =>
+	{
+		app.auth().signInWithPopup(provider).catch(error => console.error({error}));
 	};
 
 	renderAuthentication = () =>
@@ -108,13 +122,13 @@ class Header extends PureComponent
 						</MenuItem>
 						<MenuItem>
 							<button className='btn btn-block btn-primary' onClick={this.handleEdit}>
-								<FontAwesome name='wrench' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth />
 								{' Edit'}
 							</button>
 						</MenuItem>
 						<MenuItem>
 							<button className='btn btn-block btn-primary' onClick={this.handleLogout}>
-								<FontAwesome name='sign-out' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
 								{' Log out'}
 							</button>
 						</MenuItem>
@@ -125,7 +139,7 @@ class Header extends PureComponent
 
 		const title = (
 			<span>
-				<FontAwesome name='sign-in' size='lg' fixedWidth />
+				<FontAwesomeIcon icon={faSignInAlt} size='lg' fixedWidth />
 				{' Sign in / Join'}
 			</span>
 		);
@@ -133,11 +147,11 @@ class Header extends PureComponent
 		return (
 			<NavDropdown title={title} id='dropdown-login'>
 				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>
-					<FontAwesome name='google' size='lg' fixedWidth />
+					<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
 					{' Log in with Google'}
 				</button>
 				<button className='github btn btn-block' onClick={() => this.authenticate(this.githubProvider)}>
-					<FontAwesome name='github' size='lg' fixedWidth />
+					<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
 					{' Log in with GitHub'}
 				</button>
 			</NavDropdown>
@@ -150,7 +164,7 @@ class Header extends PureComponent
 			<Navbar fixedTop collapseOnSelect inverse>
 				<Navbar.Header>
 					<Navbar.Brand>
-						<Link to='/'><FontAwesome name='cogs' size='lg' fixedWidth />{' Factorio Prints'}</Link>
+						<Link to='/'><FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />{' Factorio Prints'}</Link>
 					</Navbar.Brand>
 					<Navbar.Toggle />
 				</Navbar.Header>
@@ -159,39 +173,39 @@ class Header extends PureComponent
 					<Nav>
 						<li>
 							<Link to='/blueprints'>
-								<FontAwesome name='clock-o' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
 								{' Most Recent'}
 							</Link>
 						</li>
 						<li>
 							<Link to='/top'>
-								<FontAwesome name='trophy' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
 								{' Most Favorited'}
 							</Link>
 						</li>
 						<li>
 							<Link to='/create'>
-								<FontAwesome name='plus-square' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
 								{' Create'}
 							</Link>
 						</li>
 						{this.props.user
 						&& <li>
 							<Link to={'/favorites'}>
-								<FontAwesome name='heart' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
 								{' My Favorites'}
 							</Link>
 						</li>}
 						{this.props.user
 						&& <li>
 							<Link to={`/user/${this.props.user.uid}`}>
-								<FontAwesome name='user' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 								{' My Blueprints'}
 							</Link>
 						</li>}
 						<li>
 							<Link to='/contact'>
-								<FontAwesome name='envelope' size='lg' fixedWidth />
+								<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
 								{' Contact me'}
 							</Link>
 						</li>

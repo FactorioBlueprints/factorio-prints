@@ -1,27 +1,27 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
-import PropTypes from 'prop-types';
-import React, {PureComponent} from 'react';
-import DocumentTitle from 'react-document-title';
-import {connect} from 'react-redux';
+import {forbidExtraProps}             from 'airbnb-prop-types';
+import PropTypes                      from 'prop-types';
+import React, {PureComponent}         from 'react';
+import DocumentTitle                  from 'react-document-title';
+import {connect}                      from 'react-redux';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
-import {bindActionCreators} from 'redux';
+import {bindActionCreators}           from 'redux';
 
 import {authStateChanged} from '../actions/actionCreators';
-import {app} from '../base';
+import {app}              from '../base';
+import Account            from './Account';
 
-import App from './App';
-import BlueprintGrid from './BlueprintGrid';
-import Contact from './Contact';
-import Account from './Account';
-import Create from './Create';
-import EditBlueprint from './EditBlueprint';
-import FavoritesGrid from './FavoritesGrid';
-import Header from './Header';
-import Intro from './Intro';
+import App               from './App';
+import BlueprintGrid     from './BlueprintGrid';
+import Contact           from './Contact';
+import Create            from './Create';
+import EditBlueprint     from './EditBlueprint';
+import Header            from './Header';
+import Intro             from './Intro';
 import MostFavoritedGrid from './MostFavoritedGrid';
-import NoMatch from './NoMatch';
-import SingleBlueprint from './SingleBlueprint';
-import UserGrid from './UserGrid';
+import FavoritesGrid     from './MyFavoritesGrid';
+import NoMatch           from './NoMatch';
+import SingleBlueprint   from './SingleBlueprint';
+import UserGrid          from './UserGrid';
 
 class Root extends PureComponent
 {
@@ -31,36 +31,39 @@ class Root extends PureComponent
 
 	componentWillMount()
 	{
-		app.auth().onAuthStateChanged((user) =>
-		{
-			this.props.authStateChanged(user);
-			if (user)
+		app.auth().onAuthStateChanged(
+			(user) =>
 			{
-				const {uid, email, photoURL, emailVerified, providerData} = user;
-
-				const providerId          = providerData && providerData.length && providerData[0].providerId;
-				const providerDisplayName = providerId ? providerData[0].displayName : undefined;
-
-				const buildUserInformation = (existingUser) =>
+				if (user)
 				{
-					const existingUserInitialized = existingUser || {};
-					const displayName             = existingUserInitialized.displayName || providerDisplayName;
-					return {
-						...existingUserInitialized,
-						displayName,
-						providerDisplayName,
-						photoURL,
-						email,
-						emailVerified,
-						providerId,
-					};
-				};
+					const {uid, email, photoURL, emailVerified, providerData} = user;
 
-				app.database()
-					.ref(`/users/${uid}/`)
-					.transaction(buildUserInformation);
-			}
-		}, console.log);
+					const providerId          = providerData && providerData.length && providerData[0].providerId;
+					const providerDisplayName = providerId ? providerData[0].displayName : undefined;
+
+					const buildUserInformation = (existingUser) =>
+					{
+						const existingUserInitialized = existingUser || {};
+						const displayName             = existingUserInitialized.displayName || providerDisplayName;
+						return {
+							...existingUserInitialized,
+							displayName,
+							providerDisplayName,
+							photoURL,
+							email,
+							emailVerified,
+							providerId,
+						};
+					};
+
+					app.database()
+						.ref(`/users/${uid}/`)
+						.transaction(buildUserInformation);
+				}
+				this.props.authStateChanged(user);
+			},
+			(...args) => console.log('Root.componentWillMount', args)
+		);
 	}
 
 	renderIntro = () => (
@@ -87,18 +90,18 @@ class Root extends PureComponent
 							<div>
 								<Route path='/' component={Header} />
 								<Switch>
-									<Route path='/'           exact render={this.renderIntro} />
+									<Route path='/' exact render={this.renderIntro} />
 									<Route path='/blueprints' exact component={BlueprintGrid} />
-									<Route path='/top'        exact component={MostFavoritedGrid} />
-									<Route path='/create'     exact component={Create} />
+									<Route path='/top' exact component={MostFavoritedGrid} />
+									<Route path='/create' exact component={Create} />
 
-									<Route path='/favorites'  exact component={FavoritesGrid} />
-									<Route path='/contact'    exact component={Contact} />
-									<Route path='/account'    exact component={Account} />
-									<Route path='/view/:blueprintId'  component={SingleBlueprint} />
-									<Route path='/edit/:blueprintId'  component={EditBlueprint} />
-									<Route path='/user/:userId'       component={UserGrid} />
-									<Route path='/tagged/:tag'        render={this.renderTag} />
+									<Route path='/favorites' exact component={FavoritesGrid} />
+									<Route path='/contact' exact component={Contact} />
+									<Route path='/account' exact component={Account} />
+									<Route path='/view/:blueprintId' component={SingleBlueprint} />
+									<Route path='/edit/:blueprintId' component={EditBlueprint} />
+									<Route path='/user/:userId' component={UserGrid} />
+									<Route path='/tagged/:tag' render={this.renderTag} />
 									<Route component={NoMatch} />
 								</Switch>
 							</div>

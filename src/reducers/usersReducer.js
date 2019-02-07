@@ -1,22 +1,24 @@
-import {
-	RECEIVED_USER_DISPLAY_NAME,
-	SUBSCRIBED_TO_USER_DISPLAY_NAME,
-	RECEIVED_USER_BLUEPRINTS,
-	SUBSCRIBED_TO_USER_BLUEPRINTS,
-} from '../actions/actionTypes';
 import update from 'immutability-helper';
 
-export const initialUserState =
-	{
-		displayName: {
-			loading: false,
-			data   : undefined,
-		},
-		blueprints: {
-			loading: false,
-			data   : {},
-		},
-	};
+import {
+	RECEIVED_USER_BLUEPRINTS_SUMMARIES,
+	RECEIVED_USER_BLUEPRINTS_KEYS,
+	RECEIVED_USER_DISPLAY_NAME,
+	SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES,
+	SUBSCRIBED_TO_USER_DISPLAY_NAME,
+} from '../actions/actionTypes';
+
+export const initialUserState = {
+	displayName: {
+		loading: false,
+		data   : undefined,
+	},
+	blueprints : {
+		loading           : false,
+		userBlueprintsKeys: {},
+		userBlueprints    : [],
+	},
+};
 
 const userReducer = (state = initialUserState, action) =>
 {
@@ -36,15 +38,23 @@ const userReducer = (state = initialUserState, action) =>
 					loading: {$set: true},
 				},
 			});
-		case RECEIVED_USER_BLUEPRINTS:
+		case RECEIVED_USER_BLUEPRINTS_KEYS:
+			return update(state, {
+				blueprints: {
+					loading           : {$set: false},
+					userBlueprintsKeys: {$set: action.userBlueprintsKeys},
+					userBlueprintsRef : {$set: action.userBlueprintsRef},
+				},
+			});
+		case RECEIVED_USER_BLUEPRINTS_SUMMARIES:
 			return update(state, {
 				blueprints: {
 					loading          : {$set: false},
-					data             : {$set: action.userBlueprints},
+					userBlueprints   : {$set: action.userBlueprints},
 					userBlueprintsRef: {$set: action.userBlueprintsRef},
 				},
 			});
-		case SUBSCRIBED_TO_USER_BLUEPRINTS:
+		case SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES:
 			return update(state, {
 				blueprints: {
 					loading: {$set: true},
@@ -61,8 +71,9 @@ const usersReducer = (state = {}, action) =>
 	{
 		case RECEIVED_USER_DISPLAY_NAME:
 		case SUBSCRIBED_TO_USER_DISPLAY_NAME:
-		case RECEIVED_USER_BLUEPRINTS:
-		case SUBSCRIBED_TO_USER_BLUEPRINTS:
+		case RECEIVED_USER_BLUEPRINTS_SUMMARIES:
+		case RECEIVED_USER_BLUEPRINTS_KEYS:
+		case SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES:
 			return {
 				...state,
 				[action.userId]: userReducer(state[action.userId], action),

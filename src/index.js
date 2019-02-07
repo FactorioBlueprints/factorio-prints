@@ -1,6 +1,6 @@
+import isEmpty from 'lodash/isEmpty';
 import mapValues from 'lodash/mapValues';
 import pickBy from 'lodash/pickBy';
-import isEmpty from 'lodash/isEmpty';
 
 import throttle from 'lodash/throttle';
 import React from 'react';
@@ -15,7 +15,7 @@ import Root from './components/Root';
 import './css/style.css';
 import './css/theme.css';
 
-import {loadState, saveState} from './localStorage';
+import {saveState} from './localStorage';
 
 import rootReducer from './reducers/rootReducer';
 import registerServiceWorker from './registerServiceWorker';
@@ -26,7 +26,7 @@ const sagaMiddleware = createSagaMiddleware();
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-const preloadedState = loadState();
+// const preloadedState = loadState();
 
 // Mount it on the Store
 const store = createStore(

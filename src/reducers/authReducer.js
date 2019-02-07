@@ -1,23 +1,28 @@
 import isEmpty from 'lodash/isEmpty';
-import {AUTH_STATE_CHANGED, RECEIVED_MY_FAVORITES, EDITED_DISPLAY_NAME} from '../actions/actionTypes';
 
-const initialState =
-{
+import {
+	AUTH_STATE_CHANGED,
+	EDITED_DISPLAY_NAME,
+	RECEIVED_MY_FAVORITES_SUMMARIES,
+	RECEIVED_MY_FAVORITES_KEYS,
+} from '../actions/actionTypes';
+
+const initialState = {
 	loggedIn   : false,
 	user       : {},
 	myFavorites: {
-		loading: false,
-		data   : {},
+		loading             : false,
+		myFavoritesKeys     : {},
+		myFavoritesSummaries: [],
 	},
 };
-
-const emptyFavorites = {};
 
 const authReducer = (state = initialState, action) =>
 {
 	switch (action.type)
 	{
 		case AUTH_STATE_CHANGED:
+		{
 			const {user} = action;
 			if (isEmpty(user))
 			{
@@ -28,23 +33,38 @@ const authReducer = (state = initialState, action) =>
 				loggedIn: true,
 				user,
 			};
+		}
 		case EDITED_DISPLAY_NAME:
+		{
 			const {displayName} = action;
 			return {
 				...state,
 				user: {
 					...state.user,
 					displayName,
-				}
+				},
 			};
-		case RECEIVED_MY_FAVORITES:
+		}
+		case RECEIVED_MY_FAVORITES_KEYS:
 			return {
 				...state,
 				loggedIn   : true,
 				myFavorites: {
-					loading       : false,
-					myFavoritesRef: action.myFavoritesRef,
-					data          : action.myFavorites || emptyFavorites,
+					loading             : false,
+					myFavoritesRef      : action.myFavoritesRef,
+					myFavoritesKeys     : action.myFavoritesKeys,
+					myFavoritesSummaries: [],
+				},
+			};
+		case RECEIVED_MY_FAVORITES_SUMMARIES:
+			return {
+				...state,
+				loggedIn   : true,
+				myFavorites: {
+					...state.myFavorites,
+					loading             : false,
+					myFavoritesRef      : action.myFavoritesRef,
+					myFavoritesSummaries: action.myFavoritesSummaries,
 				},
 			};
 		default:

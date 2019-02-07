@@ -78,6 +78,11 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 {
 	const tagSuggestions = [];
 
+	if (!parsedBlueprint)
+	{
+		return tagSuggestions;
+	}
+
 	const generateTagSuggestionsFromProduction = (recipeCounts, entityCounts) =>
 	{
 		if (entityCounts['rocket-silo'] > 0)
@@ -384,7 +389,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		generateTagSuggestionsForMods(allGameEntities, entityCounts, title);
 	};
 
-	if (parsedBlueprint && v15Decoded)
+	if (v15Decoded)
 	{
 		if (parsedBlueprint.isBook())
 		{

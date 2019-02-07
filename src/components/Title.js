@@ -2,11 +2,11 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import FontAwesome from 'react-fontawesome';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 const Title = props => (
 	<div>
-		<FontAwesome name={props.icon} size='lg' fixedWidth className={props.className} />
+		<FontAwesomeIcon icon={props.icon} size='lg' fixedWidth className={props.className} />
 		{` ${props.text}`}
 	</div>
 );

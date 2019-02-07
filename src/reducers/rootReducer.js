@@ -1,25 +1,26 @@
-import {combineReducers} from 'redux';
-import authReducer from './authReducer';
-
-import blueprintsReducer from './blueprintsReducer';
-import blueprintSummariesReducer from './blueprintSummariesReducer';
-import byTagReducer from './byTagReducer';
-import filteredTagsReducer from './filteredTagsReducer';
-import tagsReducer from './tagsReducer';
-import usersReducer from './usersReducer';
-import moderatorsReducer from './moderatorsReducer';
-import titleFilterReducer from './titleFilterReducer';
+import {combineReducers}            from 'redux';
+import authReducer                  from './authReducer';
+import blueprintAllFavoritesReducer from './blueprintAllFavoritesReducer';
+import blueprintsReducer            from './blueprintsReducer';
+import blueprintSummariesReducer    from './blueprintSummariesReducer';
+import byTagReducer                 from './byTagReducer';
+import filteredTagsReducer          from './filteredTagsReducer';
+import moderatorsReducer            from './moderatorsReducer';
+import tagsReducer                  from './tagsReducer';
+import titleFilterReducer           from './titleFilterReducer';
+import usersReducer                 from './usersReducer';
 
 const rootReducer = combineReducers({
-	blueprints        : blueprintsReducer,
-	blueprintSummaries: blueprintSummariesReducer,
-	tags              : tagsReducer,
-	filteredTags      : filteredTagsReducer,
-	byTag             : byTagReducer,
-	auth              : authReducer,
-	users             : usersReducer,
-	moderators        : moderatorsReducer,
-	titleFilter       : titleFilterReducer,
+	blueprints           : blueprintsReducer,
+	blueprintSummaries   : blueprintSummariesReducer,
+	blueprintAllFavorites: blueprintAllFavoritesReducer,
+	tags                 : tagsReducer,
+	filteredTags         : filteredTagsReducer,
+	byTag                : byTagReducer,
+	auth                 : authReducer,
+	users                : usersReducer,
+	moderators           : moderatorsReducer,
+	titleFilter          : titleFilterReducer,
 });
 
 export default rootReducer;

@@ -1,63 +1,66 @@
 /* eslint-disable react/no-array-index-key */
 
-import {forbidExtraProps} from 'airbnb-prop-types';
-import concat from 'lodash/concat';
-import flatMap from 'lodash/flatMap';
-import forOwn from 'lodash/forOwn';
-import countBy from 'lodash/fp/countBy';
-import flow from 'lodash/fp/flow';
-import reverse from 'lodash/fp/reverse';
-import sortBy from 'lodash/fp/sortBy';
-import toPairs from 'lodash/fp/toPairs';
-import get from 'lodash/get';
-import has from 'lodash/has';
-import isEmpty from 'lodash/isEmpty';
-import isEqual from 'lodash/isEqual';
-import range from 'lodash/range';
-
-import marked from 'marked';
-import moment from 'moment';
-
-import PropTypes from 'prop-types';
-
-import React, {PureComponent} from 'react';
-
-import Button from 'react-bootstrap/lib/Button';
-import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
-import Col from 'react-bootstrap/lib/Col';
-import Grid from 'react-bootstrap/lib/Grid';
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-import Label from 'react-bootstrap/lib/Label';
-import Panel from 'react-bootstrap/lib/Panel';
-import Row from 'react-bootstrap/lib/Row';
-import Table from 'react-bootstrap/lib/Table';
-import Thumbnail from 'react-bootstrap/lib/Thumbnail';
-
-import CopyToClipboard from 'react-copy-to-clipboard';
-import ReactDisqusThread from 'react-disqus-thread';
-
-import DocumentTitle from 'react-document-title';
-import FontAwesome from 'react-fontawesome';
-import {connect} from 'react-redux';
-import {Link} from 'react-router-dom';
-import {bindActionCreators} from 'redux';
+import {faHeart as regularHeart} from '@fortawesome/free-regular-svg-icons';
+import {
+	faCalendar,
+	faClipboard,
+	faClock,
+	faCog,
+	faEdit,
+	faHeart,
+	faToggleOff,
+	faToggleOn,
+	faUser,
+}                                from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}        from 'airbnb-prop-types';
+import concat                    from 'lodash/concat';
+import flatMap                   from 'lodash/flatMap';
+import forOwn                    from 'lodash/forOwn';
+import countBy                   from 'lodash/fp/countBy';
+import flow                      from 'lodash/fp/flow';
+import reverse                   from 'lodash/fp/reverse';
+import sortBy                    from 'lodash/fp/sortBy';
+import toPairs                   from 'lodash/fp/toPairs';
+import get                       from 'lodash/get';
+import has                       from 'lodash/has';
+import isEmpty                   from 'lodash/isEmpty';
+import isEqual                   from 'lodash/isEqual';
+import range                     from 'lodash/range';
+import marked                    from 'marked';
+import moment                    from 'moment';
+import PropTypes                 from 'prop-types';
+import React, {PureComponent}    from 'react';
+import Button                    from 'react-bootstrap/lib/Button';
+import ButtonToolbar             from 'react-bootstrap/lib/ButtonToolbar';
+import Col                       from 'react-bootstrap/lib/Col';
+import Grid                      from 'react-bootstrap/lib/Grid';
+import Jumbotron                 from 'react-bootstrap/lib/Jumbotron';
+import Label                     from 'react-bootstrap/lib/Label';
+import Panel                     from 'react-bootstrap/lib/Panel';
+import Row                       from 'react-bootstrap/lib/Row';
+import Table                     from 'react-bootstrap/lib/Table';
+import Thumbnail                 from 'react-bootstrap/lib/Thumbnail';
+import CopyToClipboard           from 'react-copy-to-clipboard';
+import ReactDisqusThread         from 'react-disqus-thread';
+import DocumentTitle             from 'react-document-title';
+import {connect}                 from 'react-redux';
+import {Link}                    from 'react-router-dom';
+import {bindActionCreators}      from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators, subscribeToUserDisplayName} from '../actions/actionCreators';
 
-import {app} from '../base';
-import Blueprint from '../Blueprint';
-
-import entitiesWithIcons from '../data/entitiesWithIcons';
-import buildImageUrl from '../helpers/buildImageUrl';
-
+import {app}               from '../base';
+import Blueprint           from '../Blueprint';
+import entitiesWithIcons   from '../data/entitiesWithIcons';
+import buildImageUrl       from '../helpers/buildImageUrl';
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 
-import {blueprintSchema, historySchema, locationSchema, userSchema} from '../propTypes';
+import * as propTypes from '../propTypes';
 
 import * as selectors from '../selectors';
-import GoogleAd from './GoogleAd';
-import NoMatch from './NoMatch';
-import Title from './Title';
+import GoogleAd       from './GoogleAd';
+import NoMatch        from './NoMatch';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -92,15 +95,15 @@ class SingleBlueprint extends PureComponent
 		// TODO: Only bother if we're logged in
 		subscribeToModerators     : PropTypes.func.isRequired,
 		loading                   : PropTypes.bool.isRequired,
-		myFavorites               : PropTypes.objectOf(PropTypes.bool.isRequired),
-		user                      : userSchema,
-		blueprint                 : blueprintSchema,
+		myFavoritesKeys           : PropTypes.objectOf(PropTypes.bool.isRequired),
+		user                      : propTypes.userSchema,
+		blueprint                 : propTypes.blueprintSchema,
 		isModerator               : PropTypes.bool.isRequired,
-		location                  : locationSchema,
-		history                   : historySchema,
+		location                  : propTypes.locationSchema,
+		history                   : propTypes.historySchema,
 		staticContext             : PropTypes.shape(forbidExtraProps({})),
 		match                     : PropTypes.shape(forbidExtraProps({
-			params : PropTypes.shape(forbidExtraProps({
+			params: PropTypes.shape(forbidExtraProps({
 				blueprintId: PropTypes.string.isRequired,
 			})).isRequired,
 			path   : PropTypes.string.isRequired,
@@ -143,6 +146,20 @@ class SingleBlueprint extends PureComponent
 		}
 	}
 
+	hideButton = text => (
+		<div>
+			<FontAwesomeIcon icon={faToggleOn} size='lg' fixedWidth className='text-success' />
+			{` ${text}`}
+		</div>
+	);
+
+	showButton = text => (
+		<div>
+			<FontAwesomeIcon icon={faToggleOff} size='lg' fixedWidth />
+			{` ${text}`}
+		</div>
+	);
+
 	cacheState = (props) =>
 	{
 		if (isEmpty(props.blueprint))
@@ -174,10 +191,9 @@ class SingleBlueprint extends PureComponent
 	{
 		const {uid}                = this.props.user;
 		const {numberOfFavorites}  = this.props.blueprint;
-		const wasFavorite          = this.props.myFavorites[this.props.id];
+		const wasFavorite          = this.props.myFavoritesKeys[this.props.id];
 		const newNumberOfFavorites = numberOfFavorites + (wasFavorite ? -1 : 1);
 
-		console.log(this.props.myFavorites, wasFavorite);
 		const updates = {
 			[`/blueprints/${this.props.id}/numberOfFavorites`]        : newNumberOfFavorites,
 			[`/blueprints/${this.props.id}/favorites/${uid}`]         : wasFavorite ? null : true,
@@ -218,7 +234,7 @@ class SingleBlueprint extends PureComponent
 		}
 		catch (ignored)
 		{
-			console.log(ignored);
+			console.log('SingleBlueprint.parseBlueprint', {ignored});
 			return undefined;
 		}
 	};
@@ -230,6 +246,20 @@ class SingleBlueprint extends PureComponent
 			sortBy(1),
 			reverse,
 		)(concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []));
+
+	getAuthorName = () =>
+	{
+		const {displayNameLoading, displayName} = this.props;
+		if (displayNameLoading)
+		{
+			return 'Author name loading';
+		}
+		if (displayName)
+		{
+			return displayName;
+		}
+		return '(Anonymous)';
+	};
 
 	itemHistogram = (parsedBlueprint) =>
 	{
@@ -260,7 +290,7 @@ class SingleBlueprint extends PureComponent
 			className='pull-right'
 			onClick={this.handleTransitionToEdit}
 		>
-			<FontAwesome name='edit' />
+			<FontAwesomeIcon icon={faEdit} />
 			{' Edit'}
 		</Button>
 	);
@@ -274,13 +304,13 @@ class SingleBlueprint extends PureComponent
 			return <div />;
 		}
 
-		const myFavorite  = this.props.myFavorites[this.props.id];
-		const iconName    = myFavorite ? 'heart' : 'heart-o';
-		const iconClass   = myFavorite ? 'text-primary' : 'text-default';
+		const myFavorite = this.props.myFavoritesKeys[this.props.id];
+		const heart      = myFavorite ? faHeart : regularHeart;
+		const iconClass  = myFavorite ? 'text-primary' : 'text-default';
 
 		return (
 			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
-				<FontAwesome name={iconName} className={iconClass} />
+				<FontAwesomeIcon icon={heart} className={iconClass} />
 				{' Favorite'}
 			</Button>
 		);
@@ -297,7 +327,7 @@ class SingleBlueprint extends PureComponent
 					<DocumentTitle title='Factorio Prints: Loading Data'>
 						<Jumbotron>
 							<h1>
-								<FontAwesome name='cog' spin />
+								<FontAwesomeIcon icon={faCog} spin />
 								{' Loading data'}
 							</h1>
 						</Jumbotron>
@@ -318,7 +348,9 @@ class SingleBlueprint extends PureComponent
 							{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}
 							{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
 						</div>
-						<h1>{title}</h1>
+						<h1>
+							{title}
+						</h1>
 					</div>
 					<Row>
 						<Col md={4}>
@@ -347,14 +379,19 @@ class SingleBlueprint extends PureComponent
 								<Table bordered hover fill>
 									<tbody>
 										<tr>
-											<td><FontAwesome name='user' size='lg' fixedWidth />{' Author'}</td>
+											<td>
+												<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
+												{' Author'}
+											</td>
 											<td>
 												<Link to={`/user/${authorId}`}>
-													{this.props.displayNameLoading && 'Author name loading' || this.props.displayName || '(Anonymous)'}
+													{this.getAuthorName()}
 													{
-														this.state.ownedByCurrentUser &&
-														<span className='pull-right'>
-															<b>{'(You)'}</b>
+														this.state.ownedByCurrentUser
+														&& <span className='pull-right'>
+															<b>
+																{'(You)'}
+															</b>
 														</span>
 													}
 												</Link>
@@ -362,37 +399,45 @@ class SingleBlueprint extends PureComponent
 										</tr>
 										<tr>
 											<td>
-												<FontAwesome name='calendar' size='lg' fixedWidth />
-												{' Created'}</td>
+												<FontAwesomeIcon icon={faCalendar} size='lg' fixedWidth />
+												{' Created'}
+											</td>
 											<td>
 												<span
-													title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+													title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+												>
 													{moment(createdDate).fromNow()}
 												</span>
 											</td>
 										</tr>
 										<tr>
 											<td>
-												<FontAwesome name='clock-o' size='lg' fixedWidth />
+												<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
 												{' Last Updated'}
 											</td>
 											<td>
 												<span
-													title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+													title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+												>
 													{moment(lastUpdatedDate).fromNow()}
 												</span>
 											</td>
 										</tr>
 										<tr>
-											<td><FontAwesome name='heart' size='lg' fixedWidth />{' Favorites'}</td>
-											<td>{numberOfFavorites}</td>
+											<td>
+												<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
+												{' Favorites'}
+											</td>
+											<td>
+												{numberOfFavorites}
+											</td>
 										</tr>
 									</tbody>
 								</Table>
 							</Panel>
 							{
-								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() &&
-								<Panel header='Requirements'>
+								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook()
+								&& <Panel header='Requirements'>
 									<Table bordered hover fill>
 										<colgroup>
 											<col span='1' style={{width: '1%'}} />
@@ -411,8 +456,12 @@ class SingleBlueprint extends PureComponent
 																	: ''
 															}
 														</td>
-														<td className='number'>{pair[1]}</td>
-														<td>{pair[0]}</td>
+														<td className='number'>
+															{pair[1]}
+														</td>
+														<td>
+															{pair[0]}
+														</td>
 													</tr>
 												))
 											}
@@ -422,12 +471,16 @@ class SingleBlueprint extends PureComponent
 														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
 															{
 																entitiesWithIcons[pair[0]]
-																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]}/>
+																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
 																	: ''
 															}
 														</td>
-														<td className='number'>{pair[1]}</td>
-														<td>{pair[0]}</td>
+														<td className='number'>
+															{pair[1]}
+														</td>
+														<td>
+															{pair[0]}
+														</td>
 													</tr>
 												))
 											}
@@ -436,8 +489,8 @@ class SingleBlueprint extends PureComponent
 								</Panel>
 							}
 							{
-								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook() &&
-								<Panel header='Extra Info'>
+								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook()
+								&& <Panel header='Extra Info'>
 									<Table bordered hover fill>
 										<colgroup>
 											<col span='1' style={{width: '1%'}} />
@@ -446,7 +499,9 @@ class SingleBlueprint extends PureComponent
 
 										<tbody>
 											<tr>
-												<td colSpan={2}>{this.state.v15Decoded.blueprint.label}</td>
+												<td colSpan={2}>
+													{this.state.v15Decoded.blueprint.label}
+												</td>
 											</tr>
 											{
 												(this.state.v15Decoded.blueprint.icons || [])
@@ -464,7 +519,9 @@ class SingleBlueprint extends PureComponent
 																			: ''
 																	}
 																</td>
-																<td>{iconName}</td>
+																<td>
+																	{iconName}
+																</td>
 															</tr>
 														);
 													})
@@ -483,21 +540,24 @@ class SingleBlueprint extends PureComponent
 								<ButtonToolbar>
 									<CopyToClipboard text={blueprint.blueprintString}>
 										<Button bsStyle='primary'>
-											<Title icon='clipboard' text='Copy to Clipboard' />
+											<div>
+												<FontAwesomeIcon icon={faClipboard} size='lg' fixedWidth />
+												{' Copy to Clipboard'}
+											</div>
 										</Button>
 									</CopyToClipboard>
 									<Button onClick={this.handleShowHideBase64}>
 										{
 											this.state.showBlueprint
-												? <Title icon='toggle-on' text='Hide Blueprint' className='text-success' />
-												: <Title icon='toggle-off' text='Show Blueprint' />
+												? this.hideButton('Hide Blueprint')
+												: this.showButton('Show Blueprint')
 										}
 									</Button>
 									<Button onClick={this.handleShowHideJson}>
 										{
 											this.state.showJson
-												? <Title icon='toggle-on' text='Hide Json' className='text-success' />
-												: <Title icon='toggle-off' text='Show Json' />
+												? this.hideButton('Hide Json')
+												: this.showButton('Show Json')
 										}
 									</Button>
 									{
@@ -505,16 +565,16 @@ class SingleBlueprint extends PureComponent
 										&& <Button onClick={this.handleShowHideConverted}>
 											{
 												this.state.showConverted
-													? <Title icon='toggle-on' text='Hide 0.15 blueprint' className='text-success' />
-													: <Title icon='toggle-off' text='Convert to 0.15 blueprint' />
+													? this.hideButton('Hide 0.15 blueprint')
+													: this.showButton('Convert to 0.15 blueprint')
 											}
 										</Button>
 									}
 								</ButtonToolbar>
 							</Panel>
 							{
-								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBook() &&
-								<Panel header='Extra Info'>
+								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBook()
+								&& <Panel header='Extra Info'>
 									<Table bordered hover fill>
 										<colgroup>
 											<col span='1' style={{width: '1%'}} />
@@ -525,8 +585,12 @@ class SingleBlueprint extends PureComponent
 										</colgroup>
 										<tbody>
 											<tr>
-												<td colSpan={4}>{'Book'}</td>
-												<td>{this.state.v15Decoded.blueprint_book.label}</td>
+												<td colSpan={4}>
+													{'Book'}
+												</td>
+												<td>
+													{this.state.v15Decoded.blueprint_book.label}
+												</td>
 											</tr>
 											{
 												this.state.v15Decoded.blueprint_book.blueprints.map((eachBlueprint, blueprintIndex) => (
@@ -612,7 +676,7 @@ const mapStateToProps = (storeState, ownProps) =>
 		isModerator       : selectors.getIsModerator(storeState),
 		blueprint         : selectors.getBlueprintDataById(storeState, {id}),
 		loading           : selectors.getBlueprintLoadingById(storeState, {id}),
-		myFavorites       : selectors.getMyFavorites(storeState),
+		myFavoritesKeys   : selectors.getMyFavoritesKeys(storeState),
 		displayName       : selectors.getUserDisplayName(storeState, {id: get(blueprint, ['author', 'userId'])}),
 		displayNameLoading: selectors.getUserDisplayNameLoading(storeState, {id}),
 	};

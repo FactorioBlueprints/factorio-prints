@@ -1,6 +1,6 @@
 import {
-	RECEIVED_SUMMARIES,
-	SUBSCRIBED_TO_SUMMARIES,
+	RECEIVED_ALL_FAVORITES,
+	SUBSCRIBED_TO_ALL_FAVORITES,
 } from '../actions/actionTypes';
 
 const initialState = {
@@ -11,11 +11,11 @@ const initialState = {
 	paginator  : undefined,
 };
 
-const blueprintSummariesReducer = (state = initialState, action) =>
+const blueprintAllFavoritesReducer = (state = initialState, action) =>
 {
 	switch (action.type)
 	{
-		case RECEIVED_SUMMARIES:
+		case RECEIVED_ALL_FAVORITES:
 		{
 			const {paginator, paginator: {currentPage, isLastPage, loading, data}} = action;
 			return {
@@ -27,7 +27,7 @@ const blueprintSummariesReducer = (state = initialState, action) =>
 				data,
 			};
 		}
-		case SUBSCRIBED_TO_SUMMARIES:
+		case SUBSCRIBED_TO_ALL_FAVORITES:
 			return {
 				...state,
 				loading: true,
@@ -37,4 +37,4 @@ const blueprintSummariesReducer = (state = initialState, action) =>
 	}
 };
 
-export default blueprintSummariesReducer;
+export default blueprintAllFavoritesReducer;

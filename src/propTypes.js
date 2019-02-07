@@ -1,5 +1,5 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import PropTypes from 'prop-types';
+import PropTypes          from 'prop-types';
 
 export const userSchema = PropTypes.shape(forbidExtraProps({
 	uid        : PropTypes.string.isRequired,
@@ -13,7 +13,7 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 	createdDate        : PropTypes.number.isRequired,
 	descriptionMarkdown: PropTypes.string.isRequired,
 	fileName           : PropTypes.string,
-	imageUrl           : PropTypes.string.isRequired,
+	imageUrl           : PropTypes.string,
 	lastUpdatedDate    : PropTypes.number.isRequired,
 	numberOfFavorites  : PropTypes.number.isRequired,
 	tags               : PropTypes.arrayOf(PropTypes.string.isRequired),
@@ -22,7 +22,7 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 		displayName: PropTypes.string,
 		userId     : PropTypes.string.isRequired,
 	})).isRequired,
-	image: PropTypes.shape(forbidExtraProps({
+	image              : PropTypes.shape(forbidExtraProps({
 		id        : PropTypes.string.isRequired,
 		deletehash: PropTypes.string.isRequired,
 		height    : PropTypes.number.isRequired,
@@ -31,13 +31,18 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 	})).isRequired,
 }));
 
-export const blueprintSummariesSchema = PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
+export const blueprintSummarySchema = PropTypes.shape(forbidExtraProps({
+	key              : PropTypes.string.isRequired,
 	title            : PropTypes.string.isRequired,
 	imgurId          : PropTypes.string.isRequired,
 	imgurType        : PropTypes.string.isRequired,
 	numberOfFavorites: PropTypes.number.isRequired,
 	lastUpdatedDate  : PropTypes.number,
-})).isRequired).isRequired;
+	height           : PropTypes.number,
+	width            : PropTypes.number,
+})).isRequired;
+
+export const blueprintSummariesSchema = PropTypes.arrayOf(blueprintSummarySchema).isRequired;
 
 export const byTagSchema = PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
 	loading: PropTypes.bool.isRequired,

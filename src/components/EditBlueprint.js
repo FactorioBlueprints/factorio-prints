@@ -1,51 +1,51 @@
 /* eslint-disable dot-notation */
-import {forbidExtraProps} from 'airbnb-prop-types';
-import firebase from 'firebase';
-import update from 'immutability-helper';
-import difference from 'lodash/difference';
-import forEach from 'lodash/forEach';
-import isEmpty from 'lodash/isEmpty';
-import isEqual from 'lodash/isEqual';
-import some from 'lodash/some';
+import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
 
-import marked from 'marked';
-import PropTypes from 'prop-types';
+import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import firebase               from 'firebase/app';
+import update                 from 'immutability-helper';
+import difference             from 'lodash/difference';
+import forEach                from 'lodash/forEach';
+import isEmpty                from 'lodash/isEmpty';
+import isEqual                from 'lodash/isEqual';
+import some                   from 'lodash/some';
+import marked                 from 'marked';
+import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-
-import Alert from 'react-bootstrap/lib/Alert';
-import Button from 'react-bootstrap/lib/Button';
-import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
-import Col from 'react-bootstrap/lib/Col';
-import ControlLabel from 'react-bootstrap/lib/ControlLabel';
-import FormControl from 'react-bootstrap/lib/FormControl';
-import FormGroup from 'react-bootstrap/lib/FormGroup';
-import Grid from 'react-bootstrap/lib/Grid';
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-import Modal from 'react-bootstrap/lib/Modal';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
-import Panel from 'react-bootstrap/lib/Panel';
-import ProgressBar from 'react-bootstrap/lib/ProgressBar';
-import Row from 'react-bootstrap/lib/Row';
-import Thumbnail from 'react-bootstrap/lib/Thumbnail';
-
-import Dropzone from 'react-dropzone';
-import FontAwesome from 'react-fontawesome';
-import {connect} from 'react-redux';
-import Select from 'react-select';
+import Alert                  from 'react-bootstrap/lib/Alert';
+import Button                 from 'react-bootstrap/lib/Button';
+import ButtonToolbar          from 'react-bootstrap/lib/ButtonToolbar';
+import Col                    from 'react-bootstrap/lib/Col';
+import ControlLabel           from 'react-bootstrap/lib/ControlLabel';
+import FormControl            from 'react-bootstrap/lib/FormControl';
+import FormGroup              from 'react-bootstrap/lib/FormGroup';
+import Grid                   from 'react-bootstrap/lib/Grid';
+import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
+import Modal                  from 'react-bootstrap/lib/Modal';
+import PageHeader             from 'react-bootstrap/lib/PageHeader';
+import Panel                  from 'react-bootstrap/lib/Panel';
+import ProgressBar            from 'react-bootstrap/lib/ProgressBar';
+import Row                    from 'react-bootstrap/lib/Row';
+import Thumbnail              from 'react-bootstrap/lib/Thumbnail';
+import Dropzone               from 'react-dropzone';
+import {connect}              from 'react-redux';
+import Select                 from 'react-select';
 import 'react-select/dist/react-select.css';
-import {bindActionCreators} from 'redux';
+import {bindActionCreators}   from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
-import {app} from '../base';
-import Blueprint from '../Blueprint';
-import noImageAvailable from '../gif/No_available_image.gif';
-import buildImageUrl from '../helpers/buildImageUrl';
-import generateTagSuggestions from '../helpers/generateTagSuggestions';
-import scaleImage from '../helpers/ImageScaler';
-import {blueprintSchema, historySchema, locationSchema, userSchema} from '../propTypes';
-import * as selectors from '../selectors';
 
-import NoMatch from './NoMatch';
+import {app}                  from '../base';
+import Blueprint              from '../Blueprint';
+import noImageAvailable       from '../gif/No_available_image.gif';
+import buildImageUrl          from '../helpers/buildImageUrl';
+import generateTagSuggestions from '../helpers/generateTagSuggestions';
+import scaleImage             from '../helpers/ImageScaler';
+import * as propTypes         from '../propTypes';
+import * as selectors         from '../selectors';
+
+import NoMatch             from './NoMatch';
 import TagSuggestionButton from './TagSuggestionButton';
 
 const renderer = new marked.Renderer();
@@ -79,20 +79,20 @@ class EditBlueprint extends PureComponent
 		subscribeToModerators: PropTypes.func.isRequired,
 		subscribeToTags      : PropTypes.func.isRequired,
 		isModerator          : PropTypes.bool.isRequired,
-		user                 : userSchema,
-		blueprint            : blueprintSchema,
+		user                 : propTypes.userSchema,
+		blueprint            : propTypes.blueprintSchema,
 		loading              : PropTypes.bool.isRequired,
 		match                : PropTypes.shape(forbidExtraProps({
-			params : PropTypes.shape(forbidExtraProps({
+			params: PropTypes.shape(forbidExtraProps({
 				blueprintId: PropTypes.string.isRequired,
 			})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location             : locationSchema,
-		history              : historySchema,
-		staticContext        : PropTypes.shape(forbidExtraProps({})),
+		location     : propTypes.locationSchema,
+		history      : propTypes.historySchema,
+		staticContext: PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static emptyTags = [];
@@ -456,8 +456,7 @@ class EditBlueprint extends PureComponent
 
 			app.database().ref().update(updates);
 		})
-			.then(() => this.props.history.push(`/view/${this.props.id}`))
-			.catch(console.log);
+			.then(() => this.props.history.push(`/view/${this.props.id}`));
 		// TODO: Delete old images from storage and imgur
 	};
 
@@ -501,8 +500,7 @@ class EditBlueprint extends PureComponent
 				}
 				return undefined;
 			})
-			.then(() => this.props.history.push(`/user/${authorId}`))
-			.catch(console.log);
+			.then(() => this.props.history.push(`/user/${authorId}`));
 	};
 
 	parseBlueprint = (blueprintString) =>
@@ -513,7 +511,7 @@ class EditBlueprint extends PureComponent
 		}
 		catch (ignored)
 		{
-			console.log(ignored);
+			console.log('EditBlueprint.parseBlueprint', {ignored});
 			return undefined;
 		}
 	};
@@ -597,7 +595,7 @@ class EditBlueprint extends PureComponent
 			return (
 				<Jumbotron>
 					<h1>
-						<FontAwesome name='cog' spin />
+						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
 					</h1>
 				</Jumbotron>
@@ -619,7 +617,8 @@ class EditBlueprint extends PureComponent
 		const allTagSuggestions    = generateTagSuggestions(
 			this.state.blueprint.title,
 			this.state.parsedBlueprint,
-			this.state.v15Decoded);
+			this.state.v15Decoded
+		);
 		const unusedTagSuggestions = difference(allTagSuggestions, this.state.blueprint.tags);
 
 		return (
@@ -657,11 +656,11 @@ class EditBlueprint extends PureComponent
 					<Modal.Footer>
 						<ButtonToolbar>
 							<Button bsStyle='danger' onClick={this.handleForceSaveBlueprintEdits}>
-								<FontAwesome name='floppy-o' size='lg' />
+								<FontAwesomeIcon icon={faSave} size='lg' />
 								{' Save'}
 							</Button>
 							<Button bsStyle='primary' onClick={this.handleDismissWarnings}>
-								<FontAwesome name='arrow-left' size='lg' />
+								<FontAwesomeIcon icon={faArrowLeft} size='lg' />
 								{' Go back'}
 							</Button>
 						</ButtonToolbar>
@@ -851,7 +850,7 @@ class EditBlueprint extends PureComponent
 											bsSize='large'
 											onClick={this.handleSaveBlueprintEdits}
 										>
-											<FontAwesome name='floppy-o' size='lg' />
+											<FontAwesomeIcon icon={faSave} size='lg' />
 											{' Save'}
 										</Button>
 										{
@@ -860,7 +859,7 @@ class EditBlueprint extends PureComponent
 												bsSize='large'
 												onClick={this.handleShowConfirmDelete}
 											>
-												<FontAwesome name='trash-o' size='lg' />
+												<FontAwesomeIcon icon={faTrash} size='lg' />
 												{' Delete'}
 											</Button>
 										}
@@ -868,7 +867,7 @@ class EditBlueprint extends PureComponent
 											bsSize='large'
 											onClick={this.handleCancel}
 										>
-											<FontAwesome name='ban' size='lg' />
+											<FontAwesomeIcon icon={faBan} size='lg' />
 											{' Cancel'}
 										</Button>
 									</ButtonToolbar>

@@ -1,53 +1,59 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
-import isEmpty from 'lodash/isEmpty';
-import PropTypes from 'prop-types';
+import {faAngleDoubleLeft, faAngleLeft, faAngleRight, faCog} from '@fortawesome/free-solid-svg-icons';
+
+import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
+import Button                 from 'react-bootstrap/lib/Button';
+import ButtonToolbar          from 'react-bootstrap/lib/ButtonToolbar';
+import Col                    from 'react-bootstrap/lib/Col';
+import Grid                   from 'react-bootstrap/lib/Grid';
+import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
+import PageHeader             from 'react-bootstrap/lib/PageHeader';
+import Row                    from 'react-bootstrap/lib/Row';
+import {connect}              from 'react-redux';
+import {bindActionCreators}   from 'redux';
 
-import Grid from 'react-bootstrap/lib/Grid';
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
-import Row from 'react-bootstrap/lib/Row';
+import {
+	filterOnTags,
+	goToFirstAllFavorites,
+	goToNextAllFavorites,
+	goToPreviousAllFavorites,
+	subscribeToAllFavorites,
+	subscribeToUser,
+} from '../actions/actionCreators';
 
-import FontAwesome from 'react-fontawesome';
-import ReactPaginate from 'react-paginate';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-
-import {filterOnTags, subscribeToBlueprintSummaries, subscribeToUser} from '../actions/actionCreators';
-import {blueprintSummariesSchema, locationSchema, userSchema} from '../propTypes';
+import * as propTypes from '../propTypes';
 import * as selectors from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
-import SearchForm from './SearchForm';
-import TagForm from './TagForm';
-
-const PAGE_SIZE = 60;
+import SearchForm         from './SearchForm';
+import TagForm            from './TagForm';
 
 class MostFavoritedGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		subscribeToBlueprintSummaries: PropTypes.func.isRequired,
+		goToPreviousSummaries        : PropTypes.func.isRequired,
+		goToNextSummaries            : PropTypes.func.isRequired,
+		goToFirstSummaries           : PropTypes.func.isRequired,
 		subscribeToUser              : PropTypes.func.isRequired,
 		filterOnTags                 : PropTypes.func.isRequired,
-		user                         : userSchema,
-		blueprintSummaries           : blueprintSummariesSchema,
+		user                         : propTypes.userSchema,
+		blueprintSummaries           : propTypes.blueprintSummariesSchema,
 		blueprintSummariesLoading    : PropTypes.bool,
-		pageCount                    : PropTypes.number.isRequired,
-		favoriteBlueprintSummaries   : PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-		location                     : locationSchema,
-		history                      : PropTypes.object.isRequired,
+		currentPage                  : PropTypes.number.isRequired,
+		isLastPage                   : PropTypes.bool.isRequired,
+		location                     : propTypes.locationSchema,
+		history                      : propTypes.historySchema,
 		staticContext                : PropTypes.shape(forbidExtraProps({})),
 		match                        : PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
-		})).isRequired,
+		})),
 	});
-
-	state = {
-		currentPage: 0,
-	};
 
 	componentWillMount()
 	{
@@ -58,43 +64,37 @@ class MostFavoritedGrid extends PureComponent
 		}
 	}
 
-	handlePageClick = ({selected}) =>
+	handlePreviousPage = () =>
 	{
 		window.scrollTo(0, 0);
-		this.setState({currentPage: selected});
+		this.props.goToPreviousSummaries();
 	};
 
-	compareNumberOfFavorites = (a, b) =>
+	handleNextPage = () =>
 	{
-		const numberOfFavoritesA = this.props.blueprintSummaries[a].numberOfFavorites;
-		const numberOfFavoritesB = this.props.blueprintSummaries[b].numberOfFavorites;
-		if (numberOfFavoritesA < numberOfFavoritesB)
-		{
-			return 1;
-		}
-		if (numberOfFavoritesA > numberOfFavoritesB)
-		{
-			return -1;
-		}
-		return 0;
+		window.scrollTo(0, 0);
+		this.props.goToNextSummaries();
+	};
+
+	handleFirstPage = () =>
+	{
+		window.scrollTo(0, 0);
+		this.props.goToFirstSummaries();
 	};
 
 	render()
 	{
-		if (this.props.blueprintSummariesLoading && isEmpty(this.props.favoriteBlueprintSummaries))
+		if (this.props.blueprintSummariesLoading)
 		{
 			return (
 				<Jumbotron>
 					<h1>
-						<FontAwesome name='cog' spin />
+						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
 					</h1>
 				</Jumbotron>
 			);
 		}
-
-		const startIndex = PAGE_SIZE * this.state.currentPage;
-		const endIndex   = startIndex + PAGE_SIZE;
 
 		return (
 			<Grid>
@@ -109,46 +109,52 @@ class MostFavoritedGrid extends PureComponent
 				</Row>
 				<Row>
 					{
-						this.props.favoriteBlueprintSummaries.slice(startIndex, endIndex)
-							.map(key => <BlueprintThumbnail key={key} id={key} />)
+						this.props.blueprintSummaries.map(blueprintSummary =>
+							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
 					}
 				</Row>
 				<Row>
-					<ReactPaginate
-						previousLabel={'<'}
-						nextLabel={'>'}
-						pageCount={this.props.pageCount}
-						marginPagesDisplayed={2}
-						pageRangeDisplayed={5}
-						onPageChange={this.handlePageClick}
-						breakLabel={<span>...</span>}
-						breakClassName={'break-me'}
-						containerClassName={'pagination'}
-						subContainerClassName={'pages pagination'}
-						activeClassName={'active'}
-					/>
+					<Col md={6} mdOffset={3}>
+						<ButtonToolbar>
+							<Button onClick={this.handleFirstPage} disabled={this.props.currentPage === 1} >
+								<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
+								{'First Page'}
+							</Button>
+							<Button onClick={this.handlePreviousPage} disabled={this.props.currentPage === 1}>
+								<FontAwesomeIcon icon={faAngleLeft} size='lg' fixedWidth />
+								{'Previous Page'}
+							</Button>
+							<Button bsStyle='link' disabled>
+								{`Page: ${this.props.currentPage}`}
+							</Button>
+							<Button onClick={this.handleNextPage} disabled={this.props.isLastPage}>
+								{'Next Page'}
+								<FontAwesomeIcon icon={faAngleRight} size='lg' fixedWidth />
+							</Button>
+						</ButtonToolbar>
+					</Col>
 				</Row>
 			</Grid>
 		);
 	}
 }
 
-const mapStateToProps = (storeState) =>
-{
-	const favoriteBlueprintSummaries = selectors.getFavoriteBlueprintSummaries(storeState);
-	return {
+const mapStateToProps = storeState => (
+	{
 		user                     : selectors.getFilteredUser(storeState),
-		blueprintSummaries       : selectors.getBlueprintSummariesData(storeState),
-		blueprintSummariesLoading: selectors.getBlueprintSummariesLoading(storeState),
-		pageCount                : favoriteBlueprintSummaries.length / PAGE_SIZE,
-		favoriteBlueprintSummaries,
-	};
-};
+		blueprintSummaries       : selectors.getFavoriteBlueprintSummaries(storeState),
+		blueprintSummariesLoading: selectors.getBlueprintAllFavoritesLoading(storeState),
+		currentPage              : storeState.blueprintAllFavorites.currentPage,
+		isLastPage               : storeState.blueprintAllFavorites.isLastPage,
+	});
 
 const mapDispatchToProps = (dispatch) =>
 {
 	const actionCreators = {
-		subscribeToBlueprintSummaries,
+		subscribeToBlueprintSummaries: subscribeToAllFavorites,
+		goToPreviousSummaries        : goToPreviousAllFavorites,
+		goToNextSummaries            : goToNextAllFavorites,
+		goToFirstSummaries           : goToFirstAllFavorites,
 		filterOnTags,
 		subscribeToUser,
 	};

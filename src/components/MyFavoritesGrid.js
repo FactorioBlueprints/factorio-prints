@@ -1,7 +1,7 @@
-import {faCog}                from '@fortawesome/free-solid-svg-icons';
+import {faCog} from '@fortawesome/free-solid-svg-icons';
+
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import isUndefined            from 'lodash/isUndefined';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
 import Grid                   from 'react-bootstrap/lib/Grid';
@@ -17,49 +17,51 @@ import * as propTypes from '../propTypes';
 import * as selectors from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
-import NoMatch            from './NoMatch';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
-class UserGrid extends PureComponent
+class MyFavoritesGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		id                       : PropTypes.string.isRequired,
-		displayName              : PropTypes.string,
-		displayNameLoading       : PropTypes.bool.isRequired,
 		subscribeToUser          : PropTypes.func.isRequired,
 		filterOnTags             : PropTypes.func.isRequired,
 		user                     : propTypes.userSchema,
 		blueprintSummaries       : propTypes.blueprintSummariesSchema,
 		blueprintSummariesLoading: PropTypes.bool,
 		location                 : propTypes.locationSchema,
-		history                  : PropTypes.object.isRequired,
+		history                  : propTypes.historySchema,
 		staticContext            : PropTypes.shape(forbidExtraProps({})),
 		match                    : PropTypes.shape(forbidExtraProps({
-			params: PropTypes.shape(forbidExtraProps({
-				userId: PropTypes.string.isRequired,
-			})).isRequired,
+			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
-		})).isRequired,
-
+		})),
 	});
 
 	componentWillMount()
 	{
-		// Logged in user
 		if (this.props.user)
 		{
 			this.props.subscribeToUser(this.props.user.uid);
 		}
-		// Blueprint author
-		this.props.subscribeToUser(this.props.id);
 	}
+
+	calls = 0;
 
 	render()
 	{
-		if (this.props.blueprintSummariesLoading && (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading))
+		if (!this.props.user)
+		{
+			return (
+				<Jumbotron>
+					<h1>{'My Favorites'}</h1>
+					<p>{'Please log in with Google or GitHub in order to view your favorite blueprints.'}</p>
+				</Jumbotron>
+			);
+		}
+
+		if (this.props.blueprintSummariesLoading)
 		{
 			return (
 				<Jumbotron>
@@ -71,16 +73,11 @@ class UserGrid extends PureComponent
 			);
 		}
 
-		if (isUndefined(this.props.blueprintSummaries))
-		{
-			return <NoMatch />;
-		}
-
 		return (
 			<Grid>
 				<Row>
 					<PageHeader>
-						{'Viewing Blueprints by '}{this.props.displayName || '(Anonymous)'}
+						{'Viewing My Favorites'}
 					</PageHeader>
 				</Row>
 				<Row>
@@ -98,18 +95,12 @@ class UserGrid extends PureComponent
 	}
 }
 
-const mapStateToProps = (storeState, ownProps) =>
-{
-	const id = ownProps.match.params.userId;
-	return {
-		id,
+const mapStateToProps = storeState => (
+	{
 		user                     : selectors.getFilteredUser(storeState),
-		blueprintSummaries       : selectors.getUserFilteredBlueprintSummaries(storeState, {id}),
-		blueprintSummariesLoading: selectors.getUserBlueprintsLoading(storeState, {id}),
-		displayName              : selectors.getUserDisplayName(storeState, {id}),
-		displayNameLoading       : selectors.getUserDisplayNameLoading(storeState, {id}),
-	};
-};
+		blueprintSummaries       : selectors.getMyFavoriteBlueprintSummaries(storeState),
+		blueprintSummariesLoading: storeState.auth.myFavorites.loading,
+	});
 
 const mapDispatchToProps = (dispatch) =>
 {
@@ -120,4 +111,4 @@ const mapDispatchToProps = (dispatch) =>
 	return bindActionCreators(actionCreators, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(UserGrid);
+export default connect(mapStateToProps, mapDispatchToProps)(MyFavoritesGrid);

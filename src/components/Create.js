@@ -1,47 +1,45 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
-import firebase from 'firebase';
-import update from 'immutability-helper';
-import difference from 'lodash/difference';
-import forEach from 'lodash/forEach';
-import isEmpty from 'lodash/isEmpty';
-import some from 'lodash/some';
-
-import marked from 'marked';
-import PropTypes from 'prop-types';
-import React, {PureComponent} from 'react';
-
-import Alert from 'react-bootstrap/lib/Alert';
-import Button from 'react-bootstrap/lib/Button';
-import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
-import Col from 'react-bootstrap/lib/Col';
-import ControlLabel from 'react-bootstrap/lib/ControlLabel';
-import FormControl from 'react-bootstrap/lib/FormControl';
-import FormGroup from 'react-bootstrap/lib/FormGroup';
-import Grid from 'react-bootstrap/lib/Grid';
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-import Modal from 'react-bootstrap/lib/Modal';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
-import Panel from 'react-bootstrap/lib/Panel';
-import ProgressBar from 'react-bootstrap/lib/ProgressBar';
-import Row from 'react-bootstrap/lib/Row';
-import Thumbnail from 'react-bootstrap/lib/Thumbnail';
-
-import Dropzone from 'react-dropzone';
-import FontAwesome from 'react-fontawesome';
-import {connect} from 'react-redux';
-import Select from 'react-select';
+import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}           from 'airbnb-prop-types';
+import firebase                     from 'firebase/app';
+import update                       from 'immutability-helper';
+import difference                   from 'lodash/difference';
+import forEach                      from 'lodash/forEach';
+import isEmpty                      from 'lodash/isEmpty';
+import some                         from 'lodash/some';
+import marked                       from 'marked';
+import PropTypes                    from 'prop-types';
+import React, {PureComponent}       from 'react';
+import Alert                        from 'react-bootstrap/lib/Alert';
+import Button                       from 'react-bootstrap/lib/Button';
+import ButtonToolbar                from 'react-bootstrap/lib/ButtonToolbar';
+import Col                          from 'react-bootstrap/lib/Col';
+import ControlLabel                 from 'react-bootstrap/lib/ControlLabel';
+import FormControl                  from 'react-bootstrap/lib/FormControl';
+import FormGroup                    from 'react-bootstrap/lib/FormGroup';
+import Grid                         from 'react-bootstrap/lib/Grid';
+import Jumbotron                    from 'react-bootstrap/lib/Jumbotron';
+import Modal                        from 'react-bootstrap/lib/Modal';
+import PageHeader                   from 'react-bootstrap/lib/PageHeader';
+import Panel                        from 'react-bootstrap/lib/Panel';
+import ProgressBar                  from 'react-bootstrap/lib/ProgressBar';
+import Row                          from 'react-bootstrap/lib/Row';
+import Thumbnail                    from 'react-bootstrap/lib/Thumbnail';
+import Dropzone                     from 'react-dropzone';
+import {connect}                    from 'react-redux';
+import Select                       from 'react-select';
 import 'react-select/dist/react-select.css';
-import {bindActionCreators} from 'redux';
+import {bindActionCreators}         from 'redux';
 
-import {subscribeToTags} from '../actions/actionCreators';
-import {app} from '../base';
-import Blueprint from '../Blueprint';
-import noImageAvailable from '../gif/No_available_image.gif';
-import generateTagSuggestions from '../helpers/generateTagSuggestions';
-import scaleImage from '../helpers/ImageScaler';
+import {subscribeToTags}                           from '../actions/actionCreators';
+import {app}                                       from '../base';
+import Blueprint                                   from '../Blueprint';
+import noImageAvailable                            from '../gif/No_available_image.gif';
+import generateTagSuggestions                      from '../helpers/generateTagSuggestions';
+import scaleImage                                  from '../helpers/ImageScaler';
 import {historySchema, locationSchema, userSchema} from '../propTypes';
+import * as selectors                              from '../selectors';
 
-import * as selectors from '../selectors';
 import TagSuggestionButton from './TagSuggestionButton';
 
 const renderer = new marked.Renderer();
@@ -458,7 +456,7 @@ class Create extends PureComponent
 		}
 		catch (ignored)
 		{
-			console.log(ignored);
+			console.log('Create.parseBlueprint', {ignored});
 			return undefined;
 		}
 	};
@@ -558,11 +556,11 @@ class Create extends PureComponent
 					<Modal.Footer>
 						<ButtonToolbar>
 							<Button bsStyle='danger' onClick={this.handleForceCreateBlueprint}>
-								<FontAwesome name='floppy-o' size='lg' />
+								<FontAwesomeIcon icon={faSave} size='lg' />
 								{' Save'}
 							</Button>
 							<Button bsStyle='primary' onClick={this.handleDismissWarnings}>
-								<FontAwesome name='arrow-left' size='lg' />
+								<FontAwesomeIcon icon={faArrowLeft} size='lg' />
 								{' Go back'}
 							</Button>
 						</ButtonToolbar>
@@ -733,14 +731,14 @@ class Create extends PureComponent
 											bsSize='large'
 											onClick={this.handleCreateBlueprint}
 										>
-											<FontAwesome name='floppy-o' size='lg' />
+											<FontAwesomeIcon icon={faSave} size='lg' />
 											{' Save'}
 										</Button>
 										<Button
 											bsSize='large'
 											onClick={this.handleCancel}
 										>
-											<FontAwesome name='ban' size='lg' />
+											<FontAwesomeIcon icon={faBan} size='lg' />
 											{' Cancel'}
 										</Button>
 									</ButtonToolbar>

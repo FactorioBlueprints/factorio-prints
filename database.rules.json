@@ -45,7 +45,7 @@
 		},
 		"blueprintSummaries": {
 			".read"     : "true",
-			".indexOn"  : "lastUpdatedDate",
+			".indexOn"  : ["lastUpdatedDate", "numberOfFavorites"],
 			"$blueprint": {
 				".write"           : "root.child('blueprints').child($blueprint).child('authorId').val() === auth.uid || root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
 				"numberOfFavorites": {

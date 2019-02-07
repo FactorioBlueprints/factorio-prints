@@ -1,6 +1,8 @@
+import {faReddit}             from '@fortawesome/free-brands-svg-icons';
+import {faEnvelope}           from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import React, {PureComponent} from 'react';
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-import FontAwesome from 'react-fontawesome';
+import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
 
 class Contact extends PureComponent
 {
@@ -10,7 +12,7 @@ class Contact extends PureComponent
 			<Jumbotron>
 				<h1>{'Contact me'}</h1>
 				<p>
-					<FontAwesome name='envelope' size='lg' fixedWidth />
+					<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
 					<a
 						target='_blank'
 						rel='noopener noreferrer'
@@ -20,7 +22,7 @@ class Contact extends PureComponent
 					</a>
 				</p>
 				<p>
-					<FontAwesome name='reddit-alien' size='lg' fixedWidth />
+					<FontAwesomeIcon icon={faReddit} size='lg' fixedWidth />
 					<a
 						target='_blank'
 						rel='noopener noreferrer'

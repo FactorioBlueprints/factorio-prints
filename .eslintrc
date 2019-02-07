@@ -36,6 +36,8 @@
     "quotes": ["error", "single", {"avoidEscape": true}],
     "strict": ["error", "never"],
     "brace-style": ["error", "allman"],
+    // implicit-arrow-linebreak conflicts with brace-style allman
+    "implicit-arrow-linebreak": "off",
     "padded-blocks": ["error", "never"],
 
     // Specify whether double or single quotes should be used in JSX attributes
@@ -62,6 +64,8 @@
     "babel/object-curly-spacing" : "error",
     "object-shorthand"           : "error",
     "no-await-in-loop"           : "error",
+    "array-element-newline"      : ["error", "consistent"],
+    "max-params": "off",
 
     // Prevent React to be incorrectly marked as unused
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-uses-react.md
@@ -79,7 +83,7 @@
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-unused-prop-types.md
     "react/no-unused-prop-types": ["warn", {
       "customValidators": [],
-      "skipShapeProps": true,
+      "skipShapeProps": true
     }],
 
     // Prevent multiple component definition per file
@@ -113,7 +117,7 @@
     "react/jsx-wrap-multilines": ["error", {
       "declaration": true,
       "assignment": true,
-      "return": true,
+      "return": true
       // "arrow": true,
     }],
 
@@ -132,7 +136,7 @@
     "react/jsx-no-bind": ["error", {
       "ignoreRefs": true,
       "allowArrowFunctions": true,
-      "allowBind": false,
+      "allowBind": false
     }],
 
     // Enforce propTypes declarations alphabetical sorting
@@ -140,7 +144,7 @@
     "react/sort-prop-types": ["off", {
       "ignoreCase": true,
       "callbacksLast": false,
-      "requiredFirst": false,
+      "requiredFirst": false
     }],
 
 
@@ -194,7 +198,7 @@
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-pascal-case.md
     "react/jsx-pascal-case": ["error", {
       "allowAllCaps": true,
-      "ignore": [],
+      "ignore": []
     }],
 
     // Prevent usage of deprecated methods
@@ -247,19 +251,45 @@
 
     // Enforce component methods order
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/sort-comp.md
-    "react/sort-comp": ["error", {
-      "order": [
-        "static-methods",
-        "lifecycle",
-        "/^on.+$/",
-        "getters",
-        "setters",
-        "/^(get|set)(?!(InitialState$|DefaultProps$|ChildContext$)).+$/",
-        "everything-else",
-        "/^render.+$/",
-        "render"
-      ],
-    }],
+    "react/sort-comp": [
+      "error",
+      {
+        "order" : [
+          "static-methods",
+          "lifecycle",
+          "everything-else",
+          "render"
+        ],
+        "groups": {
+          "lifecycle": [
+            "displayName",
+            "propTypes",
+            "contextTypes",
+            "childContextTypes",
+            "mixins",
+            "statics",
+            "defaultProps",
+            "constructor",
+            "getDefaultProps",
+            "state",
+            "getInitialState",
+            "getChildContext",
+            "getDerivedStateFromProps",
+            "componentWillMount",
+            "UNSAFE_componentWillMount",
+            "componentDidMount",
+            "componentWillReceiveProps",
+            "UNSAFE_componentWillReceiveProps",
+            "shouldComponentUpdate",
+            "componentWillUpdate",
+            "UNSAFE_componentWillUpdate",
+            "getSnapshotBeforeUpdate",
+            "componentDidUpdate",
+            "componentDidCatch",
+            "componentWillUnmount"
+          ]
+        }
+      }],
 
     // Require that the first prop in a JSX element be on a new line when the element is multiline
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-first-prop-new-line.md
@@ -343,7 +373,7 @@
     // https://github.com/yannickcr/eslint-plugin-react/blob/73abadb697034b5ccb514d79fb4689836fe61f91/docs/rules/boolean-prop-naming.md
     "react/boolean-prop-naming": ["off", {
       "propTypeNames": ["bool", "mutuallyExclusiveTrueProps"],
-      "rule": "^(is|has)[A-Z]([A-Za-z0-9]?)+",
+      "rule": "^(is|has)[A-Z]([A-Za-z0-9]?)+"
     }],
 
     // Prevents common casing typos
@@ -351,10 +381,16 @@
     // TODO
     "react/no-typos": "off",
 
+    // This option validates a specific depth for JSX.
+    // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-max-depth.md
+    "react/jsx-max-depth": "off",
+
     "lodash/prefer-lodash-method": "off",
 
     // https://github.com/wix/eslint-plugin-lodash/blob/master/docs/rules/path-style.md
-   "lodash/path-style"           : "off",
+    "lodash/path-style"           : "off",
+
+    "lodash/prop-shorthand": "off",
 
     "jsx-a11y/anchor-is-valid": ["warn", { "aspects": ["invalidHref"] }],
 

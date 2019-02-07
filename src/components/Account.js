@@ -1,42 +1,40 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
-import PropTypes from 'prop-types';
+import {faBan, faSave}        from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
+import Button                 from 'react-bootstrap/lib/Button';
+import ButtonToolbar          from 'react-bootstrap/lib/ButtonToolbar';
+import Col                    from 'react-bootstrap/lib/Col';
+import ControlLabel           from 'react-bootstrap/lib/ControlLabel';
+import FormControl            from 'react-bootstrap/lib/FormControl';
+import FormGroup              from 'react-bootstrap/lib/FormGroup';
+import Grid                   from 'react-bootstrap/lib/Grid';
+import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
+import PageHeader             from 'react-bootstrap/lib/PageHeader';
+import Row                    from 'react-bootstrap/lib/Row';
+import {connect}              from 'react-redux';
+import {bindActionCreators}   from 'redux';
 
-import Button from 'react-bootstrap/lib/Button';
-import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
-import Col from 'react-bootstrap/lib/Col';
-import ControlLabel from 'react-bootstrap/lib/ControlLabel';
-import FormControl from 'react-bootstrap/lib/FormControl';
-import FormGroup from 'react-bootstrap/lib/FormGroup';
-import Grid from 'react-bootstrap/lib/Grid';
-import Jumbotron from 'react-bootstrap/lib/Jumbotron';
-import PageHeader from 'react-bootstrap/lib/PageHeader';
-import Row from 'react-bootstrap/lib/Row';
-
-import FontAwesome from 'react-fontawesome';
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-
-import {editedDisplayName} from '../actions/actionCreators';
-
-import {app} from '../base';
+import {editedDisplayName}                         from '../actions/actionCreators';
+import {app}                                       from '../base';
 import {historySchema, locationSchema, userSchema} from '../propTypes';
-
-import * as selectors from '../selectors';
+import * as selectors                              from '../selectors';
 
 class Account extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user         : userSchema,
-		match        : PropTypes.shape(forbidExtraProps({
+		user : userSchema,
+		match: PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location     : locationSchema,
-		history      : historySchema,
-		staticContext: PropTypes.shape(forbidExtraProps({})),
+		location         : locationSchema,
+		history          : historySchema,
+		staticContext    : PropTypes.shape(forbidExtraProps({})),
+		editedDisplayName: PropTypes.func.isRequired,
 	});
 
 	static initialState = {
@@ -81,8 +79,8 @@ class Account extends PureComponent
 			.set(this.state.displayName)
 			.then(() => this.props.editedDisplayName(this.state.displayName))
 			.then(() => this.props.history.push(`/user/${this.props.user.uid}`))
-			.catch(console.log);
-	}
+			.catch((...args) => console.log('Account.handleSaveAccount', args));
+	};
 
 	handleCancel = (event) =>
 	{
@@ -135,14 +133,14 @@ class Account extends PureComponent
 											bsSize='large'
 											onClick={this.handleSaveAccount}
 										>
-											<FontAwesome name='floppy-o' size='lg' />
+											<FontAwesomeIcon icon={faSave} size='lg' />
 											{' Save'}
 										</Button>
 										<Button
 											bsSize='large'
 											onClick={this.handleCancel}
 										>
-											<FontAwesome name='ban' size='lg' />
+											<FontAwesomeIcon icon={faBan} size='lg' />
 											{' Cancel'}
 										</Button>
 									</ButtonToolbar>

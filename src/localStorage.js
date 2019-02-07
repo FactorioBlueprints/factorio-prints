@@ -11,7 +11,7 @@ export const loadState = () =>
 	}
 	catch (error)
 	{
-		console.log(error);
+		console.log('loadState', {error});
 		return undefined;
 	}
 };
@@ -25,6 +25,6 @@ export const saveState = (state) =>
 	}
 	catch (error)
 	{
-		console.log(error);
+		console.log('saveState', {error});
 	}
 };
