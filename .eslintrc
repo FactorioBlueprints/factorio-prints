@@ -407,7 +407,7 @@
     "no-mixed-operators": "off",
     "wrap-regex": "off",
     "jsx-a11y/href-no-hash": "off",
-	"no-undefined": "off",
-	"require-jsdoc": "off"
+    "no-undefined": "off",
+    "require-jsdoc": "off"
   }
 }
