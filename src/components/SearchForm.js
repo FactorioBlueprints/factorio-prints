@@ -15,12 +15,9 @@ import {filterOnTitle} from '../actions/actionCreators';
 class SearchForm extends PureComponent
 {
 	static propTypes = forbidExtraProps({
+		titleFilter  : PropTypes.string.isRequired,
 		filterOnTitle: PropTypes.func.isRequired,
 	});
-
-	state = {
-		searchString: '',
-	};
 
 	handleKeyDown = (event) =>
 	{
@@ -36,7 +33,6 @@ class SearchForm extends PureComponent
 
 		const searchString = event.target.value;
 		this.props.filterOnTitle(searchString);
-		this.setState({searchString});
 	};
 
 	render()
@@ -48,7 +44,7 @@ class SearchForm extends PureComponent
 						<FormControl
 							type='text'
 							placeholder='search titles'
-							value={this.state.searchString}
+							value={this.props.titleFilter}
 							onChange={this.handleSearchString}
 							onKeyDown={this.handleKeyDown}
 						/>
@@ -62,5 +58,11 @@ class SearchForm extends PureComponent
 	}
 }
 
+const mapStateToProps = (state) =>
+{
+	const {titleFilter} = state;
+	return {titleFilter};
+};
+
 const mapDispatchToProps = dispatch => bindActionCreators({filterOnTitle}, dispatch);
-export default connect(undefined, mapDispatchToProps)(SearchForm);
+export default connect(mapStateToProps, mapDispatchToProps)(SearchForm);
