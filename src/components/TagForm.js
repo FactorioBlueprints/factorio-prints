@@ -25,7 +25,6 @@ class TagForm extends PureComponent
 	componentWillMount()
 	{
 		this.props.subscribeToTags();
-		this.setState({filteredTags: this.props.filteredTags});
 	}
 
 	handleTagSelection = (filteredTags) =>
@@ -33,7 +32,6 @@ class TagForm extends PureComponent
 		const filteredTagStrings = filteredTags.map(each => each.value);
 		filteredTagStrings.forEach(this.props.subscribeToTag);
 		this.props.filterOnTags(filteredTagStrings);
-		this.setState({filteredTags});
 	};
 
 	render()
@@ -42,7 +40,7 @@ class TagForm extends PureComponent
 			<Row>
 				<Col md={6}>
 					<Select
-						value={this.state.filteredTags}
+						value={this.props.filteredTags}
 						options={this.props.tags.map(value => ({value, label: value}))}
 						onChange={this.handleTagSelection}
 						multi
