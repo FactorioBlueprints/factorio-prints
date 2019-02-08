@@ -376,7 +376,7 @@ class Create extends PureComponent
 			{
 				this.setState({uploadProgressBarVisible: true});
 				const uploadTask = fileNameRef.put(file);
-				uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, () =>
+				uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, (...args) =>
 				{
 					fetch('https://api.imgur.com/3/upload.json', {
 						method : 'POST',
@@ -419,23 +419,26 @@ class Create extends PureComponent
 							const {thumbnail}      = this.state;
 
 							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
-							const updates         = {
-								[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
-								[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
-								[`/blueprintsPrivate/${newBlueprintRef.key}/thumbnail`]            : thumbnail,
-								[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : uploadTask.snapshot.downloadURL,
-							};
-							forEach(blueprint.tags, (tag) =>
+							uploadTask.snapshot.ref.getDownloadURL().then((downloadUrl) =>
 							{
-								updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
-							});
-
-							app.database().ref().update(updates)
-								.then(() =>
+								const updates         = {
+									[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
+									[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
+									[`/blueprintsPrivate/${newBlueprintRef.key}/thumbnail`]            : thumbnail,
+									[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : downloadUrl,
+								};
+								forEach(blueprint.tags, (tag) =>
 								{
-									this.setState(Create.initialState);
-									this.props.history.push(`/view/${newBlueprintRef.key}`);
+									updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
 								});
+
+								app.database().ref().update(updates)
+									.then(() =>
+									{
+										this.setState(Create.initialState);
+										this.props.history.push(`/view/${newBlueprintRef.key}`);
+									});
+							});
 						})
 						.catch(this.handleImgurError);
 				});

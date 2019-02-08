@@ -1,6 +1,7 @@
 import Rebase from 're-base';
 import firebase from 'firebase/app';
 import 'firebase/database';
+import 'firebase/storage';
 
 export const app = firebase.initializeApp({
 	apiKey           : 'AIzaSyAcZJ7hGfxYKhkGHJwAnsLS3z5Tg9kWw2s',
