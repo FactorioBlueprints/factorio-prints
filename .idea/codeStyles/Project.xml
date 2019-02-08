@@ -3,7 +3,13 @@
     <option name="HTML_SPACE_INSIDE_EMPTY_TAG" value="true" />
     <option name="HTML_DO_NOT_INDENT_CHILDREN_OF" value="html,body" />
     <HTMLCodeStyleSettings>
+      <option name="HTML_ATTRIBUTE_WRAP" value="4" />
       <option name="HTML_SPACE_INSIDE_EMPTY_TAG" value="true" />
+      <option name="HTML_DO_NOT_INDENT_CHILDREN_OF" value="html,body" />
+      <option name="HTML_INLINE_ELEMENTS" value="abbr,acronym,b,basefont,bdo,big,br,cite,cite,code,dfn,em,font,i,input,kbd,q,s,samp,select,span,strike,strong,sub,sup,textarea,tt,u,var" />
+      <option name="HTML_QUOTE_STYLE" value="Single" />
+      <option name="HTML_NEWLINE_BEFORE_FIRST_ATTRIBUTE" value="When multiline" />
+      <option name="HTML_NEWLINE_AFTER_LAST_ATTRIBUTE" value="When multiline" />
     </HTMLCodeStyleSettings>
     <JSCodeStyleSettings version="1">
       <option name="FORCE_SEMICOLON_STYLE" value="true" />
@@ -13,6 +19,7 @@
       <option name="USE_DOUBLE_QUOTES" value="false" />
       <option name="FORCE_QUOTE_STYlE" value="true" />
       <option name="ENFORCE_TRAILING_COMMA" value="WhenMultiline" />
+      <option name="JSX_ATTRIBUTE_VALUE" value="Based on type" />
       <option name="ALIGN_IMPORTS" value="true" />
       <option name="IMPORT_SORT_MODULE_NAME" value="true" />
       <option name="FUNCTION_EXPRESSION_BRACE_STYLE" value="2" />
@@ -20,6 +27,9 @@
     <JSON>
       <option name="PROPERTY_ALIGNMENT" value="2" />
     </JSON>
+    <TypeScriptCodeStyleSettings version="1">
+      <option name="FORCE_SEMICOLON_STYLE" value="true" />
+    </TypeScriptCodeStyleSettings>
     <XML>
       <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
     </XML>
@@ -49,6 +59,10 @@
       <indentOptions>
         <option name="USE_TAB_CHARACTER" value="true" />
       </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="TypeScript">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+      <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
     </codeStyleSettings>
     <codeStyleSettings language="XML">
       <indentOptions>

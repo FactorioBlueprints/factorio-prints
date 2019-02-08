@@ -1,7 +1,7 @@
 import {RECEIVED_TAGS, SUBSCRIBED_TO_TAGS} from '../actions/actionTypes';
 
-const initialState =
-{
+const initialState
+= {
 	loading     : false,
 	data        : [],
 	tagHierarchy: {},

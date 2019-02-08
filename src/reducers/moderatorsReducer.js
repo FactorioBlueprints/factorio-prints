@@ -1,7 +1,7 @@
 import {RECEIVED_MODERATORS, SUBSCRIBED_TO_MODERATORS} from '../actions/actionTypes';
 
-const initialState =
-{
+const initialState
+= {
 	loading: false,
 	data   : {},
 };

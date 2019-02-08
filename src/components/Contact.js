@@ -2,16 +2,18 @@ import {faReddit, faDiscord}  from '@fortawesome/free-brands-svg-icons';
 import {faEnvelope}           from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import React, {PureComponent} from 'react';
-import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
+import Jumbotron              from 'react-bootstrap/Jumbotron';
 
 class Contact extends PureComponent
 {
 	render()
 	{
 		return (
-			<Jumbotron>
-				<h1>{'Contact me'}</h1>
-				<p>
+			<Jumbotron fluid>
+				<h1 className='display-4'>
+					Contact me
+				</h1>
+				<p className='lead'>
 					<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
 					<a
 						target='_blank'
@@ -21,7 +23,7 @@ class Contact extends PureComponent
 						{' factorio dot prints at gmail dot com'}
 					</a>
 				</p>
-				<p>
+				<p className='lead'>
 					<FontAwesomeIcon icon={faReddit} size='lg' fixedWidth />
 					<a
 						target='_blank'
@@ -31,11 +33,11 @@ class Contact extends PureComponent
 						{' /u/FactorioBlueprints'}
 					</a>
 				</p>
-				<p>
+				<p className='lead'>
 					<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
 					{' FactorioBlueprints#7181'}
 				</p>
-				<p>
+				<p className='lead'>
 					Please reach out with any feedback, especially to report bugs!
 				</p>
 			</Jumbotron>

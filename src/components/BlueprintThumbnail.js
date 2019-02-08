@@ -3,10 +3,9 @@ import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import Col                    from 'react-bootstrap/lib/Col';
-import OverlayTrigger         from 'react-bootstrap/lib/OverlayTrigger';
-import Thumbnail              from 'react-bootstrap/lib/Thumbnail';
-import Tooltip                from 'react-bootstrap/lib/Tooltip';
+import Card                   from 'react-bootstrap/Card';
+import OverlayTrigger         from 'react-bootstrap/OverlayTrigger';
+import Tooltip                from 'react-bootstrap/Tooltip';
 import {connect}              from 'react-redux';
 import {Link}                 from 'react-router-dom';
 
@@ -32,31 +31,38 @@ class BlueprintThumbnail extends PureComponent
 		const isMine     = myBlueprints[key] === true;
 
 		const tooltip  = (
-			<Tooltip id='thumbnail-title-tooltip'>
+			<Tooltip>
 				{title}
 			</Tooltip>
 		);
 		const imageUrl = buildImageUrl(imgurId, imgurType, 'b');
 
-		const mineStyle     = isMine ? 'text-primary' : 'text-default';
-		const favoriteStyle = isFavorite ? 'text-primary' : 'text-default';
+		const mineStyle     = isMine ? 'text-warning' : 'text-default';
+		const favoriteStyle = isFavorite ? 'text-warning' : 'text-default';
 
 		return (
-			<Col xs={6} sm={6} md={2}>
-				<Link to={`/view/${key}`}>
-					<Thumbnail src={imageUrl}>
+			<div className='col-auto p-0 mt-2'>
+				<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
+					<Link to={`/view/${key}`}>
+						<Card.Img variant='top' src={imageUrl} />
+					</Link>
+					<p className='truncate p-1'>
+						{`${numberOfFavorites}`}
+						<span className={favoriteStyle}>
+							{/* TODO: This heart should be a toggle button */}
+							<FontAwesomeIcon icon={faHeart} className='text-error' />
+						</span>
+						{'  '}
 						<OverlayTrigger placement='bottom' overlay={tooltip}>
-							<p className={`truncate ${mineStyle}`}>
-								{title}
-							</p>
+							<Link to={`/view/${key}`}>
+								<span className={mineStyle}>
+									{title}
+								</span>
+							</Link>
 						</OverlayTrigger>
-						<p>
-							<FontAwesomeIcon icon={faHeart} className={favoriteStyle} />
-							{numberOfFavorites}
-						</p>
-					</Thumbnail>
-				</Link>
-			</Col>
+					</p>
+				</Card>
+			</div>
 		);
 	}
 }

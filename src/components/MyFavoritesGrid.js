@@ -4,10 +4,9 @@ import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import Grid                   from 'react-bootstrap/lib/Grid';
-import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
-import PageHeader             from 'react-bootstrap/lib/PageHeader';
-import Row                    from 'react-bootstrap/lib/Row';
+import Container              from 'react-bootstrap/Container';
+import Jumbotron              from 'react-bootstrap/Jumbotron';
+import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
@@ -17,6 +16,7 @@ import * as propTypes from '../propTypes';
 import * as selectors from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
+import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
@@ -47,16 +47,18 @@ class MyFavoritesGrid extends PureComponent
 		}
 	}
 
-	calls = 0;
-
 	render()
 	{
 		if (!this.props.user)
 		{
 			return (
-				<Jumbotron>
-					<h1>{'My Favorites'}</h1>
-					<p>{'Please log in with Google or GitHub in order to view your favorite blueprints.'}</p>
+				<Jumbotron fluid>
+					<h1 className='display-4'>
+						My Favorites
+					</h1>
+					<p className='lead'>
+						Please log in with Google or GitHub in order to view your favorite blueprints.
+					</p>
 				</Jumbotron>
 			);
 		}
@@ -64,8 +66,8 @@ class MyFavoritesGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<Jumbotron>
-					<h1>
+				<Jumbotron fluid>
+					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
 					</h1>
@@ -74,23 +76,19 @@ class MyFavoritesGrid extends PureComponent
 		}
 
 		return (
-			<Grid>
-				<Row>
-					<PageHeader>
-						{'Viewing My Favorites'}
-					</PageHeader>
-				</Row>
-				<Row>
+			<Container fluid className='px-4'>
+				<PageHeader title='My Favorites' />
+				<Row className='pb-2'>
 					<SearchForm />
 					<TagForm />
 				</Row>
-				<Row>
+				<Row noGutters className='justify-content-md-center'>
 					{
 						this.props.blueprintSummaries.map(blueprintSummary =>
 							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
 					}
 				</Row>
-			</Grid>
+			</Container>
 		);
 	}
 }

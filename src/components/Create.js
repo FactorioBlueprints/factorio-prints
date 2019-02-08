@@ -1,45 +1,44 @@
 import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
-import {forbidExtraProps}           from 'airbnb-prop-types';
-import firebase                     from 'firebase/app';
-import update                       from 'immutability-helper';
-import difference                   from 'lodash/difference';
-import forEach                      from 'lodash/forEach';
-import isEmpty                      from 'lodash/isEmpty';
-import some                         from 'lodash/some';
-import marked                       from 'marked';
-import PropTypes                    from 'prop-types';
-import React, {PureComponent}       from 'react';
-import Alert                        from 'react-bootstrap/lib/Alert';
-import Button                       from 'react-bootstrap/lib/Button';
-import ButtonToolbar                from 'react-bootstrap/lib/ButtonToolbar';
-import Col                          from 'react-bootstrap/lib/Col';
-import ControlLabel                 from 'react-bootstrap/lib/ControlLabel';
-import FormControl                  from 'react-bootstrap/lib/FormControl';
-import FormGroup                    from 'react-bootstrap/lib/FormGroup';
-import Grid                         from 'react-bootstrap/lib/Grid';
-import Jumbotron                    from 'react-bootstrap/lib/Jumbotron';
-import Modal                        from 'react-bootstrap/lib/Modal';
-import PageHeader                   from 'react-bootstrap/lib/PageHeader';
-import Panel                        from 'react-bootstrap/lib/Panel';
-import ProgressBar                  from 'react-bootstrap/lib/ProgressBar';
-import Row                          from 'react-bootstrap/lib/Row';
-import Thumbnail                    from 'react-bootstrap/lib/Thumbnail';
-import Dropzone                     from 'react-dropzone';
-import {connect}                    from 'react-redux';
-import Select                       from 'react-select';
+
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import classNames             from 'classnames';
+import firebase               from 'firebase/app';
+import update                 from 'immutability-helper';
+import difference             from 'lodash/difference';
+import forEach                from 'lodash/forEach';
+import isEmpty                from 'lodash/isEmpty';
+import some                   from 'lodash/some';
+import marked                 from 'marked';
+import PropTypes              from 'prop-types';
+import React, {PureComponent} from 'react';
+import Alert                  from 'react-bootstrap/Alert';
+import Button                 from 'react-bootstrap/Button';
+import ButtonToolbar          from 'react-bootstrap/ButtonToolbar';
+import Card                   from 'react-bootstrap/Card';
+import Col                    from 'react-bootstrap/Col';
+import Container              from 'react-bootstrap/Container';
+import Form                   from 'react-bootstrap/Form';
+import FormControl            from 'react-bootstrap/FormControl';
+import Modal                  from 'react-bootstrap/Modal';
+import ProgressBar            from 'react-bootstrap/ProgressBar';
+import Row                    from 'react-bootstrap/Row';
+import Dropzone               from 'react-dropzone';
+import {connect}              from 'react-redux';
+import Select                 from 'react-select';
 import 'react-select/dist/react-select.css';
-import {bindActionCreators}         from 'redux';
+import {bindActionCreators}   from 'redux';
 
-import {subscribeToTags}                           from '../actions/actionCreators';
-import {app}                                       from '../base';
-import Blueprint                                   from '../Blueprint';
-import noImageAvailable                            from '../gif/No_available_image.gif';
-import generateTagSuggestions                      from '../helpers/generateTagSuggestions';
-import scaleImage                                  from '../helpers/ImageScaler';
-import {historySchema, locationSchema, userSchema} from '../propTypes';
-import * as selectors                              from '../selectors';
+import {subscribeToTags}      from '../actions/actionCreators';
+import {app}                  from '../base';
+import Blueprint              from '../Blueprint';
+import noImageAvailable       from '../gif/No_available_image.gif';
+import generateTagSuggestions from '../helpers/generateTagSuggestions';
+import scaleImage             from '../helpers/ImageScaler';
+import * as propTypes         from '../propTypes';
+import * as selectors         from '../selectors';
 
+import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
 
 const renderer = new marked.Renderer();
@@ -67,7 +66,7 @@ marked.setOptions({
 class Create extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user           : userSchema,
+		user           : propTypes.userSchema,
 		subscribeToTags: PropTypes.func.isRequired,
 		tags           : PropTypes.arrayOf(PropTypes.string).isRequired,
 		tagOptions     : PropTypes.arrayOf(PropTypes.shape(forbidExtraProps({
@@ -80,8 +79,8 @@ class Create extends PureComponent
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location       : locationSchema,
-		history        : historySchema,
+		location       : propTypes.locationSchema,
+		history        : propTypes.historySchema,
 		staticContext  : PropTypes.shape(forbidExtraProps({})),
 	});
 
@@ -180,7 +179,7 @@ class Create extends PureComponent
 	handleDrop = (acceptedFiles, rejectedFiles) =>
 	{
 		this.setState({
-			files    : acceptedFiles,
+			files   : acceptedFiles,
 			rejectedFiles,
 			imageUrl: acceptedFiles.length > 1 && acceptedFiles[0].preview,
 		});
@@ -397,7 +396,7 @@ class Create extends PureComponent
 
 							const blueprint = {
 								...this.state.blueprint,
-								author           : {
+								author: {
 									userId: this.props.user.uid,
 								},
 								authorId         : this.props.user.uid,
@@ -490,18 +489,19 @@ class Create extends PureComponent
 		}
 
 		return (
-			<FormGroup controlId='formHorizontalBlueprint'>
-				<Col componentClass={ControlLabel} sm={2}>{'Attached screenshot'}</Col>
+			<Form.Group as={Row}>
+				<Form.Label column sm='2'>
+					{'Attached screenshot'}
+				</Form.Label>
 				<Col sm={10}>
-					<Row>
-						<Col xs={6} md={3}>
-							<Thumbnail src={this.state.thumbnail || this.state.imageUrl || noImageAvailable}>
-								<h4 className='truncate'>{this.state.blueprint.title}</h4>
-							</Thumbnail>
-						</Col>
-					</Row>
+					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
+						<Card.Img variant='top' src={this.state.thumbnail || this.state.imageUrl || noImageAvailable} />
+						<Card.Title className='truncate'>
+							{this.state.blueprint.title}
+						</Card.Title>
+					</Card>
 				</Col>
-			</FormGroup>
+			</Form.Group>
 		);
 	};
 
@@ -510,10 +510,14 @@ class Create extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<Jumbotron>
-					<h1>{'Create a Blueprint'}</h1>
-					<p>{'Please log in with Google or GitHub in order to add a Blueprint.'}</p>
-				</Jumbotron>
+				<>
+					<h1>
+						{'Create a Blueprint'}
+					</h1>
+					<p>
+						{'Please log in with Google or GitHub in order to add a Blueprint.'}
+					</p>
+				</>
 			);
 		}
 
@@ -521,26 +525,32 @@ class Create extends PureComponent
 		const allTagSuggestions    = generateTagSuggestions(
 			this.state.blueprint.title,
 			this.state.parsedBlueprint,
-			this.state.v15Decoded);
+			this.state.v15Decoded
+		);
 		const unusedTagSuggestions = difference(allTagSuggestions, this.state.blueprint.tags);
 
 		return (
-			<div>
+			<>
 				<Modal show={this.state.uploadProgressBarVisible}>
 					<Modal.Header>
-						<Modal.Title>Image Upload Progress</Modal.Title>
+						<Modal.Title>
+							Image Upload Progress
+						</Modal.Title>
 					</Modal.Header>
 					<Modal.Body>
 						<ProgressBar
-							active
 							now={this.state.uploadProgressPercent}
 							label={`${this.state.uploadProgressPercent}%`}
+							variant='warning'
+							className='text-light'
 						/>
 					</Modal.Body>
 				</Modal>
 				<Modal show={!isEmpty(this.state.submissionWarnings)}>
 					<Modal.Header>
-						<Modal.Title>{'Submission warnings'}</Modal.Title>
+						<Modal.Title>
+							{'Submission warnings'}
+						</Modal.Title>
 					</Modal.Header>
 					<Modal.Body>
 						<p>
@@ -558,11 +568,11 @@ class Create extends PureComponent
 					</Modal.Body>
 					<Modal.Footer>
 						<ButtonToolbar>
-							<Button bsStyle='danger' onClick={this.handleForceCreateBlueprint}>
+							<Button variant='danger' type='button' onClick={this.handleForceCreateBlueprint}>
 								<FontAwesomeIcon icon={faSave} size='lg' />
 								{' Save'}
 							</Button>
-							<Button bsStyle='primary' onClick={this.handleDismissWarnings}>
+							<Button variant='primary' type='button' onClick={this.handleDismissWarnings}>
 								<FontAwesomeIcon icon={faArrowLeft} size='lg' />
 								{' Go back'}
 							</Button>
@@ -570,15 +580,17 @@ class Create extends PureComponent
 					</Modal.Footer>
 				</Modal>
 
-				<Grid>
+				<Container>
 					<Row>
 						{
 							this.state.rejectedFiles.length > 0 && <Alert
-								bsStyle='warning'
+								variant='warning'
 								className='alert-fixed'
 								onDismiss={this.handleDismissAlert}
 							>
-								<h4>{'Error uploading files'}</h4>
+								<h4>
+									{'Error uploading files'}
+								</h4>
 								<ul>
 									{
 										this.state.rejectedFiles.map(rejectedFile => (
@@ -592,11 +604,13 @@ class Create extends PureComponent
 						}
 						{
 							this.state.submissionErrors.length > 0 && <Alert
-								bsStyle='danger'
+								variant='danger'
 								className='alert-fixed'
 								onDismiss={this.handleDismissError}
 							>
-								<h4>{'Error submitting blueprint'}</h4>
+								<h4>
+									{'Error submitting blueprint'}
+								</h4>
 								<ul>
 									{
 										this.state.submissionErrors.map(submissionError => (
@@ -609,17 +623,16 @@ class Create extends PureComponent
 							</Alert>
 						}
 					</Row>
+					<PageHeader title='Create a new Blueprint' />
 					<Row>
-						<PageHeader>
-							{'Create a new Blueprint'}
-						</PageHeader>
-					</Row>
-					<Row>
-						<form className='form-horizontal'>
-							<FormGroup controlId='formHorizontalTitle'>
-								<Col componentClass={ControlLabel} sm={2} autoFocus>{'Title'}</Col>
+						<Form className='w-100'>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Title'}
+								</Form.Label>
 								<Col sm={10}>
 									<FormControl
+										autoFocus
 										type='text'
 										name='title'
 										placeholder='Title'
@@ -627,56 +640,62 @@ class Create extends PureComponent
 										onChange={this.handleChange}
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
-							<FormGroup controlId='formHorizontalDescription'>
-								<Col componentClass={ControlLabel} sm={2}>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
 									{'Description '}
 									<a href='https://guides.github.com/features/mastering-markdown/'>
 										{'[Tutorial]'}
 									</a>
-								</Col>
+								</Form.Label>
 								<Col sm={10}>
 									<FormControl
-										componentClass='textarea'
+										as='textarea'
 										placeholder='Description (plain text or *GitHub Flavored Markdown*)'
 										value={blueprint.descriptionMarkdown}
 										onChange={this.handleDescriptionChanged}
 										style={{minHeight: 200}}
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Description (Preview)'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Description (Preview)'}
+								</Form.Label>
 								<Col sm={10}>
-									<Panel>
+									<Card>
 										<div
 											style={{minHeight: 200}}
 											dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}}
 										/>
-									</Panel>
+									</Card>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
-							<FormGroup controlId='formHorizontalBlueprint'>
-								<Col componentClass={ControlLabel} sm={2}>{'Blueprint String'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Blueprint String'}
+								</Form.Label>
 								<Col sm={10}>
 									<FormControl
-										componentClass='textarea'
+										className='blueprintString'
+										as='textarea'
 										name='blueprintString'
 										placeholder='Blueprint String'
 										value={blueprint.blueprintString}
-										className='blueprintString'
 										onChange={this.handleChange}
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
 							{
 								unusedTagSuggestions.length > 0
-								&& <FormGroup>
-									<Col componentClass={ControlLabel} sm={2}>{'Tag Suggestions'}</Col>
+								&& <Form.Group as={Row}>
+									<Form.Label column sm='2'>
+										{'Tag Suggestions'}
+									</Form.Label>
 									<Col sm={10}>
 										<ButtonToolbar>
 											{
@@ -690,11 +709,13 @@ class Create extends PureComponent
 											}
 										</ButtonToolbar>
 									</Col>
-								</FormGroup>
+								</Form.Group>
 							}
 
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Tags'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Tags'}
+								</Form.Label>
 								<Col sm={10}>
 									<Select
 										value={this.state.blueprint.tags}
@@ -704,41 +725,54 @@ class Create extends PureComponent
 										placeholder='Select at least one tag'
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Upload screenshot'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Upload screenshot'}
+								</Form.Label>
 								<Col sm={10}>
-									<div>
-										<Dropzone
-											accept=' image/*'
-											maxSize={10000000}
-											className='dropzone'
-											onDrop={this.handleDrop}
-										>
-											<div>
-												{'Drop an image file here, or click to open the file chooser.'}
+									<Dropzone
+										accept=' image/*'
+										maxSize={10000000}
+										onDrop={this.handleDrop}
+									>
+										{({getRootProps, getInputProps, isDragActive}) => (
+											<div
+												{...getRootProps()}
+												className={classNames('dropzone', {'dropzone--isActive': isDragActive})}
+											>
+												<input {...getInputProps()} />
+												{
+													isDragActive
+														? <p>Drop files here...</p>
+														: <p>
+															{'Drop an image file here, or click to open the file chooser.'}
+														</p>
+												}
 											</div>
-										</Dropzone>
-									</div>
+										)}
+									</Dropzone>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
 							{this.renderPreview()}
 
-							<FormGroup>
-								<Col smOffset={2} sm={10}>
+							<Form.Group as={Row}>
+								<Col sm={{span: 10, offset: 2}}>
 									<ButtonToolbar>
 										<Button
-											bsStyle='primary'
-											bsSize='large'
+											type='button'
+											variant='warning'
+											size='lg'
 											onClick={this.handleCreateBlueprint}
 										>
 											<FontAwesomeIcon icon={faSave} size='lg' />
 											{' Save'}
 										</Button>
 										<Button
-											bsSize='large'
+											type='button'
+											size='lg'
 											onClick={this.handleCancel}
 										>
 											<FontAwesomeIcon icon={faBan} size='lg' />
@@ -746,11 +780,11 @@ class Create extends PureComponent
 										</Button>
 									</ButtonToolbar>
 								</Col>
-							</FormGroup>
-						</form>
+							</Form.Group>
+						</Form>
 					</Row>
-				</Grid>
-			</div>
+				</Container>
+			</>
 		);
 	}
 }

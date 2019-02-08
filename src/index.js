@@ -13,7 +13,6 @@ import createSagaMiddleware from 'redux-saga';
 import Root from './components/Root';
 
 import './css/style.css';
-import './css/theme.css';
 
 import {saveState} from './localStorage';
 
@@ -26,13 +25,14 @@ const sagaMiddleware = createSagaMiddleware();
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-// const preloadedState = loadState();
+// Const preloadedState = loadState();
 
 // Mount it on the Store
 const store = createStore(
 	rootReducer,
-	// preloadedState,
-	composeEnhancers(applyMiddleware(sagaMiddleware)));
+	// PreloadedState,
+	composeEnhancers(applyMiddleware(sagaMiddleware))
+);
 
 store.subscribe(throttle(() =>
 {
@@ -87,5 +87,7 @@ store.subscribe(throttle(() =>
 
 sagaMiddleware.run(rootSaga);
 
-ReactDOM.render(<Provider store={store}><Root /></Provider>, document.getElementById('root'));
+ReactDOM.render(<Provider store={store}>
+	<Root />
+</Provider>, document.getElementById('root'));
 registerServiceWorker();

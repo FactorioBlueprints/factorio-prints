@@ -4,13 +4,12 @@ import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import Button                 from 'react-bootstrap/lib/Button';
-import ButtonToolbar          from 'react-bootstrap/lib/ButtonToolbar';
-import Col                    from 'react-bootstrap/lib/Col';
-import Grid                   from 'react-bootstrap/lib/Grid';
-import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
-import PageHeader             from 'react-bootstrap/lib/PageHeader';
-import Row                    from 'react-bootstrap/lib/Row';
+import Button                 from 'react-bootstrap/Button';
+import ButtonToolbar          from 'react-bootstrap/ButtonToolbar';
+import Col                    from 'react-bootstrap/Col';
+import Container              from 'react-bootstrap/Container';
+import Jumbotron              from 'react-bootstrap/Jumbotron';
+import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
@@ -27,6 +26,7 @@ import * as propTypes from '../propTypes';
 import * as selectors from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
+import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
@@ -87,8 +87,8 @@ class MostFavoritedGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<Jumbotron>
-					<h1>
+				<Jumbotron fluid>
+					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
 					</h1>
@@ -97,44 +97,40 @@ class MostFavoritedGrid extends PureComponent
 		}
 
 		return (
-			<Grid>
-				<Row>
-					<PageHeader>
-						{'Viewing Most Favorited'}
-					</PageHeader>
-				</Row>
-				<Row>
+			<Container fluid className='pl-4 pr-4'>
+				<PageHeader title='Most Favorited' />
+				<Row className='mb-2'>
 					<SearchForm />
 					<TagForm />
 				</Row>
-				<Row>
+				<Row noGutters className='justify-content-md-center'>
 					{
 						this.props.blueprintSummaries.map(blueprintSummary =>
 							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
 					}
 				</Row>
 				<Row>
-					<Col md={6} mdOffset={3}>
+					<Col md={{span: 6, offset: 3}}>
 						<ButtonToolbar>
-							<Button onClick={this.handleFirstPage} disabled={this.props.currentPage === 1} >
+							<Button type='button' onClick={this.handleFirstPage} disabled={this.props.currentPage === 1} >
 								<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
 								{'First Page'}
 							</Button>
-							<Button onClick={this.handlePreviousPage} disabled={this.props.currentPage === 1}>
+							<Button type='button' onClick={this.handlePreviousPage} disabled={this.props.currentPage === 1}>
 								<FontAwesomeIcon icon={faAngleLeft} size='lg' fixedWidth />
 								{'Previous Page'}
 							</Button>
-							<Button bsStyle='link' disabled>
+							<Button variant='link' type='button' disabled>
 								{`Page: ${this.props.currentPage}`}
 							</Button>
-							<Button onClick={this.handleNextPage} disabled={this.props.isLastPage}>
+							<Button type='button' onClick={this.handleNextPage} disabled={this.props.isLastPage}>
 								{'Next Page'}
 								<FontAwesomeIcon icon={faAngleRight} size='lg' fixedWidth />
 							</Button>
 						</ButtonToolbar>
 					</Col>
 				</Row>
-			</Grid>
+			</Container>
 		);
 	}
 }

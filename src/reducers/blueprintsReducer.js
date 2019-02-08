@@ -1,7 +1,7 @@
 import {RECEIVED_BLUEPRINT, SUBSCRIBED_TO_BLUEPRINT} from '../actions/actionTypes';
 
-export const initialBlueprintState =
-{
+export const initialBlueprintState
+= {
 	loading: false,
 	data   : undefined,
 };

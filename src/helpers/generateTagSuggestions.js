@@ -147,7 +147,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		}
 		else if (recipeCounts['advanced-oil-processing'] > 0
 			|| recipeCounts['oil-processing'] > 0
-			|| entityCounts['pumpjack'] > 0)
+			|| entityCounts.pumpjack > 0)
 		{
 			tagSuggestions.push('/production/oil processing/');
 		}
@@ -163,7 +163,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		{
 			tagSuggestions.push('/production/uranium/');
 		}
-		else if (recipeCounts['inserter'] > 0)
+		else if (recipeCounts.inserter > 0)
 		{
 			tagSuggestions.push('/production/inserters/');
 		}
@@ -229,13 +229,13 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 	const generateTagSuggestionsFromEntityCounts = (entityCounts) =>
 	{
 		// Mutually exclusive
-		if (entityCounts['lab'] > 0)
+		if (entityCounts.lab > 0)
 		{
 			tagSuggestions.push('/production/research (labs)/');
 		}
 		else if (!entityCounts['train-stop']
 			&& entityCounts['stone-wall']
-			&& entityCounts['gate']
+			&& entityCounts.gate
 			&& entityCounts['straight-rail']
 			&& entityCounts['rail-signal'])
 		{
@@ -263,13 +263,13 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		{
 			tagSuggestions.push('/power/steam/');
 		}
-		else if (entityCounts['accumulator'] > 1)
+		else if (entityCounts.accumulator > 1)
 		{
 			tagSuggestions.push('/power/accumulator/');
 		}
 
 		// Additional
-		if (entityCounts['beacon'] > 10)
+		if (entityCounts.beacon > 10)
 		{
 			tagSuggestions.push('/general/beaconized/');
 		}

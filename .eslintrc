@@ -66,6 +66,7 @@
     "no-await-in-loop"           : "error",
     "array-element-newline"      : ["error", "consistent"],
     "max-params": "off",
+    "max-lines-per-function": "warn",
 
     // Prevent React to be incorrectly marked as unused
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-uses-react.md
@@ -128,8 +129,6 @@
     // Prevent usage of setState
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-set-state.md
     "react/no-set-state": "off",
-
-    "react/jsx-sort-props"       : "off",
 
     // Prevent usage of .bind() in JSX props
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-no-bind.md
@@ -384,6 +383,20 @@
     // This option validates a specific depth for JSX.
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-max-depth.md
     "react/jsx-max-depth": "off",
+
+    // Enforce consistent usage of destructuring assignment of props, state, and context
+    // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/destructuring-assignment.md
+    "react/destructuring-assignment": "warn",
+
+    "react/jsx-sort-props"       : "off",
+
+    "react/jsx-one-expression-per-line": "warn",
+
+    "react/button-has-type": ["error", {
+      "button": true,
+      "submit": false,
+      "reset": false
+    }],
 
     "lodash/prefer-lodash-method": "off",
 

@@ -1,8 +1,8 @@
-/* eslint-disable dot-notation */
 import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}                            from '@fortawesome/react-fontawesome';
 
-import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
+import classNames             from 'classnames';
 import firebase               from 'firebase/app';
 import update                 from 'immutability-helper';
 import difference             from 'lodash/difference';
@@ -13,21 +13,17 @@ import some                   from 'lodash/some';
 import marked                 from 'marked';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import Alert                  from 'react-bootstrap/lib/Alert';
-import Button                 from 'react-bootstrap/lib/Button';
-import ButtonToolbar          from 'react-bootstrap/lib/ButtonToolbar';
-import Col                    from 'react-bootstrap/lib/Col';
-import ControlLabel           from 'react-bootstrap/lib/ControlLabel';
-import FormControl            from 'react-bootstrap/lib/FormControl';
-import FormGroup              from 'react-bootstrap/lib/FormGroup';
-import Grid                   from 'react-bootstrap/lib/Grid';
-import Jumbotron              from 'react-bootstrap/lib/Jumbotron';
-import Modal                  from 'react-bootstrap/lib/Modal';
-import PageHeader             from 'react-bootstrap/lib/PageHeader';
-import Panel                  from 'react-bootstrap/lib/Panel';
-import ProgressBar            from 'react-bootstrap/lib/ProgressBar';
-import Row                    from 'react-bootstrap/lib/Row';
-import Thumbnail              from 'react-bootstrap/lib/Thumbnail';
+import Alert                  from 'react-bootstrap/Alert';
+import Button                 from 'react-bootstrap/Button';
+import ButtonToolbar          from 'react-bootstrap/ButtonToolbar';
+import Card                   from 'react-bootstrap/Card';
+import Col                    from 'react-bootstrap/Col';
+import Container              from 'react-bootstrap/Container';
+import Form                   from 'react-bootstrap/Form';
+import FormControl            from 'react-bootstrap/FormControl';
+import Modal                  from 'react-bootstrap/Modal';
+import ProgressBar            from 'react-bootstrap/ProgressBar';
+import Row                    from 'react-bootstrap/Row';
 import Dropzone               from 'react-dropzone';
 import {connect}              from 'react-redux';
 import Select                 from 'react-select';
@@ -46,6 +42,7 @@ import * as propTypes         from '../propTypes';
 import * as selectors         from '../selectors';
 
 import NoMatch             from './NoMatch';
+import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
 
 const renderer = new marked.Renderer();
@@ -83,16 +80,16 @@ class EditBlueprint extends PureComponent
 		blueprint            : propTypes.blueprintSchema,
 		loading              : PropTypes.bool.isRequired,
 		match                : PropTypes.shape(forbidExtraProps({
-			params: PropTypes.shape(forbidExtraProps({
+			params : PropTypes.shape(forbidExtraProps({
 				blueprintId: PropTypes.string.isRequired,
 			})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location     : propTypes.locationSchema,
-		history      : propTypes.historySchema,
-		staticContext: PropTypes.shape(forbidExtraProps({})),
+		location             : propTypes.locationSchema,
+		history              : propTypes.historySchema,
+		staticContext        : PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static emptyTags = [];
@@ -306,7 +303,7 @@ class EditBlueprint extends PureComponent
 		}
 
 		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
-		if (blueprint.decodedObject === null)
+		if (isEmpty(blueprint.decodedObject))
 		{
 			submissionWarnings.push('Could not parse blueprint.');
 			return submissionWarnings;
@@ -435,11 +432,7 @@ class EditBlueprint extends PureComponent
 			{
 				updates[`/blueprints/${this.props.id}/fileName/`] = file.name;
 			}
-			if (uploadTask)
-			{
-				updates[`/blueprints/${this.props.id}/imageUrl/`]        = uploadTask.snapshot.downloadURL;
-				updates[`/blueprintsPrivate/${this.props.id}/imageUrl/`] = uploadTask.snapshot.downloadURL;
-			}
+
 			if (this.state.thumbnail)
 			{
 				updates[`/blueprintsPrivate/${this.props.id}/thumbnail`] = this.state.thumbnail;
@@ -454,7 +447,16 @@ class EditBlueprint extends PureComponent
 				updates[`/byTag/${tag}/${this.props.id}`] = true;
 			});
 
-			app.database().ref().update(updates);
+			if (uploadTask)
+			{
+				return uploadTask.snapshot.ref.getDownloadURL().then((downloadUrl) =>
+				{
+					updates[`/blueprints/${this.props.id}/imageUrl/`]        = downloadUrl;
+					updates[`/blueprintsPrivate/${this.props.id}/imageUrl/`] = downloadUrl;
+				}).then(() => app.database().ref().update(updates));
+			}
+
+			return app.database().ref().update(updates);
 		})
 			.then(() => this.props.history.push(`/view/${this.props.id}`));
 		// TODO: Delete old images from storage and imgur
@@ -540,18 +542,19 @@ class EditBlueprint extends PureComponent
 		const thumbnail  = buildImageUrl(id, type, 'b');
 
 		return (
-			<FormGroup controlId='formHorizontalBlueprint'>
-				<Col componentClass={ControlLabel} sm={2}>{'Old screenshot'}</Col>
+			<Form.Group as={Row}>
+				<Form.Label column sm='2'>
+					Old screenshot
+				</Form.Label>
 				<Col sm={10}>
-					<Row>
-						<Col xs={6} md={3}>
-							<Thumbnail src={thumbnail}>
-								<h4 className='truncate'>{this.state.blueprint.title}</h4>
-							</Thumbnail>
-						</Col>
-					</Row>
+					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
+						<Card.Img variant='top' src={thumbnail} />
+						<Card.Title className='truncate'>
+							{this.state.blueprint.title}
+						</Card.Title>
+					</Card>
 				</Col>
-			</FormGroup>
+			</Form.Group>
 		);
 	};
 
@@ -563,18 +566,19 @@ class EditBlueprint extends PureComponent
 		}
 
 		return (
-			<FormGroup controlId='formHorizontalBlueprint'>
-				<Col componentClass={ControlLabel} sm={2}>{'Attached screenshot'}</Col>
+			<Form.Group as={Row}>
+				<Form.Label column sm='2'>
+					{'Attached screenshot'}
+				</Form.Label>
 				<Col sm={10}>
-					<Row>
-						<Col xs={6} md={3}>
-							<Thumbnail src={this.state.thumbnail || this.state.blueprint.imageUrl || noImageAvailable}>
-								<h4 className='truncate'>{this.state.blueprint.title}</h4>
-							</Thumbnail>
-						</Col>
-					</Row>
+					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
+						<Card.Img variant='top' src={this.state.thumbnail || this.state.imageUrl || noImageAvailable} />
+						<Card.Title className='truncate'>
+							{this.state.blueprint.title}
+						</Card.Title>
+					</Card>
 				</Col>
-			</FormGroup>
+			</Form.Group>
 		);
 	};
 
@@ -583,22 +587,24 @@ class EditBlueprint extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<Jumbotron>
-					<h1>{'Create a Blueprint'}</h1>
-					<p>{'Please log in with Google or GitHub in order to edit a Blueprint.'}</p>
-				</Jumbotron>
+				<>
+					<h1>
+						{'Edit a Blueprint'}
+					</h1>
+					<p>
+						{'Please log in with Google or GitHub in order to add a Blueprint.'}
+					</p>
+				</>
 			);
 		}
 
 		if (this.props.loading)
 		{
 			return (
-				<Jumbotron>
-					<h1>
-						<FontAwesomeIcon icon={faCog} spin />
-						{' Loading data'}
-					</h1>
-				</Jumbotron>
+				<h1>
+					<FontAwesomeIcon icon={faCog} spin />
+					{' Loading data'}
+				</h1>
 			);
 		}
 
@@ -611,7 +617,11 @@ class EditBlueprint extends PureComponent
 		const ownedByCurrentUser = this.props.user && this.props.user.uid === blueprint.author.userId;
 		if (!ownedByCurrentUser && !this.props.isModerator)
 		{
-			return <Jumbotron><h1>{'You are not the author of this blueprint.'}</h1></Jumbotron>;
+			return (
+				<h1>
+					You are not the author of this blueprint.
+				</h1>
+			);
 		}
 
 		const allTagSuggestions    = generateTagSuggestions(
@@ -622,22 +632,27 @@ class EditBlueprint extends PureComponent
 		const unusedTagSuggestions = difference(allTagSuggestions, this.state.blueprint.tags);
 
 		return (
-			<div>
+			<>
 				<Modal show={this.state.uploadProgressBarVisible}>
 					<Modal.Header>
-						<Modal.Title>Image Upload Progress</Modal.Title>
+						<Modal.Title>
+							Image Upload Progress
+						</Modal.Title>
 					</Modal.Header>
 					<Modal.Body>
 						<ProgressBar
-							active
 							now={this.state.uploadProgressPercent}
 							label={`${this.state.uploadProgressPercent}%`}
+							variant='warning'
+							className='text-light'
 						/>
 					</Modal.Body>
 				</Modal>
 				<Modal show={!isEmpty(this.state.submissionWarnings)}>
 					<Modal.Header>
-						<Modal.Title>{'Submission warnings'}</Modal.Title>
+						<Modal.Title>
+							{'Submission warnings'}
+						</Modal.Title>
 					</Modal.Header>
 					<Modal.Body>
 						<p>
@@ -655,11 +670,11 @@ class EditBlueprint extends PureComponent
 					</Modal.Body>
 					<Modal.Footer>
 						<ButtonToolbar>
-							<Button bsStyle='danger' onClick={this.handleForceSaveBlueprintEdits}>
+							<Button variant='danger' type='button' onClick={this.handleForceSaveBlueprintEdits}>
 								<FontAwesomeIcon icon={faSave} size='lg' />
 								{' Save'}
 							</Button>
-							<Button bsStyle='primary' onClick={this.handleDismissWarnings}>
+							<Button variant='primary' type='button' onClick={this.handleDismissWarnings}>
 								<FontAwesomeIcon icon={faArrowLeft} size='lg' />
 								{' Go back'}
 							</Button>
@@ -668,28 +683,40 @@ class EditBlueprint extends PureComponent
 				</Modal>
 				<Modal show={this.state.deletionModalVisible} onHide={this.handleHideConfirmDelete}>
 					<Modal.Header closeButton>
-						<Modal.Title>Are you sure you want to delete the blueprint?</Modal.Title>
+						<Modal.Title>
+							Are you sure you want to delete the blueprint?
+						</Modal.Title>
 					</Modal.Header>
 					<Modal.Body>
-						<p>Deleting: {blueprint.title}</p>
-						<p>This cannot be undone.</p>
+						<p>
+							{`Deleting: ${blueprint.title}`}
+						</p>
+						<p>
+This cannot be undone.
+						</p>
 					</Modal.Body>
 					<Modal.Footer>
 						<ButtonToolbar>
-							<Button bsStyle='danger' onClick={this.handleDeleteBlueprint}>Delete</Button>
-							<Button onClick={this.handleHideConfirmDelete}>Cancel</Button>
+							<Button variant='danger' type='button' onClick={this.handleDeleteBlueprint}>
+								Delete
+							</Button>
+							<Button onClick={this.handleHideConfirmDelete}>
+								Cancel
+							</Button>
 						</ButtonToolbar>
 					</Modal.Footer>
 				</Modal>
-				<Grid>
+				<Container>
 					<Row>
 						{
 							this.state.rejectedFiles.length > 0 && <Alert
-								bsStyle='warning'
+								variant='warning'
 								className='alert-fixed'
 								onDismiss={this.handleDismissAlert}
 							>
-								<h4>{'Error uploading files'}</h4>
+								<h4>
+									{'Error uploading files'}
+								</h4>
 								<ul>
 									{
 										this.state.rejectedFiles.map(rejectedFile => (
@@ -703,11 +730,13 @@ class EditBlueprint extends PureComponent
 						}
 						{
 							this.state.submissionErrors.length > 0 && <Alert
-								bsStyle='danger'
+								variant='danger'
 								className='alert-fixed'
 								onDismiss={this.handleDismissError}
 							>
-								<h4>{'Error editing blueprint'}</h4>
+								<h4>
+									Error editing blueprint
+								</h4>
 								<ul>
 									{
 										this.state.submissionErrors.map(submissionError => (
@@ -720,20 +749,16 @@ class EditBlueprint extends PureComponent
 							</Alert>
 						}
 					</Row>
+					<PageHeader title={`Editing: ${blueprint.title}`} />
 					<Row>
-						<PageHeader>
-							{'Editing: '}
-							{blueprint.title}
-						</PageHeader>
-					</Row>
-					<Row>
-						<form className='form-horizontal'>
-							<FormGroup controlId='formHorizontalTitle'>
-								<Col componentClass={ControlLabel} sm={2} autoFocus>
+						<Form className='w-100'>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
 									{'Title'}
-								</Col>
+								</Form.Label>
 								<Col sm={10}>
 									<FormControl
+										autoFocus
 										type='text'
 										name='title'
 										placeholder='Title'
@@ -741,56 +766,62 @@ class EditBlueprint extends PureComponent
 										onChange={this.handleChange}
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
-							<FormGroup controlId='formHorizontalDescription'>
-								<Col componentClass={ControlLabel} sm={2}>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
 									{'Description '}
 									<a href='https://guides.github.com/features/mastering-markdown/'>
 										{'[Tutorial]'}
 									</a>
-								</Col>
+								</Form.Label>
 								<Col sm={10}>
 									<FormControl
-										componentClass='textarea'
+										as='textarea'
 										placeholder='Description (plain text or *GitHub Flavored Markdown*)'
 										value={blueprint.descriptionMarkdown}
 										onChange={this.handleDescriptionChanged}
 										style={{minHeight: 200}}
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Description (Preview)'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Description (Preview)'}
+								</Form.Label>
 								<Col sm={10}>
-									<Panel>
+									<Card>
 										<div
 											style={{minHeight: 200}}
 											dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}}
 										/>
-									</Panel>
+									</Card>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
-							<FormGroup controlId='formHorizontalBlueprint'>
-								<Col componentClass={ControlLabel} sm={2}>{'Blueprint String'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Blueprint String'}
+								</Form.Label>
 								<Col sm={10}>
 									<FormControl
-										componentClass='textarea'
+										className='blueprintString'
+										as='textarea'
 										name='blueprintString'
 										placeholder='Blueprint String'
 										value={blueprint.blueprintString}
-										className='blueprintString'
 										onChange={this.handleChange}
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
 							{
 								unusedTagSuggestions.length > 0
-								&& <FormGroup>
-									<Col componentClass={ControlLabel} sm={2}>{'Tag Suggestions'}</Col>
+								&& <Form.Group as={Row}>
+									<Form.Label column sm='2'>
+										{'Tag Suggestions'}
+									</Form.Label>
 									<Col sm={10}>
 										<ButtonToolbar>
 											{
@@ -804,11 +835,13 @@ class EditBlueprint extends PureComponent
 											}
 										</ButtonToolbar>
 									</Col>
-								</FormGroup>
+								</Form.Group>
 							}
 
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Tags'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									{'Tags'}
+								</Form.Label>
 								<Col sm={10}>
 									<Select
 										value={this.state.blueprint.tags}
@@ -818,36 +851,48 @@ class EditBlueprint extends PureComponent
 										placeholder='Select at least one tag'
 									/>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
 							{this.renderOldThumbnail()}
 
-							<FormGroup>
-								<Col componentClass={ControlLabel} sm={2}>{'Replacement screenshot'}</Col>
+							<Form.Group as={Row}>
+								<Form.Label column sm='2'>
+									Replacement screenshot
+								</Form.Label>
 								<Col sm={10}>
-									<div>
-										<Dropzone
-											accept=' image/*'
-											maxSize={10000000}
-											className='dropzone'
-											onDrop={this.handleDrop}
-										>
-											<div>
-												{'Drop an image file here, or click to open the file chooser.'}
+									<Dropzone
+										accept=' image/*'
+										maxSize={10000000}
+										onDrop={this.handleDrop}
+									>
+										{({getRootProps, getInputProps, isDragActive}) => (
+											<div
+												{...getRootProps()}
+												className={classNames('dropzone', {'dropzone--isActive': isDragActive})}
+											>
+												<input {...getInputProps()} />
+												{
+													isDragActive
+														? <p>Drop files here...</p>
+														: <p>
+															{'Drop an image file here, or click to open the file chooser.'}
+														</p>
+												}
 											</div>
-										</Dropzone>
-									</div>
+										)}
+									</Dropzone>
 								</Col>
-							</FormGroup>
+							</Form.Group>
 
 							{this.renderPreview()}
 
-							<FormGroup>
-								<Col smOffset={2} sm={10}>
+							<Form.Group as={Row}>
+								<Col sm={{span: 10, offset: 2}}>
 									<ButtonToolbar>
 										<Button
-											bsStyle='primary'
-											bsSize='large'
+											type='button'
+											variant='warning'
+											size='lg'
 											onClick={this.handleSaveBlueprintEdits}
 										>
 											<FontAwesomeIcon icon={faSave} size='lg' />
@@ -855,8 +900,8 @@ class EditBlueprint extends PureComponent
 										</Button>
 										{
 											this.props.isModerator && <Button
-												bsStyle='danger'
-												bsSize='large'
+												variant='danger'
+												size='lg'
 												onClick={this.handleShowConfirmDelete}
 											>
 												<FontAwesomeIcon icon={faTrash} size='lg' />
@@ -864,7 +909,8 @@ class EditBlueprint extends PureComponent
 											</Button>
 										}
 										<Button
-											bsSize='large'
+											type='button'
+											size='lg'
 											onClick={this.handleCancel}
 										>
 											<FontAwesomeIcon icon={faBan} size='lg' />
@@ -872,11 +918,11 @@ class EditBlueprint extends PureComponent
 										</Button>
 									</ButtonToolbar>
 								</Col>
-							</FormGroup>
-						</form>
+							</Form.Group>
+						</Form>
 					</Row>
-				</Grid>
-			</div>
+				</Container>
+			</>
 		);
 	}
 }

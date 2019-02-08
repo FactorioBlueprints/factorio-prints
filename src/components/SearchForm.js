@@ -3,10 +3,9 @@ import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import Col                    from 'react-bootstrap/lib/Col';
-import FormControl            from 'react-bootstrap/lib/FormControl';
-import FormGroup              from 'react-bootstrap/lib/FormGroup';
-import InputGroup             from 'react-bootstrap/lib/InputGroup';
+import Col                    from 'react-bootstrap/Col';
+import Form                   from 'react-bootstrap/Form';
+import InputGroup             from 'react-bootstrap/InputGroup';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
@@ -39,20 +38,20 @@ class SearchForm extends PureComponent
 	{
 		return (
 			<Col md={6}>
-				<FormGroup>
-					<InputGroup>
-						<FormControl
-							type='text'
-							placeholder='search titles'
-							value={this.props.titleFilter}
-							onChange={this.handleSearchString}
-							onKeyDown={this.handleKeyDown}
-						/>
-						<InputGroup.Addon>
+				<InputGroup size='sm'>
+					<Form.Control
+						type='text'
+						placeholder='search titles'
+						value={this.props.titleFilter}
+						onChange={this.handleSearchString}
+						onKeyDown={this.handleKeyDown}
+					/>
+					<InputGroup.Append>
+						<InputGroup.Text>
 							<FontAwesomeIcon icon={faSearch} />
-						</InputGroup.Addon>
-					</InputGroup>
-				</FormGroup>
+						</InputGroup.Text>
+					</InputGroup.Append>
+				</InputGroup>
 			</Col>
 		);
 	}

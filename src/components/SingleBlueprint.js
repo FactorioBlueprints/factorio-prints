@@ -31,18 +31,17 @@ import marked                    from 'marked';
 import moment                    from 'moment';
 import PropTypes                 from 'prop-types';
 import React, {PureComponent}    from 'react';
-import Button                    from 'react-bootstrap/lib/Button';
-import ButtonToolbar             from 'react-bootstrap/lib/ButtonToolbar';
-import Col                       from 'react-bootstrap/lib/Col';
-import Grid                      from 'react-bootstrap/lib/Grid';
-import Jumbotron                 from 'react-bootstrap/lib/Jumbotron';
-import Label                     from 'react-bootstrap/lib/Label';
-import Panel                     from 'react-bootstrap/lib/Panel';
-import Row                       from 'react-bootstrap/lib/Row';
-import Table                     from 'react-bootstrap/lib/Table';
-import Thumbnail                 from 'react-bootstrap/lib/Thumbnail';
+import Badge                     from 'react-bootstrap/Badge';
+import Button                    from 'react-bootstrap/Button';
+import Card                      from 'react-bootstrap/Card';
+import Col                       from 'react-bootstrap/Col';
+import Container                 from 'react-bootstrap/Container';
+import Image                     from 'react-bootstrap/Image';
+import Jumbotron                 from 'react-bootstrap/Jumbotron';
+import Row                       from 'react-bootstrap/Row';
+import Table                     from 'react-bootstrap/Table';
 import CopyToClipboard           from 'react-copy-to-clipboard';
-import ReactDisqusThread         from 'react-disqus-thread';
+import ReactDisqusThread         from 'react-disqus-comments';
 import DocumentTitle             from 'react-document-title';
 import {connect}                 from 'react-redux';
 import {Link}                    from 'react-router-dom';
@@ -57,10 +56,10 @@ import buildImageUrl       from '../helpers/buildImageUrl';
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 
 import * as propTypes from '../propTypes';
-
 import * as selectors from '../selectors';
-import GoogleAd       from './GoogleAd';
-import NoMatch        from './NoMatch';
+
+import GoogleAd from './GoogleAd';
+import NoMatch  from './NoMatch';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -147,17 +146,17 @@ class SingleBlueprint extends PureComponent
 	}
 
 	hideButton = text => (
-		<div>
+		<>
 			<FontAwesomeIcon icon={faToggleOn} size='lg' fixedWidth className='text-success' />
 			{` ${text}`}
-		</div>
+		</>
 	);
 
 	showButton = text => (
-		<div>
+		<>
 			<FontAwesomeIcon icon={faToggleOff} size='lg' fixedWidth />
 			{` ${text}`}
-		</div>
+		</>
 	);
 
 	cacheState = (props) =>
@@ -205,19 +204,16 @@ class SingleBlueprint extends PureComponent
 
 	handleShowHideBase64 = (event) =>
 	{
-		event.preventDefault();
 		this.setState({showBlueprint: !this.state.showBlueprint});
 	};
 
 	handleShowHideJson = (event) =>
 	{
-		event.preventDefault();
 		this.setState({showJson: !this.state.showJson});
 	};
 
 	handleShowHideConverted = (event) =>
 	{
-		event.preventDefault();
 		this.setState({showConverted: !this.state.showConverted});
 	};
 
@@ -286,8 +282,7 @@ class SingleBlueprint extends PureComponent
 
 	renderEditButton = () => (
 		<Button
-			bsSize='large'
-			className='pull-right'
+			size='lg'
 			onClick={this.handleTransitionToEdit}
 		>
 			<FontAwesomeIcon icon={faEdit} />
@@ -306,10 +301,10 @@ class SingleBlueprint extends PureComponent
 
 		const myFavorite = this.props.myFavoritesKeys[this.props.id];
 		const heart      = myFavorite ? faHeart : regularHeart;
-		const iconClass  = myFavorite ? 'text-primary' : 'text-default';
+		const iconClass  = myFavorite ? 'text-warning' : 'text-default';
 
 		return (
-			<Button bsSize='large' className='pull-right' onClick={this.handleFavorite}>
+			<Button size='lg' onClick={this.handleFavorite}>
 				<FontAwesomeIcon icon={heart} className={iconClass} />
 				{' Favorite'}
 			</Button>
@@ -325,8 +320,8 @@ class SingleBlueprint extends PureComponent
 			{
 				return (
 					<DocumentTitle title='Factorio Prints: Loading Data'>
-						<Jumbotron>
-							<h1>
+						<Jumbotron fluid>
+							<h1 className='display-4'>
 								<FontAwesomeIcon icon={faCog} spin />
 								{' Loading data'}
 							</h1>
@@ -342,41 +337,55 @@ class SingleBlueprint extends PureComponent
 
 		return (
 			<DocumentTitle title={`Factorio Prints: ${title}`}>
-				<Grid>
-					<div className='page-header'>
-						<div className='btn-toolbar pull-right'>
-							{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}
+				<Container>
+					<Row>
+						<Col md={9}>
+							<div className='d-flex mt-4'>
+								<h1>
+									{title}
+								</h1>
+
+							</div>
+						</Col>
+						<Col md={3} className='d-flex align-items-center justify-content-end'>
 							{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
-						</div>
-						<h1>
-							{title}
-						</h1>
-					</div>
+							{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}
+						</Col>
+					</Row>
 					<Row>
 						<Col md={4}>
-							<Thumbnail
+							<Image
+								thumbnail
 								href={`https://imgur.com/${image.id}`}
 								src={this.state.thumbnail}
 								target='_blank'
+								className='border-warning'
 							/>
 							{
-								blueprint.tags && blueprint.tags.length > 0 && <Panel header='Tags'>
-									<h4>
-										{
-											flatMap(blueprint.tags || [], tag => [
-												<Link key={tag} to={`/tagged${tag}`}>
-													<Label bsStyle='primary'>
-														{tag}
-													</Label>
-												</Link>,
-												' ',
-											])
-										}
-									</h4>
-								</Panel>
+								blueprint.tags && blueprint.tags.length > 0 && <Card>
+									<Card.Header>
+										Tags
+									</Card.Header>
+									<Card.Body>
+										<h4>
+											{
+												flatMap(blueprint.tags, tag => (
+													<Link key={tag} to={`/tagged${tag}`} className='m-1'>
+														<Badge variant='warning'>
+															{tag}
+														</Badge>
+													</Link>
+												))
+											}
+										</h4>
+									</Card.Body>
+								</Card>
 							}
-							<Panel header='Info'>
-								<Table bordered hover fill>
+							<Card>
+								<Card.Header>
+									Info
+								</Card.Header>
+								<Table bordered hover>
 									<tbody>
 										<tr>
 											<td>
@@ -434,11 +443,14 @@ class SingleBlueprint extends PureComponent
 										</tr>
 									</tbody>
 								</Table>
-							</Panel>
+							</Card>
 							{
 								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook()
-								&& <Panel header='Requirements'>
-									<Table bordered hover fill>
+								&& <Card>
+									<Card.Header>
+										Requirements
+									</Card.Header>
+									<Table bordered hover>
 										<colgroup>
 											<col span='1' style={{width: '1%'}} />
 											<col span='1' style={{width: '1%'}} />
@@ -486,12 +498,15 @@ class SingleBlueprint extends PureComponent
 											}
 										</tbody>
 									</Table>
-								</Panel>
+								</Card>
 							}
 							{
 								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook()
-								&& <Panel header='Extra Info'>
-									<Table bordered hover fill>
+								&& <Card border='secondary'>
+									<Card.Header>
+										Extra Info
+									</Card.Header>
+									<Table bordered hover>
 										<colgroup>
 											<col span='1' style={{width: '1%'}} />
 											<col span='1' />
@@ -528,32 +543,32 @@ class SingleBlueprint extends PureComponent
 											}
 										</tbody>
 									</Table>
-								</Panel>
+								</Card>
 							}
 							<GoogleAd />
 						</Col>
 						<Col md={8}>
-							<Panel header='Details'>
-								<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
-							</Panel>
-							<Panel>
-								<ButtonToolbar>
+							<Card>
+								<Card.Header>
+									Details
+								</Card.Header>
+								<Card.Body>
+									<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
+
 									<CopyToClipboard text={blueprint.blueprintString}>
-										<Button bsStyle='primary'>
-											<div>
-												<FontAwesomeIcon icon={faClipboard} size='lg' fixedWidth />
-												{' Copy to Clipboard'}
-											</div>
+										<Button type='button' variant='warning'>
+											<FontAwesomeIcon icon={faClipboard} size='lg' fixedWidth />
+											{' Copy to Clipboard'}
 										</Button>
 									</CopyToClipboard>
-									<Button onClick={this.handleShowHideBase64}>
+									<Button type='button' onClick={this.handleShowHideBase64}>
 										{
 											this.state.showBlueprint
 												? this.hideButton('Hide Blueprint')
 												: this.showButton('Show Blueprint')
 										}
 									</Button>
-									<Button onClick={this.handleShowHideJson}>
+									<Button type='button' onClick={this.handleShowHideJson}>
 										{
 											this.state.showJson
 												? this.hideButton('Hide Json')
@@ -562,7 +577,7 @@ class SingleBlueprint extends PureComponent
 									</Button>
 									{
 										this.state.parsedBlueprint && this.state.parsedBlueprint.isV14()
-										&& <Button onClick={this.handleShowHideConverted}>
+										&& <Button type='button' onClick={this.handleShowHideConverted}>
 											{
 												this.state.showConverted
 													? this.hideButton('Hide 0.15 blueprint')
@@ -570,12 +585,48 @@ class SingleBlueprint extends PureComponent
 											}
 										</Button>
 									}
-								</ButtonToolbar>
-							</Panel>
+
+								</Card.Body>
+							</Card>
+							{
+								this.state.showBlueprint && <Card>
+									<Card.Header>
+										Blueprint String
+									</Card.Header>
+									<Card.Body>
+										<div className='blueprintString'>
+											{blueprint.blueprintString}
+										</div>
+									</Card.Body>
+								</Card>
+							}
+							{
+								this.state.showJson && <Card>
+									<Card.Header>
+										Json Representation
+									</Card.Header>
+									<Card.Body className='code'>
+										{JSON.stringify(this.state.v15Decoded, null, 4)}
+									</Card.Body>
+								</Card>
+							}
+							{
+								this.state.showConverted && <Card>
+									<Card.Header>
+										0.15 format Blueprint String (Experimental)
+									</Card.Header>
+									<div className='blueprintString'>
+										{encodeV15ToBase64(JSON.stringify(this.state.v15Decoded))}
+									</div>
+								</Card>
+							}
 							{
 								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBook()
-								&& <Panel header='Extra Info'>
-									<Table bordered hover fill>
+								&& <Card>
+									<Card.Header>
+										Extra Info
+									</Card.Header>
+									<Table bordered hover>
 										<colgroup>
 											<col span='1' style={{width: '1%'}} />
 											<col span='1' style={{width: '1%'}} />
@@ -627,28 +678,7 @@ class SingleBlueprint extends PureComponent
 											}
 										</tbody>
 									</Table>
-								</Panel>
-							}
-							{
-								this.state.showBlueprint && <Panel header='Blueprint String'>
-									<div className='blueprintString'>
-										{blueprint.blueprintString}
-									</div>
-								</Panel>
-							}
-							{
-								this.state.showJson && <Panel header='Json Representation'>
-									<div className='json'>
-										{JSON.stringify(this.state.v15Decoded, null, 4)}
-									</div>
-								</Panel>
-							}
-							{
-								this.state.showConverted && <Panel header='0.15 format Blueprint String (Experimental)'>
-									<div className='blueprintString'>
-										{encodeV15ToBase64(JSON.stringify(this.state.v15Decoded))}
-									</div>
-								</Panel>
+								</Card>
 							}
 						</Col>
 					</Row>
@@ -657,9 +687,10 @@ class SingleBlueprint extends PureComponent
 							shortname='factorio-blueprints'
 							identifier={this.props.id}
 							title={blueprint.title}
+							className='w-100'
 						/>
 					</Row>
-				</Grid>
+				</Container>
 			</DocumentTitle>
 		);
 	}

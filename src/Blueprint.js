@@ -13,6 +13,7 @@ class Blueprint
 	}
 
 	isV14 = () => this.encodedText.startsWith('H4sIAAAAAAAA/');
+
 	isV15 = () => this.encodedText.startsWith('0');
 
 	get decodedObject()

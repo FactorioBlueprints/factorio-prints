@@ -13,32 +13,34 @@ import {
 }                             from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import firebase from 'firebase/app';
+import firebase               from 'firebase/app';
 import 'firebase/auth';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import Dropdown               from 'react-bootstrap/lib/Dropdown';
-import MenuItem               from 'react-bootstrap/lib/MenuItem';
-import Nav                    from 'react-bootstrap/lib/Nav';
-import Navbar                 from 'react-bootstrap/lib/Navbar';
-import NavDropdown            from 'react-bootstrap/lib/NavDropdown';
+import Button                 from 'react-bootstrap/Button';
+import Dropdown               from 'react-bootstrap/Dropdown';
+import Nav                    from 'react-bootstrap/Nav';
+import Navbar                 from 'react-bootstrap/Navbar';
+import NavDropdown            from 'react-bootstrap/NavDropdown';
 import {connect}              from 'react-redux';
 import {Link}                 from 'react-router-dom';
 import {bindActionCreators}   from 'redux';
-
-import {app}                           from '../base';
-import {historySchema, locationSchema} from '../propTypes';
-import * as selectors                  from '../selectors';
+import {app}                  from '../base';
+import {
+	historySchema,
+	locationSchema,
+}                             from '../propTypes';
+import * as selectors         from '../selectors';
 
 class Header extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user         : PropTypes.shape(forbidExtraProps({
+		user: PropTypes.shape(forbidExtraProps({
 			uid        : PropTypes.string.isRequired,
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
 		})),
-		match        : PropTypes.shape(forbidExtraProps({
+		match: PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
@@ -58,8 +60,10 @@ class Header extends PureComponent
 		this.twitterProvider  = new firebase.auth.TwitterAuthProvider();
 		this.githubProvider   = new firebase.auth.GithubAuthProvider();
 
-		// Choose between multiple google accounts
-		// http://stackoverflow.com/a/40551683/23572
+		/*
+		 * Choose between multiple google accounts
+		 * http://stackoverflow.com/a/40551683/23572
+		 */
 		this.googleProvider.setCustomParameters({prompt: 'consent select_account'});
 		this.githubProvider.setCustomParameters({allow_signup: true});
 	}
@@ -74,29 +78,17 @@ class Header extends PureComponent
 		app.auth().signOut();
 	};
 
-	getSmallUserPhoto = () =>
-	{
-		if (this.props.user.photoURL)
-		{
-			return <img src={this.props.user.photoURL} alt='user' className='user-photo' />;
-		}
-		return <FontAwesomeIcon icon={faUser} size='2x' fixedWidth />;
-	};
-
-	getLargeUserPhoto = () =>
-	{
-		if (this.props.user.photoURL)
-		{
-			return <img src={this.props.user.photoURL} alt='user' className='user-photo-big pull-left' />;
-		}
-		return <FontAwesomeIcon icon={faUser} size='4x' fixedWidth />;
-	};
-
 	getDisplayName = () =>
 	{
 		if (this.props.user.displayName)
 		{
-			return <h4><b>{this.props.user.displayName}</b></h4>;
+			return (
+				<h2>
+					<b>
+						{this.props.user.displayName}
+					</b>
+				</h2>
+			);
 		}
 		return false;
 	};
@@ -111,49 +103,48 @@ class Header extends PureComponent
 		if (this.props.user)
 		{
 			return (
-				<Dropdown id='dropdown-logout'>
-					<Dropdown.Toggle bsStyle='link'>
-						{this.getSmallUserPhoto()}
+				<Dropdown className='text-light'>
+					<Dropdown.Toggle variant='link'>
+						Account Settings
 					</Dropdown.Toggle>
-					<Dropdown.Menu>
-						<MenuItem className='user-photo-container'>
-							{this.getLargeUserPhoto()}
+					<Dropdown.Menu className='dropdown-menu-right'>
+						<Dropdown.Item className='user-photo-container'>
 							{this.getDisplayName()}
-						</MenuItem>
-						<MenuItem>
-							<button className='btn btn-block btn-primary' onClick={this.handleEdit}>
+						</Dropdown.Item>
+						<Dropdown.Item>
+							<Button type='button' block variant='warning' size='lg' onClick={this.handleEdit}>
 								<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth />
 								{' Edit'}
-							</button>
-						</MenuItem>
-						<MenuItem>
-							<button className='btn btn-block btn-primary' onClick={this.handleLogout}>
+							</Button>
+						</Dropdown.Item>
+						<Dropdown.Item>
+							<Button type='button' block variant='warning' size='lg' onClick={this.handleLogout}>
 								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
 								{' Log out'}
-							</button>
-						</MenuItem>
+							</Button>
+						</Dropdown.Item>
 					</Dropdown.Menu>
 				</Dropdown>
 			);
 		}
 
 		const title = (
-			<span>
+			<span className='text-light'>
 				<FontAwesomeIcon icon={faSignInAlt} size='lg' fixedWidth />
 				{' Sign in / Join'}
 			</span>
 		);
 
 		return (
-			<NavDropdown title={title} id='dropdown-login'>
-				<button className='google btn btn-block' onClick={() => this.authenticate(this.googleProvider)}>
+			<NavDropdown title={title} style={{minWidth: '210px'}}>
+				<Button type='button' block className='google' onClick={() => this.authenticate(this.googleProvider)}>
 					<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
 					{' Log in with Google'}
-				</button>
-				<button className='github btn btn-block' onClick={() => this.authenticate(this.githubProvider)}>
+				</Button>
+				<Button type='button' block className='github' onClick={() => this.authenticate(this.githubProvider)}>
 					<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
 					{' Log in with GitHub'}
-				</button>
+				</Button>
 			</NavDropdown>
 		);
 	};
@@ -161,56 +152,46 @@ class Header extends PureComponent
 	render()
 	{
 		return (
-			<Navbar fixedTop collapseOnSelect inverse>
-				<Navbar.Header>
-					<Navbar.Brand>
-						<Link to='/'><FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />{' Factorio Prints'}</Link>
-					</Navbar.Brand>
-					<Navbar.Toggle />
-				</Navbar.Header>
+			<Navbar sticky='top' collapseOnSelect bg='warning'>
+				<Navbar.Brand>
+					<Link to='/'>
+						<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
+						{' Factorio Prints'}
+					</Link>
+				</Navbar.Brand>
+				<Navbar.Toggle />
 
 				<Navbar.Collapse>
 					<Nav>
-						<li>
-							<Link to='/blueprints'>
-								<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
-								{' Most Recent'}
-							</Link>
-						</li>
-						<li>
-							<Link to='/top'>
-								<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
-								{' Most Favorited'}
-							</Link>
-						</li>
-						<li>
-							<Link to='/create'>
-								<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
-								{' Create'}
-							</Link>
-						</li>
+						{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
+						<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
+							<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
+							{' Most Recent'}
+						</Nav.Link>
+						<Nav.Link as={Link} href='/top' to='/top' className='text-light'>
+							<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
+							{' Most Favorited'}
+						</Nav.Link>
+						<Nav.Link as={Link} href='/create' to='/create' className='text-light'>
+							<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
+							{' Create'}
+						</Nav.Link>
 						{this.props.user
-						&& <li>
-							<Link to={'/favorites'}>
-								<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
-								{' My Favorites'}
-							</Link>
-						</li>}
+						&& <Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
+							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
+							{' My Favorites'}
+						</Nav.Link>}
 						{this.props.user
-						&& <li>
-							<Link to={`/user/${this.props.user.uid}`}>
-								<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
-								{' My Blueprints'}
-							</Link>
-						</li>}
-						<li>
-							<Link to='/contact'>
-								<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
-								{' Contact me'}
-							</Link>
-						</li>
+						&& <Nav.Link as={Link} href={`/user/${this.props.user.uid}`} to={`/user/${this.props.user.uid}`} className='text-light'>
+							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
+							{' My Blueprints'}
+						</Nav.Link>}
+						<Nav.Link as={Link} href='/contact' to='/contact' className='text-light'>
+							<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
+							{' Contact me'}
+						</Nav.Link>
 					</Nav>
-					<Nav pullRight>
+					<Nav justify className='ml-auto'>
 						{this.renderAuthentication()}
 					</Nav>
 				</Navbar.Collapse>

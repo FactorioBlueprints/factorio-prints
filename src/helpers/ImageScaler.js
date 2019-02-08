@@ -106,32 +106,17 @@ const scaleImage = (img, config) =>
 	}
 
 	const imageData = canvas.toDataURL('image/jpeg', config.quality);
-
-	if (config.debug)
-	{
-		const resizedImage = document.createElement('img');
-		config.workspace.appendChild(document.createElement('br'));
-		config.workspace.appendChild(resizedImage);
-
-		resizedImage.src = imageData;
-	}
-
 	return imageData;
 };
 
 const scaleFile = (file, {
-	maxWidth = 350, maxHeight = 600, quality = 0.70, debug = false,
+	maxWidth = 350, maxHeight = 600, quality = 0.70,
 }, callback) =>
 {
-	const workspace = document.createElement('div');
-	document.body.appendChild(workspace);
-
 	const config = {
 		maxWidth,
 		maxHeight,
 		quality,
-		debug,
-		workspace,
 	};
 
 	const img     = document.createElement('img');

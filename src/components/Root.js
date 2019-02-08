@@ -10,7 +10,6 @@ import {authStateChanged} from '../actions/actionCreators';
 import {app}              from '../base';
 import Account            from './Account';
 
-import App               from './App';
 import BlueprintGrid     from './BlueprintGrid';
 import Contact           from './Contact';
 import Create            from './Create';
@@ -72,6 +71,7 @@ class Root extends PureComponent
 			<BlueprintGrid />
 		</div>
 	);
+
 	renderTag   = (props) =>
 	{
 		const {pathname} = props.location;
@@ -83,32 +83,28 @@ class Root extends PureComponent
 	render()
 	{
 		return (
-			<shell className='app-shell primary-content'>
-				<DocumentTitle title='Factorio Prints'>
-					<App>
-						<BrowserRouter>
-							<div>
-								<Route path='/' component={Header} />
-								<Switch>
-									<Route path='/' exact render={this.renderIntro} />
-									<Route path='/blueprints' exact component={BlueprintGrid} />
-									<Route path='/top' exact component={MostFavoritedGrid} />
-									<Route path='/create' exact component={Create} />
+			<DocumentTitle title='Factorio Prints'>
+				<BrowserRouter>
+					<div>
+						<Route path='/' component={Header} />
+						<Switch>
+							<Route path='/' exact render={this.renderIntro} />
+							<Route path='/blueprints' exact component={BlueprintGrid} />
+							<Route path='/top' exact component={MostFavoritedGrid} />
+							<Route path='/create' exact component={Create} />
 
-									<Route path='/favorites' exact component={FavoritesGrid} />
-									<Route path='/contact' exact component={Contact} />
-									<Route path='/account' exact component={Account} />
-									<Route path='/view/:blueprintId' component={SingleBlueprint} />
-									<Route path='/edit/:blueprintId' component={EditBlueprint} />
-									<Route path='/user/:userId' component={UserGrid} />
-									<Route path='/tagged/:tag' render={this.renderTag} />
-									<Route component={NoMatch} />
-								</Switch>
-							</div>
-						</BrowserRouter>
-					</App>
-				</DocumentTitle>
-			</shell>
+							<Route path='/favorites' exact component={FavoritesGrid} />
+							<Route path='/contact' exact component={Contact} />
+							<Route path='/account' exact component={Account} />
+							<Route path='/view/:blueprintId' component={SingleBlueprint} />
+							<Route path='/edit/:blueprintId' component={EditBlueprint} />
+							<Route path='/user/:userId' component={UserGrid} />
+							<Route path='/tagged/:tag' render={this.renderTag} />
+							<Route component={NoMatch} />
+						</Switch>
+					</div>
+				</BrowserRouter>
+			</DocumentTitle>
 		);
 	}
 }

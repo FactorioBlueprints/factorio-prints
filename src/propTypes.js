@@ -22,7 +22,7 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 		displayName: PropTypes.string,
 		userId     : PropTypes.string.isRequired,
 	})).isRequired,
-	image              : PropTypes.shape(forbidExtraProps({
+	image: PropTypes.shape(forbidExtraProps({
 		id        : PropTypes.string.isRequired,
 		deletehash: PropTypes.string.isRequired,
 		height    : PropTypes.number.isRequired,

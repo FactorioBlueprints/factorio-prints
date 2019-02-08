@@ -1,18 +1,21 @@
 import React from 'react';
 
-export default class GoogleAd extends React.Component {
-	componentDidMount () {
+export default class GoogleAd extends React.Component
+{
+	componentDidMount ()
+	{
 		(window.adsbygoogle = window.adsbygoogle || []).push({});
 	}
 
-	render () {
+	render ()
+	{
 		return (
 			<div className='googleAd'>
 				<ins
 					className='adsbygoogle'
-					style={{ display: 'block' }}
+					style={{display: 'block'}}
 					data-ad-client='ca-pub-3146575260211386'
-					// data-ad-slot='xxxxxxxxxx'
+					// Data-ad-slot='xxxxxxxxxx'
 					data-ad-format='auto'
 				/>
 			</div>

@@ -1,8 +1,8 @@
 import update from 'immutability-helper';
 
 import {
-	RECEIVED_USER_BLUEPRINTS_SUMMARIES,
 	RECEIVED_USER_BLUEPRINTS_KEYS,
+	RECEIVED_USER_BLUEPRINTS_SUMMARIES,
 	RECEIVED_USER_DISPLAY_NAME,
 	SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES,
 	SUBSCRIBED_TO_USER_DISPLAY_NAME,
@@ -13,7 +13,7 @@ export const initialUserState = {
 		loading: false,
 		data   : undefined,
 	},
-	blueprints : {
+	blueprints: {
 		loading           : false,
 		userBlueprintsKeys: {},
 		userBlueprints    : [],
@@ -44,6 +44,7 @@ const userReducer = (state = initialUserState, action) =>
 					loading           : {$set: false},
 					userBlueprintsKeys: {$set: action.userBlueprintsKeys},
 					userBlueprintsRef : {$set: action.userBlueprintsRef},
+					exists            : {$set: action.exists},
 				},
 			});
 		case RECEIVED_USER_BLUEPRINTS_SUMMARIES:

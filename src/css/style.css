@@ -1,6 +1,3 @@
-body {
-  padding-top: 60px;
-}
 .truncate {
   display: block;
   white-space: nowrap;
@@ -12,7 +9,7 @@ body {
   font-family: Consolas, monospace;
   font-size: 10.8px;
 }
-.json {
+.code {
   font-family: Consolas, monospace;
   font-size: 10.8px;
   display: block;
@@ -32,71 +29,53 @@ body {
   font-family: monospace;
 }
 button,
-input[type=submit] {
+input[type=button] {
   background: none;
   font-weight: 600;
   font-size: 1.5rem;
-  -webkit-transition: all 0.2s;
   transition: all 0.2s;
   position: relative;
-  z-index: 2;
-}
-button.logout,
-input[type=submit].logout,
-button.my,
-input[type=submit].my,
-button.github,
-input[type=submit].github,
-button.facebook,
-input[type=submit].facebook,
-button.twitter,
-input[type=submit].twitter,
-button.google,
-input[type=submit].google {
-  width: 90%;
-  margin-left: 10px;
-  margin-right: 10px;
 }
 button.github,
-input[type=submit].github,
+input[type=button].github,
 button.facebook,
-input[type=submit].facebook,
+input[type=button].facebook,
 button.twitter,
-input[type=submit].twitter,
+input[type=button].twitter,
 button.google,
-input[type=submit].google {
+input[type=button].google {
   color: #fff;
 }
 button.github,
-input[type=submit].github {
+input[type=button].github {
   background: #82d465;
 }
 button.github:after,
-input[type=submit].github:after {
+input[type=button].github:after {
   background: #5cc437;
 }
 button.facebook,
-input[type=submit].facebook {
+input[type=button].facebook {
   background: #3864a3;
 }
 button.facebook:after,
-input[type=submit].facebook:after {
+input[type=button].facebook:after {
   background: #2d5082;
 }
 button.twitter,
-input[type=submit].twitter {
+input[type=button].twitter {
   background: #5ea9dd;
 }
 button.twitter:after,
-input[type=submit].twitter:after {
+input[type=button].twitter:after {
   background: #2c8dd0;
 }
 button.google,
-input[type=submit].google {
+input[type=button].google {
   background: #c30f10;
 }
 button.google:after,
-input[type=submit].google:after {
+input[type=button].google:after {
   background: #9c0c0d;
 }
 .user-photo {
@@ -104,13 +83,9 @@ input[type=submit].google:after {
   max-height: 36px;
 }
 .user-photo-container {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   min-width: 300px;
-  -webkit-box-align: start;
-      -ms-flex-align: start;
-          align-items: flex-start;
+  align-items: flex-start;
 }
 .user-photo-big {
   max-width: 100px;
@@ -139,11 +114,33 @@ tbody > tr > td.icon {
 td.number {
   text-align: end;
 }
-ul.pagination {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+.btn-toolbar {
+  margin: 0.5em;
+}
+.card table {
+  margin-bottom: 0;
+}
+[class^="col-"] .card,
+[class^="col-"] .img-thumbnail {
+  margin-bottom: 4px;
+}
+.btn + .btn {
+  margin-left: 4px;
+}
+.dropdown-menu {
+  padding: 0.5em;
+}
+.dropdown-menu .btn {
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 4px;
+}
+.hljs-attr {
+  color: #5bc0de;
+}
+.hljs-string {
+  color: #f89406;
+}
+.hljs-number {
+  color: #62c462;
 }

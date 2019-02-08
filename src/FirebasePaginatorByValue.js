@@ -7,9 +7,13 @@ import toPairs     from 'lodash/toPairs';
 class FirebasePaginatorByValue
 {
 	currentPage = 0;
+
 	isStarted   = false;
+
 	isLastPage  = false;
+
 	loading     = false;
+
 	data        = [];
 
 	constructor(ref, pageSize, childPropertyName)
@@ -29,7 +33,9 @@ class FirebasePaginatorByValue
 	};
 
 	next     = () => this.load(this.getNextRef, page => page + 1);
+
 	previous = () => this.load(this.getPreviousRef, page => page - 1);
+
 	first    = () =>
 	{
 		this.nextCursorValue     = null;

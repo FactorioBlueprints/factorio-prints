@@ -59,7 +59,8 @@ const userBlueprintsData = userId =>
 		const onValueChange     = (dataSnapshot) =>
 		{
 			const userBlueprintsSnapshot = dataSnapshot.val();
-			emit({userBlueprintsSnapshot, userBlueprintsRef});
+			const exists                 = dataSnapshot.exists();
+			emit({userBlueprintsSnapshot, userBlueprintsRef, exists});
 		};
 
 		userBlueprintsRef.on('value', onValueChange, () => emit(END));
@@ -86,21 +87,38 @@ const subscribeToUserBlueprintsSaga = function*({userId})
 	{
 		while (true)
 		{
-			const {userBlueprintsSnapshot, userBlueprintsRef} = yield take(channel);
+			const {userBlueprintsSnapshot, userBlueprintsRef, exists} = yield take(channel);
 
-			// TODO: Test user that doesn't exist
-			const userBlueprintsKeys = pickBy(userBlueprintsSnapshot);
-			yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS_KEYS, userBlueprintsKeys, userBlueprintsRef, userId});
+			if (exists)
+			{
+				const userBlueprintsKeys = pickBy(userBlueprintsSnapshot);
+				yield put({
+					type: actionTypes.RECEIVED_USER_BLUEPRINTS_KEYS,
+					userBlueprintsKeys,
+					userBlueprintsRef,
+					userId,
+					exists,
+				});
 
-			const calls                     = keys(userBlueprintsKeys)
-				.map(key => `/blueprintSummaries/${key}`)
-				.map(url => app.database().ref(url))
-				.map(ref => call(() => ref.once('value')));
-			const blueprintSummarySnapshots = yield all(calls);
-			const blueprintSummaries        = blueprintSummarySnapshots.map(each => ({key: each.key, ...each.val()}));
-			const userBlueprints            = sortBy(blueprintSummaries, each => each.key);
+				const calls = keys(userBlueprintsKeys)
+					.map(key => `/blueprintSummaries/${key}`)
+					.map(url => app.database().ref(url))
+					.map(ref => call(() => ref.once('value')));
+				const blueprintSummarySnapshots = yield all(calls);
+				const blueprintSummaries = blueprintSummarySnapshots.map(each => ({key: each.key, ...each.val()}));
+				const userBlueprints = sortBy(blueprintSummaries, each => each.key);
 
-			yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS_SUMMARIES, userBlueprints, userBlueprintsRef, userId});
+				yield put({
+					type: actionTypes.RECEIVED_USER_BLUEPRINTS_SUMMARIES,
+					userBlueprints,
+					userBlueprintsRef,
+					userId,
+				});
+			}
+			else
+			{
+				yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS_KEYS, userId, exists});
+			}
 		}
 	}
 	finally
