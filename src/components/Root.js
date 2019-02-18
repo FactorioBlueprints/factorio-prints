@@ -28,7 +28,7 @@ class Root extends PureComponent
 		authStateChanged: PropTypes.func.isRequired,
 	});
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		app.auth().onAuthStateChanged(
 			(user) =>

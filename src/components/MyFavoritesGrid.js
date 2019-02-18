@@ -39,7 +39,7 @@ class MyFavoritesGrid extends PureComponent
 		})),
 	});
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		if (this.props.user)
 		{

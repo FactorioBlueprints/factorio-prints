@@ -46,7 +46,7 @@ class UserGrid extends PureComponent
 
 	});
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		// Logged in user
 		if (this.props.user)

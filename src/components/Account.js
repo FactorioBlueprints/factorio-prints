@@ -41,7 +41,7 @@ class Account extends PureComponent
 
 	state = Account.initialState;
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		if (this.props.user)
 		{
@@ -51,7 +51,7 @@ class Account extends PureComponent
 		}
 	}
 
-	componentWillReceiveProps(nextProps)
+	UNSAFE_componentWillReceiveProps(nextProps)
 	{
 		if (nextProps.user)
 		{

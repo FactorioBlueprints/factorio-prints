@@ -110,7 +110,7 @@ class Create extends PureComponent
 
 	state = Create.initialState;
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		this.props.subscribeToTags();
 		const localStorageRef = localStorage.getItem('factorio-blueprint-create-form');
@@ -121,7 +121,7 @@ class Create extends PureComponent
 		}
 	}
 
-	componentWillUpdate(nextProps, nextState)
+	UNSAFE_componentWillUpdate(nextProps, nextState)
 	{
 		localStorage.setItem('factorio-blueprint-create-form', JSON.stringify(nextState.blueprint));
 	}

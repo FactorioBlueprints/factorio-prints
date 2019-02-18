@@ -55,7 +55,7 @@ class MostFavoritedGrid extends PureComponent
 		})),
 	});
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		this.props.subscribeToBlueprintSummaries();
 		if (this.props.user)

@@ -112,7 +112,7 @@ class EditBlueprint extends PureComponent
 		deletionModalVisible    : false,
 	};
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		this.props.subscribeToBlueprint(this.props.id);
 		this.props.subscribeToTags();
@@ -124,7 +124,7 @@ class EditBlueprint extends PureComponent
 		this.cacheBlueprintState(this.props);
 	}
 
-	componentWillReceiveProps(nextProps)
+	UNSAFE_componentWillReceiveProps(nextProps)
 	{
 		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
 		{

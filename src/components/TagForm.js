@@ -21,7 +21,7 @@ class TagForm extends PureComponent
 		filterOnTags   : PropTypes.func.isRequired,
 	});
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		this.props.subscribeToTags();
 	}

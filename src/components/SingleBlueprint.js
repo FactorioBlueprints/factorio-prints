@@ -117,7 +117,7 @@ class SingleBlueprint extends PureComponent
 		showConverted: false,
 	};
 
-	componentWillMount()
+	UNSAFE_componentWillMount()
 	{
 		this.props.subscribeToBlueprint(this.props.id);
 		if (!isEmpty(this.props.user))
@@ -132,7 +132,7 @@ class SingleBlueprint extends PureComponent
 		window.scrollTo(0, 0);
 	}
 
-	componentWillReceiveProps(nextProps)
+	UNSAFE_componentWillReceiveProps(nextProps)
 	{
 		if (!isEqual(this.props.blueprint, nextProps.blueprint))
 		{
