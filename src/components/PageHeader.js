@@ -4,8 +4,8 @@ import Row       from 'react-bootstrap/Row';
 
 const PageHeader = ({title}) =>
 	(
-		<Row className='justify-content-md-center'>
-			<h1 className='pb-2 mt-4 mb-2'>
+		<Row className='blueprint-grid-row justify-content-center'>
+			<h1 className='display-4'>
 				{title}
 			</h1>
 		</Row>

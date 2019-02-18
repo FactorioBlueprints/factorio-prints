@@ -43,6 +43,7 @@ class TagForm extends PureComponent
 					onChange={this.handleTagSelection}
 					multi
 					placeholder='search tags'
+					className='tag-form'
 				/>
 			</Col>
 		);

@@ -31,28 +31,26 @@ const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =
 	const favoriteStyle = isFavorite ? 'text-warning' : 'text-default';
 
 	return (
-		<div className='col-auto p-0 mt-2'>
-			<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
-				<Link to={`/view/${key}`}>
-					<Card.Img variant='top' src={imageUrl} />
-				</Link>
-				<p className='truncate p-1'>
-					{`${numberOfFavorites}`}
-					<span className={favoriteStyle}>
-						{/* TODO: This heart should be a toggle button */}
-						<FontAwesomeIcon icon={faHeart} className='text-error' />
-					</span>
-					{'  '}
-					<OverlayTrigger placement='bottom' overlay={tooltip}>
-						<Link to={`/view/${key}`}>
-							<span className={mineStyle}>
-								{title}
-							</span>
-						</Link>
-					</OverlayTrigger>
-				</p>
-			</Card>
-		</div>
+		<Card className='blueprint-thumbnail col-auto' style={{width: '11rem', backgroundColor: '#1c1e22'}}>
+			<Link to={`/view/${key}`}>
+				<Card.Img variant='top' src={imageUrl} />
+			</Link>
+			<p className='truncate p-1'>
+				{`${numberOfFavorites}`}
+				<span className={favoriteStyle}>
+					{/* TODO: This heart should be a toggle button */}
+					<FontAwesomeIcon icon={faHeart} className='text-error' />
+				</span>
+				{'  '}
+				<OverlayTrigger placement='bottom' overlay={tooltip}>
+					<Link to={`/view/${key}`}>
+						<span className={mineStyle}>
+							{title}
+						</span>
+					</Link>
+				</OverlayTrigger>
+			</p>
+		</Card>
 	);
 };
 

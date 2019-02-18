@@ -5,7 +5,6 @@ import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
 import Button                 from 'react-bootstrap/Button';
-import ButtonToolbar          from 'react-bootstrap/ButtonToolbar';
 import Col                    from 'react-bootstrap/Col';
 import Container              from 'react-bootstrap/Container';
 import Jumbotron              from 'react-bootstrap/Jumbotron';
@@ -95,7 +94,7 @@ class BlueprintGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<Jumbotron fluid>
+				<Jumbotron>
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
@@ -105,13 +104,13 @@ class BlueprintGrid extends PureComponent
 		}
 
 		return (
-			<Container fluid className='pl-4 pr-4'>
+			<Container fluid>
 				<PageHeader title='Most Recent' />
-				<Row className='pb-2'>
+				<Row>
 					<SearchForm />
 					<TagForm />
 				</Row>
-				<Row noGutters className='justify-content-md-center'>
+				<Row className='blueprint-grid-row justify-content-center'>
 					{
 						this.props.blueprintSummaries.map(blueprintSummary =>
 							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
@@ -119,23 +118,21 @@ class BlueprintGrid extends PureComponent
 				</Row>
 				<Row>
 					<Col md={{span: 6, offset: 3}}>
-						<ButtonToolbar>
-							<Button type='button' onClick={this.handleFirstPage} disabled={this.props.currentPage === 1} >
-								<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
-								{'First Page'}
-							</Button>
-							<Button type='button' onClick={this.handlePreviousPage} disabled={this.props.currentPage === 1}>
-								<FontAwesomeIcon icon={faAngleLeft} size='lg' fixedWidth />
-								{'Previous Page'}
-							</Button>
-							<Button variant='link' type='button' disabled>
-								{`Page: ${this.props.currentPage}`}
-							</Button>
-							<Button type='button' onClick={this.handleNextPage} disabled={this.props.isLastPage}>
-								{'Next Page'}
-								<FontAwesomeIcon icon={faAngleRight} size='lg' fixedWidth />
-							</Button>
-						</ButtonToolbar>
+						<Button type='button' onClick={this.handleFirstPage} disabled={this.props.currentPage === 1} >
+							<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
+							{'First Page'}
+						</Button>
+						<Button type='button' onClick={this.handlePreviousPage} disabled={this.props.currentPage === 1}>
+							<FontAwesomeIcon icon={faAngleLeft} size='lg' fixedWidth />
+							{'Previous Page'}
+						</Button>
+						<Button variant='link' type='button' disabled>
+							{`Page: ${this.props.currentPage}`}
+						</Button>
+						<Button type='button' onClick={this.handleNextPage} disabled={this.props.isLastPage}>
+							{'Next Page'}
+							<FontAwesomeIcon icon={faAngleRight} size='lg' fixedWidth />
+						</Button>
 					</Col>
 				</Row>
 			</Container>

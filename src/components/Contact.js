@@ -6,7 +6,7 @@ import Jumbotron             from 'react-bootstrap/Jumbotron';
 
 const Contact = () =>
 	(
-		<Jumbotron fluid>
+		<Jumbotron>
 			<h1 className='display-4'>
 				Contact me
 			</h1>

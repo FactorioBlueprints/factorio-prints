@@ -320,7 +320,7 @@ class SingleBlueprint extends PureComponent
 			{
 				return (
 					<DocumentTitle title='Factorio Prints: Loading Data'>
-						<Jumbotron fluid>
+						<Jumbotron>
 							<h1 className='display-4'>
 								<FontAwesomeIcon icon={faCog} spin />
 								{' Loading data'}

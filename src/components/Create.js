@@ -20,14 +20,16 @@ import Col                    from 'react-bootstrap/Col';
 import Container              from 'react-bootstrap/Container';
 import Form                   from 'react-bootstrap/Form';
 import FormControl            from 'react-bootstrap/FormControl';
+import Jumbotron              from 'react-bootstrap/Jumbotron';
 import Modal                  from 'react-bootstrap/Modal';
 import ProgressBar            from 'react-bootstrap/ProgressBar';
 import Row                    from 'react-bootstrap/Row';
-import Dropzone               from 'react-dropzone';
-import {connect}              from 'react-redux';
-import Select                 from 'react-select';
+
+import Dropzone             from 'react-dropzone';
+import {connect}            from 'react-redux';
+import Select               from 'react-select';
 import 'react-select/dist/react-select.css';
-import {bindActionCreators}   from 'redux';
+import {bindActionCreators} from 'redux';
 
 import {subscribeToTags}      from '../actions/actionCreators';
 import {app}                  from '../base';
@@ -510,14 +512,14 @@ class Create extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<>
-					<h1>
+				<Jumbotron>
+					<h1 className='display-4'>
 						{'Create a Blueprint'}
 					</h1>
-					<p>
+					<p className='lead'>
 						{'Please log in with Google or GitHub in order to add a Blueprint.'}
 					</p>
-				</>
+				</Jumbotron>
 			);
 		}
 

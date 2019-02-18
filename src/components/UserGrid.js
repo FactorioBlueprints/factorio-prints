@@ -62,7 +62,7 @@ class UserGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading && (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading))
 		{
 			return (
-				<Jumbotron fluid>
+				<Jumbotron>
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
@@ -80,9 +80,9 @@ class UserGrid extends PureComponent
 		const you = ownedByCurrentUser ? ' (You)' : '';
 
 		return (
-			<Container fluid className='pl-4 pr-4'>
+			<Container fluid>
 				<PageHeader title={`Blueprints by ${this.props.displayName || '(Anonymous)'}${you}`} />
-				<Row className='pb-2'>
+				<Row>
 					<SearchForm />
 					<TagForm />
 				</Row>

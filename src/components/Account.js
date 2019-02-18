@@ -91,7 +91,7 @@ class Account extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<Jumbotron fluid>
+				<Jumbotron>
 					<h1 className='display-4'>
 						{'Account Settings'}
 					</h1>

@@ -4,7 +4,7 @@ import DocumentTitle from 'react-document-title';
 
 const NoMatch = () => (
 	<DocumentTitle title='Factorio Prints: 404'>
-		<Jumbotron fluid>
+		<Jumbotron>
 			<h1 className='display-4'>
 				404
 			</h1>

@@ -38,7 +38,7 @@ class SearchForm extends PureComponent
 	{
 		return (
 			<Col md={6}>
-				<InputGroup size='sm'>
+				<InputGroup size='sm' className='search-form'>
 					<Form.Control
 						type='text'
 						placeholder='search titles'

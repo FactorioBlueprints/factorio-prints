@@ -52,7 +52,7 @@ class MyFavoritesGrid extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<Jumbotron fluid>
+				<Jumbotron>
 					<h1 className='display-4'>
 						My Favorites
 					</h1>
@@ -66,7 +66,7 @@ class MyFavoritesGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<Jumbotron fluid>
+				<Jumbotron>
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
@@ -76,13 +76,13 @@ class MyFavoritesGrid extends PureComponent
 		}
 
 		return (
-			<Container fluid className='px-4'>
+			<Container fluid>
 				<PageHeader title='My Favorites' />
-				<Row className='pb-2'>
+				<Row>
 					<SearchForm />
 					<TagForm />
 				</Row>
-				<Row noGutters className='justify-content-md-center'>
+				<Row className='blueprint-grid-row justify-content-center'>
 					{
 						this.props.blueprintSummaries.map(blueprintSummary =>
 							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)

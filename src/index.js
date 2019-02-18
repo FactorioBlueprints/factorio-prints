@@ -1,24 +1,24 @@
-import isEmpty from 'lodash/isEmpty';
+import isEmpty   from 'lodash/isEmpty';
 import mapValues from 'lodash/mapValues';
-import pickBy from 'lodash/pickBy';
+import pickBy    from 'lodash/pickBy';
 
 import throttle from 'lodash/throttle';
-import React from 'react';
+import React    from 'react';
 import ReactDOM from 'react-dom';
 
 import {Provider} from 'react-redux';
 
 import {applyMiddleware, compose, createStore} from 'redux';
-import createSagaMiddleware from 'redux-saga';
-import Root from './components/Root';
+import createSagaMiddleware                    from 'redux-saga';
+import Root                                    from './components/Root';
 
 import './css/style.css';
 
 import {saveState} from './localStorage';
 
-import rootReducer from './reducers/rootReducer';
+import rootReducer           from './reducers/rootReducer';
 import registerServiceWorker from './registerServiceWorker';
-import rootSaga from './sagas/rootSaga';
+import rootSaga              from './sagas/rootSaga';
 
 // Create the saga middleware
 const sagaMiddleware = createSagaMiddleware();
@@ -87,7 +87,10 @@ store.subscribe(throttle(() =>
 
 sagaMiddleware.run(rootSaga);
 
-ReactDOM.render(<Provider store={store}>
-	<Root />
-</Provider>, document.getElementById('root'));
+const provider = (
+	<Provider store={store}>
+		<Root />
+	</Provider>
+);
+ReactDOM.render(provider, document.getElementById('root'));
 registerServiceWorker();

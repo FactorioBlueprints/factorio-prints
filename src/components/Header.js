@@ -152,7 +152,7 @@ class Header extends PureComponent
 	render()
 	{
 		return (
-			<Navbar sticky='top' collapseOnSelect bg='warning'>
+			<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
 				<Navbar.Brand>
 					<Link to='/'>
 						<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
@@ -162,7 +162,7 @@ class Header extends PureComponent
 				<Navbar.Toggle />
 
 				<Navbar.Collapse>
-					<Nav>
+					<Nav className='mr-auto'>
 						{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
 						<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
 							<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
@@ -191,7 +191,7 @@ class Header extends PureComponent
 							{' Contact me'}
 						</Nav.Link>
 					</Nav>
-					<Nav justify className='ml-auto'>
+					<Nav className='mr-sm-2' justify>
 						{this.renderAuthentication()}
 					</Nav>
 				</Navbar.Collapse>
