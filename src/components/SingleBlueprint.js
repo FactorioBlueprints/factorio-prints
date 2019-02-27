@@ -680,6 +680,43 @@ class SingleBlueprint extends PureComponent
 									</Table>
 								</Card>
 							}
+							{
+								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isUpgradePlanner()
+								&& <Card>
+									<Card.Header>
+										Upgrade Planner
+									</Card.Header>
+									<Table bordered hover>
+										<colgroup>
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' style={{width: '1%'}} />
+											<col span='1' />
+										</colgroup>
+										<tbody>
+											{
+												this.state.v15Decoded.upgrade_planner.settings.mappers.map(({from, to, index}) => (
+													<tr key={index}>
+														<td className={`icon icon-${from.name}`}>
+															{
+																entitiesWithIcons[from.name]
+																	? <img src={`/icons/${from.name}.png`} alt={from.name} />
+																	: ''
+															}
+														</td>
+														<td className={`icon icon-${to.name}`}>
+															{
+																entitiesWithIcons[to.name]
+																	? <img src={`/icons/${to.name}.png`} alt={to.name} />
+																	: ''
+															}
+														</td>
+													</tr>
+												))
+											}
+										</tbody>
+									</Table>
+								</Card>
+							}
 						</Col>
 					</Row>
 					<Row>

@@ -1,9 +1,10 @@
-import decodeV14Base64, {decodeV15Base64} from './parser/decodeFromBase64';
-import luaTableToJsonObject from './parser/luaTableToJsonObject';
-import sortBy from 'lodash/sortBy';
-import toPairs from 'lodash/toPairs';
 import isArray from 'lodash/isArray';
-import isNull from 'lodash/isNull';
+import isNull  from 'lodash/isNull';
+import sortBy  from 'lodash/sortBy';
+import toPairs from 'lodash/toPairs';
+
+import decodeV14Base64, {decodeV15Base64} from './parser/decodeFromBase64';
+import luaTableToJsonObject               from './parser/luaTableToJsonObject';
 
 class Blueprint
 {
@@ -67,6 +68,16 @@ class Blueprint
 		}
 
 		// Unknown format. Return false since most things won't work anyway.
+		return false;
+	};
+
+	isUpgradePlanner = () =>
+	{
+		if (this.isV15())
+		{
+			return this.decodedObject.upgrade_planner !== undefined;
+		}
+
 		return false;
 	};
 
