@@ -417,7 +417,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 
 			generateAllTagSuggestions(entityHistogram, entityCounts, recipeHistogram, recipeCounts, allGameEntities);
 		}
-		else
+		else if (parsedBlueprint.isBlueprint())
 		{
 			const recipeHistogram = flow(
 				fpMap('recipe'),

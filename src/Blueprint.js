@@ -55,6 +55,21 @@ class Blueprint
 		return false;
 	};
 
+	isBlueprint = () =>
+	{
+		if (this.isV14())
+		{
+			return this.decodedObject.blueprint !== undefined || this.decodedObject.type === 'blueprint';
+		}
+		else if (this.isV15())
+		{
+			return this.decodedObject.blueprint !== undefined;
+		}
+
+		// Unknown format. Return false since most things won't work anyway.
+		return false;
+	};
+
 	convertSingleBlueprint = (decodedObject = this.decodedObject) =>
 	{
 		if (!this.isV14())

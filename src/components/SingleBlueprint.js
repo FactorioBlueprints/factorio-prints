@@ -445,7 +445,7 @@ class SingleBlueprint extends PureComponent
 								</Table>
 							</Card>
 							{
-								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook()
+								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBlueprint()
 								&& <Card>
 									<Card.Header>
 										Requirements
@@ -501,7 +501,7 @@ class SingleBlueprint extends PureComponent
 								</Card>
 							}
 							{
-								this.state.parsedBlueprint && this.state.v15Decoded && !this.state.parsedBlueprint.isBook()
+								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBlueprint()
 								&& <Card border='secondary'>
 									<Card.Header>
 										Extra Info
