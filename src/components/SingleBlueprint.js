@@ -354,13 +354,13 @@ class SingleBlueprint extends PureComponent
 					</Row>
 					<Row>
 						<Col md={4}>
-							<Image
-								thumbnail
+							<a
 								href={`https://imgur.com/${image.id}`}
-								src={this.state.thumbnail}
 								target='_blank'
-								className='border-warning'
-							/>
+								rel='noopener noreferrer'
+							>
+								<Image thumbnail className='border-warning' src={this.state.thumbnail} />
+							</a>
 							{
 								blueprint.tags && blueprint.tags.length > 0 && <Card>
 									<Card.Header>
