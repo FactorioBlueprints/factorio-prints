@@ -37,31 +37,11 @@ export const subscribeToDisplayNameSaga = function*({userId})
 	}
 };
 
-const subscribeToUserBlueprintsSaga = function*({userId})
+const subscribeToUserBlueprintsSaga = function*({authorId})
 {
-	// /user/{authorId}/blueprintSummaries/page/{pageNumber}
 	// RECEIVED_USER_BLUEPRINTS_SUMMARIES
 
-	const getFilteredTags = state => state.filteredTags;
-	const getTitleFilter = state => state.titleFilter;
-	const getCurrentPage = state => state.blueprintMyFavorites.currentPage;
-	const filteredTags = yield select(getFilteredTags);
-	const titleFilter = yield select(getTitleFilter);
-	const currentPage = yield select(getCurrentPage);
-
-	yield put({type: actionTypes.SUBSCRIBED_TO_MY_FAVORITES, filteredTags, titleFilter});
-
-	const urlSearchParams = new URLSearchParams();
-
-	if (!isEmpty(titleFilter))
-	{
-		urlSearchParams.append('title',  titleFilter);
-	}
-
-	if (!isEmpty(filteredTags))
-	{
-		urlSearchParams.append('tag',  filteredTags);
-	}
+	yield put({type: actionTypes.SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES});
 
 	const getParams = function*()
 	{
@@ -86,26 +66,26 @@ const subscribeToUserBlueprintsSaga = function*({userId})
 		const params = yield call(getParams);
 		const response = yield call(
 			fetch,
-			`${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/favorites/filtered/page/${currentPage}?${urlSearchParams.toString()}`,
+			`${process.env.REACT_APP_REST_URL}/api/user/${authorId}/blueprintSummaries/`,
 			params,
 		);
 
 		if (response.ok)
 		{
-			const blueprintMyFavoritesEnvelope = yield call(() => response.json());
-			yield put({type: actionTypes.RECEIVED_MY_FAVORITES, blueprintMyFavoritesEnvelope, titleFilter, filteredTags});
+			const userBlueprintSummariesEnvelope = yield call(() => response.json());
+			yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS_SUMMARIES, userBlueprintSummariesEnvelope});
 		}
 		else
 		{
 			const error = yield call(() => response.text());
 			console.log(error);
-			yield put({type: actionTypes.MY_FAVORITES_FAILED, titleFilter, filteredTags, error});
+			yield put({type: actionTypes.USER_BLUEPRINTS_SUMMARIES_FAILED, error});
 		}
 	}
 	catch (error)
 	{
 		console.log(error);
-		yield put({type: actionTypes.MY_FAVORITES_FAILED, titleFilter, filteredTags, error});
+		yield put({type: actionTypes.USER_BLUEPRINTS_SUMMARIES_FAILED, error});
 	}
 };
 

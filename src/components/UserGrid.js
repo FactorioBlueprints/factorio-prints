@@ -9,7 +9,7 @@ import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
-import {filterOnTags} from '../actions/actionCreators';
+import {filterOnTags, subscribeToUserBlueprintSummaries} from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
@@ -30,7 +30,7 @@ class UserGrid extends PureComponent
 		exists                   : PropTypes.bool,
 		displayName              : PropTypes.string,
 		displayNameLoading       : PropTypes.bool.isRequired,
-		subscribeToUser          : PropTypes.func.isRequired,
+		subscribeToUserBlueprintSummaries          : PropTypes.func.isRequired,
 		filterOnTags             : PropTypes.func.isRequired,
 		user                     : propTypes.userSchema,
 		blueprintSummaries       : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
@@ -54,10 +54,10 @@ class UserGrid extends PureComponent
 		// Logged in user
 		if (this.props.user)
 		{
-			this.props.subscribeToUser(this.props.user.uid);
+			this.props.subscribeToUserBlueprintSummaries(this.props.user.uid);
 		}
 		// Blueprint author
-		this.props.subscribeToUser(this.props.id);
+		this.props.subscribeToUserBlueprintSummaries(this.props.id);
 	}
 
 	render()
@@ -122,6 +122,7 @@ const mapDispatchToProps = (dispatch) =>
 {
 	const actionCreators = {
 		filterOnTags,
+		subscribeToUserBlueprintSummaries,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };
