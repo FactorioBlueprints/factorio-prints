@@ -3,9 +3,7 @@ import {
 	faClock,
 	faCogs,
 	faEnvelope,
-	faBug,
 	faHeart,
-	faPlusSquare,
 	faSignInAlt,
 	faSignOutAlt,
 	faTrophy,
@@ -79,21 +77,6 @@ class Header extends PureComponent
 		app.auth().signOut();
 	};
 
-	handleRest = async () =>
-	{
-		const idToken  = await app.auth().currentUser.getIdToken();
-		const response = await fetch(
-			`${process.env.REACT_APP_REST_URL}/api/rest/test`,
-			{
-				headers: {
-					Authorization: `Bearer ${idToken}`,
-				},
-			}
-		);
-		const text     = await response.text();
-		console.log({response, text});
-	};
-
 	getDisplayName = () =>
 	{
 		if (this.props.user.displayName)
@@ -146,12 +129,6 @@ class Header extends PureComponent
 								{' Log out'}
 							</Button>
 						</Dropdown.Item>
-						<Dropdown.Item>
-							<Button type='button' block variant='warning' size='lg' onClick={this.handleRest}>
-								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
-								{' REST TEST'}
-							</Button>
-						</Dropdown.Item>
 					</Dropdown.Menu>
 				</Dropdown>
 			);
@@ -201,12 +178,6 @@ class Header extends PureComponent
 							<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
 							{' Most Favorited'}
 						</Nav.Link>
-{/*
-						<Nav.Link as={Link} href='/ui/create' to='/ui/create' className='text-light'>
-							<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
-							{' Create'}
-						</Nav.Link>
-*/}
 						{this.props.user
 						&& <Nav.Link as={Link} href='/ui/favorites' to='/ui/favorites' className='text-light'>
 							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />

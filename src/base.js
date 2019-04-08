@@ -1,4 +1,3 @@
-import Rebase from 're-base';
 import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/storage';
@@ -10,5 +9,3 @@ export const app = firebase.initializeApp({
 	storageBucket    : 'facorio-blueprints.appspot.com',
 	messagingSenderId: '329845993350',
 });
-const base = Rebase.createClass(app.database());
-export default base;
