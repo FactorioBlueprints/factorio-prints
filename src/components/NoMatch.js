@@ -9,7 +9,7 @@ const NoMatch = () => (
 				404
 			</h1>
 			<p className='lead'>
-				This is not the webpage you are looking for.
+				Not found.
 			</p>
 		</Jumbotron>
 	</DocumentTitle>

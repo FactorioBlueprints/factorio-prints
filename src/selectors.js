@@ -1,4 +1,3 @@
-import every                   from 'lodash/every';
 import get                     from 'lodash/get';
 import mapValues               from 'lodash/mapValues';
 import {createSelector}        from 'reselect';
@@ -32,7 +31,7 @@ export const getTags                         = storeState => storeState.tags.dat
 export const getLoadingTags                  = storeState => storeState.tags.loading;
 export const getFilteredTags                 = storeState => storeState.filteredTags;
 export const getTitleFilter                  = storeState => storeState.titleFilter;
-export const getModerators                   = storeState => storeState.moderators.data;
+export const getModerators                   = storeState => storeState.my.entitlements.data;
 
 export const getIsModerator = createSelector(
 	[
@@ -112,7 +111,7 @@ export const getUserById               = (storeState, props) => get(storeState, 
 ], initialUserState);
 export const getUserBlueprints         = createSelector(
 	[getUserById],
-	user => user.blueprints.userBlueprints,
+	user => user.blueprints.data,
 );
 export const getUserBlueprintsLoading  = createSelector(
 	[getUserById],
@@ -120,33 +119,11 @@ export const getUserBlueprintsLoading  = createSelector(
 );
 export const getUserDisplayName        = createSelector(
 	[getUserById],
-	user => user.displayName.data,
+	user => get(user, ['displayName', 'data', 'displayName']),
 );
 export const getUserDisplayNameLoading = createSelector(
 	[getUserById],
 	user => user.displayName.loading,
-);
-
-export const getUserFilteredBlueprintSummaries = createSelector(
-	[
-		getUserBlueprints,
-		getTitleFilter,
-		getLoadingTags,
-		getFilteredTags,
-		getByTag,
-	],
-	(userBlueprints, titleFilter, loadingTags, filteredTags, byTag) =>
-	{
-		if (!userBlueprints)
-		{
-			return undefined;
-		}
-		return userBlueprints
-			.filter(blueprintSummary => blueprintSummary.title.toLowerCase().includes(titleFilter.toLowerCase()))
-			.filter(blueprintSummary => loadingTags
-				|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', blueprintSummary.key], false) === true))
-			.reverse();
-	},
 );
 
 export const getTagsOptions = createSelector(

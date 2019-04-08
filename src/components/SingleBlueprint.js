@@ -1,10 +1,12 @@
 /* eslint-disable react/no-array-index-key */
 
+import {faHeart as regularHeart} from '@fortawesome/free-regular-svg-icons';
 import {
 	faCalendar,
 	faClipboard,
 	faClock,
 	faCog,
+	faLink,
 	faHeart,
 	faToggleOff,
 	faToggleOn,
@@ -22,6 +24,7 @@ import sortBy                    from 'lodash/fp/sortBy';
 import toPairs                   from 'lodash/fp/toPairs';
 import get                       from 'lodash/get';
 import has                       from 'lodash/has';
+import includes                  from 'lodash/includes';
 import isEmpty                   from 'lodash/isEmpty';
 import isEqual                   from 'lodash/isEqual';
 import range                     from 'lodash/range';
@@ -44,7 +47,7 @@ import {connect}                 from 'react-redux';
 import {Link}                    from 'react-router-dom';
 import {bindActionCreators}      from 'redux';
 
-import {subscribeToBlueprint, subscribeToModerators, subscribeToUserDisplayName} from '../actions/actionCreators';
+import {subscribeToBlueprint, subscribeToUserDisplayName} from '../actions/actionCreators';
 
 import Blueprint           from '../Blueprint';
 import entitiesWithIcons   from '../data/entitiesWithIcons';
@@ -53,6 +56,7 @@ import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 
 import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
+import myPropTypes         from '../propTypes/myPropTypes';
 import * as selectors      from '../selectors';
 
 import GoogleAd from './GoogleAd';
@@ -84,14 +88,13 @@ class SingleBlueprint extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		id                        : PropTypes.string.isRequired,
+		my                        : myPropTypes,
 		displayName               : PropTypes.string,
 		displayNameLoading        : PropTypes.bool.isRequired,
 		subscribeToBlueprint      : PropTypes.func.isRequired,
 		subscribeToUserDisplayName: PropTypes.func.isRequired,
 		// TODO: Only bother if we're logged in
-		subscribeToModerators     : PropTypes.func.isRequired,
 		loading                   : PropTypes.bool.isRequired,
-		myFavoritesKeys           : PropTypes.objectOf(PropTypes.bool.isRequired),
 		user                      : propTypes.userSchema,
 		blueprint                 : BlueprintProjection,
 		isModerator               : PropTypes.bool.isRequired,
@@ -117,11 +120,6 @@ class SingleBlueprint extends PureComponent
 	UNSAFE_componentWillMount()
 	{
 		this.props.subscribeToBlueprint(this.props.id);
-		if (!isEmpty(this.props.user))
-		{
-			this.props.subscribeToModerators();
-		}
-
 		this.cacheBlueprintState(this.props);
 	}
 
@@ -135,11 +133,6 @@ class SingleBlueprint extends PureComponent
 		if (!isEqual(this.props.blueprint, nextProps.blueprint))
 		{
 			this.cacheBlueprintState(nextProps);
-		}
-
-		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
-		{
-			nextProps.subscribeToModerators();
 		}
 	}
 
@@ -263,6 +256,20 @@ class SingleBlueprint extends PureComponent
 		)(result);
 	};
 
+	renderFavoriteButton = () =>
+	{
+		const myFavorite = includes(this.props.my.favorites.data, this.props.id);
+		const heart      = myFavorite ? faHeart : regularHeart;
+		const iconClass  = myFavorite ? 'text-warning' : 'text-default';
+
+		return (
+			<Button size='lg' disabled>
+				<FontAwesomeIcon icon={heart} className={iconClass} />
+				{' Favorite'}
+			</Button>
+		);
+	};
+
 	render()
 	{
 		const {blueprint} = this.props;
@@ -288,22 +295,34 @@ class SingleBlueprint extends PureComponent
 
 		const {imgurImage, createdOn, systemFrom, author: {userId: authorId}, title, numberOfUpvotes} = blueprint;
 
+		const titleLink = (
+			<a
+				className='mr-1'
+				target='_blank'
+				rel='noopener noreferrer'
+				href={`https://factorioprints.com/view/${this.props.id}`}
+			>
+				<h1>
+					<FontAwesomeIcon icon={faLink} className='text-warning' />
+					{` ${title}`}
+				</h1>
+			</a>
+		);
+
 		return (
 			<DocumentTitle title={`Factorio Prints: ${title}`}>
 				<Container>
 					<Row>
 						<Col md={9}>
 							<div className='d-flex mt-4'>
-								<h1>
-									{title}
-								</h1>
-
+								{titleLink}
 							</div>
 						</Col>
-						{/*<Col md={3} className='d-flex align-items-center justify-content-end'>*/}
-						{/*	{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}*/}
-						{/*	{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}*/}
-						{/*</Col>*/}
+						<Col md={3} className='d-flex align-items-center justify-content-end'>
+							{/*	{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}*/}
+							{/*	{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}*/}
+							{this.renderFavoriteButton()}
+						</Col>
 					</Row>
 					<Row>
 						<Col md={4}>
@@ -312,7 +331,12 @@ class SingleBlueprint extends PureComponent
 								target='_blank'
 								rel='noopener noreferrer'
 							>
-								<Image thumbnail className='border-warning' src={this.state.thumbnail} referrerPolicy='no-referrer' />
+								<Image
+									thumbnail
+									className='border-warning'
+									src={this.state.thumbnail}
+									referrerPolicy='no-referrer'
+								/>
 							</a>
 							{
 								blueprint.tags && blueprint.tags.length > 0 && <Card>
@@ -323,7 +347,11 @@ class SingleBlueprint extends PureComponent
 										<h4>
 											{
 												flatMap(blueprint.tags, tag => (
-													<Link key={`/ui/${tag.tag.category}/${tag.tag.name}`} to={`/ui/tagged${tag.tag.category}/${tag.tag.name}`} className='m-1'>
+													<Link
+														key={`${tag.tag.category}/${tag.tag.name}`}
+														to={`/tagged/${tag.tag.category}/${tag.tag.name}/`}
+														className='m-1'
+													>
 														<Badge variant='warning'>
 															{`${tag.tag.category}/${tag.tag.name}`}
 														</Badge>
@@ -346,7 +374,7 @@ class SingleBlueprint extends PureComponent
 												{' Author'}
 											</td>
 											<td>
-												<Link to={`/ui/user/${authorId}`}>
+												<Link to={`user/${authorId}`}>
 													{blueprint.author.displayName}
 													{
 														this.state.ownedByCurrentUser
@@ -417,7 +445,10 @@ class SingleBlueprint extends PureComponent
 														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
 															{
 																entitiesWithIcons[pair[0]]
-																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	? <img
+																		src={`/icons/${pair[0]}.png`}
+																		alt={pair[0]}
+																	/>
 																	: ''
 															}
 														</td>
@@ -436,7 +467,10 @@ class SingleBlueprint extends PureComponent
 														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
 															{
 																entitiesWithIcons[pair[0]]
-																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	? <img
+																		src={`/icons/${pair[0]}.png`}
+																		alt={pair[0]}
+																	/>
 																	: ''
 															}
 														</td>
@@ -483,7 +517,10 @@ class SingleBlueprint extends PureComponent
 																<td className={`icon icon-${iconName}`}>
 																	{
 																		entitiesWithIcons[iconName]
-																			? <img src={`/icons/${iconName}.png`} alt={iconName} />
+																			? <img
+																				src={`/icons/${iconName}.png`}
+																				alt={iconName}
+																			/>
 																			: ''
 																	}
 																</td>
@@ -606,14 +643,20 @@ class SingleBlueprint extends PureComponent
 																	&& eachBlueprint.blueprint.icons.length > iconIndex
 																	&& eachBlueprint.blueprint.icons[iconIndex] !== null)
 																{
-																	const icon     = eachBlueprint.blueprint.icons[iconIndex];
+																	const icon = eachBlueprint.blueprint.icons[iconIndex];
 																	// eslint-disable-next-line
 																	const iconName = icon.name || icon.signal && icon.signal.name;
 																	return (
-																		<td className={`icon icon-${iconName}`} key={iconIndex}>
+																		<td
+																			className={`icon icon-${iconName}`}
+																			key={iconIndex}
+																		>
 																			{
 																				entitiesWithIcons[iconName]
-																					? <img src={`/icons/${iconName}.png`} alt={iconName} />
+																					? <img
+																						src={`/icons/${iconName}.png`}
+																						alt={iconName}
+																					/>
 																					: ''
 																			}
 																		</td>
@@ -652,14 +695,20 @@ class SingleBlueprint extends PureComponent
 														<td className={`icon icon-${from.name}`}>
 															{
 																entitiesWithIcons[from.name]
-																	? <img src={`/icons/${from.name}.png`} alt={from.name} />
+																	? <img
+																		src={`/icons/${from.name}.png`}
+																		alt={from.name}
+																	/>
 																	: ''
 															}
 														</td>
 														<td className={`icon icon-${to.name}`}>
 															{
 																entitiesWithIcons[to.name]
-																	? <img src={`/icons/${to.name}.png`} alt={to.name} />
+																	? <img
+																		src={`/icons/${to.name}.png`}
+																		alt={to.name}
+																	/>
 																	: ''
 															}
 														</td>
@@ -692,6 +741,7 @@ const mapStateToProps = (storeState, ownProps) =>
 
 	return {
 		id,
+		my                : storeState.my,
 		user              : selectors.getFilteredUser(storeState),
 		isModerator       : selectors.getIsModerator(storeState),
 		blueprint         : selectors.getBlueprintDataById(storeState, {id}),
@@ -705,7 +755,6 @@ const mapDispatchToProps = (dispatch) =>
 {
 	const actionCreators = {
 		subscribeToBlueprint,
-		subscribeToModerators,
 		subscribeToUserDisplayName,
 	};
 	return bindActionCreators(actionCreators, dispatch);

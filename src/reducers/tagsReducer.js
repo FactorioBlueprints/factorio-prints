@@ -1,29 +1,41 @@
-import {RECEIVED_TAGS, SUBSCRIBED_TO_TAGS} from '../actions/actionTypes';
+import {FETCHING_TAGS, RECEIVED_TAGS, TAGS_FAILED} from '../actions/actionTypes';
 
-const initialState
-= {
+const initialState = {
 	loading     : false,
 	data        : [],
 	tagHierarchy: {},
+	error       : undefined,
 };
 
 const tagsReducer = (state = initialState, action) =>
 {
 	switch (action.type)
 	{
-		case RECEIVED_TAGS:
-			return {
-				...state,
-				loading     : false,
-				tagsRef     : action.tagsRef,
-				data        : action.tags,
-				tagHierarchy: action.tagHierarchy,
-			};
-		case SUBSCRIBED_TO_TAGS:
+		case FETCHING_TAGS:
+		{
 			return {
 				...state,
 				loading: true,
+				error  : undefined,
 			};
+		}
+		case RECEIVED_TAGS:
+		{
+			return {
+				loading     : false,
+				data        : action.tags,
+				tagHierarchy: action.tagHierarchy,
+				error       : undefined,
+			};
+		}
+		case TAGS_FAILED:
+		{
+			return {
+				...state,
+				loading: false,
+				error  : action.error,
+			};
+		}
 		default:
 			return state;
 	}

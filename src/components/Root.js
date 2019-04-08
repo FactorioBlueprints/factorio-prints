@@ -65,17 +65,17 @@ class Root extends PureComponent
 			<DocumentTitle title='Factorio Prints'>
 				<BrowserRouter>
 					<div>
-						<Route path='/ui' component={Header} />
+						<Route path='/' component={Header} />
 						<Switch>
-							<Route path='/ui/' exact render={this.renderIntro} />
-							<Route path='/ui/blueprints' exact component={BlueprintGrid} />
-							<Route path='/ui/top' exact component={MostFavoritedGrid} />
-							<Route path='/ui/favorites' exact component={FavoritesGrid} />
-							<Route path='/ui/contact' exact component={Contact} />
-							<Route path='/ui/account' exact component={Account} />
-							<Route path='/ui/view/:blueprintId' component={SingleBlueprint} />
-							<Route path='/ui/user/:userId' component={UserGrid} />
-							<Route path='/ui/tagged/:tag' render={this.renderTag} />
+							<Route path='/' exact render={this.renderIntro} />
+							<Route path='/blueprints' exact component={BlueprintGrid} />
+							<Route path='/top' exact component={MostFavoritedGrid} />
+							<Route path='/favorites' exact component={FavoritesGrid} />
+							<Route path='/contact' exact component={Contact} />
+							<Route path='/account' exact component={Account} />
+							<Route path='/view/:blueprintId' component={SingleBlueprint} />
+							<Route path='/user/:userId' component={UserGrid} />
+							<Route path='/tagged/:tag' render={this.renderTag} />
 							<Route component={NoMatch} />
 						</Switch>
 					</div>

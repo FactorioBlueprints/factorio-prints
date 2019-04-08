@@ -1,4 +1,3 @@
-import update            from 'immutability-helper';
 import {combineReducers} from 'redux';
 
 import {
@@ -7,8 +6,8 @@ import {
 	RECEIVED_USER_BLUEPRINTS_SUMMARIES,
 	RECEIVED_USER_DISPLAY_NAME,
 	USER_BLUEPRINTS_SUMMARIES_FAILED,
-}                   from '../actions/actionTypes';
-import arrayReducer from './arrayReducer';
+	USER_DISPLAY_NAME_FAILED,
+} from '../actions/actionTypes';
 
 const displayNameInitialState = {
 	loading: false,
@@ -16,36 +15,101 @@ const displayNameInitialState = {
 	error  : undefined,
 };
 
+const blueprintsInitialState = {
+	loading: false,
+	data   : [],
+	error  : undefined,
+};
+
 export const initialUserState = {
 	displayName: displayNameInitialState,
-	blueprints : {
-		loading: false,
-		data   : [],
-		error  : undefined,
-	},
+	blueprints : blueprintsInitialState,
 };
+
+// TOOD: Create "data-in-envelope reducer"
 
 const displayNameReducer = (state = displayNameInitialState, action) =>
 {
 	switch (action.type)
 	{
 		case FETCHING_USER_DISPLAY_NAME:
-			return update(state, {
-				loading: {$set: true},
+		{
+			return {
+				...state,
+				loading: true,
 				error  : undefined,
-			});
+			};
+		}
+		case USER_DISPLAY_NAME_FAILED:
+		{
+			return {
+				...displayNameInitialState,
+				error: action.error,
+			};
+		}
 		case RECEIVED_USER_DISPLAY_NAME:
-			return update(state, {
-				loading: {$set: false},
-				data   : {$set: action.displayName},
-				error  : undefined,
-			});
+		{
+			const
+				{
+					data: {
+						_data,
+						_metadata: {
+							transactionTimestamp,
+						},
+					},
+				} = action;
+			return {
+				...state,
+				data   : _data,
+				loading: false,
+				transactionTimestamp,
+			};
+		}
 		default:
 			return state;
 	}
 };
 
-const userSummariesReducer = arrayReducer(FETCHING_USER_BLUEPRINTS_SUMMARIES, RECEIVED_USER_BLUEPRINTS_SUMMARIES, USER_BLUEPRINTS_SUMMARIES_FAILED);
+const userSummariesReducer = (state = blueprintsInitialState, action) =>
+{
+	switch (action.type)
+	{
+		case FETCHING_USER_BLUEPRINTS_SUMMARIES:
+		{
+			return {
+				...state,
+				loading: true,
+			};
+		}
+		case USER_BLUEPRINTS_SUMMARIES_FAILED:
+		{
+			return {
+				...blueprintsInitialState,
+				error: action.error,
+			};
+		}
+		case RECEIVED_USER_BLUEPRINTS_SUMMARIES:
+		{
+			const
+				{
+					data: {
+						_data,
+						_metadata: {
+							transactionTimestamp,
+						},
+					},
+				} = action;
+			return {
+				...state,
+				data   : _data,
+				loading: false,
+				transactionTimestamp,
+			};
+		}
+		default:
+			return state;
+	}
+};
 
 const userReducer = combineReducers({
 	displayName: displayNameReducer,

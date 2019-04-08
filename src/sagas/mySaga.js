@@ -1,33 +1,26 @@
 import isEmpty          from 'lodash/isEmpty';
 import {call, put}      from 'redux-saga/effects';
 import * as actionTypes from '../actions/actionTypes';
-import {app}            from '../base';
 
-const getParams = function*()
-{
-	const {currentUser} = app.auth();
-	if (isEmpty(currentUser))
-	{
-		return {};
-	}
-
-	const idToken = yield call(() => currentUser.getIdToken());
-
-	const params = {
+const getParams = idToken =>
+	({
 		headers: {
 			Authorization: `Bearer ${idToken}`,
 		},
-	};
-	return params;
-};
+	});
 
-export const fetchMyAuthoredBlueprintKeysSaga = function*()
+export const fetchMyAuthoredBlueprintKeysSaga = function*({user, idToken})
 {
+	if (isEmpty(idToken))
+	{
+		return;
+	}
+
 	yield put({type: actionTypes.FETCHING_MY_AUTHORED_BLUEPRINT_KEYS});
 
 	try
 	{
-		const params   = yield call(getParams);
+		const params   = yield call(getParams, idToken);
 		const response = yield call(
 			fetch,
 			`${process.env.REACT_APP_REST_URL}/api/my/blueprints`,
@@ -53,13 +46,18 @@ export const fetchMyAuthoredBlueprintKeysSaga = function*()
 	}
 };
 
-export const fetchMyFavoriteBlueprintKeysSaga = function*()
+export const fetchMyFavoriteBlueprintKeysSaga = function*({user, idToken})
 {
+	if (isEmpty(idToken))
+	{
+		return;
+	}
+
 	yield put({type: actionTypes.FETCHING_MY_FAVORITE_BLUEPRINT_KEYS});
 
 	try
 	{
-		const params   = yield call(getParams);
+		const params   = yield call(getParams, idToken);
 		const response = yield call(
 			fetch,
 			`${process.env.REACT_APP_REST_URL}/api/my/favorites`,
@@ -85,13 +83,18 @@ export const fetchMyFavoriteBlueprintKeysSaga = function*()
 	}
 };
 
-export const fetchMyEntitlementsSaga = function*()
+export const fetchMyEntitlementsSaga = function*({user, idToken})
 {
+	if (isEmpty(idToken))
+	{
+		return;
+	}
+
 	yield put({type: actionTypes.FETCHING_MY_ENTITLEMENTS});
 
 	try
 	{
-		const params   = yield call(getParams);
+		const params   = yield call(getParams, idToken);
 		const response = yield call(
 			fetch,
 			`${process.env.REACT_APP_REST_URL}/api/my/entitlements`,

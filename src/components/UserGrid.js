@@ -9,7 +9,7 @@ import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
-import {filterOnTags, subscribeToUserBlueprintSummaries} from '../actions/actionCreators';
+import {filterOnTags, subscribeToUserBlueprintSummaries, subscribeToUserDisplayName} from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
@@ -25,21 +25,22 @@ import TagForm            from './TagForm';
 class UserGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		my                           : myPropTypes,
-		id                       : PropTypes.string.isRequired,
-		exists                   : PropTypes.bool,
-		displayName              : PropTypes.string,
-		displayNameLoading       : PropTypes.bool.isRequired,
-		subscribeToUserBlueprintSummaries          : PropTypes.func.isRequired,
-		filterOnTags             : PropTypes.func.isRequired,
-		user                     : propTypes.userSchema,
-		blueprintSummaries       : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
-		blueprintSummariesLoading: PropTypes.bool,
-		location                 : propTypes.locationSchema,
-		history                  : PropTypes.object.isRequired,
-		staticContext            : PropTypes.shape(forbidExtraProps({})),
-		match                    : PropTypes.shape(forbidExtraProps({
-			params : PropTypes.shape(forbidExtraProps({
+		my                               : myPropTypes,
+		id                               : PropTypes.string.isRequired,
+		exists                           : PropTypes.bool,
+		displayName                      : PropTypes.string,
+		displayNameLoading               : PropTypes.bool.isRequired,
+		subscribeToUserBlueprintSummaries: PropTypes.func.isRequired,
+		subscribeToUserDisplayName       : PropTypes.func.isRequired,
+		filterOnTags                     : PropTypes.func.isRequired,
+		user                             : propTypes.userSchema,
+		blueprintSummaries               : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
+		blueprintSummariesLoading        : PropTypes.bool,
+		location                         : propTypes.locationSchema,
+		history                          : PropTypes.object.isRequired,
+		staticContext                    : PropTypes.shape(forbidExtraProps({})),
+		match                            : PropTypes.shape(forbidExtraProps({
+			params: PropTypes.shape(forbidExtraProps({
 				userId: PropTypes.string.isRequired,
 			})).isRequired,
 			path   : PropTypes.string.isRequired,
@@ -51,18 +52,13 @@ class UserGrid extends PureComponent
 
 	UNSAFE_componentWillMount()
 	{
-		// Logged in user
-		if (this.props.user)
-		{
-			this.props.subscribeToUserBlueprintSummaries(this.props.user.uid);
-		}
-		// Blueprint author
 		this.props.subscribeToUserBlueprintSummaries(this.props.id);
+		this.props.subscribeToUserDisplayName(this.props.id);
 	}
 
 	render()
 	{
-		if (this.props.blueprintSummariesLoading && (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading))
+		if (this.props.blueprintSummariesLoading)
 		{
 			return (
 				<Jumbotron>
@@ -110,7 +106,7 @@ const mapStateToProps = (storeState, ownProps) =>
 		my                       : storeState.my,
 		id,
 		user                     : selectors.getFilteredUser(storeState),
-		blueprintSummaries       : selectors.getUserFilteredBlueprintSummaries(storeState, {id}),
+		blueprintSummaries       : selectors.getUserBlueprints(storeState, {id}),
 		blueprintSummariesLoading: selectors.getUserBlueprintsLoading(storeState, {id}),
 		displayName              : selectors.getUserDisplayName(storeState, {id}),
 		displayNameLoading       : selectors.getUserDisplayNameLoading(storeState, {id}),
@@ -123,6 +119,7 @@ const mapDispatchToProps = (dispatch) =>
 	const actionCreators = {
 		filterOnTags,
 		subscribeToUserBlueprintSummaries,
+		subscribeToUserDisplayName,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };
