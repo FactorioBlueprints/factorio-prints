@@ -21,7 +21,7 @@ import {
 	SUBSCRIBE_TO_MY_FAVORITES,
 	SUBSCRIBE_TO_SUMMARIES,
 	SUBSCRIBE_TO_TAGS,
-	SUBSCRIBE_TO_USER_DISPLAY_NAME,
+	SUBSCRIBE_TO_USER_DISPLAY_NAME, SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES,
 	WENT_TO_FIRST_ALL_FAVORITES,
 	WENT_TO_FIRST_MY_FAVORITES,
 	WENT_TO_FIRST_SUMMARIES,
@@ -31,7 +31,7 @@ import {
 	WENT_TO_PREVIOUS_ALL_FAVORITES,
 	WENT_TO_PREVIOUS_MY_FAVORITES,
 	WENT_TO_PREVIOUS_SUMMARIES,
-}                                         from '../actions/actionTypes';
+} from '../actions/actionTypes';
 
 import {fetchMyAuthoredBlueprintKeysSaga, fetchMyEntitlementsSaga, fetchMyFavoriteBlueprintKeysSaga} from './mySaga';
 import {
@@ -74,6 +74,7 @@ const rootSaga = function*()
 	yield takeEvery(SUBSCRIBE_TO_MODERATORS, subscribeToModeratorsSaga);
 	yield takeEvery(SUBSCRIBE_TO_TAGS, subscribeToTagsSaga);
 	yield takeEvery(SUBSCRIBE_TO_USER_DISPLAY_NAME, subscribeToDisplayNameSaga);
+	yield takeEvery(SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES, subscribeToUserBlueprintsSaga);
 
 	yield takeEvery(AUTH_STATE_CHANGED, subscribeToSummariesSaga);
 	yield takeEvery(AUTH_STATE_CHANGED, subscribeToMyFavoritesSaga);

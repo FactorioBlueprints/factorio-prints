@@ -58,6 +58,12 @@ export const subscribeToTags = () =>
 		type: actionTypes.SUBSCRIBE_TO_TAGS,
 	});
 
+export const subscribeToUserBlueprintSummaries = userId =>
+	({
+		type: actionTypes.SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES,
+		userId,
+	});
+
 export const subscribeToUserDisplayName = userId =>
 	({
 		type: actionTypes.SUBSCRIBE_TO_USER_DISPLAY_NAME,
