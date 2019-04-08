@@ -227,7 +227,7 @@ class SingleBlueprint extends PureComponent
 
 	handleTransitionToEdit = () =>
 	{
-		this.props.history.push(`/edit/${this.props.id}`);
+		this.props.history.push(`/ui/edit/${this.props.id}`);
 	};
 
 	parseBlueprint = (blueprintString) =>
@@ -362,10 +362,10 @@ class SingleBlueprint extends PureComponent
 
 							</div>
 						</Col>
-						<Col md={3} className='d-flex align-items-center justify-content-end'>
-							{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}
-							{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}
-						</Col>
+						{/*<Col md={3} className='d-flex align-items-center justify-content-end'>*/}
+						{/*	{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}*/}
+						{/*	{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}*/}
+						{/*</Col>*/}
 					</Row>
 					<Row>
 						<Col md={4}>
@@ -385,7 +385,7 @@ class SingleBlueprint extends PureComponent
 										<h4>
 											{
 												flatMap(blueprint.tags, tag => (
-													<Link key={`${tag.tag.category}/${tag.tag.name}`} to={`/tagged${tag.tag.category}/${tag.tag.name}`} className='m-1'>
+													<Link key={`/ui/${tag.tag.category}/${tag.tag.name}`} to={`/ui/tagged${tag.tag.category}/${tag.tag.name}`} className='m-1'>
 														<Badge variant='warning'>
 															{`${tag.tag.category}/${tag.tag.name}`}
 														</Badge>
@@ -408,7 +408,7 @@ class SingleBlueprint extends PureComponent
 												{' Author'}
 											</td>
 											<td>
-												<Link to={`/user/${authorId}`}>
+												<Link to={`/ui/user/${authorId}`}>
 													{blueprint.author.displayName}
 													{
 														this.state.ownedByCurrentUser
@@ -734,13 +734,13 @@ class SingleBlueprint extends PureComponent
 							}
 						</Col>
 					</Row>
-					<Row className='w-100'>
-						<Disqus.DiscussionEmbed
-							shortname='factorio-blueprints'
-							config={disqusConfig}
-							className='w-100'
-						/>
-					</Row>
+					{/*<Row className='w-100'>*/}
+					{/*	<Disqus.DiscussionEmbed*/}
+					{/*		shortname='factorio-blueprints'*/}
+					{/*		config={disqusConfig}*/}
+					{/*		className='w-100'*/}
+					{/*	/>*/}
+					{/*</Row>*/}
 				</Container>
 			</DocumentTitle>
 		);

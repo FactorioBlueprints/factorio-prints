@@ -32,7 +32,7 @@ const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =
 
 	return (
 		<Card className='blueprint-thumbnail col-auto' style={{width: '11rem', backgroundColor: '#1c1e22'}}>
-			<Link to={`/view/${key}`}>
+			<Link to={`/ui/view/${key}`}>
 				<Card.Img variant='top' src={imageUrl} />
 			</Link>
 			<p className='truncate p-1'>
@@ -43,7 +43,7 @@ const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =
 				</span>
 				{'  '}
 				<OverlayTrigger placement='bottom' overlay={tooltip}>
-					<Link to={`/view/${key}`}>
+					<Link to={`/ui/view/${key}`}>
 						<span className={mineStyle}>
 							{title}
 						</span>
