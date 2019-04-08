@@ -31,34 +31,13 @@ class Root extends PureComponent
 		app.auth().onAuthStateChanged(
 			async (user) =>
 			{
-				const idToken = await user.getIdToken();
-
-				if (user)
+				if (!user)
 				{
-					const {uid, email, photoURL, emailVerified, providerData} = user;
-
-					const providerId          = providerData && providerData.length && providerData[0].providerId;
-					const providerDisplayName = providerId ? providerData[0].displayName : undefined;
-
-					const buildUserInformation = (existingUser) =>
-					{
-						const existingUserInitialized = existingUser || {};
-						const displayName             = existingUserInitialized.displayName || providerDisplayName;
-						return {
-							...existingUserInitialized,
-							displayName,
-							providerDisplayName,
-							photoURL,
-							email,
-							emailVerified,
-							providerId,
-						};
-					};
-
-					app.database()
-						.ref(`/users/${uid}/`)
-						.transaction(buildUserInformation);
+					this.props.authStateChanged(user, null);
+					return;
 				}
+
+				const idToken = await user.getIdToken();
 				this.props.authStateChanged(user, idToken);
 			},
 			(...args) => console.log('Root.componentWillMount', args)

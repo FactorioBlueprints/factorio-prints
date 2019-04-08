@@ -696,7 +696,6 @@ const mapStateToProps = (storeState, ownProps) =>
 		isModerator       : selectors.getIsModerator(storeState),
 		blueprint         : selectors.getBlueprintDataById(storeState, {id}),
 		loading           : selectors.getBlueprintLoadingById(storeState, {id}),
-		myFavoritesKeys   : selectors.getMyFavoritesKeys(storeState),
 		displayName       : selectors.getUserDisplayName(storeState, {id: get(blueprint, ['author', 'userId'])}),
 		displayNameLoading: selectors.getUserDisplayNameLoading(storeState, {id}),
 	};

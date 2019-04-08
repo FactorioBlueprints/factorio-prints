@@ -14,6 +14,7 @@ import {filterOnTags, subscribeToUser} from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
+import myPropTypes                from '../propTypes/myPropTypes';
 import * as selectors             from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
@@ -24,6 +25,7 @@ import TagForm            from './TagForm';
 class MyFavoritesGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
+		my                           : myPropTypes,
 		subscribeToUser          : PropTypes.func.isRequired,
 		filterOnTags             : PropTypes.func.isRequired,
 		user                     : propTypes.userSchema,
@@ -86,7 +88,7 @@ class MyFavoritesGrid extends PureComponent
 				<Row className='blueprint-grid-row justify-content-center'>
 					{
 						this.props.blueprintSummaries.map(blueprintSummary =>
-							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
+							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} my={this.props.my} />)
 					}
 				</Row>
 			</Container>
@@ -96,9 +98,10 @@ class MyFavoritesGrid extends PureComponent
 
 const mapStateToProps = storeState => (
 	{
+		my                       : storeState.my,
 		user                     : selectors.getFilteredUser(storeState),
-		blueprintSummaries       : selectors.getMyFavoriteBlueprintSummaries(storeState),
-		blueprintSummariesLoading: storeState.auth.myFavorites.loading,
+		blueprintSummaries       : storeState.blueprintMyFavorites.data,
+		blueprintSummariesLoading: storeState.blueprintMyFavorites.loading,
 	});
 
 const mapDispatchToProps = (dispatch) =>

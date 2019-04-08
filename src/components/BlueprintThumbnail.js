@@ -1,24 +1,22 @@
 import {faHeart}          from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
-import PropTypes          from 'prop-types';
 import React              from 'react';
 import Card               from 'react-bootstrap/Card';
 import OverlayTrigger     from 'react-bootstrap/OverlayTrigger';
 import Tooltip            from 'react-bootstrap/Tooltip';
-import {connect}          from 'react-redux';
 import {Link}             from 'react-router-dom';
 
 import buildImageUrl              from '../helpers/buildImageUrl';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
-import * as selectors             from '../selectors';
+import myPropTypes                from '../propTypes/myPropTypes';
 
-const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =>
+const BlueprintThumbnail = ({blueprintSummary, my}) =>
 {
 	const {key, title, imgurImage: {imgurId, imgurType}, numberOfUpvotes} = blueprintSummary;
 
-	const isFavorite = myFavoritesKeys[key] === true;
-	const isMine     = myBlueprints[key] === true;
+	const mine = my.blueprints.data.includes(key);
+	const favorite = my.favorites.data.includes(key);
 
 	const tooltip  = (
 		<Tooltip>
@@ -27,8 +25,8 @@ const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =
 	);
 	const imageUrl = buildImageUrl(imgurId, imgurType, 'b');
 
-	const mineStyle     = isMine ? 'text-warning' : 'text-default';
-	const favoriteStyle = isFavorite ? 'text-warning' : 'text-default';
+	const mineStyle     = mine ? 'text-warning' : 'text-default';
+	const favoriteStyle = favorite ? 'text-warning' : 'text-default';
 
 	return (
 		<Card className='blueprint-thumbnail col-auto' style={{width: '11rem', backgroundColor: '#1c1e22'}}>
@@ -56,13 +54,7 @@ const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =
 
 BlueprintThumbnail.propTypes = forbidExtraProps({
 	blueprintSummary: BlueprintSummaryProjection,
-	myBlueprints    : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
-	myFavoritesKeys : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
+	my              : myPropTypes,
 });
 
-const mapStateToProps = storeState => ({
-	myBlueprints   : selectors.getMyBlueprints(storeState),
-	myFavoritesKeys: selectors.getMyFavoritesKeys(storeState),
-});
-
-export default connect(mapStateToProps, {})(BlueprintThumbnail);
+export default BlueprintThumbnail;

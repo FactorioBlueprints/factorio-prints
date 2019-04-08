@@ -49,11 +49,6 @@ store.subscribe(throttle(() =>
 		},
 		byTag,
 		filteredTags,
-		auth              : {
-			myFavorites: {
-				data: myFavoritesData,
-			},
-		},
 		users,
 	} = state;
 
@@ -68,11 +63,6 @@ store.subscribe(throttle(() =>
 		},
 		byTag: mapValues(byTag, ({data}) => ({data})),
 		filteredTags,
-		auth : {
-			myFavorites: {
-				data: myFavoritesData,
-			},
-		},
 		users: mapValues(pickBy(users, ({data}) => !isEmpty(data)), ({displayName: {data: displayNameData}, blueprints: {data: blueprintsData}}) =>
 			({
 				displayName: {
