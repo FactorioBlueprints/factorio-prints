@@ -58,12 +58,6 @@ export const subscribeToTags = () =>
 		type: actionTypes.SUBSCRIBE_TO_TAGS,
 	});
 
-export const subscribeToUser = userId =>
-	({
-		type: actionTypes.SUBSCRIBE_TO_USER,
-		userId,
-	});
-
 export const subscribeToUserDisplayName = userId =>
 	({
 		type: actionTypes.SUBSCRIBE_TO_USER_DISPLAY_NAME,

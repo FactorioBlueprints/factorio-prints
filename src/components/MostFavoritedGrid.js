@@ -18,7 +18,6 @@ import {
 	goToNextAllFavorites,
 	goToPreviousAllFavorites,
 	subscribeToAllFavorites,
-	subscribeToUser,
 } from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
@@ -39,7 +38,6 @@ class MostFavoritedGrid extends PureComponent
 		goToPreviousSummaries        : PropTypes.func.isRequired,
 		goToNextSummaries            : PropTypes.func.isRequired,
 		goToFirstSummaries           : PropTypes.func.isRequired,
-		subscribeToUser              : PropTypes.func.isRequired,
 		filterOnTags                 : PropTypes.func.isRequired,
 		user                         : propTypes.userSchema,
 		blueprintSummaries           : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
@@ -61,10 +59,6 @@ class MostFavoritedGrid extends PureComponent
 	UNSAFE_componentWillMount()
 	{
 		this.props.subscribeToBlueprintSummaries();
-		if (this.props.user)
-		{
-			this.props.subscribeToUser(this.props.user.uid);
-		}
 	}
 
 	handlePreviousPage = () =>
@@ -160,7 +154,6 @@ const mapDispatchToProps = (dispatch) =>
 		goToNextSummaries            : goToNextAllFavorites,
 		goToFirstSummaries           : goToFirstAllFavorites,
 		filterOnTags,
-		subscribeToUser,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };
