@@ -1,8 +1,6 @@
 import every                   from 'lodash/every';
 import get                     from 'lodash/get';
 import mapValues               from 'lodash/mapValues';
-import sortBy                  from 'lodash/sortBy';
-import values                  from 'lodash/values';
 import {createSelector}        from 'reselect';
 import {initialBlueprintState} from './reducers/blueprintsReducer';
 import {initialUserState}      from './reducers/usersReducer';
@@ -25,14 +23,14 @@ export const getPhotoURL                     = storeState => get(storeState, [
 export const getUsers                        = storeState => storeState.users;
 export const getBlueprintSummariesData       = storeState => storeState.blueprintSummaries.data;
 export const getBlueprintSummariesLoading    = storeState => storeState.blueprintSummaries.loading;
+export const getBlueprintMyFavoritesData     = storeState => storeState.blueprintMyFavorites.data;
+export const getBlueprintMyFavoritesLoading  = storeState => storeState.blueprintMyFavorites.loading;
 export const getBlueprintAllFavoritesData    = storeState => storeState.blueprintAllFavorites.data;
 export const getBlueprintAllFavoritesLoading = storeState => storeState.blueprintAllFavorites.loading;
 export const getRawByTag                     = storeState => storeState.byTag;
 export const getTags                         = storeState => storeState.tags.data;
 export const getLoadingTags                  = storeState => storeState.tags.loading;
 export const getFilteredTags                 = storeState => storeState.filteredTags;
-export const getMyFavoritesKeys              = storeState => storeState.auth.myFavorites.myFavoritesKeys;
-export const getMyFavoritesSummaries         = storeState => storeState.auth.myFavorites.myFavoritesSummaries;
 export const getTitleFilter                  = storeState => storeState.titleFilter;
 export const getModerators                   = storeState => storeState.moderators.data;
 
@@ -149,55 +147,6 @@ export const getUserFilteredBlueprintSummaries = createSelector(
 				|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', blueprintSummary.key], false) === true))
 			.reverse();
 	},
-);
-
-export const getBlueprintSummaries = createSelector(
-	[
-		getBlueprintSummariesData,
-		getTitleFilter,
-		getLoadingTags,
-		getFilteredTags,
-		getByTag,
-	],
-	(blueprintSummaries, titleFilter, loadingTags, filteredTags, byTag) => blueprintSummaries
-		.filter(blueprintSummary => blueprintSummary.title.toLowerCase().includes(titleFilter.toLowerCase()))
-		.filter(blueprintSummary => loadingTags
-			|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', blueprintSummary.key], false) === true)),
-);
-
-export const getFavoriteBlueprintSummaries = createSelector(
-	[
-		getBlueprintAllFavoritesData,
-		getTitleFilter,
-		getLoadingTags,
-		getFilteredTags,
-		getByTag,
-	],
-	(blueprintSummaries, titleFilter, loadingTags, filteredTags, byTag) => blueprintSummaries
-		.filter(blueprintSummary => blueprintSummary.title.toLowerCase().includes(titleFilter.toLowerCase()))
-		.filter(blueprintSummary => loadingTags
-			|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', blueprintSummary.key], false) === true)),
-);
-
-const myFavoriteSummariesInputs = [
-	getMyFavoritesSummaries,
-	getTitleFilter,
-	getLoadingTags,
-	getFilteredTags,
-	getByTag,
-];
-
-const myFavoriteSummariesFilter = (myFavorites, titleFilter, loadingTags, filteredTags, byTag) =>
-	sortBy(values(myFavorites), each => each.key)
-		.filter(blueprintSummary => blueprintSummary.title !== '')
-		.filter(blueprintSummary => blueprintSummary.title.toLowerCase().includes(titleFilter.toLowerCase()))
-		.filter(blueprintSummary => loadingTags
-			|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', blueprintSummary.key], false) === true))
-		.reverse();
-
-export const getMyFavoriteBlueprintSummaries = createSelector(
-	myFavoriteSummariesInputs,
-	myFavoriteSummariesFilter,
 );
 
 export const getTagsOptions = createSelector(

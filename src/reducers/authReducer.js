@@ -3,18 +3,11 @@ import isEmpty from 'lodash/isEmpty';
 import {
 	AUTH_STATE_CHANGED,
 	EDITED_DISPLAY_NAME,
-	RECEIVED_MY_FAVORITES_SUMMARIES,
-	RECEIVED_MY_FAVORITES_KEYS,
 } from '../actions/actionTypes';
 
 const initialState = {
 	loggedIn   : false,
 	user       : {},
-	myFavorites: {
-		loading             : false,
-		myFavoritesKeys     : {},
-		myFavoritesSummaries: [],
-	},
 };
 
 const authReducer = (state = initialState, action) =>
@@ -46,28 +39,6 @@ const authReducer = (state = initialState, action) =>
 				},
 			};
 		}
-		case RECEIVED_MY_FAVORITES_KEYS:
-			return {
-				...state,
-				loggedIn   : true,
-				myFavorites: {
-					loading             : false,
-					myFavoritesRef      : action.myFavoritesRef,
-					myFavoritesKeys     : action.myFavoritesKeys,
-					myFavoritesSummaries: [],
-				},
-			};
-		case RECEIVED_MY_FAVORITES_SUMMARIES:
-			return {
-				...state,
-				loggedIn   : true,
-				myFavorites: {
-					...state.myFavorites,
-					loading             : false,
-					myFavoritesRef      : action.myFavoritesRef,
-					myFavoritesSummaries: action.myFavoritesSummaries,
-				},
-			};
 		default:
 			return state;
 	}

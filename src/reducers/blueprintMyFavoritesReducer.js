@@ -1,6 +1,6 @@
-import reduceReducers                                                             from 'reduce-reducers';
-import {ALL_FAVORITES_FAILED, RECEIVED_ALL_FAVORITES, SUBSCRIBED_TO_ALL_FAVORITES} from '../actions/actionTypes';
-import createCurrentPage                                                          from './createCurrentPage';
+import reduceReducers                                                           from 'reduce-reducers';
+import {MY_FAVORITES_FAILED, RECEIVED_MY_FAVORITES, SUBSCRIBED_TO_MY_FAVORITES} from '../actions/actionTypes';
+import createCurrentPage                                                        from './createCurrentPage';
 
 const initialState = {
 	currentPage  : 1,
@@ -10,22 +10,22 @@ const initialState = {
 	data         : [],
 };
 
-const blueprintAllFavoritesReducer = (state = initialState, action) =>
+const blueprintMyFavoritesReducer = (state = initialState, action) =>
 {
 	switch (action.type)
 	{
-		case ALL_FAVORITES_FAILED:
+		case MY_FAVORITES_FAILED:
 		{
 			return {
 				...initialState,
 				error: action.error,
 			};
 		}
-		case RECEIVED_ALL_FAVORITES:
+		case RECEIVED_MY_FAVORITES:
 		{
 			const
 				{
-					blueprintAllFavoritesEnvelope: {
+					blueprintMyFavoritesEnvelope: {
 						_data,
 						_metadata: {
 							pagination: {
@@ -45,7 +45,7 @@ const blueprintAllFavoritesReducer = (state = initialState, action) =>
 				transactionTimestamp,
 			};
 		}
-		case SUBSCRIBED_TO_ALL_FAVORITES:
+		case SUBSCRIBED_TO_MY_FAVORITES:
 			return {
 				...state,
 				loading: true,
@@ -55,7 +55,7 @@ const blueprintAllFavoritesReducer = (state = initialState, action) =>
 	}
 };
 
-const currentPageReducer = createCurrentPage('ALL_FAVORITES');
+const currentPageReducer = createCurrentPage('MY_FAVORITES');
 
 const summariesPageReducer = (state = initialState, action) =>
 {
@@ -65,6 +65,6 @@ const summariesPageReducer = (state = initialState, action) =>
 		currentPage,
 	};
 };
-const rootReducer          = reduceReducers(blueprintAllFavoritesReducer, summariesPageReducer);
+const rootReducer          = reduceReducers(blueprintMyFavoritesReducer, summariesPageReducer);
 
 export default rootReducer;
