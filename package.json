@@ -2,7 +2,7 @@
   "name": "factorio-blueprints",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://factorioprints.com/",
+  "homepage": "https://www.factorio.school/ui/",
   "devDependencies": {
     "autoprefixer-stylus": "0.14.0",
     "babel-cli": "6.26.0",

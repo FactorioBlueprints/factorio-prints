@@ -76,14 +76,14 @@ class Account extends PureComponent
 			.ref(`/users/${this.props.user.uid}/displayName/`)
 			.set(this.state.displayName)
 			.then(() => this.props.editedDisplayName(this.state.displayName))
-			.then(() => this.props.history.push(`/user/${this.props.user.uid}`))
+			.then(() => this.props.history.push(`/ui/user/${this.props.user.uid}`))
 			.catch((...args) => console.log('Account.handleSaveAccount', args));
 	};
 
 	handleCancel = (event) =>
 	{
 		event.preventDefault();
-		this.props.history.push(`/user/${this.props.user.uid}`);
+		this.props.history.push(`/ui/user/${this.props.user.uid}`);
 	};
 
 	render()

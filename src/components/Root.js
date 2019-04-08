@@ -16,7 +16,6 @@ import Create            from './Create';
 import EditBlueprint     from './EditBlueprint';
 import Header            from './Header';
 import Intro             from './Intro';
-import KnownIssues       from './KnownIssues';
 import MostFavoritedGrid from './MostFavoritedGrid';
 import FavoritesGrid     from './MyFavoritesGrid';
 import NoMatch           from './NoMatch';
@@ -70,7 +69,6 @@ class Root extends PureComponent
 
 	renderIntro = () => (
 		<div>
-			<KnownIssues />
 			<Intro />
 			<BlueprintGrid />
 		</div>
@@ -90,21 +88,20 @@ class Root extends PureComponent
 			<DocumentTitle title='Factorio Prints'>
 				<BrowserRouter>
 					<div>
-						<Route path='/' component={Header} />
+						<Route path='/ui' component={Header} />
 						<Switch>
-							<Route path='/' exact render={this.renderIntro} />
-							<Route path='/blueprints' exact component={BlueprintGrid} />
-							<Route path='/top' exact component={MostFavoritedGrid} />
-							<Route path='/create' exact component={Create} />
+							<Route path='/ui/' exact render={this.renderIntro} />
+							<Route path='/ui/blueprints' exact component={BlueprintGrid} />
+							<Route path='/ui/top' exact component={MostFavoritedGrid} />
+							<Route path='/ui/create' exact component={Create} />
 
-							<Route path='/favorites' exact component={FavoritesGrid} />
-							<Route path='/knownIssues' exact component={KnownIssues} />
-							<Route path='/contact' exact component={Contact} />
-							<Route path='/account' exact component={Account} />
-							<Route path='/view/:blueprintId' component={SingleBlueprint} />
-							<Route path='/edit/:blueprintId' component={EditBlueprint} />
-							<Route path='/user/:userId' component={UserGrid} />
-							<Route path='/tagged/:tag' render={this.renderTag} />
+							<Route path='/ui/favorites' exact component={FavoritesGrid} />
+							<Route path='/ui/contact' exact component={Contact} />
+							<Route path='/ui/account' exact component={Account} />
+							<Route path='/ui/view/:blueprintId' component={SingleBlueprint} />
+							<Route path='/ui/edit/:blueprintId' component={EditBlueprint} />
+							<Route path='/ui/user/:userId' component={UserGrid} />
+							<Route path='/ui/tagged/:tag' render={this.renderTag} />
 							<Route component={NoMatch} />
 						</Switch>
 					</div>
