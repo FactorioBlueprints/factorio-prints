@@ -1,12 +1,10 @@
 /* eslint-disable react/no-array-index-key */
 
-import {faHeart as regularHeart} from '@fortawesome/free-regular-svg-icons';
 import {
 	faCalendar,
 	faClipboard,
 	faClock,
 	faCog,
-	faEdit,
 	faHeart,
 	faToggleOff,
 	faToggleOn,
@@ -14,7 +12,6 @@ import {
 }                                from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}        from 'airbnb-prop-types';
-import Disqus                    from 'disqus-react';
 import concat                    from 'lodash/concat';
 import flatMap                   from 'lodash/flatMap';
 import forOwn                    from 'lodash/forOwn';
@@ -49,7 +46,6 @@ import {bindActionCreators}      from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators, subscribeToUserDisplayName} from '../actions/actionCreators';
 
-import {app}               from '../base';
 import Blueprint           from '../Blueprint';
 import entitiesWithIcons   from '../data/entitiesWithIcons';
 import buildImageUrl       from '../helpers/buildImageUrl';
@@ -194,22 +190,6 @@ class SingleBlueprint extends PureComponent
 		</>
 	);
 
-	handleFavorite = () =>
-	{
-		const {uid}                = this.props.user;
-		const {numberOfFavorites}  = this.props.blueprint;
-		const wasFavorite          = this.props.myFavoritesKeys[this.props.id];
-		const newNumberOfFavorites = numberOfFavorites + (wasFavorite ? -1 : 1);
-
-		const updates = {
-			[`/blueprints/${this.props.id}/numberOfFavorites`]        : newNumberOfFavorites,
-			[`/blueprints/${this.props.id}/favorites/${uid}`]         : wasFavorite ? null : true,
-			[`/blueprintSummaries/${this.props.id}/numberOfFavorites`]: newNumberOfFavorites,
-			[`/users/${uid}/favorites/${this.props.id}`]              : wasFavorite ? null : true,
-		};
-		app.database().ref().update(updates);
-	};
-
 	handleShowHideBase64 = (event) =>
 	{
 		this.setState({showBlueprint: !this.state.showBlueprint});
@@ -223,11 +203,6 @@ class SingleBlueprint extends PureComponent
 	handleShowHideConverted = (event) =>
 	{
 		this.setState({showConverted: !this.state.showConverted});
-	};
-
-	handleTransitionToEdit = () =>
-	{
-		this.props.history.push(`/ui/edit/${this.props.id}`);
 	};
 
 	parseBlueprint = (blueprintString) =>
@@ -288,37 +263,6 @@ class SingleBlueprint extends PureComponent
 		)(result);
 	};
 
-	renderEditButton = () => (
-		<Button
-			size='lg'
-			onClick={this.handleTransitionToEdit}
-		>
-			<FontAwesomeIcon icon={faEdit} />
-			{' Edit'}
-		</Button>
-	);
-
-	renderFavoriteButton = () =>
-	{
-		const {user} = this.props;
-
-		if (!user)
-		{
-			return <div />;
-		}
-
-		const myFavorite = this.props.myFavoritesKeys[this.props.id];
-		const heart      = myFavorite ? faHeart : regularHeart;
-		const iconClass  = myFavorite ? 'text-warning' : 'text-default';
-
-		return (
-			<Button size='lg' onClick={this.handleFavorite}>
-				<FontAwesomeIcon icon={heart} className={iconClass} />
-				{' Favorite'}
-			</Button>
-		);
-	};
-
 	render()
 	{
 		const {blueprint} = this.props;
@@ -343,12 +287,6 @@ class SingleBlueprint extends PureComponent
 		}
 
 		const {imgurImage, createdOn, systemFrom, author: {userId: authorId}, title, numberOfUpvotes} = blueprint;
-
-		const disqusConfig = {
-			url       : `https://factorioprints.com${this.props.location.pathname}`,
-			identifier: this.props.id,
-			title     : blueprint.title,
-		};
 
 		return (
 			<DocumentTitle title={`Factorio Prints: ${title}`}>
