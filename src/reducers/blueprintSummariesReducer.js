@@ -1,30 +1,48 @@
-import {
-	RECEIVED_SUMMARIES,
-	SUBSCRIBED_TO_SUMMARIES,
-} from '../actions/actionTypes';
+import reduceReducers                                                  from 'reduce-reducers';
+import {RECEIVED_SUMMARIES, SUBSCRIBED_TO_SUMMARIES, SUMMARIES_FAILED} from '../actions/actionTypes';
+import createCurrentPage                                               from './createCurrentPage';
 
 const initialState = {
-	currentPage: 1,
-	isLastPage : false,
-	loading    : false,
-	data       : [],
-	paginator  : undefined,
+	currentPage  : 1,
+	numberOfPages: 1,
+	isLastPage   : false,
+	loading      : false,
+	data         : [],
 };
 
 const blueprintSummariesReducer = (state = initialState, action) =>
 {
 	switch (action.type)
 	{
+		case SUMMARIES_FAILED:
+		{
+			return {
+				...initialState,
+				error: action.error,
+			};
+		}
 		case RECEIVED_SUMMARIES:
 		{
-			const {paginator, paginator: {currentPage, isLastPage, loading, data}} = action;
+			const
+				{
+					blueprintSummariesEnvelope: {
+						_data,
+						_metadata: {
+							pagination: {
+								pageNumber,
+								numberOfPages,
+							},
+							transactionTimestamp,
+						},
+					},
+				} = action;
 			return {
 				...state,
-				paginator,
-				currentPage,
-				isLastPage,
-				loading,
-				data,
+				data       : _data,
+				currentPage: pageNumber,
+				numberOfPages,
+				loading    : false,
+				transactionTimestamp,
 			};
 		}
 		case SUBSCRIBED_TO_SUMMARIES:
@@ -37,4 +55,16 @@ const blueprintSummariesReducer = (state = initialState, action) =>
 	}
 };
 
-export default blueprintSummariesReducer;
+const currentPageReducer = createCurrentPage('SUMMARIES');
+
+const summariesPageReducer = (state = initialState, action) =>
+{
+	const currentPage = currentPageReducer(state.currentPage, action);
+	return {
+		...state,
+		currentPage,
+	};
+};
+const rootReducer          = reduceReducers(blueprintSummariesReducer, summariesPageReducer);
+
+export default rootReducer;

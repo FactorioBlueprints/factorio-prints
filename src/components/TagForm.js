@@ -9,14 +9,13 @@ import Select               from 'react-select';
 import 'react-select/dist/react-select.css';
 import {bindActionCreators} from 'redux';
 
-import {filterOnTags, subscribeToTag, subscribeToTags} from '../actions/actionCreators';
+import {filterOnTags, subscribeToTags} from '../actions/actionCreators';
 
 class TagForm extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		tags           : PropTypes.arrayOf(PropTypes.string).isRequired,
 		filteredTags   : PropTypes.arrayOf(PropTypes.string).isRequired,
-		subscribeToTag : PropTypes.func.isRequired,
 		subscribeToTags: PropTypes.func.isRequired,
 		filterOnTags   : PropTypes.func.isRequired,
 	});
@@ -29,7 +28,6 @@ class TagForm extends PureComponent
 	handleTagSelection = (filteredTags) =>
 	{
 		const filteredTagStrings = filteredTags.map(each => each.value);
-		filteredTagStrings.forEach(this.props.subscribeToTag);
 		this.props.filterOnTags(filteredTagStrings);
 	};
 
@@ -58,7 +56,7 @@ const mapStateToProps = (state) =>
 
 const mapDispatchToProps = (dispatch) =>
 {
-	const actionCreators = {subscribeToTag, subscribeToTags, filterOnTags};
+	const actionCreators = {subscribeToTags, filterOnTags};
 	return bindActionCreators(actionCreators, dispatch);
 };
 

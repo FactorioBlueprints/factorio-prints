@@ -78,6 +78,21 @@ class Header extends PureComponent
 		app.auth().signOut();
 	};
 
+	handleRest = async () =>
+	{
+		const idToken  = await app.auth().currentUser.getIdToken();
+		const response = await fetch(
+			`${process.env.REACT_APP_REST_URL}/api/rest/test`,
+			{
+				headers: {
+					Authorization: `Bearer ${idToken}`,
+				},
+			}
+		);
+		const text     = await response.text();
+		console.log({response, text});
+	};
+
 	getDisplayName = () =>
 	{
 		if (this.props.user.displayName)
@@ -95,7 +110,12 @@ class Header extends PureComponent
 
 	authenticate = (provider) =>
 	{
-		app.auth().signInWithPopup(provider).catch(error => console.error({error}));
+		app.auth().signInWithPopup(provider)
+			.then((authData) =>
+			{
+				console.log({authData});
+			})
+			.catch(error => console.error({error}));
 	};
 
 	renderAuthentication = () =>
@@ -106,7 +126,9 @@ class Header extends PureComponent
 				<Dropdown className='text-light'>
 					<Dropdown.Toggle variant='link'>
 						Account Settings
-					</Dropdown.Toggle>
+
+
+     </Dropdown.Toggle>
 					<Dropdown.Menu className='dropdown-menu-right'>
 						<Dropdown.Item className='user-photo-container'>
 							{this.getDisplayName()}
@@ -121,6 +143,12 @@ class Header extends PureComponent
 							<Button type='button' block variant='warning' size='lg' onClick={this.handleLogout}>
 								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
 								{' Log out'}
+							</Button>
+						</Dropdown.Item>
+						<Dropdown.Item>
+							<Button type='button' block variant='warning' size='lg' onClick={this.handleRest}>
+								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
+								{' REST TEST'}
 							</Button>
 						</Dropdown.Item>
 					</Dropdown.Menu>

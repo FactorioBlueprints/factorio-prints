@@ -31,8 +31,10 @@ class Root extends PureComponent
 	UNSAFE_componentWillMount()
 	{
 		app.auth().onAuthStateChanged(
-			(user) =>
+			async (user) =>
 			{
+				const idToken = await user.getIdToken();
+
 				if (user)
 				{
 					const {uid, email, photoURL, emailVerified, providerData} = user;
@@ -59,7 +61,7 @@ class Root extends PureComponent
 						.ref(`/users/${uid}/`)
 						.transaction(buildUserInformation);
 				}
-				this.props.authStateChanged(user);
+				this.props.authStateChanged(user, idToken);
 			},
 			(...args) => console.log('Root.componentWillMount', args)
 		);

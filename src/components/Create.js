@@ -3,10 +3,8 @@ import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import classNames             from 'classnames';
-import firebase               from 'firebase/app';
 import update                 from 'immutability-helper';
 import difference             from 'lodash/difference';
-import forEach                from 'lodash/forEach';
 import isEmpty                from 'lodash/isEmpty';
 import some                   from 'lodash/some';
 import marked                 from 'marked';
@@ -75,15 +73,15 @@ class Create extends PureComponent
 			value: PropTypes.string.isRequired,
 			label: PropTypes.string.isRequired,
 		})).isRequired).isRequired,
-		match          : PropTypes.shape(forbidExtraProps({
+		match: PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location       : propTypes.locationSchema,
-		history        : propTypes.historySchema,
-		staticContext  : PropTypes.shape(forbidExtraProps({})),
+		location     : propTypes.locationSchema,
+		history      : propTypes.historySchema,
+		staticContext: PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static emptyTags = [];
@@ -106,7 +104,7 @@ class Create extends PureComponent
 		blueprint               : {
 			title              : '',
 			descriptionMarkdown: '',
-			blueprintString    : '',
+			blueprintString    : {blueprintString: ''},
 		},
 	};
 
@@ -138,8 +136,8 @@ class Create extends PureComponent
 			};
 
 			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
-			const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString);
-			const v15Decoded       = parsedBlueprint.getV15Decoded();
+			const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString.blueprintString);
+			const v15Decoded       = parsedBlueprint && parsedBlueprint.getV15Decoded();
 
 			this.setState({
 				blueprint: newBlueprint,
@@ -180,6 +178,8 @@ class Create extends PureComponent
 
 	handleDrop = (acceptedFiles, rejectedFiles) =>
 	{
+		console.log({acceptedFiles, rejectedFiles});
+
 		this.setState({
 			files   : acceptedFiles,
 			rejectedFiles,
@@ -213,6 +213,21 @@ class Create extends PureComponent
 			},
 		};
 
+
+		this.setState(newState);
+	};
+
+	handleBlueprintString = (event) =>
+	{
+		const {name, value} = event.target;
+
+		const newState = {
+			blueprint: {
+				...this.state.blueprint,
+				blueprintString: {blueprintString: value},
+			},
+		};
+
 		if (name === 'blueprintString')
 		{
 			newState.parsedBlueprint = this.parseBlueprint(value);
@@ -234,21 +249,6 @@ class Create extends PureComponent
 	handleImgurError = (error) =>
 	{
 		console.error(error.message ? error.message : error);
-	};
-
-	handleFirebaseStorageError = (error) =>
-	{
-		console.error('Image failed to upload.', {error});
-		this.setState({
-			submissionErrors        : ['Image failed to upload.'],
-			uploadProgressBarVisible: false,
-		});
-	};
-
-	handleUploadProgress = (snapshot) =>
-	{
-		const uploadProgressPercent = Math.trunc(snapshot.bytesTransferred / snapshot.totalBytes * 100);
-		this.setState({uploadProgressPercent});
 	};
 
 	validateInputs = () =>
@@ -273,11 +273,11 @@ class Create extends PureComponent
 			submissionErrors.push('Description Markdown must be at least 10 characters');
 		}
 
-		if (!blueprint.blueprintString)
+		if (!blueprint.blueprintString.blueprintString)
 		{
 			submissionErrors.push('Blueprint String may not be empty');
 		}
-		else if (blueprint.blueprintString.trim().length < 10)
+		else if (blueprint.blueprintString.blueprintString.trim().length < 10)
 		{
 			submissionErrors.push('Blueprint String must be at least 10 characters');
 		}
@@ -298,7 +298,7 @@ class Create extends PureComponent
 			submissionWarnings.push('The blueprint has no tags. Consider adding a few tags.');
 		}
 
-		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
+		const blueprint = new Blueprint(this.state.blueprint.blueprintString.blueprintString.trim());
 		if (isEmpty(blueprint.decodedObject))
 		{
 			submissionWarnings.push('Could not parse blueprint.');
@@ -363,87 +363,75 @@ class Create extends PureComponent
 		this.actuallyCreateBlueprint();
 	};
 
-	actuallyCreateBlueprint = () =>
+	actuallyCreateBlueprint = async () =>
 	{
 		const [file]   = this.state.files;
 		const fileName = file.name;
 
-		const fileNameRef = app.storage().ref().child(fileName);
-		fileNameRef.getDownloadURL().then(() =>
+		try
 		{
-			this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
-		})
-			.catch(() =>
-			{
-				this.setState({uploadProgressBarVisible: true});
-				const uploadTask = fileNameRef.put(file);
-				uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, (...args) =>
-				{
-					fetch('https://api.imgur.com/3/upload.json', {
-						method : 'POST',
-						headers: Create.imgurHeaders,
-						body   : file,
-					})
-						.then(this.processStatus)
-						.then(response => response.json())
-						.then(({data}) =>
-						{
-							const image = {
-								id        : data.id,
-								deletehash: data.deletehash,
-								type      : data.type,
-								height    : data.height,
-								width     : data.width,
-							};
-
-							const blueprint = {
-								...this.state.blueprint,
-								author: {
-									userId: this.props.user.uid,
-								},
-								authorId         : this.props.user.uid,
-								createdDate      : firebase.database.ServerValue.TIMESTAMP,
-								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-								favorites        : {},
-								numberOfFavorites: 0,
-								fileName,
-								image,
-							};
-
-							const blueprintSummary = {
-								imgurId          : blueprint.image.id,
-								imgurType        : blueprint.image.type,
-								title            : blueprint.title,
-								numberOfFavorites: blueprint.numberOfFavorites,
-								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-							};
-							const {thumbnail}      = this.state;
-
-							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
-							uploadTask.snapshot.ref.getDownloadURL().then((downloadUrl) =>
-							{
-								const updates         = {
-									[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
-									[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
-									[`/blueprintsPrivate/${newBlueprintRef.key}/thumbnail`]            : thumbnail,
-									[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : downloadUrl,
-								};
-								forEach(blueprint.tags, (tag) =>
-								{
-									updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
-								});
-
-								app.database().ref().update(updates)
-									.then(() =>
-									{
-										this.setState(Create.initialState);
-										this.props.history.push(`/view/${newBlueprintRef.key}`);
-									});
-							});
-						})
-						.catch(this.handleImgurError);
-				});
+			/*
+			const imgurResponse = await fetch('https://api.imgur.com/3/upload.json', {
+				method : 'POST',
+				headers: Create.imgurHeaders,
+				body   : file,
 			});
+			this.processStatus(imgurResponse);
+			const json                                  = await imgurResponse.json();
+			const {data}                                = json;
+			const {id, deletehash, type, height, width} = data;
+			 */
+
+			// Temporarily don't upload to imgur while figuring this out
+			const imgurImage                                 = {
+				imgurId   : 'Ky6568L',
+				imgurType : 'image/jpeg',
+				deleteHash: 'w0CzokJP109pobW',
+				height    : 621,
+				width     : 1024,
+			};
+
+			const {thumbnail}      = this.state;
+
+			const blueprint = {
+				...this.state.blueprint,
+				numberOfUpvotes  : 0,
+				numberOfDownvotes: 0,
+				author           : {
+					userId: this.props.user.uid,
+				},
+				imgurImage,
+				privateData: {
+					privateData: {
+						fileName,
+						thumbnailData: thumbnail,
+					},
+				},
+			};
+
+
+			const idToken = await app.auth().currentUser.getIdToken();
+
+			const response = await fetch(
+				`${process.env.REACT_APP_REST_URL}/api/blueprint/`,
+				{
+					headers: {
+						'Authorization': `Bearer ${idToken}`,
+						'Content-Type' : 'application/json',
+					},
+					method: 'POST',
+					body  : JSON.stringify(blueprint),
+				}
+			);
+			const newBlueprint     = await response.json();
+
+			console.log({response, newBlueprint});
+			this.props.history.push(`/view/${newBlueprint._data.key}`);
+		}
+		catch (error)
+		{
+			this.handleImgurError(error);
+		}
 	};
 
 	handleCancel = () =>
@@ -584,46 +572,46 @@ class Create extends PureComponent
 
 				<Container>
 					<Row>
-						{
-							this.state.rejectedFiles.length > 0 && <Alert
-								variant='warning'
-								className='alert-fixed'
-								onDismiss={this.handleDismissAlert}
-							>
-								<h4>
-									{'Error uploading files'}
-								</h4>
-								<ul>
-									{
-										this.state.rejectedFiles.map(rejectedFile => (
-											<li key={rejectedFile.name}>
-												{rejectedFile.name}
-											</li>
-										))
-									}
-								</ul>
-							</Alert>
-						}
-						{
-							this.state.submissionErrors.length > 0 && <Alert
-								variant='danger'
-								className='alert-fixed'
-								onDismiss={this.handleDismissError}
-							>
-								<h4>
-									{'Error submitting blueprint'}
-								</h4>
-								<ul>
-									{
-										this.state.submissionErrors.map(submissionError => (
-											<li key={submissionError}>
-												{submissionError}
-											</li>
-										))
-									}
-								</ul>
-							</Alert>
-						}
+						<Alert
+							show={this.state.rejectedFiles.length > 0}
+							variant='warning'
+							className='alert-fixed'
+							dismissible
+							onClose={this.handleDismissAlert}
+						>
+							<h4>
+								{'Error uploading files'}
+							</h4>
+							<ul>
+								{
+									this.state.rejectedFiles.map(rejectedFile => (
+										<li key={rejectedFile.name}>
+											{rejectedFile.name}
+										</li>
+									))
+								}
+							</ul>
+						</Alert>
+						<Alert
+							show={this.state.submissionErrors.length > 0}
+							variant='danger'
+							className='alert-fixed'
+							dismissible
+							onClose={this.handleDismissError}
+						>
+							<h4>
+								{'Error submitting blueprint'}
+							</h4>
+							<ul>
+								{
+									this.state.submissionErrors.map(submissionError => (
+										<li key={submissionError}>
+											{submissionError}
+										</li>
+									))
+								}
+							</ul>
+						</Alert>
 					</Row>
 					<PageHeader title='Create a new Blueprint' />
 					<Row>
@@ -686,8 +674,8 @@ class Create extends PureComponent
 										as='textarea'
 										name='blueprintString'
 										placeholder='Blueprint String'
-										value={blueprint.blueprintString}
-										onChange={this.handleChange}
+										value={blueprint.blueprintString.blueprintString}
+										onChange={this.handleBlueprintString}
 									/>
 								</Col>
 							</Form.Group>

@@ -1,14 +1,13 @@
-import {
-	RECEIVED_ALL_FAVORITES,
-	SUBSCRIBED_TO_ALL_FAVORITES,
-} from '../actions/actionTypes';
+import reduceReducers                                        from 'reduce-reducers';
+import {RECEIVED_ALL_FAVORITES, SUBSCRIBED_TO_ALL_FAVORITES} from '../actions/actionTypes';
+import createCurrentPage                                     from './createCurrentPage';
 
 const initialState = {
-	currentPage: 1,
-	isLastPage : false,
-	loading    : false,
-	data       : [],
-	paginator  : undefined,
+	currentPage  : 1,
+	numberOfPages: 1,
+	isLastPage   : false,
+	loading      : false,
+	data         : [],
 };
 
 const blueprintAllFavoritesReducer = (state = initialState, action) =>
@@ -17,14 +16,26 @@ const blueprintAllFavoritesReducer = (state = initialState, action) =>
 	{
 		case RECEIVED_ALL_FAVORITES:
 		{
-			const {paginator, paginator: {currentPage, isLastPage, loading, data}} = action;
+			const
+				{
+					blueprintAllFavoritesEnvelope: {
+						_data,
+						_metadata: {
+							pagination: {
+								pageNumber,
+								numberOfPages,
+							},
+							transactionTimestamp,
+						},
+					},
+				} = action;
 			return {
 				...state,
-				paginator,
-				currentPage,
-				isLastPage,
-				loading,
-				data,
+				data       : _data,
+				currentPage: pageNumber,
+				numberOfPages,
+				loading    : false,
+				transactionTimestamp,
 			};
 		}
 		case SUBSCRIBED_TO_ALL_FAVORITES:
@@ -37,4 +48,16 @@ const blueprintAllFavoritesReducer = (state = initialState, action) =>
 	}
 };
 
-export default blueprintAllFavoritesReducer;
+const currentPageReducer = createCurrentPage('ALL_FAVORITES');
+
+const summariesPageReducer = (state = initialState, action) =>
+{
+	const currentPage = currentPageReducer(state.currentPage, action);
+	return {
+		...state,
+		currentPage,
+	};
+};
+const rootReducer          = reduceReducers(blueprintAllFavoritesReducer, summariesPageReducer);
+
+export default rootReducer;

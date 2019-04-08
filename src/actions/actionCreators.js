@@ -58,12 +58,6 @@ export const subscribeToTags = () =>
 		type: actionTypes.SUBSCRIBE_TO_TAGS,
 	});
 
-export const subscribeToTag = tagId =>
-	({
-		type: actionTypes.SUBSCRIBE_TO_TAG,
-		tagId,
-	});
-
 export const subscribeToUser = userId =>
 	({
 		type: actionTypes.SUBSCRIBE_TO_USER,
@@ -76,10 +70,11 @@ export const subscribeToUserDisplayName = userId =>
 		userId,
 	});
 
-export const authStateChanged = user =>
+export const authStateChanged = (user, idToken) =>
 	({
 		type: actionTypes.AUTH_STATE_CHANGED,
 		user,
+		idToken,
 	});
 
 export const editedDisplayName = displayName =>

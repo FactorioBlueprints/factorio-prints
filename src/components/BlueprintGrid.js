@@ -18,12 +18,12 @@ import {
 	goToNextSummaries,
 	goToPreviousSummaries,
 	subscribeToBlueprintSummaries,
-	subscribeToTag,
 	subscribeToUser,
 } from '../actions/actionCreators';
 
-import * as propTypes from '../propTypes';
-import * as selectors from '../selectors';
+import * as propTypes             from '../propTypes';
+import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
+import * as selectors             from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import PageHeader         from './PageHeader';
@@ -40,11 +40,11 @@ class BlueprintGrid extends PureComponent
 		goToFirstSummaries           : PropTypes.func.isRequired,
 		subscribeToUser              : PropTypes.func.isRequired,
 		filterOnTags                 : PropTypes.func.isRequired,
-		subscribeToTag               : PropTypes.func.isRequired,
 		user                         : propTypes.userSchema,
-		blueprintSummaries           : propTypes.blueprintSummariesSchema,
+		blueprintSummaries           : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
 		blueprintSummariesLoading    : PropTypes.bool,
 		currentPage                  : PropTypes.number.isRequired,
+		numberOfPages                : PropTypes.number.isRequired,
 		isLastPage                   : PropTypes.bool.isRequired,
 		location                     : propTypes.locationSchema,
 		history                      : propTypes.historySchema,
@@ -63,7 +63,6 @@ class BlueprintGrid extends PureComponent
 		if (this.props.initialTag)
 		{
 			this.props.filterOnTags([this.props.initialTag]);
-			this.props.subscribeToTag(this.props.initialTag);
 		}
 		if (this.props.user)
 		{
@@ -91,18 +90,6 @@ class BlueprintGrid extends PureComponent
 
 	render()
 	{
-		if (this.props.blueprintSummariesLoading)
-		{
-			return (
-				<Jumbotron>
-					<h1 className='display-4'>
-						<FontAwesomeIcon icon={faCog} spin />
-						{' Loading data'}
-					</h1>
-				</Jumbotron>
-			);
-		}
-
 		return (
 			<Container fluid>
 				<PageHeader title='Most Recent' />
@@ -110,49 +97,66 @@ class BlueprintGrid extends PureComponent
 					<SearchForm />
 					<TagForm />
 				</Row>
-				<Row className='blueprint-grid-row justify-content-center'>
-					{
-						this.props.blueprintSummaries.map(blueprintSummary =>
-							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
-					}
-				</Row>
-				<Row>
-					<Col md={{span: 6, offset: 3}}>
-						<Button type='button' onClick={this.handleFirstPage} disabled={this.props.currentPage === 1} >
-							<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
-							{'First Page'}
-						</Button>
-						<Button type='button' onClick={this.handlePreviousPage} disabled={this.props.currentPage === 1}>
-							<FontAwesomeIcon icon={faAngleLeft} size='lg' fixedWidth />
-							{'Previous Page'}
-						</Button>
-						<Button variant='link' type='button' disabled>
-							{`Page: ${this.props.currentPage}`}
-						</Button>
-						<Button type='button' onClick={this.handleNextPage} disabled={this.props.isLastPage}>
-							{'Next Page'}
-							<FontAwesomeIcon icon={faAngleRight} size='lg' fixedWidth />
-						</Button>
-					</Col>
-				</Row>
+				{
+					this.props.blueprintSummariesLoading
+						? this.renderLoadingSpinner()
+						: this.renderMainGrid()
+				}
 			</Container>
 		);
 	}
+
+	renderLoadingSpinner = () =>
+		<Jumbotron>
+			<h1 className='display-4'>
+				<FontAwesomeIcon icon={faCog} spin />
+				{' Loading data'}
+			</h1>
+		</Jumbotron>;
+
+	renderMainGrid = () =>
+		<>
+			<Row className='blueprint-grid-row justify-content-center'>
+				{
+					this.props.blueprintSummaries.map(blueprintSummary =>
+						<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
+				}
+			</Row>
+			<Row>
+				<Col md={{span: 6, offset: 3}}>
+					<Button type='button' onClick={this.handleFirstPage} disabled={this.props.currentPage === 1}>
+						<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
+						{'First Page'}
+					</Button>
+					<Button type='button' onClick={this.handlePreviousPage} disabled={this.props.currentPage === 1}>
+						<FontAwesomeIcon icon={faAngleLeft} size='lg' fixedWidth />
+						{'Previous Page'}
+					</Button>
+					<Button variant='link' type='button' disabled>
+						{`Page: ${this.props.currentPage}`}
+					</Button>
+					<Button type='button' onClick={this.handleNextPage} disabled={this.props.isLastPage}>
+						{'Next Page'}
+						<FontAwesomeIcon icon={faAngleRight} size='lg' fixedWidth />
+					</Button>
+				</Col>
+			</Row>
+		</>;
 }
 
 const mapStateToProps = storeState => (
 	{
 		user                     : selectors.getFilteredUser(storeState),
-		blueprintSummaries       : selectors.getBlueprintSummaries(storeState),
+		blueprintSummaries       : storeState.blueprintSummaries.data,
 		blueprintSummariesLoading: storeState.blueprintSummaries.loading,
 		currentPage              : storeState.blueprintSummaries.currentPage,
-		isLastPage               : storeState.blueprintSummaries.isLastPage,
+		numberOfPages            : storeState.blueprintSummaries.numberOfPages,
+		isLastPage               : storeState.blueprintSummaries.currentPage === storeState.blueprintSummaries.numberOfPages,
 	});
 
 const mapDispatchToProps = (dispatch) =>
 {
 	const actionCreators = {
-		subscribeToTag,
 		subscribeToBlueprintSummaries,
 		goToPreviousSummaries,
 		goToNextSummaries,

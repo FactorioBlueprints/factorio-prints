@@ -12,8 +12,9 @@ import {bindActionCreators}   from 'redux';
 
 import {filterOnTags, subscribeToUser} from '../actions/actionCreators';
 
-import * as propTypes from '../propTypes';
-import * as selectors from '../selectors';
+import * as propTypes             from '../propTypes';
+import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
+import * as selectors             from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import PageHeader         from './PageHeader';
@@ -26,7 +27,7 @@ class MyFavoritesGrid extends PureComponent
 		subscribeToUser          : PropTypes.func.isRequired,
 		filterOnTags             : PropTypes.func.isRequired,
 		user                     : propTypes.userSchema,
-		blueprintSummaries       : propTypes.blueprintSummariesSchema,
+		blueprintSummaries           : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
 		blueprintSummariesLoading: PropTypes.bool,
 		location                 : propTypes.locationSchema,
 		history                  : propTypes.historySchema,

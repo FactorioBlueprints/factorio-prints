@@ -3,7 +3,6 @@ import authReducer                  from './authReducer';
 import blueprintAllFavoritesReducer from './blueprintAllFavoritesReducer';
 import blueprintsReducer            from './blueprintsReducer';
 import blueprintSummariesReducer    from './blueprintSummariesReducer';
-import byTagReducer                 from './byTagReducer';
 import filteredTagsReducer          from './filteredTagsReducer';
 import moderatorsReducer            from './moderatorsReducer';
 import tagsReducer                  from './tagsReducer';
@@ -16,7 +15,6 @@ const rootReducer = combineReducers({
 	blueprintAllFavorites: blueprintAllFavoritesReducer,
 	tags                 : tagsReducer,
 	filteredTags         : filteredTagsReducer,
-	byTag                : byTagReducer,
 	auth                 : authReducer,
 	users                : usersReducer,
 	moderators           : moderatorsReducer,

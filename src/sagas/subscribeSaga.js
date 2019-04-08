@@ -1,7 +1,4 @@
-import forOwn  from 'lodash/forOwn';
-import isArray from 'lodash/isArray';
 import isEmpty from 'lodash/isEmpty';
-import join    from 'lodash/join';
 
 import {END, eventChannel}       from 'redux-saga';
 import {call, put, select, take} from 'redux-saga/effects';
@@ -9,245 +6,160 @@ import * as actionTypes          from '../actions/actionTypes';
 
 import {app} from '../base';
 
-import FirebasePaginatorByValue from '../FirebasePaginatorByValue';
-
-const PAGE_SIZE = 60;
-
-const blueprintData = blueprintId =>
-	eventChannel((emit) =>
-	{
-		const blueprintRef  = app.database().ref(`/blueprints/${blueprintId}/`);
-		const onValueChange = (dataSnapshot) =>
-		{
-			const blueprint = dataSnapshot.val();
-			emit({blueprint, blueprintRef});
-		};
-
-		// TODO: Why do I get here twice?
-		blueprintRef.off();
-		blueprintRef.on('value', onValueChange, () => emit(END));
-
-		return () =>
-		{
-			blueprintRef.off('value', onValueChange);
-		};
-	});
-
 export const subscribeToBlueprintSaga = function*({blueprintId})
 {
-	const getBlueprint = state => state.blueprints[blueprintId];
-
-	const blueprintState = yield select(getBlueprint);
-	if (!blueprintState || isEmpty(blueprintState.data) || !blueprintState.blueprintRef)
+	yield put({type: actionTypes.SUBSCRIBED_TO_BLUEPRINT, blueprintId});
+	const response = yield call(fetch, `${process.env.REACT_APP_REST_URL}/api/blueprint/${blueprintId}`);
+	if (response.ok)
 	{
-		const channel = yield call(blueprintData, blueprintId);
-		yield put({type: actionTypes.SUBSCRIBED_TO_BLUEPRINT, blueprintId});
-		try
-		{
-			while (true)
-			{
-				const {blueprint, blueprintRef} = yield take(channel);
-				yield put({type: actionTypes.RECEIVED_BLUEPRINT, blueprint, blueprintRef, blueprintId});
-			}
-		}
-		finally
-		{
-			console.log(`Unsubscribed from ${blueprintId}`);
-		}
+		const blueprint = yield call(() => response.json());
+		yield put({type: actionTypes.RECEIVED_BLUEPRINT, blueprint, blueprintId});
+	}
+	else
+	{
+		const error = yield call(() => response.text());
+		console.log({error});
+		yield put({type: actionTypes.RECEIVED_BLUEPRINT, blueprint: undefined, blueprintId, error});
 	}
 };
 
 export const subscribeToSummariesSaga = function*()
 {
-	const getSummaries = state => state.blueprintSummaries;
+	const getFilteredTags = state => state.filteredTags;
+	const getTitleFilter = state => state.titleFilter;
+	const getCurrentPage = state => state.blueprintSummaries.currentPage;
+	const filteredTags = yield select(getFilteredTags);
+	const titleFilter = yield select(getTitleFilter);
+	const currentPage = yield select(getCurrentPage);
 
-	const blueprintSummariesState = yield select(getSummaries);
-	if (!blueprintSummariesState.paginator)
+	yield put({type: actionTypes.SUBSCRIBED_TO_SUMMARIES, filteredTags, titleFilter});
+
+	const urlSearchParams = new URLSearchParams();
+
+	if (!isEmpty(titleFilter))
 	{
-		const ref       = app.database().ref('/blueprintSummaries/');
-		const paginator = new FirebasePaginatorByValue(ref, PAGE_SIZE, 'lastUpdatedDate');
-		yield put({type: actionTypes.SUBSCRIBED_TO_SUMMARIES, paginator});
-		yield call(paginator.start);
-		yield put({type: actionTypes.RECEIVED_SUMMARIES, paginator});
+		urlSearchParams.append('title',  titleFilter);
 	}
+
+	if (!isEmpty(filteredTags))
+	{
+		urlSearchParams.append('tag',  filteredTags);
+	}
+
+	try
+	{
+		const response = yield call(fetch, `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${currentPage}?${urlSearchParams.toString()}`);
+		const blueprintSummariesEnvelope = yield call(() => response.json());
+		yield put({type: actionTypes.RECEIVED_SUMMARIES, blueprintSummariesEnvelope, titleFilter, filteredTags});
+	}
+	catch (error)
+	{
+		yield put({type: actionTypes.SUMMARIES_FAILED, titleFilter, filteredTags, error});
+	}
+};
+
+export const filterTitleSummariesSaga = function*({title})
+{
+	yield put({type: actionTypes.SAVE_FILTER_ON_TITLE, title});
+	yield put({type: actionTypes.FILTERED_ON_TITLE});
+};
+
+export const filterTagsSummariesSaga = function*(arg)
+{
+	console.log({arg});
+	const {tags} = arg;
+
+	yield put({type: actionTypes.SAVE_FILTER_ON_TAGS, tags});
+	yield put({type: actionTypes.FILTERED_ON_TAGS});
 };
 
 export const subscribeToAllFavoritesSaga = function*()
 {
-	const getAllFavorites = state => state.blueprintAllFavorites;
+	const getFilteredTags = state => state.filteredTags;
+	const getTitleFilter = state => state.titleFilter;
+	const getCurrentPage = state => state.blueprintAllFavorites.currentPage;
+	const filteredTags = yield select(getFilteredTags);
+	const titleFilter = yield select(getTitleFilter);
+	const currentPage = yield select(getCurrentPage);
 
-	const blueprintAllFavoritesState = yield select(getAllFavorites);
-	if (!blueprintAllFavoritesState.paginator)
+	yield put({type: actionTypes.SUBSCRIBED_TO_ALL_FAVORITES, filteredTags, titleFilter});
+
+	const urlSearchParams = new URLSearchParams();
+
+	if (!isEmpty(titleFilter))
 	{
-		const ref       = app.database().ref('/blueprintSummaries/');
-		const paginator = new FirebasePaginatorByValue(ref, PAGE_SIZE, 'numberOfFavorites');
-		yield put({type: actionTypes.SUBSCRIBED_TO_ALL_FAVORITES, paginator});
-		yield call(paginator.start);
-		yield put({type: actionTypes.RECEIVED_ALL_FAVORITES, paginator});
+		urlSearchParams.append('title',  titleFilter);
 	}
+
+	if (!isEmpty(filteredTags))
+	{
+		urlSearchParams.append('tag',  filteredTags);
+	}
+
+	const response = yield call(fetch, `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/favorite/page/${currentPage}?${urlSearchParams.toString()}`);
+	const blueprintAllFavoritesEnvelope = yield call(() => response.json());
+	yield put({type: actionTypes.RECEIVED_ALL_FAVORITES, blueprintAllFavoritesEnvelope, titleFilter, filteredTags});
 };
 
 export const goToPreviousSummariesSaga = function*()
 {
-	const getPaginator = state => state.blueprintSummaries.paginator;
-	const paginator    = yield select(getPaginator);
-	yield call(paginator.previous);
-	yield put({type: actionTypes.RECEIVED_SUMMARIES, paginator});
+	yield put({type: actionTypes.SAVE_PREVIOUS_SUMMARIES});
+	yield put({type: actionTypes.WENT_TO_PREVIOUS_SUMMARIES});
 };
 
 export const goToNextSummariesSaga = function*()
 {
-	const getPaginator = state => state.blueprintSummaries.paginator;
-	const paginator    = yield select(getPaginator);
-	yield call(paginator.next);
-	yield put({type: actionTypes.RECEIVED_SUMMARIES, paginator});
+	yield put({type: actionTypes.SAVE_NEXT_SUMMARIES});
+	yield put({type: actionTypes.WENT_TO_NEXT_SUMMARIES});
 };
 
 export const goToFirstSummariesSaga = function*()
 {
-	const getPaginator = state => state.blueprintSummaries.paginator;
-	const paginator    = yield select(getPaginator);
-	yield call(paginator.first);
-	yield put({type: actionTypes.RECEIVED_SUMMARIES, paginator});
+	yield put({type: actionTypes.SAVE_FIRST_SUMMARIES});
+	yield put({type: actionTypes.WENT_TO_FIRST_SUMMARIES});
 };
 
 export const goToPreviousAllFavoritesSaga = function*()
 {
-	const getPaginator = state => state.blueprintAllFavorites.paginator;
-	const paginator    = yield select(getPaginator);
-	yield call(paginator.previous);
-	yield put({type: actionTypes.RECEIVED_ALL_FAVORITES, paginator});
+	yield put({type: actionTypes.SAVE_PREVIOUS_ALL_FAVORITES});
+	yield put({type: actionTypes.WENT_TO_PREVIOUS_ALL_FAVORITES});
 };
 
 export const goToNextAllFavoritesSaga = function*()
 {
-	const getPaginator = state => state.blueprintAllFavorites.paginator;
-	const paginator    = yield select(getPaginator);
-	yield call(paginator.next);
-	yield put({type: actionTypes.RECEIVED_ALL_FAVORITES, paginator});
+	yield put({type: actionTypes.SAVE_NEXT_ALL_FAVORITES});
+	yield put({type: actionTypes.WENT_TO_NEXT_ALL_FAVORITES});
 };
 
 export const goToFirstAllFavoritesSaga = function*()
 {
-	const getPaginator = state => state.blueprintAllFavorites.paginator;
-	const paginator    = yield select(getPaginator);
-	yield call(paginator.first);
-	yield put({type: actionTypes.RECEIVED_ALL_FAVORITES, paginator});
-};
-
-const tagsData = () =>
-	eventChannel((emit) =>
-	{
-		const tagsRef       = app.database().ref('/tags/');
-		const onValueChange = (dataSnapshot) =>
-		{
-			const tagHierarchy = dataSnapshot.val();
-			emit({tagHierarchy, tagsRef});
-		};
-
-		// TODO: Why do I get here twice?
-		tagsRef.off();
-		tagsRef.on('value', onValueChange, () => emit(END));
-
-		return () =>
-		{
-			tagsRef.off('value', onValueChange);
-		};
-	});
-
-const buildTagOptionsRecursive = (tagHierarchyNode, pathArray, result) =>
-{
-	forOwn(tagHierarchyNode, (value, key) =>
-	{
-		if (isArray(value))
-		{
-			value.forEach(eachValue => result.push(`${join(pathArray, '/')}/${key}/${eachValue}/`));
-		}
-		else
-		{
-			const newPathArray = [
-				...pathArray,
-				key,
-			];
-			buildTagOptionsRecursive(value, newPathArray, result);
-		}
-	});
-};
-
-const buildTagOptions = (tagHierarchy) =>
-{
-	const result = [];
-	buildTagOptionsRecursive(tagHierarchy, [], result);
-	return result;
+	yield put({type: actionTypes.SAVE_FIRST_ALL_FAVORITES});
+	yield put({type: actionTypes.WENT_TO_FIRST_ALL_FAVORITES});
 };
 
 export const subscribeToTagsSaga = function*()
 {
 	const getTags = state => state.tags;
-
 	const tagsState = yield select(getTags);
-	if (isEmpty(tagsState.data) || !tagsState.tagsRef)
+	if (!isEmpty(tagsState.data))
 	{
-		const channel = yield call(tagsData);
+		return;
+	}
+
 		yield put({type: actionTypes.SUBSCRIBED_TO_TAGS});
-		try
+		const response = yield call(fetch, `${process.env.REACT_APP_REST_URL}/api/tags/`);
+		if (response.ok)
 		{
-			while (true)
-			{
-				const {tagHierarchy, tagsRef} = yield take(channel);
-				const tags                    = buildTagOptions(tagHierarchy);
-				yield put({type: actionTypes.RECEIVED_TAGS, tags, tagHierarchy, tagsRef});
-			}
+			const tagsData = yield call(() => response.json());
+			const tags     = tagsData.map(each => `/${each.category}/${each.name}/`);
+			yield put({type: actionTypes.RECEIVED_TAGS, tags});
 		}
-		finally
+		else
 		{
-			console.log('Unsubscribed from tags');
+			const error = yield call(() => response.text());
+			console.log({error});
+			yield put({type: actionTypes.RECEIVED_TAGS, tags: [], error});
 		}
-	}
-};
-
-const tagData = tagId =>
-	eventChannel((emit) =>
-	{
-		const byTagRef      = app.database().ref(`/byTag${tagId}`);
-		const onValueChange = (dataSnapshot) =>
-		{
-			const byTag = dataSnapshot.val();
-			emit({byTag, byTagRef});
-		};
-
-		// TODO: Why do I get here twice?
-		byTagRef.off();
-		byTagRef.on('value', onValueChange, () => emit(END));
-
-		return () =>
-		{
-			byTagRef.off('value', onValueChange);
-		};
-	});
-
-export const subscribeToTagSaga = function*({tagId})
-{
-	const getByTag = state => state.byTag[tagId];
-
-	const byTagState = yield select(getByTag);
-	if (!byTagState || isEmpty(byTagState.data) || !byTagState.byTagRef)
-	{
-		const channel = yield call(tagData, tagId);
-		yield put({type: actionTypes.SUBSCRIBED_TO_TAG, tagId});
-		try
-		{
-			while (true)
-			{
-				const {byTag, byTagRef} = yield take(channel);
-				yield put({type: actionTypes.RECEIVED_TAG, byTag, byTagRef, tagId});
-			}
-		}
-		finally
-		{
-			console.log(`Unsubscribed from tag ${tagId}`);
-		}
-	}
 };
 
 const moderatorsData = () =>

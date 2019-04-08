@@ -55,8 +55,9 @@ import entitiesWithIcons   from '../data/entitiesWithIcons';
 import buildImageUrl       from '../helpers/buildImageUrl';
 import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 
-import * as propTypes from '../propTypes';
-import * as selectors from '../selectors';
+import * as propTypes      from '../propTypes';
+import BlueprintProjection from '../propTypes/BlueprintProjection';
+import * as selectors      from '../selectors';
 
 import GoogleAd from './GoogleAd';
 import NoMatch  from './NoMatch';
@@ -96,7 +97,7 @@ class SingleBlueprint extends PureComponent
 		loading                   : PropTypes.bool.isRequired,
 		myFavoritesKeys           : PropTypes.objectOf(PropTypes.bool.isRequired),
 		user                      : propTypes.userSchema,
-		blueprint                 : propTypes.blueprintSchema,
+		blueprint                 : BlueprintProjection,
 		isModerator               : PropTypes.bool.isRequired,
 		location                  : propTypes.locationSchema,
 		history                   : propTypes.historySchema,
@@ -124,7 +125,8 @@ class SingleBlueprint extends PureComponent
 		{
 			this.props.subscribeToModerators();
 		}
-		this.cacheState(this.props);
+
+		this.cacheBlueprintState(this.props);
 	}
 
 	componentDidMount()
@@ -136,7 +138,7 @@ class SingleBlueprint extends PureComponent
 	{
 		if (!isEqual(this.props.blueprint, nextProps.blueprint))
 		{
-			this.cacheState(nextProps);
+			this.cacheBlueprintState(nextProps);
 		}
 
 		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
@@ -144,6 +146,39 @@ class SingleBlueprint extends PureComponent
 			nextProps.subscribeToModerators();
 		}
 	}
+
+	cacheBlueprintState = (props) =>
+	{
+		if (isEmpty(props.blueprint))
+		{
+			this.setState({
+				thumbnail         : undefined,
+				renderedMarkdown  : undefined,
+				parsedBlueprint   : undefined,
+				ownedByCurrentUser: undefined,
+				v15Decoded        : undefined,
+			});
+			return;
+		}
+
+		const {imgurImage, descriptionMarkdown, blueprintString, author: {userId}} = props.blueprint;
+		// Blueprint author
+		this.props.subscribeToUserDisplayName(userId);
+
+		const thumbnail          = buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
+		const renderedMarkdown   = marked(descriptionMarkdown);
+		const ownedByCurrentUser = props.user && props.user.uid === userId;
+		const parsedBlueprint    = this.parseBlueprint(blueprintString.blueprintString);
+		const v15Decoded         = parsedBlueprint && parsedBlueprint.getV15Decoded();
+
+		this.setState({
+			thumbnail,
+			renderedMarkdown,
+			parsedBlueprint,
+			ownedByCurrentUser,
+			v15Decoded,
+		});
+	};
 
 	hideButton = text => (
 		<>
@@ -158,33 +193,6 @@ class SingleBlueprint extends PureComponent
 			{` ${text}`}
 		</>
 	);
-
-	cacheState = (props) =>
-	{
-		if (isEmpty(props.blueprint))
-		{
-			this.setState({
-				thumbnail         : undefined,
-				renderedMarkdown  : undefined,
-				parsedBlueprint   : undefined,
-				ownedByCurrentUser: undefined,
-				v15Decoded        : undefined,
-			});
-			return;
-		}
-
-		const {image, descriptionMarkdown, blueprintString, author: {userId: authorId}} = props.blueprint;
-		// Blueprint author
-		this.props.subscribeToUserDisplayName(authorId);
-
-		const thumbnail          = buildImageUrl(image.id, image.type, 'l');
-		const renderedMarkdown   = marked(descriptionMarkdown);
-		const ownedByCurrentUser = props.user && props.user.uid === authorId;
-		const parsedBlueprint    = this.parseBlueprint(blueprintString);
-		const v15Decoded         = parsedBlueprint && parsedBlueprint.getV15Decoded();
-
-		this.setState({thumbnail, renderedMarkdown, parsedBlueprint, ownedByCurrentUser, v15Decoded});
-	};
 
 	handleFavorite = () =>
 	{
@@ -314,6 +322,7 @@ class SingleBlueprint extends PureComponent
 	render()
 	{
 		const {blueprint} = this.props;
+
 		if (isEmpty(blueprint))
 		{
 			if (this.props.loading === true || this.props.loading === undefined)
@@ -333,7 +342,7 @@ class SingleBlueprint extends PureComponent
 			return <NoMatch />;
 		}
 
-		const {image, createdDate, lastUpdatedDate, author: {userId: authorId}, title, numberOfFavorites} = blueprint;
+		const {imgurImage, createdOn, systemFrom, author: {userId: authorId}, title, numberOfUpvotes} = blueprint;
 
 		const disqusConfig = {
 			url       : `https://factorioprints.com${this.props.location.pathname}`,
@@ -361,7 +370,7 @@ class SingleBlueprint extends PureComponent
 					<Row>
 						<Col md={4}>
 							<a
-								href={`https://imgur.com/${image.id}`}
+								href={`https://imgur.com/${imgurImage.imgurId}`}
 								target='_blank'
 								rel='noopener noreferrer'
 							>
@@ -376,9 +385,9 @@ class SingleBlueprint extends PureComponent
 										<h4>
 											{
 												flatMap(blueprint.tags, tag => (
-													<Link key={tag} to={`/tagged${tag}`} className='m-1'>
+													<Link key={`${tag.tag.category}/${tag.tag.name}`} to={`/tagged${tag.tag.category}/${tag.tag.name}`} className='m-1'>
 														<Badge variant='warning'>
-															{tag}
+															{`${tag.tag.category}/${tag.tag.name}`}
 														</Badge>
 													</Link>
 												))
@@ -400,12 +409,12 @@ class SingleBlueprint extends PureComponent
 											</td>
 											<td>
 												<Link to={`/user/${authorId}`}>
-													{this.getAuthorName()}
+													{blueprint.author.displayName}
 													{
 														this.state.ownedByCurrentUser
 														&& <span className='pull-right'>
 															<b>
-																{'(You)'}
+																{' (You)'}
 															</b>
 														</span>
 													}
@@ -419,9 +428,9 @@ class SingleBlueprint extends PureComponent
 											</td>
 											<td>
 												<span
-													title={moment(createdDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+													title={moment(createdOn).format('dddd, MMMM Do YYYY, h:mm:ss a')}
 												>
-													{moment(createdDate).fromNow()}
+													{moment(createdOn).fromNow()}
 												</span>
 											</td>
 										</tr>
@@ -432,9 +441,9 @@ class SingleBlueprint extends PureComponent
 											</td>
 											<td>
 												<span
-													title={moment(lastUpdatedDate).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+													title={moment(systemFrom).format('dddd, MMMM Do YYYY, h:mm:ss a')}
 												>
-													{moment(lastUpdatedDate).fromNow()}
+													{moment(systemFrom).fromNow()}
 												</span>
 											</td>
 										</tr>
@@ -444,7 +453,7 @@ class SingleBlueprint extends PureComponent
 												{' Favorites'}
 											</td>
 											<td>
-												{numberOfFavorites}
+												{numberOfUpvotes}
 											</td>
 										</tr>
 									</tbody>
@@ -561,7 +570,7 @@ class SingleBlueprint extends PureComponent
 								<Card.Body>
 									<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
 
-									<CopyToClipboard text={blueprint.blueprintString}>
+									<CopyToClipboard text={blueprint.blueprintString.blueprintString}>
 										<Button type='button' variant='warning'>
 											<FontAwesomeIcon icon={faClipboard} size='lg' fixedWidth />
 											{' Copy to Clipboard'}
@@ -601,7 +610,7 @@ class SingleBlueprint extends PureComponent
 									</Card.Header>
 									<Card.Body>
 										<div className='blueprintString'>
-											{blueprint.blueprintString}
+											{blueprint.blueprintString.blueprintString}
 										</div>
 									</Card.Body>
 								</Card>

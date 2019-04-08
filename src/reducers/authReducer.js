@@ -23,7 +23,7 @@ const authReducer = (state = initialState, action) =>
 	{
 		case AUTH_STATE_CHANGED:
 		{
-			const {user} = action;
+			const {user, idToken} = action;
 			if (isEmpty(user))
 			{
 				return initialState;
@@ -32,6 +32,7 @@ const authReducer = (state = initialState, action) =>
 				...state,
 				loggedIn: true,
 				user,
+				idToken,
 			};
 		}
 		case EDITED_DISPLAY_NAME:

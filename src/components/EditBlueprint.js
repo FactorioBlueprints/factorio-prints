@@ -9,6 +9,7 @@ import difference             from 'lodash/difference';
 import forEach                from 'lodash/forEach';
 import isEmpty                from 'lodash/isEmpty';
 import isEqual                from 'lodash/isEqual';
+import isUndefined            from 'lodash/isUndefined';
 import some                   from 'lodash/some';
 import marked                 from 'marked';
 import PropTypes              from 'prop-types';
@@ -39,6 +40,7 @@ import buildImageUrl          from '../helpers/buildImageUrl';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import scaleImage             from '../helpers/ImageScaler';
 import * as propTypes         from '../propTypes';
+import BlueprintProjection    from '../propTypes/BlueprintProjection';
 import * as selectors         from '../selectors';
 
 import NoMatch             from './NoMatch';
@@ -77,7 +79,7 @@ class EditBlueprint extends PureComponent
 		subscribeToTags      : PropTypes.func.isRequired,
 		isModerator          : PropTypes.bool.isRequired,
 		user                 : propTypes.userSchema,
-		blueprint            : propTypes.blueprintSchema,
+		blueprint            : BlueprintProjection,
 		loading              : PropTypes.bool.isRequired,
 		match                : PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({
@@ -126,33 +128,42 @@ class EditBlueprint extends PureComponent
 
 	UNSAFE_componentWillReceiveProps(nextProps)
 	{
+		if (!isEqual(this.props.blueprint, nextProps.blueprint))
+		{
+			this.cacheBlueprintState(nextProps);
+		}
+
 		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
 		{
 			nextProps.subscribeToModerators();
 		}
-		this.cacheBlueprintState(nextProps);
 	}
 
 	cacheBlueprintState = (props) =>
 	{
-		if (props.blueprint)
+		if (isUndefined(props.blueprint) || isEmpty(props.blueprint))
 		{
-			const blueprint = {
-				...props.blueprint,
-				tags: props.blueprint.tags || EditBlueprint.emptyTags,
-			};
-
-			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
-			const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString);
-			const v15Decoded       = parsedBlueprint.getV15Decoded();
-
 			this.setState({
-				blueprint,
-				renderedMarkdown,
-				parsedBlueprint,
-				v15Decoded,
+				blueprint       : undefined,
+				renderedMarkdown: undefined,
+				parsedBlueprint : undefined,
+				v15Decoded      : undefined,
 			});
+			return;
 		}
+
+		const {descriptionMarkdown, blueprintString} = props.blueprint;
+
+		const renderedMarkdown = marked(descriptionMarkdown);
+		const parsedBlueprint  = this.parseBlueprint(blueprintString.blueprintString);
+		const v15Decoded       = parsedBlueprint && parsedBlueprint.getV15Decoded();
+
+		this.setState({
+			blueprint: {...props.blueprint},
+			renderedMarkdown,
+			parsedBlueprint,
+			v15Decoded,
+		});
 	};
 
 	handleDismissAlert = () =>
@@ -186,12 +197,9 @@ class EditBlueprint extends PureComponent
 	handleDrop = (acceptedFiles, rejectedFiles) =>
 	{
 		this.setState({
-			files    : acceptedFiles,
+			files   : acceptedFiles,
 			rejectedFiles,
-			blueprint: {
-				...this.state.blueprint,
-				imageUrl: acceptedFiles.length > 1 && acceptedFiles[0].preview,
-			},
+			imageUrl: acceptedFiles.length > 1 && acceptedFiles[0].preview,
 		});
 
 		if (acceptedFiles.length === 0)
@@ -314,11 +322,11 @@ class EditBlueprint extends PureComponent
 			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
 		}
 
-		if (!blueprint.isBook() && isEmpty(this.state.v15Decoded.blueprint.label))
+		if (blueprint.isBlueprint() && isEmpty(this.state.v15Decoded.blueprint.label))
 		{
 			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
 		}
-		if (!blueprint.isBook() && isEmpty(this.state.v15Decoded.blueprint.icons))
+		if (blueprint.isBlueprint() && isEmpty(this.state.v15Decoded.blueprint.icons))
 		{
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
@@ -478,31 +486,28 @@ class EditBlueprint extends PureComponent
 		this.setState({deletionModalVisible: false});
 	};
 
-	handleDeleteBlueprint = () =>
+	handleDeleteBlueprint = async () =>
 	{
-		const authorId = this.state.blueprint.author.userId;
-		const updates  = {
-			[`/blueprints/${this.props.id}`]                  : null,
-			[`/users/${authorId}/blueprints/${this.props.id}`]: null,
-			[`/thumbnails/${this.props.id}`]                  : null,
-			[`/blueprintSummaries/${this.props.id}`]          : null,
-		};
-		this.props.tags.forEach((tag) =>
+		try
 		{
-			updates[`/byTag/${tag}/${this.props.id}`] = null;
-		});
-		app.database().ref().update(updates)
-			.then(() =>
-			{
-				if (this.state.blueprint.fileName)
+			const idToken = await app.auth().currentUser.getIdToken();
+			const version  = this.props.blueprint.version.number;
+
+			const response = await fetch(
+				`${process.env.REACT_APP_REST_URL}/api/blueprint/${this.props.id}?version=${version}`,
 				{
-					// TODO also delete imgur image
-					const fileNameRef = app.storage().ref().child(this.state.blueprint.fileName);
-					return fileNameRef.delete();
-				}
-				return undefined;
-			})
-			.then(() => this.props.history.push(`/user/${authorId}`));
+					headers: {Authorization: `Bearer ${idToken}`},
+					method : 'DELETE',
+				});
+			const text     = await response.text();
+			console.log({response, text});
+
+			this.props.history.push(`/user/${this.props.blueprint.author.userId}`);
+		}
+		catch (error)
+		{
+			console.log('handleDeleteBlueprint', {error});
+		}
 	};
 
 	parseBlueprint = (blueprintString) =>
@@ -538,8 +543,8 @@ class EditBlueprint extends PureComponent
 
 	renderOldThumbnail = () =>
 	{
-		const {id, type} = this.state.blueprint.image;
-		const thumbnail  = buildImageUrl(id, type, 'b');
+		const {imgurId, imgurType} = this.state.blueprint.imgurImage;
+		const thumbnail            = buildImageUrl(imgurId, imgurType, 'b');
 
 		return (
 			<Form.Group as={Row}>
@@ -708,46 +713,46 @@ This cannot be undone.
 				</Modal>
 				<Container>
 					<Row>
-						{
-							this.state.rejectedFiles.length > 0 && <Alert
-								variant='warning'
-								className='alert-fixed'
-								onDismiss={this.handleDismissAlert}
-							>
-								<h4>
-									{'Error uploading files'}
-								</h4>
-								<ul>
-									{
-										this.state.rejectedFiles.map(rejectedFile => (
-											<li key={rejectedFile.name}>
-												{rejectedFile.name}
-											</li>
-										))
-									}
-								</ul>
-							</Alert>
-						}
-						{
-							this.state.submissionErrors.length > 0 && <Alert
-								variant='danger'
-								className='alert-fixed'
-								onDismiss={this.handleDismissError}
-							>
-								<h4>
-									Error editing blueprint
-								</h4>
-								<ul>
-									{
-										this.state.submissionErrors.map(submissionError => (
-											<li key={submissionError}>
-												{submissionError}
-											</li>
-										))
-									}
-								</ul>
-							</Alert>
-						}
+						<Alert
+							show={this.state.rejectedFiles.length > 0}
+							variant='warning'
+							className='alert-fixed'
+							dismissible
+							onClose={this.handleDismissAlert}
+						>
+							<h4>
+								{'Error uploading files'}
+							</h4>
+							<ul>
+								{
+									this.state.rejectedFiles.map(rejectedFile => (
+										<li key={rejectedFile.name}>
+											{rejectedFile.name}
+										</li>
+									))
+								}
+							</ul>
+						</Alert>
+						<Alert
+							show={this.state.submissionErrors.length > 0}
+							variant='danger'
+							className='alert-fixed'
+							dismissible
+							onClose={this.handleDismissError}
+						>
+							<h4>
+								Error editing blueprint
+							</h4>
+							<ul>
+								{
+									this.state.submissionErrors.map(submissionError => (
+										<li key={submissionError}>
+											{submissionError}
+										</li>
+									))
+								}
+							</ul>
+						</Alert>
 					</Row>
 					<PageHeader title={`Editing: ${blueprint.title}`} />
 					<Row>

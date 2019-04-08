@@ -457,6 +457,7 @@
     "wrap-regex": "off",
     "jsx-a11y/href-no-hash": "off",
     "no-undefined": "off",
-    "require-jsdoc": "off"
+    "require-jsdoc": "off",
+    "no-process-env": "off"
   }
 }
