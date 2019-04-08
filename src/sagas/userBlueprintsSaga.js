@@ -1,11 +1,5 @@
-import isEmpty                        from 'lodash/isEmpty';
-import keys                           from 'lodash/keys';
-import pickBy                         from 'lodash/pickBy';
-import sortBy                         from 'lodash/sortBy';
-import {END, eventChannel}            from 'redux-saga';
-import {all, call, put, select, take} from 'redux-saga/effects';
-import * as actionTypes               from '../actions/actionTypes';
-import {app}                          from '../base';
+import {call, put}      from 'redux-saga/effects';
+import * as actionTypes from '../actions/actionTypes';
 
 export const subscribeToDisplayNameSaga = function*({userId})
 {
@@ -21,72 +15,50 @@ export const subscribeToDisplayNameSaga = function*({userId})
 		if (response.ok)
 		{
 			const data = yield call(() => response.json());
-			yield put({type: actionTypes.RECEIVED_USER_DISPLAY_NAME, data});
+			yield put({type: actionTypes.RECEIVED_USER_DISPLAY_NAME, data, userId});
 		}
 		else
 		{
 			const error = yield call(() => response.text());
 			console.log(error);
-			yield put({type: actionTypes.USER_DISPLAY_NAME_FAILED, error});
+			yield put({type: actionTypes.USER_DISPLAY_NAME_FAILED, error, userId});
 		}
 	}
 	catch (error)
 	{
 		console.log(error);
-		yield put({type: actionTypes.MY_AUTHORED_BLUEPRINT_KEYS_FAILED, error});
+		yield put({type: actionTypes.MY_AUTHORED_BLUEPRINT_KEYS_FAILED, error, userId});
 	}
 };
 
-const subscribeToUserBlueprintsSaga = function*({authorId})
+const fetchUserBlueprintsSaga = function*({userId})
 {
-	// RECEIVED_USER_BLUEPRINTS_SUMMARIES
-
-	yield put({type: actionTypes.SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES});
-
-	const getParams = function*()
-	{
-		const {currentUser} = app.auth();
-		if (isEmpty(currentUser))
-		{
-			return {};
-		}
-
-		const idToken     = yield call(() => currentUser.getIdToken());
-
-		const params = {
-			headers: {
-				Authorization: `Bearer ${idToken}`,
-			},
-		};
-		return params;
-	};
+	yield put({type: actionTypes.FETCHING_USER_BLUEPRINTS_SUMMARIES, userId});
 
 	try
 	{
-		const params = yield call(getParams);
 		const response = yield call(
 			fetch,
-			`${process.env.REACT_APP_REST_URL}/api/user/${authorId}/blueprintSummaries/`,
-			params,
+			`${process.env.REACT_APP_REST_URL}/api/user/${userId}/blueprintSummaries/`,
 		);
 
 		if (response.ok)
 		{
-			const userBlueprintSummariesEnvelope = yield call(() => response.json());
-			yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS_SUMMARIES, userBlueprintSummariesEnvelope});
+			const data = yield call(() => response.json());
+			yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS_SUMMARIES, data, userId});
 		}
 		else
 		{
 			const error = yield call(() => response.text());
 			console.log(error);
-			yield put({type: actionTypes.USER_BLUEPRINTS_SUMMARIES_FAILED, error});
+			yield put({type: actionTypes.USER_BLUEPRINTS_SUMMARIES_FAILED, error, userId});
 		}
 	}
 	catch (error)
 	{
 		console.log(error);
-		yield put({type: actionTypes.USER_BLUEPRINTS_SUMMARIES_FAILED, error});
+		yield put({type: actionTypes.USER_BLUEPRINTS_SUMMARIES_FAILED, error, userId});
 	}
 };
 
-export default subscribeToUserBlueprintsSaga;
+export default fetchUserBlueprintsSaga;

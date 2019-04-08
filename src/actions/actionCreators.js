@@ -48,19 +48,14 @@ export const subscribeToAllFavorites = page =>
 		page,
 	});
 
-export const subscribeToModerators = () =>
-	({
-		type: actionTypes.SUBSCRIBE_TO_MODERATORS,
-	});
-
 export const subscribeToTags = () =>
 	({
-		type: actionTypes.SUBSCRIBE_TO_TAGS,
+		type: actionTypes.FETCH_TAGS,
 	});
 
 export const subscribeToUserBlueprintSummaries = userId =>
 	({
-		type: actionTypes.SUBSCRIBED_TO_USER_BLUEPRINTS_SUMMARIES,
+		type: actionTypes.FETCH_USER_BLUEPRINTS_SUMMARIES,
 		userId,
 	});
 

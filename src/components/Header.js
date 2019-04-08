@@ -69,7 +69,7 @@ class Header extends PureComponent
 
 	handleEdit = () =>
 	{
-		this.props.history.push('/ui/account');
+		this.props.history.push('account');
 	}
 
 	handleLogout = () =>
@@ -160,7 +160,7 @@ class Header extends PureComponent
 		return (
 			<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
 				<Navbar.Brand>
-					<Link to='/ui/'>
+					<Link to='/'>
 						<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
 						{' Factorio Prints'}
 					</Link>
@@ -170,25 +170,25 @@ class Header extends PureComponent
 				<Navbar.Collapse>
 					<Nav className='mr-auto'>
 						{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
-						<Nav.Link as={Link} href='/ui/blueprints' to='/ui/blueprints' className='text-light'>
+						<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
 							<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
 							{' Most Recent'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/ui/top' to='/ui/top' className='text-light'>
+						<Nav.Link as={Link} href='/top' to='/top' className='text-light'>
 							<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
 							{' Most Favorited'}
 						</Nav.Link>
 						{this.props.user
-						&& <Nav.Link as={Link} href='/ui/favorites' to='/ui/favorites' className='text-light'>
+						&& <Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
 							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
 							{' My Favorites'}
 						</Nav.Link>}
 						{this.props.user
-						&& <Nav.Link as={Link} href={`/ui/user/${this.props.user.uid}`} to={`/ui/user/${this.props.user.uid}`} className='text-light'>
+						&& <Nav.Link as={Link} href={`/user/${this.props.user.uid}`} to={`/user/${this.props.user.uid}`} className='text-light'>
 							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 							{' My Blueprints'}
 						</Nav.Link>}
-						<Nav.Link as={Link} href='/ui/contact' to='/ui/contact' className='text-light'>
+						<Nav.Link as={Link} href='/contact' to='/contact' className='text-light'>
 							<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
 							{' Contact me'}
 						</Nav.Link>

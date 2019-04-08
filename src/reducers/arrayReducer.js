@@ -12,8 +12,8 @@ const arrayReducer = (fetchingActionType, receivedActionType, failedActionType) 
 			case fetchingActionType:
 			{
 				return {
+					...state,
 					loading: true,
-					data   : [],
 					error  : undefined,
 				};
 			}
@@ -26,11 +26,13 @@ const arrayReducer = (fetchingActionType, receivedActionType, failedActionType) 
 				};
 			}
 			case failedActionType:
+			{
 				return {
+					...state,
 					loading: false,
-					data   : [],
 					error  : action.error,
 				};
+			}
 			default:
 				return state;
 		}

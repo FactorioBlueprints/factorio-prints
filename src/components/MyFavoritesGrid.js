@@ -10,7 +10,7 @@ import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
-import {filterOnTags, subscribeToUserBlueprintSummaries} from '../actions/actionCreators';
+import {filterOnTags} from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
@@ -25,11 +25,10 @@ import TagForm            from './TagForm';
 class MyFavoritesGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		my                           : myPropTypes,
-		subscribeToUserBlueprintSummaries          : PropTypes.func.isRequired,
+		my                       : myPropTypes,
 		filterOnTags             : PropTypes.func.isRequired,
 		user                     : propTypes.userSchema,
-		blueprintSummaries           : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
+		blueprintSummaries       : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
 		blueprintSummariesLoading: PropTypes.bool,
 		location                 : propTypes.locationSchema,
 		history                  : propTypes.historySchema,
@@ -41,14 +40,6 @@ class MyFavoritesGrid extends PureComponent
 			isExact: PropTypes.bool.isRequired,
 		})),
 	});
-
-	UNSAFE_componentWillMount()
-	{
-		if (this.props.user)
-		{
-			this.props.subscribeToUserBlueprintSummaries(this.props.user.uid);
-		}
-	}
 
 	render()
 	{
@@ -108,7 +99,6 @@ const mapDispatchToProps = (dispatch) =>
 {
 	const actionCreators = {
 		filterOnTags,
-		subscribeToUserBlueprintSummaries,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };
