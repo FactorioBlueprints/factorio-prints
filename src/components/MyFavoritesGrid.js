@@ -10,7 +10,7 @@ import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
-import {filterOnTags, subscribeToUser} from '../actions/actionCreators';
+import {filterOnTags} from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
@@ -108,7 +108,6 @@ const mapDispatchToProps = (dispatch) =>
 {
 	const actionCreators = {
 		filterOnTags,
-		subscribeToUser,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };

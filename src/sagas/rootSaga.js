@@ -21,7 +21,6 @@ import {
 	SUBSCRIBE_TO_MY_FAVORITES,
 	SUBSCRIBE_TO_SUMMARIES,
 	SUBSCRIBE_TO_TAGS,
-	SUBSCRIBE_TO_USER,
 	SUBSCRIBE_TO_USER_DISPLAY_NAME,
 	WENT_TO_FIRST_ALL_FAVORITES,
 	WENT_TO_FIRST_MY_FAVORITES,
@@ -74,8 +73,6 @@ const rootSaga = function*()
 
 	yield takeEvery(SUBSCRIBE_TO_MODERATORS, subscribeToModeratorsSaga);
 	yield takeEvery(SUBSCRIBE_TO_TAGS, subscribeToTagsSaga);
-	yield takeEvery(SUBSCRIBE_TO_USER, subscribeToDisplayNameSaga);
-	yield takeEvery(SUBSCRIBE_TO_USER, subscribeToUserBlueprintsSaga);
 	yield takeEvery(SUBSCRIBE_TO_USER_DISPLAY_NAME, subscribeToDisplayNameSaga);
 
 	yield takeEvery(AUTH_STATE_CHANGED, subscribeToSummariesSaga);

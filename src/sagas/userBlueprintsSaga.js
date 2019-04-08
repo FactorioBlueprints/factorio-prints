@@ -7,123 +7,105 @@ import {all, call, put, select, take} from 'redux-saga/effects';
 import * as actionTypes               from '../actions/actionTypes';
 import {app}                          from '../base';
 
-const displayNameData = userId =>
-	eventChannel((emit) =>
-	{
-		const displayNameRef = app.database().ref(`/users/${userId}/displayName/`);
-		const onValueChange  = (dataSnapshot) =>
-		{
-			const displayName = dataSnapshot.val();
-			emit({displayName, displayNameRef});
-		};
-
-		// TODO: Why do I get here twice?
-		displayNameRef.off();
-		displayNameRef.on('value', onValueChange, () => emit(END));
-
-		return () =>
-		{
-			displayNameRef.off('value', onValueChange);
-		};
-	});
-
 export const subscribeToDisplayNameSaga = function*({userId})
 {
-	const getUser = state => state.users[userId];
+	yield put({type: actionTypes.FETCHING_USER_DISPLAY_NAME, userId});
 
-	const userState = yield select(getUser);
-	if (!userState || isEmpty(userState.displayName) || isEmpty(userState.displayName.data) || !userState.displayName.displayNameRef)
+	try
 	{
-		const channel = yield call(displayNameData, userId);
-		yield put({type: actionTypes.SUBSCRIBED_TO_USER_DISPLAY_NAME, userId});
-		try
+		const response = yield call(
+			fetch,
+			`${process.env.REACT_APP_REST_URL}/api/user/${userId}/displayName`,
+		);
+
+		if (response.ok)
 		{
-			while (true)
-			{
-				const {displayName, displayNameRef} = yield take(channel);
-				yield put({type: actionTypes.RECEIVED_USER_DISPLAY_NAME, displayName, displayNameRef, userId});
-			}
+			const data = yield call(() => response.json());
+			yield put({type: actionTypes.RECEIVED_USER_DISPLAY_NAME, data});
 		}
-		finally
+		else
 		{
-			console.log(`Unsubscribed from ${userId}'s displayName`);
+			const error = yield call(() => response.text());
+			console.log(error);
+			yield put({type: actionTypes.USER_DISPLAY_NAME_FAILED, error});
 		}
+	}
+	catch (error)
+	{
+		console.log(error);
+		yield put({type: actionTypes.MY_AUTHORED_BLUEPRINT_KEYS_FAILED, error});
 	}
 };
 
-// Anchor for diff
-const userBlueprintsData = userId =>
-	eventChannel((emit) =>
-	{
-		const userBlueprintsRef = app.database().ref(`/users/${userId}/blueprints/`);
-		const onValueChange     = (dataSnapshot) =>
-		{
-			const userBlueprintsSnapshot = dataSnapshot.val();
-			const exists                 = dataSnapshot.exists();
-			emit({userBlueprintsSnapshot, userBlueprintsRef, exists});
-		};
-
-		userBlueprintsRef.on('value', onValueChange, () => emit(END));
-
-		return () =>
-		{
-			userBlueprintsRef.off('value', onValueChange);
-		};
-	});
-
 const subscribeToUserBlueprintsSaga = function*({userId})
 {
-	const getUser = state => state.users[userId];
+	// /user/{authorId}/blueprintSummaries/page/{pageNumber}
+	// RECEIVED_USER_BLUEPRINTS_SUMMARIES
 
-	const userState = yield select(getUser);
-	if (userState && !isEmpty(userState.blueprints) && !isEmpty(userState.blueprints.data) && userState.blueprints.userBlueprintsRef)
+	const getFilteredTags = state => state.filteredTags;
+	const getTitleFilter = state => state.titleFilter;
+	const getCurrentPage = state => state.blueprintMyFavorites.currentPage;
+	const filteredTags = yield select(getFilteredTags);
+	const titleFilter = yield select(getTitleFilter);
+	const currentPage = yield select(getCurrentPage);
+
+	yield put({type: actionTypes.SUBSCRIBED_TO_MY_FAVORITES, filteredTags, titleFilter});
+
+	const urlSearchParams = new URLSearchParams();
+
+	if (!isEmpty(titleFilter))
 	{
-		return;
+		urlSearchParams.append('title',  titleFilter);
 	}
 
-	const channel = yield call(userBlueprintsData, userId);
-	yield put({type: actionTypes.SUBSCRIBED_TO_USER_DISPLAY_NAME, userId});
+	if (!isEmpty(filteredTags))
+	{
+		urlSearchParams.append('tag',  filteredTags);
+	}
+
+	const getParams = function*()
+	{
+		const {currentUser} = app.auth();
+		if (isEmpty(currentUser))
+		{
+			return {};
+		}
+
+		const idToken     = yield call(() => currentUser.getIdToken());
+
+		const params = {
+			headers: {
+				Authorization: `Bearer ${idToken}`,
+			},
+		};
+		return params;
+	};
+
 	try
 	{
-		while (true)
+		const params = yield call(getParams);
+		const response = yield call(
+			fetch,
+			`${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/favorites/filtered/page/${currentPage}?${urlSearchParams.toString()}`,
+			params,
+		);
+
+		if (response.ok)
 		{
-			const {userBlueprintsSnapshot, userBlueprintsRef, exists} = yield take(channel);
-
-			if (exists)
-			{
-				const userBlueprintsKeys = pickBy(userBlueprintsSnapshot);
-				yield put({
-					type: actionTypes.RECEIVED_USER_BLUEPRINTS_KEYS,
-					userBlueprintsKeys,
-					userBlueprintsRef,
-					userId,
-					exists,
-				});
-
-				const calls = keys(userBlueprintsKeys)
-					.map(key => `/blueprintSummaries/${key}`)
-					.map(url => app.database().ref(url))
-					.map(ref => call(() => ref.once('value')));
-				const blueprintSummarySnapshots = yield all(calls);
-				const blueprintSummaries = blueprintSummarySnapshots.map(each => ({key: each.key, ...each.val()}));
-				const userBlueprints = sortBy(blueprintSummaries, each => each.key);
-
-				yield put({
-					type: actionTypes.RECEIVED_USER_BLUEPRINTS_SUMMARIES,
-					userBlueprints,
-					userBlueprintsRef,
-					userId,
-				});
-			}
-			else
-			{
-				yield put({type: actionTypes.RECEIVED_USER_BLUEPRINTS_KEYS, userId, exists});
-			}
+			const blueprintMyFavoritesEnvelope = yield call(() => response.json());
+			yield put({type: actionTypes.RECEIVED_MY_FAVORITES, blueprintMyFavoritesEnvelope, titleFilter, filteredTags});
+		}
+		else
+		{
+			const error = yield call(() => response.text());
+			console.log(error);
+			yield put({type: actionTypes.MY_FAVORITES_FAILED, titleFilter, filteredTags, error});
 		}
 	}
-	finally
+	catch (error)
 	{
-		console.log(`Unsubscribed from ${userId}'s blueprints`);
+		console.log(error);
+		yield put({type: actionTypes.MY_FAVORITES_FAILED, titleFilter, filteredTags, error});
 	}
 };
 

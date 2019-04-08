@@ -18,7 +18,6 @@ import {
 	goToNextSummaries,
 	goToPreviousSummaries,
 	subscribeToBlueprintSummaries,
-	subscribeToUser,
 } from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
@@ -40,7 +39,6 @@ class BlueprintGrid extends PureComponent
 		goToPreviousSummaries        : PropTypes.func.isRequired,
 		goToNextSummaries            : PropTypes.func.isRequired,
 		goToFirstSummaries           : PropTypes.func.isRequired,
-		subscribeToUser              : PropTypes.func.isRequired,
 		filterOnTags                 : PropTypes.func.isRequired,
 		user                         : propTypes.userSchema,
 		blueprintSummaries           : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
@@ -65,10 +63,6 @@ class BlueprintGrid extends PureComponent
 		if (this.props.initialTag)
 		{
 			this.props.filterOnTags([this.props.initialTag]);
-		}
-		if (this.props.user)
-		{
-			this.props.subscribeToUser(this.props.user.uid);
 		}
 	}
 
@@ -165,7 +159,6 @@ const mapDispatchToProps = (dispatch) =>
 		goToNextSummaries,
 		goToFirstSummaries,
 		filterOnTags,
-		subscribeToUser,
 	};
 	return bindActionCreators(actionCreators, dispatch);
 };
