@@ -16,7 +16,7 @@
     "eslint-plugin-import": "2.17.2",
     "eslint-plugin-jsx-a11y": "6.2.1",
     "eslint-plugin-lodash": "5.1.0",
-    "eslint-plugin-promise": "4.0.1",
+    "eslint-plugin-promise": "4.1.1",
     "eslint-plugin-react": "7.12.4",
     "react-scripts": "2.1.5",
     "stylus": "0.54.5"
