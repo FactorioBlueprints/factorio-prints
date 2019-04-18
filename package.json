@@ -32,7 +32,7 @@
     "atob": "2.1.2",
     "bootstrap": "4.3.1",
     "classnames": "2.2.6",
-    "firebase": "5.8.4",
+    "firebase": "5.9.4",
     "history": "4.7.2",
     "immutability-helper": "3.0.0",
     "lodash": "4.17.11",
