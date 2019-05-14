@@ -14,6 +14,7 @@ import {
 }                                from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}        from 'airbnb-prop-types';
+import Disqus                    from 'disqus-react';
 import concat                    from 'lodash/concat';
 import flatMap                   from 'lodash/flatMap';
 import forOwn                    from 'lodash/forOwn';
@@ -41,7 +42,6 @@ import Jumbotron                 from 'react-bootstrap/Jumbotron';
 import Row                       from 'react-bootstrap/Row';
 import Table                     from 'react-bootstrap/Table';
 import CopyToClipboard           from 'react-copy-to-clipboard';
-import ReactDisqusThread         from 'react-disqus-comments';
 import DocumentTitle             from 'react-document-title';
 import {connect}                 from 'react-redux';
 import {Link}                    from 'react-router-dom';
@@ -334,6 +334,12 @@ class SingleBlueprint extends PureComponent
 		}
 
 		const {image, createdDate, lastUpdatedDate, author: {userId: authorId}, title, numberOfFavorites} = blueprint;
+
+		const disqusConfig = {
+			url       : `https://factorioprints.com${this.props.location.pathname}`,
+			identifier: this.props.id,
+			title     : blueprint.title,
+		};
 
 		return (
 			<DocumentTitle title={`Factorio Prints: ${title}`}>
@@ -719,11 +725,10 @@ class SingleBlueprint extends PureComponent
 							}
 						</Col>
 					</Row>
-					<Row>
-						<ReactDisqusThread
+					<Row className='w-100'>
+						<Disqus.DiscussionEmbed
 							shortname='factorio-blueprints'
-							identifier={this.props.id}
-							title={blueprint.title}
+							config={disqusConfig}
 							className='w-100'
 						/>
 					</Row>
