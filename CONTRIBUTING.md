@@ -61,8 +61,9 @@ The firebase database is essentially one big json document, and asking to downlo
     "-KYVL2qnlOpHomJAj-eB": {
       "imgurId": "l5ajJXt",
       "imgurType": "image/jpeg",
-      "numberOfFavorites": 19,
-      "title": "MadZuri's Mk3 Solar Build"
+      "lastUpdatedDate": 1498010275386,
+      "numberOfFavorites": 71,
+      "title": "☀️ MadZuri's Mk3 Solar Build"
     }
   },
   "blueprints": {
@@ -70,13 +71,16 @@ The firebase database is essentially one big json document, and asking to downlo
       "author": {
         "userId": "H3QlaVpvadfVuTpGGxs7016oR2K3"
       },
+      "authorId": "H3QlaVpvadfVuTpGGxs7016oR2K3",
       "blueprintString": "0eNqdnctuG0cQRX <snipped>",
       "createdDate": 1481232629231,
-      "descriptionMarkdown": "*Pretty* close to perfect ratios, tileable, 100% space efficient. You can remove the roboports and replace them with accumulators to improve the ratio.",
+      "descriptionMarkdown": "*Pretty* close to perfect ratios, tileable, 100% space efficient.\n\nYou can remove the roboports and replace them with accumulators to improve the ratio.",
       "favorites": {
-        "0UeeXu0FGLZczh6XocxaojM8inf1": true,
-        "1mWNpXvBKWel5dpejdaG7pdDQbs2": true,
-        "9FacMA0jo8R6l3BDRbSNjUlbxmQ2": true
+        "EuA0qrMegObNUi83yFVJllIgCAO2": true,
+        "YZ79eCKXovfsxXD9fmNAuyd9mlc2": true,
+        "gikbOCGvWwY7hiFgsIoZrxMh4x93": true,
+        "yEkV5AJi4TdlypuvUIb1yqbiznG3": true,
+        "zuzzQ4UJUleX2sWuorCTBET66Tq1": true
       },
       "image": {
         "deletehash": "<masked>",
@@ -86,9 +90,15 @@ The firebase database is essentially one big json document, and asking to downlo
         "width": 645
       },
       "imageUrl": "https://firebasestorage.googleapis.com/v0/b/facorio-blueprints.appspot.com/o/Zuris_Solar_Layout%5B1%5D.jpg?alt=media&token=3494c5fe-1dbc-46c3-8d40-83751c7e07b7",
-      "lastUpdatedDate": 1494296418695,
-      "numberOfFavorites": 3,
-      "title": "MadZuri's Mk3 Solar Build"
+      "lastUpdatedDate": 1498010275386,
+      "numberOfFavorites": 71,
+      "tags": [
+        "/power/solar/",
+        "/general/tileable/",
+        "/mods/vanilla/",
+        "/version/0,15/"
+      ],
+      "title": "☀️ MadZuri's Mk3 Solar Build"
     }
   },
   "moderators": {
