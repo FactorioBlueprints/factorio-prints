@@ -16,6 +16,7 @@ import Create            from './Create';
 import EditBlueprint     from './EditBlueprint';
 import Header            from './Header';
 import Intro             from './Intro';
+import KnownIssues       from './KnownIssues';
 import MostFavoritedGrid from './MostFavoritedGrid';
 import FavoritesGrid     from './MyFavoritesGrid';
 import NoMatch           from './NoMatch';
@@ -67,6 +68,7 @@ class Root extends PureComponent
 
 	renderIntro = () => (
 		<div>
+			<KnownIssues />
 			<Intro />
 			<BlueprintGrid />
 		</div>
@@ -94,6 +96,7 @@ class Root extends PureComponent
 							<Route path='/create' exact component={Create} />
 
 							<Route path='/favorites' exact component={FavoritesGrid} />
+							<Route path='/knownIssues' exact component={KnownIssues} />
 							<Route path='/contact' exact component={Contact} />
 							<Route path='/account' exact component={Account} />
 							<Route path='/view/:blueprintId' component={SingleBlueprint} />

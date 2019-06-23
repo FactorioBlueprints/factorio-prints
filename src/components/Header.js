@@ -3,6 +3,7 @@ import {
 	faClock,
 	faCogs,
 	faEnvelope,
+	faBug,
 	faHeart,
 	faPlusSquare,
 	faSignInAlt,
@@ -186,6 +187,10 @@ class Header extends PureComponent
 							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 							{' My Blueprints'}
 						</Nav.Link>}
+						<Nav.Link as={Link} href='/knownIssues' to='/knownIssues' className='text-light'>
+							<FontAwesomeIcon icon={faBug} size='lg' fixedWidth />
+							{' Known Issues'}
+						</Nav.Link>
 						<Nav.Link as={Link} href='/contact' to='/contact' className='text-light'>
 							<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
 							{' Contact me'}

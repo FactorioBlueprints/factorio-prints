@@ -1,8 +1,8 @@
-import {faDiscord, faReddit} from '@fortawesome/free-brands-svg-icons';
-import {faEnvelope}          from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}     from '@fortawesome/react-fontawesome';
-import React                 from 'react';
-import Jumbotron             from 'react-bootstrap/Jumbotron';
+import {faDiscord, faGithub, faReddit} from '@fortawesome/free-brands-svg-icons';
+import {faEnvelope}                    from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}               from '@fortawesome/react-fontawesome';
+import React                           from 'react';
+import Jumbotron                       from 'react-bootstrap/Jumbotron';
 
 const Contact = () =>
 	(
@@ -33,6 +33,16 @@ const Contact = () =>
 			<p className='lead'>
 				<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
 				{' FactorioBlueprints#7181'}
+			</p>
+			<p className='lead'>
+				<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
+				<a
+					target='_blank'
+					rel='noopener noreferrer'
+					href='https://github.com/FactorioBlueprints/factorio-prints/issues'
+				>
+					{' FactorioBlueprints/factorio-prints'}
+				</a>
 			</p>
 			<p className='lead'>
 				Please reach out with any feedback, especially to report bugs!
