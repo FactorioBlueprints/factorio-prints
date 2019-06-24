@@ -365,7 +365,7 @@ class SingleBlueprint extends PureComponent
 								target='_blank'
 								rel='noopener noreferrer'
 							>
-								<Image thumbnail className='border-warning' src={this.state.thumbnail} />
+								<Image thumbnail className='border-warning' src={this.state.thumbnail} referrerPolicy='no-referrer' />
 							</a>
 							{
 								blueprint.tags && blueprint.tags.length > 0 && <Card>
