@@ -31,7 +31,7 @@ const BlueprintThumbnail = ({blueprintSummary, my}) =>
 	return (
 		<Card className='blueprint-thumbnail col-auto' style={{width: '11rem', backgroundColor: '#1c1e22'}}>
 			<Link to={`/ui/view/${key}`}>
-				<Card.Img variant='top' src={imageUrl} />
+				<Card.Img variant='top' src={imageUrl} referrerPolicy='no-referrer' />
 			</Link>
 			<p className='truncate p-1'>
 				{`${numberOfUpvotes}`}
