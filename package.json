@@ -37,7 +37,7 @@
     "grpc": "^1.21.1",
     "history": "4.9.0",
     "immutability-helper": "3.0.1",
-    "lodash": "4.17.11",
+    "lodash": "4.17.13",
     "marked": "0.7.0",
     "moment": "2.24.0",
     "pako": "1.0.8",
