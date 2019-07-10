@@ -17,7 +17,7 @@
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-lodash": "5.1.0",
     "eslint-plugin-promise": "4.2.1",
-    "eslint-plugin-react": "7.13.0",
+    "eslint-plugin-react": "7.14.2",
     "react-scripts": "3.0.1",
     "stylus": "0.54.5"
   },
