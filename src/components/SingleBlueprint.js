@@ -308,7 +308,7 @@ class SingleBlueprint extends PureComponent
 					<Row>
 						<Col md={4}>
 							<a
-								href={`https://imgur.com/${imgurImage.imgurId}`}
+								href={`http://imgur.com/${imgurImage.imgurId}`}
 								target='_blank'
 								rel='noopener noreferrer'
 							>
