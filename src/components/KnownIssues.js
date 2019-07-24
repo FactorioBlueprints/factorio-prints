@@ -11,19 +11,12 @@ const KnownIssues = () =>
 				{'Known issues'}
 			</h1>
 			<p className='lead'>
-				{'There are two known issues with factorioprints.com.'}
 				<ol>
 					<li>
 						<a href='https://github.com/FactorioBlueprints/factorio-prints/issues/27'>
 							{'Search is broken'}
 						</a>
 						{' - it only works within already paginated results.'}
-					</li>
-					<li>
-						{'Embedded '}
-						<a href='https://github.com/FactorioBlueprints/factorio-prints/issues/29'>
-							{'imgur links are broken.'}
-						</a>
 					</li>
 				</ol>
 
