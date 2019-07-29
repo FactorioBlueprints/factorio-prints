@@ -18,6 +18,7 @@
     "promise"
   ],
   "extends": [
+    "react-app",
     "eslint:all",
     "plugin:react/all",
     "plugin:lodash/recommended",
