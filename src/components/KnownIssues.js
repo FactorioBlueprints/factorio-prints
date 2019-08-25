@@ -8,19 +8,17 @@ const KnownIssues = () =>
 	(
 		<Jumbotron>
 			<h1 className='display-4'>
-				{'Known issues'}
+				{'Check out '}
+				<a href='https://www.factorio.school/'>Factorio School</a>
 			</h1>
 			<p className='lead'>
-				<ol>
-					<li>
-						<a href='https://github.com/FactorioBlueprints/factorio-prints/issues/27'>
-							{'Search is broken'}
-						</a>
-						{' - it only works within already paginated results.'}
-					</li>
-				</ol>
-
-				{'See discussion of the issues '}
+				{'Factorio School is a rewrite of Factorio Prints where search works across all blueprints, not just the current page.'}
+			</p>
+			<p className='lead'>
+				{'It is a work in progress. For now, it\'s in read-only mode. The data from Factorio Prints will be copied to Factorio School no more than once each day.'}
+			</p>
+			<p className='lead'>
+				{'If you\'d like to follow along with progress, or help out, please see the discussion of the issues '}
 				<a href='https://www.reddit.com/r/factorio/comments/c3pk6w/need_help_with_factorioprintscom/?utm_source=share&utm_medium=web2x'>
 					{'on Reddit'}
 					<FontAwesomeIcon icon={faReddit} size='lg' fixedWidth />
