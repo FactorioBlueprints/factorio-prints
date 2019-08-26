@@ -25,23 +25,17 @@ const blueprintMyFavoritesReducer = (state = initialState, action) =>
 		{
 			const
 				{
-					blueprintMyFavoritesEnvelope: {
+					data: {
 						_data,
 						_metadata: {
-							pagination: {
-								pageNumber,
-								numberOfPages,
-							},
 							transactionTimestamp,
 						},
 					},
 				} = action;
 			return {
 				...state,
-				data       : _data,
-				currentPage: pageNumber,
-				numberOfPages,
-				loading    : false,
+				data   : _data,
+				loading: false,
 				transactionTimestamp,
 			};
 		}

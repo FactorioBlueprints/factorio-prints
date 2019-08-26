@@ -26,7 +26,12 @@ import {
 	WENT_TO_PREVIOUS_SUMMARIES,
 } from '../actions/actionTypes';
 
-import {fetchMyAuthoredBlueprintKeysSaga, fetchMyEntitlementsSaga, fetchMyFavoriteBlueprintKeysSaga} from './mySaga';
+import {
+	fetchMyAuthoredBlueprintKeysSaga,
+	fetchMyEntitlementsSaga,
+	fetchMyFavoriteBlueprintKeysSaga,
+	fetchMyFavoriteSummariesSaga,
+} from './mySaga';
 import {
 	fetchTagsSaga,
 	filterTagsSaga,
@@ -40,7 +45,7 @@ import {
 	subscribeToAllFavoritesSaga,
 	subscribeToBlueprintSaga,
 	subscribeToSummariesSaga,
-}                                                                                                    from './subscribeSaga';
+} from './subscribeSaga';
 
 import fetchUserBlueprintsSaga, {subscribeToDisplayNameSaga} from './userBlueprintsSaga';
 
@@ -66,6 +71,7 @@ const rootSaga = function*()
 	yield takeEvery(AUTH_STATE_CHANGED, fetchMyAuthoredBlueprintKeysSaga);
 	yield takeEvery(AUTH_STATE_CHANGED, fetchMyFavoriteBlueprintKeysSaga);
 	yield takeEvery(AUTH_STATE_CHANGED, fetchMyEntitlementsSaga);
+	yield takeEvery(AUTH_STATE_CHANGED, fetchMyFavoriteSummariesSaga);
 
 	yield takeEvery(GO_TO_PREVIOUS_SUMMARIES, goToPreviousSummariesSaga);
 	yield takeEvery(GO_TO_NEXT_SUMMARIES, goToNextSummariesSaga);

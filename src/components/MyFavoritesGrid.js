@@ -10,7 +10,9 @@ import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
-import {filterOnTags} from '../actions/actionCreators';
+import {
+	filterOnTags,
+} from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
@@ -76,15 +78,30 @@ class MyFavoritesGrid extends PureComponent
 					<SearchForm />
 					<TagForm />
 				</Row>
-				<Row className='blueprint-grid-row justify-content-center'>
-					{
-						this.props.blueprintSummaries.map(blueprintSummary =>
-							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} my={this.props.my} />)
-					}
-				</Row>
+				{
+					this.props.blueprintSummariesLoading
+						? this.renderLoadingSpinner()
+						: this.renderMainGrid()
+				}
 			</Container>
 		);
 	}
+
+	renderLoadingSpinner = () =>
+		<Jumbotron>
+			<h1 className='display-4'>
+				<FontAwesomeIcon icon={faCog} spin />
+				{' Loading data'}
+			</h1>
+		</Jumbotron>;
+
+	renderMainGrid = () =>
+		<Row className='blueprint-grid-row justify-content-center'>
+			{
+				this.props.blueprintSummaries.map(blueprintSummary =>
+					<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} my={this.props.my} />)
+			}
+		</Row>;
 }
 
 const mapStateToProps = storeState => (
