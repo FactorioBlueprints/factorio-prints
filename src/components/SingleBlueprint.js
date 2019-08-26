@@ -374,7 +374,7 @@ class SingleBlueprint extends PureComponent
 												{' Author'}
 											</td>
 											<td>
-												<Link to={`user/${authorId}`}>
+												<Link to={`/user/${authorId}`}>
 													{blueprint.author.displayName}
 													{
 														this.state.ownedByCurrentUser
