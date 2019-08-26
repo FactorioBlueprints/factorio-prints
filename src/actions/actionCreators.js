@@ -42,6 +42,7 @@ export const subscribeToBlueprintSummaries = page =>
 		page,
 	});
 
+
 export const subscribeToAllFavorites = page =>
 	({
 		type: actionTypes.SUBSCRIBE_TO_ALL_FAVORITES,
