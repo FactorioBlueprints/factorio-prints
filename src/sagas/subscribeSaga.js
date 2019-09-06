@@ -55,10 +55,7 @@ export const subscribeToSummariesSaga = function*()
 		urlSearchParams.append('title', titleFilter);
 	}
 
-	if (!isEmpty(filteredTags))
-	{
-		urlSearchParams.append('tag', filteredTags);
-	}
+	filteredTags.forEach(filteredTag => urlSearchParams.append('tag', filteredTag));
 
 	try
 	{
@@ -122,10 +119,7 @@ export const subscribeToAllFavoritesSaga = function*()
 		urlSearchParams.append('title', titleFilter);
 	}
 
-	if (!isEmpty(filteredTags))
-	{
-		urlSearchParams.append('tag', filteredTags);
-	}
+	filteredTags.forEach(filteredTag => urlSearchParams.append('tag', filteredTag));
 
 	const getParams = function*()
 	{
