@@ -34,7 +34,7 @@
     "disqus-react": "1.0.6",
     "firebase": "6.6.0",
     "grpc": "1.23.3",
-    "history": "4.9.0",
+    "history": "4.10.0",
     "immutability-helper": "3.0.1",
     "lodash": "4.17.15",
     "marked": "0.7.0",
