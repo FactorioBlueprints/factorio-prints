@@ -31,7 +31,7 @@
     "atob": "2.1.2",
     "bootstrap": "4.3.1",
     "classnames": "2.2.6",
-    "disqus-react": "1.0.6",
+    "disqus-react": "1.0.7",
     "firebase": "6.6.1",
     "grpc": "1.23.3",
     "history": "4.10.1",
