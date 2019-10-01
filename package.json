@@ -17,7 +17,7 @@
     "eslint-plugin-lodash": "6.0.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-react": "7.15.0",
-    "react-scripts": "3.1.1",
+    "react-scripts": "3.1.2",
     "stylus": "0.54.7"
   },
   "dependencies": {
