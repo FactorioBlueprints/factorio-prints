@@ -32,7 +32,7 @@
     "bootstrap": "4.3.1",
     "classnames": "2.2.6",
     "disqus-react": "1.0.7",
-    "firebase": "7.0.0",
+    "firebase": "7.1.0",
     "grpc": "1.24.0",
     "history": "4.10.1",
     "immutability-helper": "3.0.1",
