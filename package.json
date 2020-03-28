@@ -54,7 +54,7 @@
     "react-router-dom": "5.1.2",
     "react-select": "1.0.0-rc.10",
     "reduce-reducers": "1.0.4",
-    "redux": "4.0.4",
+    "redux": "4.0.5",
     "redux-saga": "1.1.3",
     "reselect": "4.0.0"
   },
