@@ -35,7 +35,7 @@
     "firebase": "7.13.0",
     "grpc": "1.24.2",
     "history": "4.10.1",
-    "immutability-helper": "3.0.1",
+    "immutability-helper": "3.0.2",
     "lodash": "4.17.15",
     "marked": "0.8.2",
     "moment": "2.24.0",
