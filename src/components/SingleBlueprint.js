@@ -334,6 +334,7 @@ class SingleBlueprint extends PureComponent
 		}
 
 		const {image, createdDate, lastUpdatedDate, author: {userId: authorId}, title, numberOfFavorites} = blueprint;
+		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null)
 
 		const disqusConfig = {
 			url       : `https://factorioprints.com${this.props.location.pathname}`,
