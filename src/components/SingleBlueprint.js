@@ -295,6 +295,9 @@ class SingleBlueprint extends PureComponent
 
 		const {imgurImage, createdOn, systemFrom, author: {userId: authorId}, title, numberOfUpvotes} = blueprint;
 
+		// Remove null tags
+		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null)
+
 		const titleLink = (
 			<a
 				className='mr-1'
