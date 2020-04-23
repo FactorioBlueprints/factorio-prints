@@ -43,7 +43,7 @@
     "prop-types": "15.7.2",
     "re-base": "4.0.0",
     "react": "16.13.1",
-    "react-bootstrap": "1.0.0",
+    "react-bootstrap": "1.0.1",
     "react-copy-to-clipboard": "5.0.2",
     "react-document-title": "2.0.3",
     "react-dom": "16.13.1",
