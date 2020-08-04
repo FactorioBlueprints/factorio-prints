@@ -34,7 +34,7 @@ const BlueprintThumbnail = ({blueprintSummary, my}) =>
 				<Card.Img variant='top' src={imageUrl} referrerPolicy='no-referrer' />
 			</Link>
 			<p className='truncate p-1'>
-				{`${numberOfUpvotes}`}
+				<span className='mr-1'>{`${numberOfUpvotes}`} <span className='sr-only'>favourites</span></span>
 				<span className={favoriteStyle}>
 					{/* TODO: This heart should be a toggle button */}
 					<FontAwesomeIcon icon={faHeart} className='text-error' />
