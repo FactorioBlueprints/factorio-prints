@@ -36,7 +36,7 @@ const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =
 				<Card.Img variant='top' src={imageUrl} referrerPolicy='no-referrer' />
 			</Link>
 			<p className='truncate p-1'>
-				{`${numberOfFavorites}`}
+				<span className='mr-1'>{`${numberOfFavorites}`} <span className='sr-only'>favorites</span></span>
 				<span className={favoriteStyle}>
 					{/* TODO: This heart should be a toggle button */}
 					<FontAwesomeIcon icon={faHeart} className='text-error' />
