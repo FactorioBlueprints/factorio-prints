@@ -36,9 +36,8 @@ export const decodeV15Base64 = (string) =>
 	}
 
 	const unzipped    = pako.inflate(arrayBuffer);
-	const textDecoder = new TextDecoder();
-	const jsonCode = textDecoder.decode(new Uint8Array(unzipped));
-	console.log({jsonCode});
+
+	const jsonCode = String.fromCharCode.apply(null, unzipped);
 	return jsonCode;
 };
 
