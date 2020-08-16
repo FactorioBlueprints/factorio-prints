@@ -34,3 +34,11 @@ it('converts v15 objects', () =>
 	const convertedObject = blueprint.convertEncodedTextToObject();
 	console.log({convertedObject});
 });
+
+it('converts v1.0 objects', () =>
+{
+	const blueprint = new Blueprint('0eNqtkGFOhDAQhe8yv8tmq6VoD7EewBhSYDSN0JJ22EgId7eFkDVGVzT+nDfz3rx8E1TtgL03lsrKuVdQ00UJoB6nXxyknamdXeVgXqxuk0Zjj6DAEHbAwOouTc86UEZe29A7T1mFLcHMwNgG30Dx+YkBWjJkcI1bhrG0Q1ehjwdXgxj0LkSvs+l/yiuKQ85gBJVJfsjnFL/0UR/qMzijD4vp5o6LQtwXsuBHmctLseNXzmwhw6DV8XtcnDAQNlHQNZkzlpt33wP2V6T/QfNHkPJ2AylEBMmgMR7r9UJ8g3XjQpHLLsp8D+WHgWL3z5D5lfz5HTiI9uQ=');
+	const convertedObject = blueprint.convertEncodedTextToObject();
+	console.log({convertedObject});
+});
+
