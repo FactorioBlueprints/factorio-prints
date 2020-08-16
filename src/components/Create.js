@@ -289,6 +289,18 @@ class Create extends PureComponent
 		return submissionErrors;
 	};
 
+	someHaveNoName = (blueprintBook) =>
+	{
+		return some(
+			blueprintBook.blueprints,
+			eachEntry =>
+			{
+				if (eachEntry.blueprint_book) return this.someHaveNoName(eachEntry.blueprint_book);
+				if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
+				return false;
+			});
+	}
+
 	validateWarnings = () =>
 	{
 		const submissionWarnings = [];
@@ -319,7 +331,7 @@ class Create extends PureComponent
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
 
-		if (blueprint.isBook() && some(this.state.v15Decoded.blueprint_book.blueprints, eachBlueprint => isEmpty(eachBlueprint.blueprint.label)))
+		if (blueprint.isBook() && this.someHaveNoName(this.state.v15Decoded.blueprint_book))
 		{
 			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 		}

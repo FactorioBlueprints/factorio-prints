@@ -2,6 +2,5 @@
 <project version="4">
   <component name="JavaScriptLibraryMappings">
     <file url="PROJECT" libraries="{firebase-DefinitelyTyped, lodash-DefinitelyTyped, react-DefinitelyTyped, react-addons-css-transition-group-DefinitelyTyped, react-bootstrap-DefinitelyTyped, react-copy-to-clipboard-DefinitelyTyped, react-dom-DefinitelyTyped, react-dropzone-DefinitelyTyped, react-fontawesome-DefinitelyTyped, react-router-DefinitelyTyped, react-router-bootstrap-DefinitelyTyped}" />
-    <excludedPredefinedLibrary name="factorio-prints/node_modules" />
   </component>
 </project>

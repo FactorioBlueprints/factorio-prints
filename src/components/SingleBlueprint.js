@@ -334,6 +334,8 @@ class SingleBlueprint extends PureComponent
 		}
 
 		const {image, createdDate, lastUpdatedDate, author: {userId: authorId}, title, numberOfFavorites} = blueprint;
+		console.log({blueprint});
+		if (isEmpty(blueprint.tags)) blueprint.tags = [];
 		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null)
 
 		const disqusConfig = {
@@ -656,11 +658,12 @@ class SingleBlueprint extends PureComponent
 														{
 															range(4).map((iconIndex) =>
 															{
-																if (eachBlueprint.blueprint.icons
-																	&& eachBlueprint.blueprint.icons.length > iconIndex
-																	&& eachBlueprint.blueprint.icons[iconIndex] !== null)
+																const entry = eachBlueprint.blueprint ? eachBlueprint.blueprint : eachBlueprint.blueprint_book;
+																if (entry.icons
+																	&& entry.icons.length > iconIndex
+																	&& entry.icons[iconIndex] !== null)
 																{
-																	const icon     = eachBlueprint.blueprint.icons[iconIndex];
+																	const icon     = entry.icons[iconIndex];
 																	// eslint-disable-next-line
 																	const iconName = icon.name || icon.signal && icon.signal.name;
 																	return (
