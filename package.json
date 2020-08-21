@@ -26,7 +26,7 @@
     "@fortawesome/free-regular-svg-icons": "5.14.0",
     "@fortawesome/free-solid-svg-icons": "5.14.0",
     "@fortawesome/react-fontawesome": "0.1.4",
-    "airbnb-prop-types": "2.13.2",
+    "airbnb-prop-types": "2.16.0",
     "antlr4": "4.7.2",
     "atob": "2.1.2",
     "bootstrap": "4.5.2",
