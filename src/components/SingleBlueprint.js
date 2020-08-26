@@ -334,7 +334,6 @@ class SingleBlueprint extends PureComponent
 		}
 
 		const {image, createdDate, lastUpdatedDate, author: {userId: authorId}, title, numberOfFavorites} = blueprint;
-		console.log({blueprint});
 		if (isEmpty(blueprint.tags)) blueprint.tags = [];
 		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null)
 
@@ -658,7 +657,8 @@ class SingleBlueprint extends PureComponent
 														{
 															range(4).map((iconIndex) =>
 															{
-																const entry = eachBlueprint.blueprint ? eachBlueprint.blueprint : eachBlueprint.blueprint_book;
+																console.log({eachBlueprint});
+																const entry = this.getBookEntry(eachBlueprint);
 																if (entry.icons
 																	&& entry.icons.length > iconIndex
 																	&& entry.icons[iconIndex] !== null)
@@ -739,6 +739,21 @@ class SingleBlueprint extends PureComponent
 				</Container>
 			</DocumentTitle>
 		);
+	}
+
+	getBookEntry(eachBlueprint)
+	{
+		if (eachBlueprint.blueprint)
+		{
+			return eachBlueprint.blueprint;
+		}
+
+		if (eachBlueprint.upgrade_planner)
+		{
+			return eachBlueprint.upgrade_planner;
+		}
+
+		return eachBlueprint.blueprint_book;
 	}
 }
 
