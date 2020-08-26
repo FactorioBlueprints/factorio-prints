@@ -642,8 +642,7 @@ class SingleBlueprint extends PureComponent
 														{
 															range(4).map((iconIndex) =>
 															{
-																const entry = eachBlueprint.blueprint ? eachBlueprint.blueprint : eachBlueprint.blueprint_book;
-
+																const entry = this.getBookEntry(eachBlueprint);
 																if (entry.icons
 																	&& entry.icons.length > iconIndex
 																	&& entry.icons[iconIndex] !== null)
@@ -736,6 +735,21 @@ class SingleBlueprint extends PureComponent
 				</Container>
 			</DocumentTitle>
 		);
+	}
+
+	getBookEntry(eachBlueprint)
+	{
+		if (eachBlueprint.blueprint)
+		{
+			return eachBlueprint.blueprint;
+		}
+
+		if (eachBlueprint.upgrade_planner)
+		{
+			return eachBlueprint.upgrade_planner;
+		}
+
+		return eachBlueprint.blueprint_book;
 	}
 }
 
