@@ -37,7 +37,7 @@
     "history": "4.10.1",
     "immutability-helper": "3.0.2",
     "lodash": "4.17.15",
-    "marked": "0.8.2",
+    "marked": "1.2.2",
     "moment": "2.24.0",
     "pako": "1.0.11",
     "prop-types": "15.7.2",
