@@ -6,6 +6,7 @@ import Card               from 'react-bootstrap/Card';
 import OverlayTrigger     from 'react-bootstrap/OverlayTrigger';
 import Tooltip            from 'react-bootstrap/Tooltip';
 import {Link}             from 'react-router-dom';
+import NoAvailableImage from '../gif/No_available_image.gif';
 
 import buildImageUrl              from '../helpers/buildImageUrl';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
@@ -13,7 +14,7 @@ import myPropTypes                from '../propTypes/myPropTypes';
 
 const BlueprintThumbnail = ({blueprintSummary, my}) =>
 {
-	const {key, title, imgurImage: {imgurId, imgurType}, numberOfUpvotes} = blueprintSummary;
+	const {key, title, imgurImage, numberOfUpvotes} = blueprintSummary;
 
 	const mine = my.blueprints.data.includes(key);
 	const favorite = my.favorites.data.includes(key);
@@ -23,7 +24,9 @@ const BlueprintThumbnail = ({blueprintSummary, my}) =>
 			{title}
 		</Tooltip>
 	);
-	const imageUrl = buildImageUrl(imgurId, imgurType, 'b');
+	const imageUrl = imgurImage ? 
+		buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'b'):
+		NoAvailableImage;
 
 	const mineStyle     = mine ? 'text-warning' : 'text-default';
 	const favoriteStyle = favorite ? 'text-warning' : 'text-default';
