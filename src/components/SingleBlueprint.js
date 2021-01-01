@@ -753,6 +753,11 @@ class SingleBlueprint extends PureComponent
 			return eachBlueprint.upgrade_planner;
 		}
 
+		if (eachBlueprint.deconstruction_planner)
+		{
+			return eachBlueprint.deconstruction_planner;
+		}
+
 		return eachBlueprint.blueprint_book;
 	}
 }
