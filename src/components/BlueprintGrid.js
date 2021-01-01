@@ -7,7 +7,6 @@ import React, {PureComponent} from 'react';
 import Button                 from 'react-bootstrap/Button';
 import Col                    from 'react-bootstrap/Col';
 import Container              from 'react-bootstrap/Container';
-import Jumbotron              from 'react-bootstrap/Jumbotron';
 import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
@@ -94,12 +93,12 @@ class BlueprintGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<Jumbotron>
+				<div className="p-5 rounded-lg jumbotron">
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
 					</h1>
-				</Jumbotron>
+				</div>
 			);
 		}
 

@@ -10,7 +10,7 @@ import forEach                from 'lodash/forEach';
 import isEmpty                from 'lodash/isEmpty';
 import isEqual                from 'lodash/isEqual';
 import some                   from 'lodash/some';
-import marked                 from 'marked';
+import {marked}               from 'marked';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
 import Alert                  from 'react-bootstrap/Alert';

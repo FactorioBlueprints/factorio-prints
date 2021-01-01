@@ -28,7 +28,7 @@ import has                       from 'lodash/has';
 import isEmpty                   from 'lodash/isEmpty';
 import isEqual                   from 'lodash/isEqual';
 import range                     from 'lodash/range';
-import marked                    from 'marked';
+import {marked}                  from 'marked';
 import moment                    from 'moment';
 import PropTypes                 from 'prop-types';
 import React, {PureComponent}    from 'react';
@@ -38,7 +38,6 @@ import Card                      from 'react-bootstrap/Card';
 import Col                       from 'react-bootstrap/Col';
 import Container                 from 'react-bootstrap/Container';
 import Image                     from 'react-bootstrap/Image';
-import Jumbotron                 from 'react-bootstrap/Jumbotron';
 import Row                       from 'react-bootstrap/Row';
 import Table                     from 'react-bootstrap/Table';
 import CopyToClipboard           from 'react-copy-to-clipboard';
@@ -320,12 +319,12 @@ class SingleBlueprint extends PureComponent
 			{
 				return (
 					<DocumentTitle title='Factorio Prints: Loading Data'>
-						<Jumbotron>
+						<div className="p-5 rounded-lg jumbotron">
 							<h1 className='display-4'>
 								<FontAwesomeIcon icon={faCog} spin />
 								{' Loading data'}
 							</h1>
-						</Jumbotron>
+						</div>
 					</DocumentTitle>
 				);
 			}

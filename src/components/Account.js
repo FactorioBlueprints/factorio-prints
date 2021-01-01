@@ -8,7 +8,6 @@ import Col                    from 'react-bootstrap/Col';
 import Container              from 'react-bootstrap/Container';
 import Form                   from 'react-bootstrap/Form';
 import FormControl            from 'react-bootstrap/FormControl';
-import Jumbotron              from 'react-bootstrap/Jumbotron';
 import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
@@ -91,14 +90,14 @@ class Account extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<Jumbotron>
+				<div className="p-5 rounded-lg jumbotron">
 					<h1 className='display-4'>
 						{'Account Settings'}
 					</h1>
 					<p className='lead'>
 						{'Please log in with Google or GitHub in order to edit your account settings.'}
 					</p>
-				</Jumbotron>
+				</div>
 			);
 		}
 

@@ -4,7 +4,6 @@ import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
 import Button                 from 'react-bootstrap/Button';
-import 'react-select/dist/react-select.css';
 
 export default class TagSuggestionButton extends PureComponent
 {

@@ -2,11 +2,10 @@ import {faGithub, faReddit} from '@fortawesome/free-brands-svg-icons';
 import {FontAwesomeIcon}    from '@fortawesome/react-fontawesome';
 
 import React     from 'react';
-import Jumbotron from 'react-bootstrap/Jumbotron';
 
 const KnownIssues = () =>
 	(
-		<Jumbotron>
+		<div className="p-5 rounded-lg jumbotron">
 			<h1 className='display-4'>
 				{'Check out '}
 				<a href='https://www.factorio.school/'>Factorio School</a>
@@ -29,7 +28,7 @@ const KnownIssues = () =>
 					<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
 				</a>
 			</p>
-		</Jumbotron>
+		</div>
 	);
 
 export default KnownIssues;

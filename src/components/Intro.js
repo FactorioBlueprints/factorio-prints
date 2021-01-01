@@ -3,7 +3,6 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import isEmpty from 'lodash/isEmpty';
 
 import React     from 'react';
-import Jumbotron from 'react-bootstrap/Jumbotron';
 
 import {connect}            from 'react-redux';
 import {bindActionCreators} from 'redux';
@@ -20,7 +19,7 @@ const Intro = ({user}) =>
 	}
 
 	return (
-		<Jumbotron>
+		<div className="p-5 rounded-lg jumbotron">
 			<h1 className='display-4'>
 				{'Factorio Prints'}
 			</h1>
@@ -53,7 +52,7 @@ const Intro = ({user}) =>
 					{'Killkrog\'s Blueprint Manager'}
 				</a>
 			</p>
-		</Jumbotron>
+		</div>
 	);
 };
 

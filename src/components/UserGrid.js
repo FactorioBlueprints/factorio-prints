@@ -4,7 +4,6 @@ import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
 import Container              from 'react-bootstrap/Container';
-import Jumbotron              from 'react-bootstrap/Jumbotron';
 import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
@@ -62,12 +61,12 @@ class UserGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading && (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading))
 		{
 			return (
-				<Jumbotron>
+				<div className="p-5 rounded-lg jumbotron">
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
 					</h1>
-				</Jumbotron>
+				</div>
 			);
 		}
 

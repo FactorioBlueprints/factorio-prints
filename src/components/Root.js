@@ -10,9 +10,9 @@ import {authStateChanged} from '../actions/actionCreators';
 import {app}              from '../base';
 import Account            from './Account';
 
-import BlueprintGrid     from './BlueprintGrid';
-import Contact           from './Contact';
-import Create            from './Create';
+import BlueprintGrid from './BlueprintGrid';
+import Chat          from './Chat';
+import Create        from './Create';
 import EditBlueprint     from './EditBlueprint';
 import Header            from './Header';
 import Intro             from './Intro';
@@ -94,10 +94,9 @@ class Root extends PureComponent
 							<Route path='/blueprints' exact component={BlueprintGrid} />
 							<Route path='/top' exact component={MostFavoritedGrid} />
 							<Route path='/create' exact component={Create} />
-
 							<Route path='/favorites' exact component={FavoritesGrid} />
 							<Route path='/knownIssues' exact component={KnownIssues} />
-							<Route path='/contact' exact component={Contact} />
+							<Route path='/chat' exact component={Chat} />
 							<Route path='/account' exact component={Account} />
 							<Route path='/view/:blueprintId' component={SingleBlueprint} />
 							<Route path='/edit/:blueprintId' component={EditBlueprint} />

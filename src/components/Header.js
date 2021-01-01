@@ -1,9 +1,10 @@
-import {faGithub, faGoogle}   from '@fortawesome/free-brands-svg-icons';
+import {faDiscord, faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
+
 import {
+	faBug,
 	faClock,
 	faCogs,
-	faEnvelope,
-	faBug,
+	faDonate,
 	faHeart,
 	faPlusSquare,
 	faSignInAlt,
@@ -11,7 +12,8 @@ import {
 	faTrophy,
 	faUser,
 	faWrench,
-}                             from '@fortawesome/free-solid-svg-icons';
+} from '@fortawesome/free-solid-svg-icons';
+
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import firebase               from 'firebase/app';
@@ -27,11 +29,9 @@ import {connect}              from 'react-redux';
 import {Link}                 from 'react-router-dom';
 import {bindActionCreators}   from 'redux';
 import {app}                  from '../base';
-import {
-	historySchema,
-	locationSchema,
-}                             from '../propTypes';
-import * as selectors         from '../selectors';
+
+import {historySchema, locationSchema} from '../propTypes';
+import * as selectors                  from '../selectors';
 
 class Header extends PureComponent
 {
@@ -191,9 +191,13 @@ class Header extends PureComponent
 							<FontAwesomeIcon icon={faBug} size='lg' fixedWidth />
 							{' Known Issues'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/contact' to='/contact' className='text-light'>
-							<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
-							{' Contact me'}
+						<Nav.Link as={Link} href='/chat' to='/chat' className='text-light'>
+							<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
+							{' Chat'}
+						</Nav.Link>
+						<Nav.Link href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target="_blank" rel="noopener noreferrer">
+							<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
+							{' Donate'}
 						</Nav.Link>
 					</Nav>
 					<Nav className='mr-sm-2' justify>

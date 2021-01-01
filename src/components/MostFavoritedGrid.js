@@ -8,7 +8,6 @@ import Button                 from 'react-bootstrap/Button';
 import ButtonToolbar          from 'react-bootstrap/ButtonToolbar';
 import Col                    from 'react-bootstrap/Col';
 import Container              from 'react-bootstrap/Container';
-import Jumbotron              from 'react-bootstrap/Jumbotron';
 import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
@@ -87,12 +86,12 @@ class MostFavoritedGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<Jumbotron>
+				<div className="p-5 rounded-lg jumbotron">
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}
 					</h1>
-				</Jumbotron>
+				</div>
 			);
 		}
 
