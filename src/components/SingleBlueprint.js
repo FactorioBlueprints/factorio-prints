@@ -257,20 +257,6 @@ class SingleBlueprint extends PureComponent
 		)(result);
 	};
 
-	renderFavoriteButton = () =>
-	{
-		const myFavorite = includes(this.props.my.favorites.data, this.props.id);
-		const heart      = myFavorite ? faHeart : regularHeart;
-		const iconClass  = myFavorite ? 'text-warning' : 'text-default';
-
-		return (
-			<Button size='lg'>
-				<FontAwesomeIcon icon={heart} className={iconClass} />
-				{' Favorite'}
-			</Button>
-		);
-	};
-
 	render()
 	{
 		const {blueprint} = this.props;
@@ -449,6 +435,8 @@ class SingleBlueprint extends PureComponent
 															{
 																entitiesWithIcons[pair[0]]
 																	? <img
+																		height={'32px'}
+																		width={'32px'}
 																		src={`/icons/${pair[0]}.png`}
 																		alt={pair[0]}
 																	/>
@@ -471,6 +459,8 @@ class SingleBlueprint extends PureComponent
 															{
 																entitiesWithIcons[pair[0]]
 																	? <img
+																		height={'32px'}
+																		width={'32px'}
 																		src={`/icons/${pair[0]}.png`}
 																		alt={pair[0]}
 																	/>
@@ -521,6 +511,8 @@ class SingleBlueprint extends PureComponent
 																	{
 																		entitiesWithIcons[iconName]
 																			? <img
+																				height={'32px'}
+																				width={'32px'}
 																				src={`/icons/${iconName}.png`}
 																				alt={iconName}
 																			/>
@@ -658,6 +650,8 @@ class SingleBlueprint extends PureComponent
 																			{
 																				entitiesWithIcons[iconName]
 																					? <img
+																						height={'32px'}
+																						width={'32px'}
 																						src={`/icons/${iconName}.png`}
 																						alt={iconName}
 																					/>
@@ -700,6 +694,8 @@ class SingleBlueprint extends PureComponent
 															{
 																entitiesWithIcons[from.name]
 																	? <img
+																		height={'32px'}
+																		width={'32px'}
 																		src={`/icons/${from.name}.png`}
 																		alt={from.name}
 																	/>
@@ -710,6 +706,8 @@ class SingleBlueprint extends PureComponent
 															{
 																entitiesWithIcons[to.name]
 																	? <img
+																		height={'32px'}
+																		width={'32px'}
 																		src={`/icons/${to.name}.png`}
 																		alt={to.name}
 																	/>

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "homepage": "https://www.factorio.school/",
+  "proxy": "http://localhost:8080",
   "devDependencies": {
     "autoprefixer-stylus": "1.0.0",
     "babel-cli": "6.26.0",
@@ -17,6 +18,7 @@
     "eslint-plugin-lodash": "7.1.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-react": "7.20.6",
+    "eslint-plugin-react-hooks": "4.2.0",
     "react-scripts": "4.0.2",
     "stylus": "0.54.8"
   },

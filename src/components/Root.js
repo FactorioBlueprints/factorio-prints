@@ -17,6 +17,8 @@ import Account           from './Account';
 import BlueprintGrid     from './BlueprintGrid';
 import BlueprintTitles   from './BlueprintTitles';
 import Contact           from './Contact';
+import Create            from './Create';
+import EditBlueprint     from './EditBlueprint';
 import Header            from './Header';
 import Intro             from './Intro';
 import MostFavoritedGrid from './MostFavoritedGrid';
@@ -89,10 +91,12 @@ class Root extends PureComponent
 									<Route path='/' exact render={this.renderIntro} />
 									<Route path='/blueprints' exact component={BlueprintGrid} />
 									<Route path='/top' exact component={MostFavoritedGrid} />
+									<Route path='/create' exact component={Create} />
 									<Route path='/favorites' exact component={FavoritesGrid} />
 									<Route path='/contact' exact component={Contact} />
 									<Route path='/account' exact component={Account} />
 									<Route path='/view/:blueprintId' component={SingleBlueprint} />
+									<Route path='/edit/:blueprintId' component={EditBlueprint} />
 									<Route path='/titles/:blueprintKey' component={BlueprintTitles} />
 									<Route path='/user/:userId' component={UserGrid} />
 									<Route path='/tagged/:tag' render={this.renderTag} />
