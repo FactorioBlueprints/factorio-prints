@@ -15,8 +15,6 @@
   ],
   "extends": [
     "react-app",
-    "eslint:all",
-    "plugin:react/all",
     "plugin:lodash/recommended",
     "plugin:import/errors",
     "plugin:import/warnings",
@@ -35,26 +33,25 @@
     "brace-style": ["error", "allman"],
     // implicit-arrow-linebreak conflicts with brace-style allman
     "implicit-arrow-linebreak": "off",
-    "padded-blocks": ["error", "never"],
+    "padded-blocks": ["warn", "never"],
 
     // Specify whether double or single quotes should be used in JSX attributes
     // http://eslint.org/docs/rules/jsx-quotes
     "jsx-quotes": ["error", "prefer-single"],
 
     "quote-props": ["error", "consistent-as-needed", {"numbers": true}],
-    "spaced-comment"             : ["error", "always", {"block": {"balanced": true}}],
+    "spaced-comment"             : ["warn", "always", {"block": {"balanced": true}}],
     "eqeqeq"                     : ["error", "smart"],
     "one-var"                    : ["error", "never"],
-    "comma-dangle"               : ["error", "always-multiline"],
+    "comma-dangle"               : ["warn", "always-multiline"],
     "object-property-newline"    : ["error", {"allowMultiplePropertiesPerLine": true}],
     "object-curly-newline"       : ["off", {"minProperties": 2}],
     "no-extra-parens"            : ["error", "all", { "ignoreJSX": "multi-line" }],
-    "semi"                       : "error",
+    "semi"                       : "warn",
     "no-useless-constructor"     : "error",
-    "operator-linebreak"         : ["error", "before"],
+    "operator-linebreak"         : ["warn", "before"],
     "arrow-spacing"              : "error",
-    "camelcase"                  : ["error", {
-      "properties": "never"}],
+    "camelcase"                  : ["warn", {"properties": "never"}],
 
     "generator-star-spacing"        : ["error", "neither"],
     "array-bracket-spacing"         : "error",
@@ -114,7 +111,7 @@
 
     // Prevent missing parentheses around multilines JSX
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-wrap-multilines.md
-    "react/jsx-wrap-multilines": ["error", {
+    "react/jsx-wrap-multilines": ["warn", {
       "declaration": true,
       "assignment": true,
       "return": true
@@ -123,7 +120,7 @@
 
     // require a shouldComponentUpdate method, or PureRenderMixin
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/require-optimization.md
-    "react/require-optimization": ["error", { "allowDecorators": [] }],
+    "react/require-optimization": ["warn", { "allowDecorators": [] }],
 
     // Prevent usage of setState
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-set-state.md
@@ -148,17 +145,17 @@
 
     // Enforce JSX indentation
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-indent.md
-    "react/jsx-indent": ["error", "tab"],
+    "react/jsx-indent": ["warn", "tab"],
     // "react/jsx-indent": ["error", 4],
 
     // Validate props indentation in JSX
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-indent-props.md
-    "react/jsx-indent-props"     : [ "error", "tab"],
+    "react/jsx-indent-props"     : [ "warn", "tab"],
     // "indent": [ "error", 4, {"SwitchCase": 1}],
 
     // Forbid certain propTypes (any, array, object)
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/forbid-prop-types.md
-    "react/forbid-prop-types"    : ["error", { "forbid": ["any", "array", "object"] }],
+    "react/forbid-prop-types"    : ["warn", { "forbid": ["any", "array", "object"] }],
 
     // Enforce boolean attributes notation in JSX
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-boolean-value.md
@@ -250,7 +247,7 @@
     // Enforce component methods order
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/sort-comp.md
     "react/sort-comp": [
-      "error",
+      "warn",
       {
         "order" : [
           "static-methods",
@@ -408,14 +405,14 @@
 
     "indent"                     : [ "error", "tab",
       {"SwitchCase": 1}],
-    "key-spacing"                : ["error", {"align": "colon"}],
+    "key-spacing"                : ["warn", {"align": "colon"}],
     "no-multi-spaces"            : "off",
     "no-tabs"                    : "off",
 
     "no-warning-comments"        : "warn",
     "id-length"                  : "warn",
 
-    "class-methods-use-this"     : ["error", {
+    "class-methods-use-this"     : ["warn", {
       "exceptMethods": [
         "render",
         "getInitialState",
@@ -462,40 +459,42 @@
     "import/no-relative-parent-imports": "off",
 
     "no-process-env": "off",
-    "babel/camelcase": "error",
-    "babel/new-cap": "error",
-    "babel/no-invalid-this": "error",
-    "babel/no-unused-expressions": "error",
-    "babel/semi": "error",
-    "babel/valid-typeof": "error",
-    "import/dynamic-import-chunkname": "error",
-    "import/exports-last": "error",
-    "import/extensions": "error",
-    "import/group-exports": "error",
-    "import/max-dependencies": "error",
-    "import/newline-after-import": "error",
-    "import/no-absolute-path": "error",
-    "import/no-anonymous-default-export": "error",
-    "import/no-commonjs": "error",
-    "import/no-cycle": "error",
+    "babel/camelcase": "warn",
+    "babel/new-cap": "warn",
+    "babel/no-invalid-this": "warn",
+    "babel/no-unused-expressions": "warn",
+    "babel/semi": "warn",
+    "babel/valid-typeof": "warn",
+    "import/dynamic-import-chunkname": "warn",
+    "import/exports-last": "warn",
+    "import/extensions": "warn",
+    "import/max-dependencies": "warn",
+    "import/newline-after-import": "warn",
+    "import/no-absolute-path": "warn",
+    "import/no-anonymous-default-export": "warn",
+    "import/no-commonjs": "warn",
+    "import/no-cycle": "warn",
     "import/no-default-export": "off",
-    "import/prefer-default-export": "error",
-    "import/no-deprecated": "error",
-    "import/no-dynamic-require": "error",
-    "import/no-extraneous-dependencies": "error",
-    "import/no-mutable-exports": "error",
-    "import/no-named-default": "error",
-    "import/no-named-export": "error",
-    "import/no-namespace": "error",
-    "import/no-nodejs-modules": "error",
-    "import/no-restricted-paths": "error",
-    "import/no-self-import": "error",
-    "import/no-unassigned-import": "error",
-    "import/no-unused-modules": "error",
-    "import/no-useless-path-segments": "error",
-    "import/order": "error",
-    "import/unambiguous": "error",
-    "promise/prefer-await-to-callbacks": "error",
-    "promise/prefer-await-to-then": "error"
+    "import/prefer-default-export": "warn",
+    "import/no-deprecated": "warn",
+    "import/no-dynamic-require": "warn",
+    "import/no-extraneous-dependencies": "warn",
+    "import/no-mutable-exports": "warn",
+    "import/no-named-default": "warn",
+    "import/no-namespace": "warn",
+    "import/no-nodejs-modules": "warn",
+    "import/no-restricted-paths": "warn",
+    "import/no-self-import": "warn",
+    "import/no-unassigned-import": "off",
+    "import/no-unused-modules": "warn",
+    "import/no-useless-path-segments": "warn",
+    "import/order": "warn",
+    "import/unambiguous": "warn",
+    "promise/prefer-await-to-callbacks": "warn",
+    "promise/prefer-await-to-then": "warn",
+    "template-curly-spacing": "off",
+    "jsx-a11y/no-autofocus": "warn",
+    "promise/always-return": "warn",
+    "promise/catch-or-return": "warn"
   }
 }
