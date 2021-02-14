@@ -77,6 +77,8 @@ export const FETCHING_TAGS = 'FETCHING_TAGS';
 export const RECEIVED_TAGS = 'RECEIVED_TAGS';
 export const TAGS_FAILED   = 'TAGS_FAILED';
 
+export const FETCH_MODERATORS    = 'FETCH_MODERATORS';
+
 // TODO: Where is this used?
 export const FETCH_USER_BLUEPRINTS_SUMMARIES         = 'FETCH_USER_BLUEPRINTS_SUMMARIES';
 export const SUBSCRIBE_TO_USER                       = 'SUBSCRIBE_TO_USER';
