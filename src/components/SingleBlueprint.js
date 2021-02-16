@@ -58,6 +58,7 @@ import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
 import myPropTypes         from '../propTypes/myPropTypes';
 import * as selectors      from '../selectors';
+import FavoriteButton      from './FavoriteButton';
 
 import GoogleAd from './GoogleAd';
 import NoMatch  from './NoMatch';
@@ -263,7 +264,7 @@ class SingleBlueprint extends PureComponent
 		const iconClass  = myFavorite ? 'text-warning' : 'text-default';
 
 		return (
-			<Button size='lg' disabled>
+			<Button size='lg'>
 				<FontAwesomeIcon icon={heart} className={iconClass} />
 				{' Favorite'}
 			</Button>
@@ -323,8 +324,7 @@ class SingleBlueprint extends PureComponent
 						</Col>
 						<Col md={3} className='d-flex align-items-center justify-content-end'>
 							{/*	{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}*/}
-							{/*	{!this.state.ownedByCurrentUser && this.renderFavoriteButton()}*/}
-							{this.renderFavoriteButton()}
+							{!this.state.ownedByCurrentUser && <FavoriteButton blueprintKey={this.props.id} />}
 						</Col>
 					</Row>
 					<Row>
