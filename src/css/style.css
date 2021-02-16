@@ -114,6 +114,10 @@ tbody > tr > td.icon {
 td.number {
   text-align: end;
 }
+.item-icon > img {
+  border: 1px solid #000;
+  border-radius: 4px;
+}
 .btn-toolbar {
   margin: 0.5em;
 }

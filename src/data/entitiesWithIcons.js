@@ -1,4 +1,5 @@
 const entitiesWithIcons = {
+	'blank'                           : true,
 	'accumulator'                     : true,
 	'advanced-circuit'                : true,
 	'advanced-electronics'            : true,

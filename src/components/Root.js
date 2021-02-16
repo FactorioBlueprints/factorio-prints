@@ -13,8 +13,9 @@ import UserContext        from '../context/userContext';
 import {authStateChanged} from '../actions/actionCreators';
 import {app}              from '../base';
 
-import Account            from './Account';
+import Account           from './Account';
 import BlueprintGrid     from './BlueprintGrid';
+import BlueprintTitles   from './BlueprintTitles';
 import Contact           from './Contact';
 import Header            from './Header';
 import Intro             from './Intro';
@@ -92,6 +93,7 @@ class Root extends PureComponent
 									<Route path='/contact' exact component={Contact} />
 									<Route path='/account' exact component={Account} />
 									<Route path='/view/:blueprintId' component={SingleBlueprint} />
+									<Route path='/titles/:blueprintKey' component={BlueprintTitles} />
 									<Route path='/user/:userId' component={UserGrid} />
 									<Route path='/tagged/:tag' render={this.renderTag} />
 									<Route component={NoMatch} />
