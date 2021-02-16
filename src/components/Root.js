@@ -1,15 +1,19 @@
-import {forbidExtraProps}             from 'airbnb-prop-types';
-import PropTypes                      from 'prop-types';
-import React, {PureComponent}         from 'react';
-import DocumentTitle                  from 'react-document-title';
-import {connect}                      from 'react-redux';
-import {BrowserRouter, Route, Switch} from 'react-router-dom';
-import {bindActionCreators}           from 'redux';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import PropTypes              from 'prop-types';
+import React, {PureComponent} from 'react';
+import DocumentTitle          from 'react-document-title';
 
+import {QueryClient, QueryClientProvider} from 'react-query';
+import {ReactQueryDevtools}               from 'react-query/devtools';
+import {connect}                          from 'react-redux';
+import {BrowserRouter, Route, Switch}     from 'react-router-dom';
+import {bindActionCreators}               from 'redux';
+
+import UserContext        from '../context/userContext';
 import {authStateChanged} from '../actions/actionCreators';
 import {app}              from '../base';
-import Account            from './Account';
 
+import Account            from './Account';
 import BlueprintGrid     from './BlueprintGrid';
 import Contact           from './Contact';
 import Header            from './Header';
@@ -20,11 +24,21 @@ import NoMatch           from './NoMatch';
 import SingleBlueprint   from './SingleBlueprint';
 import UserGrid          from './UserGrid';
 
+const queryClient = new QueryClient();
+
 class Root extends PureComponent
 {
 	static propTypes = forbidExtraProps({
 		authStateChanged: PropTypes.func.isRequired,
 	});
+
+	constructor(props)
+	{
+		super(props);
+		this.state = {
+			idToken: undefined,
+		};
+	}
 
 	UNSAFE_componentWillMount()
 	{
@@ -34,13 +48,15 @@ class Root extends PureComponent
 				if (!user)
 				{
 					this.props.authStateChanged(user, null);
+					this.setState({idToken: undefined});
 					return;
 				}
 
 				const idToken = await user.getIdToken();
 				this.props.authStateChanged(user, idToken);
+				this.setState({idToken});
 			},
-			(...args) => console.log('Root.componentWillMount', args)
+			(...args) => console.log('Root.componentWillMount', args),
 		);
 	}
 
@@ -62,25 +78,30 @@ class Root extends PureComponent
 	render()
 	{
 		return (
-			<DocumentTitle title='Factorio Prints'>
-				<BrowserRouter>
-					<div>
-						<Route path='/' component={Header} />
-						<Switch>
-							<Route path='/' exact render={this.renderIntro} />
-							<Route path='/blueprints' exact component={BlueprintGrid} />
-							<Route path='/top' exact component={MostFavoritedGrid} />
-							<Route path='/favorites' exact component={FavoritesGrid} />
-							<Route path='/contact' exact component={Contact} />
-							<Route path='/account' exact component={Account} />
-							<Route path='/view/:blueprintId' component={SingleBlueprint} />
-							<Route path='/user/:userId' component={UserGrid} />
-							<Route path='/tagged/:tag' render={this.renderTag} />
-							<Route component={NoMatch} />
-						</Switch>
-					</div>
-				</BrowserRouter>
-			</DocumentTitle>
+			<QueryClientProvider client={queryClient}>
+				<UserContext.Provider value={{idToken: this.state.idToken}}>
+					<DocumentTitle title='Factorio Prints'>
+						<BrowserRouter>
+							<div>
+								<Route path='/' component={Header} />
+								<Switch>
+									<Route path='/' exact render={this.renderIntro} />
+									<Route path='/blueprints' exact component={BlueprintGrid} />
+									<Route path='/top' exact component={MostFavoritedGrid} />
+									<Route path='/favorites' exact component={FavoritesGrid} />
+									<Route path='/contact' exact component={Contact} />
+									<Route path='/account' exact component={Account} />
+									<Route path='/view/:blueprintId' component={SingleBlueprint} />
+									<Route path='/user/:userId' component={UserGrid} />
+									<Route path='/tagged/:tag' render={this.renderTag} />
+									<Route component={NoMatch} />
+								</Switch>
+							</div>
+						</BrowserRouter>
+					</DocumentTitle>
+				</UserContext.Provider>
+				<ReactQueryDevtools initialIsOpen />
+			</QueryClientProvider>
 		);
 	}
 }
