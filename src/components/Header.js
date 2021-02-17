@@ -110,9 +110,7 @@ class Header extends PureComponent
 				<Dropdown className='text-light'>
 					<Dropdown.Toggle variant='link'>
 						Account Settings
-
-
-     </Dropdown.Toggle>
+					</Dropdown.Toggle>
 					<Dropdown.Menu className='dropdown-menu-right'>
 						<Dropdown.Item className='user-photo-container'>
 							{this.getDisplayName()}
