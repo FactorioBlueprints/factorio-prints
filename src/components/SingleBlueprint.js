@@ -62,6 +62,7 @@ import FavoriteButton      from './FavoriteButton';
 
 import GoogleAd                  from './GoogleAd';
 import NoMatch                   from './NoMatch';
+import BlueprintStringCard       from './single/BlueprintStringCard';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
 
 const renderer = new marked.Renderer();
@@ -570,16 +571,7 @@ class SingleBlueprint extends PureComponent
 								</Card.Body>
 							</Card>
 							{
-								this.state.showBlueprint && <Card>
-									<Card.Header>
-										Blueprint String
-									</Card.Header>
-									<Card.Body>
-										<div className='blueprintString'>
-											{blueprint.blueprintString.blueprintString}
-										</div>
-									</Card.Body>
-								</Card>
+								this.state.showBlueprint && <BlueprintStringCard blueprintKey={this.props.id} />
 							}
 							{
 								this.state.showJson && <Card>
