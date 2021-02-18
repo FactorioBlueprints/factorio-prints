@@ -26,7 +26,16 @@ import NoMatch           from './NoMatch';
 import SingleBlueprint   from './SingleBlueprint';
 import UserGrid          from './UserGrid';
 
-const queryClient = new QueryClient();
+// TODO: Add a top-level onError
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			cacheTime: 1000 * 60 * 60 * 1, // 1 hour
+			staleTime: 1000 * 60 * 5, // 5 minutes
+		},
+	},
+});
+queryClient.getQueryDefaults()
 
 class Root extends PureComponent
 {
