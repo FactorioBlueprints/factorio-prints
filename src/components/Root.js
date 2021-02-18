@@ -8,14 +8,13 @@ import {ReactQueryDevtools}               from 'react-query/devtools';
 import {connect}                          from 'react-redux';
 import {BrowserRouter, Route, Switch}     from 'react-router-dom';
 import {bindActionCreators}               from 'redux';
+import {authStateChanged}                 from '../actions/actionCreators';
+import {app}                              from '../base';
 
-import UserContext        from '../context/userContext';
-import {authStateChanged} from '../actions/actionCreators';
-import {app}              from '../base';
+import UserContext from '../context/userContext';
 
 import Account           from './Account';
 import BlueprintGrid     from './BlueprintGrid';
-import BlueprintTitles   from './BlueprintTitles';
 import Contact           from './Contact';
 import Create            from './Create';
 import EditBlueprint     from './EditBlueprint';
@@ -97,7 +96,6 @@ class Root extends PureComponent
 									<Route path='/account' exact component={Account} />
 									<Route path='/view/:blueprintId' component={SingleBlueprint} />
 									<Route path='/edit/:blueprintId' component={EditBlueprint} />
-									<Route path='/titles/:blueprintKey' component={BlueprintTitles} />
 									<Route path='/user/:userId' component={UserGrid} />
 									<Route path='/tagged/:tag' render={this.renderTag} />
 									<Route component={NoMatch} />

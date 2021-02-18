@@ -58,6 +58,7 @@ import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
 import myPropTypes         from '../propTypes/myPropTypes';
 import * as selectors      from '../selectors';
+import BlueprintTitles     from './BlueprintTitles';
 import FavoriteButton      from './FavoriteButton';
 
 import GoogleAd                  from './GoogleAd';
@@ -594,75 +595,6 @@ class SingleBlueprint extends PureComponent
 								</Card>
 							}
 							{
-								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBook()
-								&& <Card>
-									<Card.Header>
-										Extra Info
-									</Card.Header>
-									<Table bordered hover>
-										<colgroup>
-											<col span='1' style={{width: '1%'}} />
-											<col span='1' style={{width: '1%'}} />
-											<col span='1' style={{width: '1%'}} />
-											<col span='1' style={{width: '1%'}} />
-											<col span='1' />
-										</colgroup>
-										<tbody>
-											<tr>
-												<td colSpan={4}>
-													{'Book'}
-												</td>
-												<td>
-													{this.state.v15Decoded.blueprint_book.label}
-												</td>
-											</tr>
-											{
-												this.state.v15Decoded.blueprint_book.blueprints.map((eachBlueprint, blueprintIndex) => (
-													<tr key={blueprintIndex}>
-														{
-															range(4).map((iconIndex) =>
-															{
-																const entry = this.getBookEntry(eachBlueprint);
-																if (entry.icons
-																	&& entry.icons.length > iconIndex
-																	&& entry.icons[iconIndex] !== null)
-																{
-																	const icon = entry.icons[iconIndex];
-																	// eslint-disable-next-line
-																	const iconName = icon.name || icon.signal && icon.signal.name;
-																	return (
-																		<td
-																			className={`icon icon-${iconName}`}
-																			key={iconIndex}
-																		>
-																			{
-																				entitiesWithIcons[iconName]
-																					? <img
-																						height={'32px'}
-																						width={'32px'}
-																						src={`/icons/${iconName}.png`}
-																						alt={iconName}
-																					/>
-																					: ''
-																			}
-																		</td>
-																	);
-																}
-																return <td className='icon' key={iconIndex} />;
-															})
-														}
-														<td>
-															{/* Old 0.14 blueprint books could have empty slots */}
-															{eachBlueprint.blueprint ? eachBlueprint.blueprint.label : 'Empty slot in book'}
-														</td>
-													</tr>
-												))
-											}
-										</tbody>
-									</Table>
-								</Card>
-							}
-							{
 								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isUpgradePlanner()
 								&& <Card>
 									<Card.Header>
@@ -709,6 +641,14 @@ class SingleBlueprint extends PureComponent
 									</Table>
 								</Card>
 							}
+							<Card>
+								<Card.Header>
+									Blueprint Titles
+								</Card.Header>
+								<Card.Body>
+									<BlueprintTitles blueprintKey={this.props.id} />
+								</Card.Body>
+							</Card>
 						</Col>
 					</Row>
 					{/*<Row className='w-100'>*/}
