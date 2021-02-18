@@ -60,8 +60,9 @@ import myPropTypes         from '../propTypes/myPropTypes';
 import * as selectors      from '../selectors';
 import FavoriteButton      from './FavoriteButton';
 
-import GoogleAd from './GoogleAd';
-import NoMatch  from './NoMatch';
+import GoogleAd                  from './GoogleAd';
+import NoMatch                   from './NoMatch';
+import CopyBlueprintStringButton from './single/CopyBlueprintButton';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -540,12 +541,7 @@ class SingleBlueprint extends PureComponent
 								<Card.Body>
 									<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
 
-									<CopyToClipboard text={blueprint.blueprintString.blueprintString}>
-										<Button type='button' variant='warning'>
-											<FontAwesomeIcon icon={faClipboard} size='lg' fixedWidth />
-											{' Copy to Clipboard'}
-										</Button>
-									</CopyToClipboard>
+									<CopyBlueprintStringButton blueprintKey={this.props.id} />
 									<Button type='button' onClick={this.handleShowHideBase64}>
 										{
 											this.state.showBlueprint
