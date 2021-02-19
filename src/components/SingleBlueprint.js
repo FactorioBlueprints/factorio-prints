@@ -156,7 +156,7 @@ class SingleBlueprint extends PureComponent
 		// Blueprint author
 		this.props.subscribeToUserDisplayName(userId);
 
-		const thumbnail          = buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
+		const thumbnail          = imgurImage && buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
 		const renderedMarkdown   = marked(descriptionMarkdown);
 		const ownedByCurrentUser = props.user && props.user.uid === userId;
 		const parsedBlueprint    = this.parseBlueprint(blueprintString.blueprintString);
@@ -316,7 +316,7 @@ class SingleBlueprint extends PureComponent
 					</Row>
 					<Row>
 						<Col md={4}>
-							<a
+							{imgurImage && <a
 								href={`http://imgur.com/${imgurImage.imgurId}`}
 								target='_blank'
 								rel='noopener noreferrer'
@@ -327,7 +327,7 @@ class SingleBlueprint extends PureComponent
 									src={this.state.thumbnail}
 									referrerPolicy='no-referrer'
 								/>
-							</a>
+							</a>}
 							{
 								blueprint.tags && blueprint.tags.length > 0 && <Card>
 									<Card.Header>
