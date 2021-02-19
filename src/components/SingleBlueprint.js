@@ -1,51 +1,47 @@
 /* eslint-disable react/no-array-index-key */
 
-import {faHeart as regularHeart} from '@fortawesome/free-regular-svg-icons';
 import {
 	faCalendar,
-	faClipboard,
 	faClock,
+	faCodeBranch,
 	faCog,
-	faLink,
 	faHeart,
+	faLink,
 	faToggleOff,
 	faToggleOn,
 	faUser,
-}                                from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
-import {forbidExtraProps}        from 'airbnb-prop-types';
-import concat                    from 'lodash/concat';
-import flatMap                   from 'lodash/flatMap';
-import forOwn                    from 'lodash/forOwn';
-import countBy                   from 'lodash/fp/countBy';
-import flow                      from 'lodash/fp/flow';
-import reverse                   from 'lodash/fp/reverse';
-import sortBy                    from 'lodash/fp/sortBy';
-import toPairs                   from 'lodash/fp/toPairs';
-import get                       from 'lodash/get';
-import has                       from 'lodash/has';
-import includes                  from 'lodash/includes';
-import isEmpty                   from 'lodash/isEmpty';
-import isEqual                   from 'lodash/isEqual';
-import range                     from 'lodash/range';
-import marked                    from 'marked';
-import moment                    from 'moment';
-import PropTypes                 from 'prop-types';
-import React, {PureComponent}    from 'react';
-import Badge                     from 'react-bootstrap/Badge';
-import Button                    from 'react-bootstrap/Button';
-import Card                      from 'react-bootstrap/Card';
-import Col                       from 'react-bootstrap/Col';
-import Container                 from 'react-bootstrap/Container';
-import Image                     from 'react-bootstrap/Image';
-import Jumbotron                 from 'react-bootstrap/Jumbotron';
-import Row                       from 'react-bootstrap/Row';
-import Table                     from 'react-bootstrap/Table';
-import CopyToClipboard           from 'react-copy-to-clipboard';
-import DocumentTitle             from 'react-document-title';
-import {connect}                 from 'react-redux';
-import {Link}                    from 'react-router-dom';
-import {bindActionCreators}      from 'redux';
+}                             from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import concat                 from 'lodash/concat';
+import flatMap                from 'lodash/flatMap';
+import forOwn                 from 'lodash/forOwn';
+import countBy                from 'lodash/fp/countBy';
+import flow                   from 'lodash/fp/flow';
+import reverse                from 'lodash/fp/reverse';
+import sortBy                 from 'lodash/fp/sortBy';
+import toPairs                from 'lodash/fp/toPairs';
+import get                    from 'lodash/get';
+import has                    from 'lodash/has';
+import isEmpty                from 'lodash/isEmpty';
+import isEqual                from 'lodash/isEqual';
+import marked                 from 'marked';
+import moment                 from 'moment';
+import PropTypes              from 'prop-types';
+import React, {PureComponent} from 'react';
+import Badge                  from 'react-bootstrap/Badge';
+import Button                 from 'react-bootstrap/Button';
+import Card                   from 'react-bootstrap/Card';
+import Col                    from 'react-bootstrap/Col';
+import Container              from 'react-bootstrap/Container';
+import Image                  from 'react-bootstrap/Image';
+import Jumbotron              from 'react-bootstrap/Jumbotron';
+import Row                    from 'react-bootstrap/Row';
+import Table                  from 'react-bootstrap/Table';
+import DocumentTitle          from 'react-document-title';
+import {connect}              from 'react-redux';
+import {Link}                 from 'react-router-dom';
+import {bindActionCreators}   from 'redux';
 
 import {subscribeToBlueprint, subscribeToUserDisplayName} from '../actions/actionCreators';
 
@@ -57,14 +53,15 @@ import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
 import myPropTypes         from '../propTypes/myPropTypes';
-import * as selectors  from '../selectors';
-import BlueprintTitles from './single/BlueprintTitles';
-import FavoriteButton  from './single/FavoriteButton';
+import * as selectors      from '../selectors';
 
 import GoogleAd                  from './GoogleAd';
 import NoMatch                   from './NoMatch';
 import BlueprintStringCard       from './single/BlueprintStringCard';
+import BlueprintTitles           from './single/BlueprintTitles';
+import BlueprintVersion          from './single/BlueprintVersion';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
+import FavoriteButton            from './single/FavoriteButton';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -412,6 +409,15 @@ class SingleBlueprint extends PureComponent
 											</td>
 											<td>
 												{numberOfUpvotes}
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<FontAwesomeIcon icon={faCodeBranch} size='lg' fixedWidth />
+												{' Version'}
+											</td>
+											<td>
+												<BlueprintVersion blueprintKey={this.props.id} />
 											</td>
 										</tr>
 									</tbody>
