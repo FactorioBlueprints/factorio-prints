@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React     from 'react';
 import Card      from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
-import ItemIcon  from './ItemIcon';
+import ItemIcon  from '../ItemIcon';
 
 BlueprintContentHeader.propTypes = {
 	data    : PropTypes.object.isRequired,

@@ -5,7 +5,7 @@ import PropTypes              from 'prop-types';
 import React                  from 'react';
 import Card                   from 'react-bootstrap/Card';
 import {useQuery}             from 'react-query';
-import BlueprintContentHeader from '../BlueprintContentHeader';
+import BlueprintContentHeader from './BlueprintContentHeader';
 
 BlueprintTitles.propTypes = {
 	blueprintKey: PropTypes.string.isRequired,
