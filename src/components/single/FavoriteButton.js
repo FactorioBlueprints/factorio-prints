@@ -5,7 +5,7 @@ import Button              from 'react-bootstrap/Button';
 
 import {useMutation, useQuery, useQueryClient} from 'react-query';
 
-import UserContext  from '../context/userContext';
+import UserContext  from '../../context/userContext';
 import FavoriteIcon from './FavoriteIcon';
 
 function getHeaders(idToken)

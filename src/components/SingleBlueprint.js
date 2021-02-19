@@ -58,8 +58,8 @@ import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
 import myPropTypes         from '../propTypes/myPropTypes';
 import * as selectors      from '../selectors';
-import BlueprintTitles     from './BlueprintTitles';
-import FavoriteButton      from './FavoriteButton';
+import BlueprintTitles from './BlueprintTitles';
+import FavoriteButton  from './single/FavoriteButton';
 
 import GoogleAd                  from './GoogleAd';
 import NoMatch                   from './NoMatch';
