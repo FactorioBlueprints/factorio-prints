@@ -62,6 +62,7 @@ import BlueprintTitles           from './single/BlueprintTitles';
 import BlueprintVersion          from './single/BlueprintVersion';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
 import FavoriteButton            from './single/FavoriteButton';
+import FbeLink                   from './single/FbeLink';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -574,7 +575,7 @@ class SingleBlueprint extends PureComponent
 											}
 										</Button>
 									}
-
+									<FbeLink blueprintKey={this.props.id} />
 								</Card.Body>
 							</Card>
 							{
