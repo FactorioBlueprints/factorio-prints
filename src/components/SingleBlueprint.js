@@ -57,8 +57,8 @@ import {encodeV15ToBase64} from '../parser/decodeFromBase64';
 import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
 import myPropTypes         from '../propTypes/myPropTypes';
-import * as selectors      from '../selectors';
-import BlueprintTitles from './BlueprintTitles';
+import * as selectors  from '../selectors';
+import BlueprintTitles from './single/BlueprintTitles';
 import FavoriteButton  from './single/FavoriteButton';
 
 import GoogleAd                  from './GoogleAd';
