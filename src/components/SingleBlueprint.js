@@ -62,7 +62,8 @@ import BlueprintTitles           from './single/BlueprintTitles';
 import BlueprintVersion          from './single/BlueprintVersion';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
 import FavoriteButton            from './single/FavoriteButton';
-import FbeLink                   from './single/FbeLink';
+import FbeLink               from './single/FbeLink';
+import RequirementsHistogram from './single/RequirementsHistogram';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -208,18 +209,9 @@ class SingleBlueprint extends PureComponent
 		}
 		catch (ignored)
 		{
-			console.log('SingleBlueprint.parseBlueprint', {ignored});
 			return undefined;
 		}
 	};
-
-	entityHistogram = parsedBlueprint =>
-		flow(
-			countBy('name'),
-			toPairs,
-			sortBy(1),
-			reverse,
-		)(concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []));
 
 	getAuthorName = () =>
 	{
@@ -233,29 +225,6 @@ class SingleBlueprint extends PureComponent
 			return displayName;
 		}
 		return '(Anonymous)';
-	};
-
-	itemHistogram = (parsedBlueprint) =>
-	{
-		const result = {};
-		const items  = flatMap(parsedBlueprint.entities, entity => entity.items || []);
-		items.forEach((item) =>
-		{
-			if (has(item, 'item') && has(item, 'count'))
-			{
-				result[item.item] = (result[item.item] || 0) + item.count;
-			}
-			else
-			{
-				forOwn(item, (value, key) => result[key] = (result[key] || 0) + value);
-			}
-		});
-
-		return flow(
-			toPairs,
-			sortBy(1),
-			reverse,
-		)(result);
 	};
 
 	render()
@@ -424,122 +393,7 @@ class SingleBlueprint extends PureComponent
 									</tbody>
 								</Table>
 							</Card>
-							{
-								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBlueprint()
-								&& <Card>
-									<Card.Header>
-										Requirements
-									</Card.Header>
-									<Table bordered hover>
-										<colgroup>
-											<col span='1' style={{width: '1%'}} />
-											<col span='1' style={{width: '1%'}} />
-											<col span='1' />
-										</colgroup>
-
-										<tbody>
-											{
-												this.entityHistogram(this.state.v15Decoded.blueprint).map(pair => (
-													<tr key={pair[0]}>
-														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
-															{
-																entitiesWithIcons[pair[0]]
-																	? <img
-																		height={'32px'}
-																		width={'32px'}
-																		src={`/icons/${pair[0]}.png`}
-																		alt={pair[0]}
-																	/>
-																	: ''
-															}
-														</td>
-														<td className='number'>
-															{pair[1]}
-														</td>
-														<td>
-															{pair[0]}
-														</td>
-													</tr>
-												))
-											}
-											{
-												this.itemHistogram(this.state.v15Decoded.blueprint).map(pair => (
-													<tr key={pair[0]}>
-														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
-															{
-																entitiesWithIcons[pair[0]]
-																	? <img
-																		height={'32px'}
-																		width={'32px'}
-																		src={`/icons/${pair[0]}.png`}
-																		alt={pair[0]}
-																	/>
-																	: ''
-															}
-														</td>
-														<td className='number'>
-															{pair[1]}
-														</td>
-														<td>
-															{pair[0]}
-														</td>
-													</tr>
-												))
-											}
-										</tbody>
-									</Table>
-								</Card>
-							}
-							{
-								this.state.parsedBlueprint && this.state.v15Decoded && this.state.parsedBlueprint.isBlueprint()
-								&& <Card border='secondary'>
-									<Card.Header>
-										Extra Info
-									</Card.Header>
-									<Table bordered hover>
-										<colgroup>
-											<col span='1' style={{width: '1%'}} />
-											<col span='1' />
-										</colgroup>
-
-										<tbody>
-											<tr>
-												<td colSpan={2}>
-													{this.state.v15Decoded.blueprint.label}
-												</td>
-											</tr>
-											{
-												(this.state.v15Decoded.blueprint.icons || [])
-													.filter(icon => icon !== null)
-													.map((icon) =>
-													{
-														// eslint-disable-next-line
-														const iconName = icon.name || icon.signal && icon.signal.name;
-														return (
-															<tr key={icon.index}>
-																<td className={`icon icon-${iconName}`}>
-																	{
-																		entitiesWithIcons[iconName]
-																			? <img
-																				height={'32px'}
-																				width={'32px'}
-																				src={`/icons/${iconName}.png`}
-																				alt={iconName}
-																			/>
-																			: ''
-																	}
-																</td>
-																<td>
-																	{iconName}
-																</td>
-															</tr>
-														);
-													})
-											}
-										</tbody>
-									</Table>
-								</Card>
-							}
+							<RequirementsHistogram blueprintKey={this.props.id} />
 							<GoogleAd />
 						</Col>
 						<Col md={8}>
