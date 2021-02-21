@@ -26,7 +26,7 @@ class SingleBlueprint extends PureComponent
 		return (
 			<EfficientSingleBlueprint
 				blueprintKey={this.props.id}
-				userId={this.props.user.uid}
+				userId={this.props.user?.uid}
 			/>
 		);
 	}
