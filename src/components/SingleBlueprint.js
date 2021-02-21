@@ -45,6 +45,7 @@ import * as selectors      from '../selectors';
 
 import GoogleAd                  from './GoogleAd';
 import NoMatch                   from './NoMatch';
+import BlueprintInfoPanel        from './single/BlueprintInfoPanel';
 import BlueprintMarkdown         from './single/BlueprintMarkdown';
 import BlueprintStringCard       from './single/BlueprintStringCard';
 import BlueprintTitles           from './single/BlueprintTitles';
@@ -242,78 +243,7 @@ class SingleBlueprint extends PureComponent
 						<Col md={4}>
 							<ImgurThumbnail blueprintKey={this.props.id} />
 							<TagsPanel blueprintKey={this.props.id} />
-							<Card>
-								<Card.Header>
-									Info
-								</Card.Header>
-								<Table bordered hover>
-									<tbody>
-										<tr>
-											<td>
-												<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
-												{' Author'}
-											</td>
-											<td>
-												<Link to={`/user/${authorId}`}>
-													{blueprint.author.displayName}
-													{
-														this.state.ownedByCurrentUser
-														&& <span className='pull-right'>
-															<b>
-																{' (You)'}
-															</b>
-														</span>
-													}
-												</Link>
-											</td>
-										</tr>
-										<tr>
-											<td>
-												<FontAwesomeIcon icon={faCalendar} size='lg' fixedWidth />
-												{' Created'}
-											</td>
-											<td>
-												<span
-													title={moment(createdOn).format('dddd, MMMM Do YYYY, h:mm:ss a')}
-												>
-													{moment(createdOn).fromNow()}
-												</span>
-											</td>
-										</tr>
-										<tr>
-											<td>
-												<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
-												{' Last Updated'}
-											</td>
-											<td>
-												<span
-													title={moment(systemFrom).format('dddd, MMMM Do YYYY, h:mm:ss a')}
-												>
-													{moment(systemFrom).fromNow()}
-												</span>
-											</td>
-										</tr>
-										<tr>
-											<td>
-												<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
-												{' Favorites'}
-											</td>
-											<td>
-												{numberOfUpvotes}
-											</td>
-										</tr>
-										<tr>
-											<td>
-												<FontAwesomeIcon icon={faCodeBranch} size='lg' fixedWidth />
-												{' Version'}
-											</td>
-											<td>
-												<BlueprintVersion blueprintKey={this.props.id} />
-											</td>
-										</tr>
-									</tbody>
-								</Table>
-							</Card>
+							<BlueprintInfoPanel blueprintKey={this.props.id} ownedByCurrentUser={this.state.ownedByCurrentUser} />
 							<RequirementsHistogram blueprintKey={this.props.id} />
 							<GoogleAd />
 						</Col>
