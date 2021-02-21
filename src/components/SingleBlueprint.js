@@ -45,6 +45,7 @@ import * as selectors      from '../selectors';
 
 import GoogleAd                  from './GoogleAd';
 import NoMatch                   from './NoMatch';
+import BlueprintMarkdown         from './single/BlueprintMarkdown';
 import BlueprintStringCard       from './single/BlueprintStringCard';
 import BlueprintTitles           from './single/BlueprintTitles';
 import BlueprintVersion          from './single/BlueprintVersion';
@@ -131,23 +132,20 @@ class SingleBlueprint extends PureComponent
 		{
 			this.setState({
 				thumbnail         : undefined,
-				renderedMarkdown  : undefined,
 				ownedByCurrentUser: undefined,
 			});
 			return;
 		}
 
-		const {imgurImage, descriptionMarkdown, author: {userId}} = props.blueprint;
+		const {imgurImage, author: {userId}} = props.blueprint;
 		// Blueprint author
 		this.props.subscribeToUserDisplayName(userId);
 
 		const thumbnail          = imgurImage && buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
-		const renderedMarkdown   = marked(descriptionMarkdown);
 		const ownedByCurrentUser = props.user && props.user.uid === userId;
 
 		this.setState({
 			thumbnail,
-			renderedMarkdown,
 			ownedByCurrentUser,
 		});
 	};
@@ -360,8 +358,7 @@ class SingleBlueprint extends PureComponent
 									Details
 								</Card.Header>
 								<Card.Body>
-									<div dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}} />
-
+									<BlueprintMarkdown blueprintKey={this.props.id} />
 									<CopyBlueprintStringButton blueprintKey={this.props.id} />
 									<Button type='button' onClick={this.handleShowHideBase64}>
 										{
