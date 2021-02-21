@@ -52,6 +52,7 @@ import BlueprintVersion          from './single/BlueprintVersion';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
 import FavoriteButton            from './single/FavoriteButton';
 import FbeLink                   from './single/FbeLink';
+import ImgurThumbnail            from './single/ImgurThumbnail';
 import RequirementsHistogram     from './single/RequirementsHistogram';
 
 const renderer = new marked.Renderer();
@@ -131,21 +132,18 @@ class SingleBlueprint extends PureComponent
 		if (isEmpty(props.blueprint))
 		{
 			this.setState({
-				thumbnail         : undefined,
 				ownedByCurrentUser: undefined,
 			});
 			return;
 		}
 
-		const {imgurImage, author: {userId}} = props.blueprint;
+		const {author: {userId}} = props.blueprint;
 		// Blueprint author
 		this.props.subscribeToUserDisplayName(userId);
 
-		const thumbnail          = imgurImage && buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
 		const ownedByCurrentUser = props.user && props.user.uid === userId;
 
 		this.setState({
-			thumbnail,
 			ownedByCurrentUser,
 		});
 	};
@@ -206,7 +204,7 @@ class SingleBlueprint extends PureComponent
 			return <NoMatch />;
 		}
 
-		const {imgurImage, createdOn, systemFrom, author: {userId: authorId}, title, numberOfUpvotes} = blueprint;
+		const {createdOn, systemFrom, author: {userId: authorId}, title, numberOfUpvotes} = blueprint;
 
 		// Remove null tags
 		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null)
@@ -241,18 +239,7 @@ class SingleBlueprint extends PureComponent
 					</Row>
 					<Row>
 						<Col md={4}>
-							{imgurImage && <a
-								href={`http://imgur.com/${imgurImage.imgurId}`}
-								target='_blank'
-								rel='noopener noreferrer'
-							>
-								<Image
-									thumbnail
-									className='border-warning'
-									src={this.state.thumbnail}
-									referrerPolicy='no-referrer'
-								/>
-							</a>}
+							<ImgurThumbnail blueprintKey={this.props.id} />
 							{
 								blueprint.tags && blueprint.tags.length > 0 && <Card>
 									<Card.Header>
