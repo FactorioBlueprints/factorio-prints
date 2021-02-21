@@ -1,42 +1,25 @@
 /* eslint-disable react/no-array-index-key */
 
-import {
-	faCalendar,
-	faClock,
-	faCodeBranch,
-	faCog,
-	faHeart,
-	faLink,
-	faToggleOff,
-	faToggleOn,
-	faUser,
-}                             from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
-import {forbidExtraProps}     from 'airbnb-prop-types';
-import flatMap                from 'lodash/flatMap';
-import get                    from 'lodash/get';
-import isEmpty                from 'lodash/isEmpty';
-import isEqual                from 'lodash/isEqual';
-import marked                 from 'marked';
-import moment                 from 'moment';
-import PropTypes              from 'prop-types';
-import React, {PureComponent} from 'react';
-import Badge                  from 'react-bootstrap/Badge';
-import Button                 from 'react-bootstrap/Button';
-import Card                   from 'react-bootstrap/Card';
-import Col                    from 'react-bootstrap/Col';
-import Container              from 'react-bootstrap/Container';
-import Image                  from 'react-bootstrap/Image';
-import Jumbotron              from 'react-bootstrap/Jumbotron';
-import Row                    from 'react-bootstrap/Row';
-import Table                  from 'react-bootstrap/Table';
-import DocumentTitle          from 'react-document-title';
-import {connect}              from 'react-redux';
-import {Link}                 from 'react-router-dom';
-import {bindActionCreators}   from 'redux';
+import {faCog, faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}                 from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}                from 'airbnb-prop-types';
+import get                               from 'lodash/get';
+import isEmpty                           from 'lodash/isEmpty';
+import isEqual                           from 'lodash/isEqual';
+import marked                            from 'marked';
+import PropTypes                         from 'prop-types';
+import React, {PureComponent}            from 'react';
+import Button                            from 'react-bootstrap/Button';
+import Card                              from 'react-bootstrap/Card';
+import Col                               from 'react-bootstrap/Col';
+import Container                         from 'react-bootstrap/Container';
+import Jumbotron                         from 'react-bootstrap/Jumbotron';
+import Row                               from 'react-bootstrap/Row';
+import DocumentTitle                     from 'react-document-title';
+import {connect}                         from 'react-redux';
+import {bindActionCreators}              from 'redux';
 
 import {subscribeToBlueprint, subscribeToUserDisplayName} from '../actions/actionCreators';
-import buildImageUrl                                      from '../helpers/buildImageUrl';
 
 import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
@@ -50,35 +33,12 @@ import BlueprintMarkdown         from './single/BlueprintMarkdown';
 import BlueprintStringCard       from './single/BlueprintStringCard';
 import BlueprintTitle            from './single/BlueprintTitle';
 import BlueprintTitles           from './single/BlueprintTitles';
-import BlueprintVersion          from './single/BlueprintVersion';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
 import FavoriteButton            from './single/FavoriteButton';
 import FbeLink                   from './single/FbeLink';
 import ImgurThumbnail            from './single/ImgurThumbnail';
 import RequirementsHistogram     from './single/RequirementsHistogram';
 import TagsPanel                 from './single/TagsPanel';
-
-const renderer = new marked.Renderer();
-renderer.table = (header, body) => `<table class="table table-striped table-bordered">
-<thead>
-${header}</thead>
-<tbody>
-${body}</tbody>
-</table>
-`;
-renderer.image = (href, title, text) =>
-	`<img src="${href}" alt="${text}" class="img-responsive">`;
-
-marked.setOptions({
-	renderer,
-	gfm        : true,
-	tables     : true,
-	breaks     : false,
-	pedantic   : false,
-	sanitize   : false,
-	smartLists : true,
-	smartypants: false,
-});
 
 class SingleBlueprint extends PureComponent
 {
