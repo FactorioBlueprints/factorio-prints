@@ -13,16 +13,8 @@ import {
 }                             from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import concat                 from 'lodash/concat';
 import flatMap                from 'lodash/flatMap';
-import forOwn                 from 'lodash/forOwn';
-import countBy                from 'lodash/fp/countBy';
-import flow                   from 'lodash/fp/flow';
-import reverse                from 'lodash/fp/reverse';
-import sortBy                 from 'lodash/fp/sortBy';
-import toPairs                from 'lodash/fp/toPairs';
 import get                    from 'lodash/get';
-import has                    from 'lodash/has';
 import isEmpty                from 'lodash/isEmpty';
 import isEqual                from 'lodash/isEqual';
 import marked                 from 'marked';
@@ -44,11 +36,7 @@ import {Link}                 from 'react-router-dom';
 import {bindActionCreators}   from 'redux';
 
 import {subscribeToBlueprint, subscribeToUserDisplayName} from '../actions/actionCreators';
-
-import Blueprint           from '../Blueprint';
-import entitiesWithIcons   from '../data/entitiesWithIcons';
-import buildImageUrl       from '../helpers/buildImageUrl';
-import {encodeV15ToBase64} from '../parser/decodeFromBase64';
+import buildImageUrl                                      from '../helpers/buildImageUrl';
 
 import * as propTypes      from '../propTypes';
 import BlueprintProjection from '../propTypes/BlueprintProjection';
@@ -62,8 +50,8 @@ import BlueprintTitles           from './single/BlueprintTitles';
 import BlueprintVersion          from './single/BlueprintVersion';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
 import FavoriteButton            from './single/FavoriteButton';
-import FbeLink               from './single/FbeLink';
-import RequirementsHistogram from './single/RequirementsHistogram';
+import FbeLink                   from './single/FbeLink';
+import RequirementsHistogram     from './single/RequirementsHistogram';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -116,8 +104,6 @@ class SingleBlueprint extends PureComponent
 
 	state = {
 		showBlueprint: false,
-		showJson     : false,
-		showConverted: false,
 	};
 
 	UNSAFE_componentWillMount()
@@ -146,29 +132,23 @@ class SingleBlueprint extends PureComponent
 			this.setState({
 				thumbnail         : undefined,
 				renderedMarkdown  : undefined,
-				parsedBlueprint   : undefined,
 				ownedByCurrentUser: undefined,
-				v15Decoded        : undefined,
 			});
 			return;
 		}
 
-		const {imgurImage, descriptionMarkdown, blueprintString, author: {userId}} = props.blueprint;
+		const {imgurImage, descriptionMarkdown, author: {userId}} = props.blueprint;
 		// Blueprint author
 		this.props.subscribeToUserDisplayName(userId);
 
 		const thumbnail          = imgurImage && buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
 		const renderedMarkdown   = marked(descriptionMarkdown);
 		const ownedByCurrentUser = props.user && props.user.uid === userId;
-		const parsedBlueprint    = this.parseBlueprint(blueprintString.blueprintString);
-		const v15Decoded         = parsedBlueprint && parsedBlueprint.getV15Decoded();
 
 		this.setState({
 			thumbnail,
 			renderedMarkdown,
-			parsedBlueprint,
 			ownedByCurrentUser,
-			v15Decoded,
 		});
 	};
 
@@ -189,28 +169,6 @@ class SingleBlueprint extends PureComponent
 	handleShowHideBase64 = (event) =>
 	{
 		this.setState({showBlueprint: !this.state.showBlueprint});
-	};
-
-	handleShowHideJson = (event) =>
-	{
-		this.setState({showJson: !this.state.showJson});
-	};
-
-	handleShowHideConverted = (event) =>
-	{
-		this.setState({showConverted: !this.state.showConverted});
-	};
-
-	parseBlueprint = (blueprintString) =>
-	{
-		try
-		{
-			return new Blueprint(blueprintString);
-		}
-		catch (ignored)
-		{
-			return undefined;
-		}
 	};
 
 	getAuthorName = () =>
@@ -412,48 +370,11 @@ class SingleBlueprint extends PureComponent
 												: this.showButton('Show Blueprint')
 										}
 									</Button>
-									<Button type='button' onClick={this.handleShowHideJson}>
-										{
-											this.state.showJson
-												? this.hideButton('Hide Json')
-												: this.showButton('Show Json')
-										}
-									</Button>
-									{
-										this.state.parsedBlueprint && this.state.parsedBlueprint.isV14()
-										&& <Button type='button' onClick={this.handleShowHideConverted}>
-											{
-												this.state.showConverted
-													? this.hideButton('Hide 0.15 blueprint')
-													: this.showButton('Convert to 0.15 blueprint')
-											}
-										</Button>
-									}
 									<FbeLink blueprintKey={this.props.id} />
 								</Card.Body>
 							</Card>
 							{
 								this.state.showBlueprint && <BlueprintStringCard blueprintKey={this.props.id} />
-							}
-							{
-								this.state.showJson && <Card>
-									<Card.Header>
-										Json Representation
-									</Card.Header>
-									<Card.Body className='code'>
-										{JSON.stringify(this.state.v15Decoded, null, 4)}
-									</Card.Body>
-								</Card>
-							}
-							{
-								this.state.showConverted && <Card>
-									<Card.Header>
-										0.15 format Blueprint String (Experimental)
-									</Card.Header>
-									<div className='blueprintString'>
-										{encodeV15ToBase64(JSON.stringify(this.state.v15Decoded))}
-									</div>
-								</Card>
 							}
 							<Card>
 								<Card.Header>

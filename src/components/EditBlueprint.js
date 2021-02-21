@@ -312,11 +312,6 @@ class EditBlueprint extends PureComponent
 			return submissionWarnings;
 		}
 
-		if (blueprint.isV14())
-		{
-			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
-		}
-
 		if (!blueprint.isBook() && isEmpty(this.state.v15Decoded.blueprint.label))
 		{
 			submissionWarnings.push('Blueprint has no name. Consider adding a name.');

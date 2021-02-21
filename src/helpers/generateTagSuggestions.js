@@ -442,15 +442,6 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		}
 	}
 
-	if (parsedBlueprint.isV14())
-	{
-		tagSuggestions.push('/version/0,14/');
-	}
-	else if (parsedBlueprint.isV15())
-	{
-		tagSuggestions.push('/version/0,15/');
-	}
-
 	return tagSuggestions;
 };
 
