@@ -48,6 +48,7 @@ import NoMatch                   from './NoMatch';
 import BlueprintInfoPanel        from './single/BlueprintInfoPanel';
 import BlueprintMarkdown         from './single/BlueprintMarkdown';
 import BlueprintStringCard       from './single/BlueprintStringCard';
+import BlueprintTitle            from './single/BlueprintTitle';
 import BlueprintTitles           from './single/BlueprintTitles';
 import BlueprintVersion          from './single/BlueprintVersion';
 import CopyBlueprintStringButton from './single/CopyBlueprintButton';
@@ -206,108 +207,72 @@ class SingleBlueprint extends PureComponent
 			return <NoMatch />;
 		}
 
-		const {createdOn, systemFrom, author: {userId: authorId}, title, numberOfUpvotes} = blueprint;
+		const {title} = blueprint;
 
 		// Remove null tags
 		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null)
 
-		const titleLink = (
-			<a
-				className='mr-1'
-				target='_blank'
-				rel='noopener noreferrer'
-				href={`https://factorioprints.com/view/${this.props.id}`}
-			>
-				<h1>
-					<FontAwesomeIcon icon={faLink} className='text-warning' />
-					{` ${title}`}
-				</h1>
-			</a>
-		);
-
 		return (
-			<DocumentTitle title={`Factorio Prints: ${title}`}>
-				<Container>
-					<Row>
-						<Col md={9}>
-							<div className='d-flex mt-4'>
-								{titleLink}
-							</div>
-						</Col>
-						<Col md={3} className='d-flex align-items-center justify-content-end'>
-							{/*	{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}*/}
-							{!this.state.ownedByCurrentUser && <FavoriteButton blueprintKey={this.props.id} />}
-						</Col>
-					</Row>
-					<Row>
-						<Col md={4}>
-							<ImgurThumbnail blueprintKey={this.props.id} />
-							<TagsPanel blueprintKey={this.props.id} />
-							<BlueprintInfoPanel blueprintKey={this.props.id} ownedByCurrentUser={this.state.ownedByCurrentUser} />
-							<RequirementsHistogram blueprintKey={this.props.id} />
-							<GoogleAd />
-						</Col>
-						<Col md={8}>
-							<Card>
-								<Card.Header>
-									Details
-								</Card.Header>
-								<Card.Body>
-									<BlueprintMarkdown blueprintKey={this.props.id} />
-									<CopyBlueprintStringButton blueprintKey={this.props.id} />
-									<Button type='button' onClick={this.handleShowHideBase64}>
-										{
-											this.state.showBlueprint
-												? this.hideButton('Hide Blueprint')
-												: this.showButton('Show Blueprint')
-										}
-									</Button>
-									<FbeLink blueprintKey={this.props.id} />
-								</Card.Body>
-							</Card>
-							{
-								this.state.showBlueprint && <BlueprintStringCard blueprintKey={this.props.id} />
-							}
-							<Card>
-								<Card.Header>
-									Blueprint Titles
-								</Card.Header>
-								<Card.Body>
-									<BlueprintTitles blueprintKey={this.props.id} />
-								</Card.Body>
-							</Card>
-						</Col>
-					</Row>
-					{/*<Row className='w-100'>*/}
-					{/*	<Disqus.DiscussionEmbed*/}
-					{/*		shortname='factorio-blueprints'*/}
-					{/*		config={disqusConfig}*/}
-					{/*		className='w-100'*/}
-					{/*	/>*/}
-					{/*</Row>*/}
-				</Container>
-			</DocumentTitle>
+			<Container>
+				<Row>
+					<Col md={9}>
+						<div className='d-flex mt-4'>
+							<BlueprintTitle blueprintKey={this.props.id} />
+						</div>
+					</Col>
+					<Col md={3} className='d-flex align-items-center justify-content-end'>
+						{/*	{(this.state.ownedByCurrentUser || this.props.isModerator) && this.renderEditButton()}*/}
+						{!this.state.ownedByCurrentUser && <FavoriteButton blueprintKey={this.props.id} />}
+					</Col>
+				</Row>
+				<Row>
+					<Col md={4}>
+						<ImgurThumbnail blueprintKey={this.props.id} />
+						<TagsPanel blueprintKey={this.props.id} />
+						<BlueprintInfoPanel blueprintKey={this.props.id} ownedByCurrentUser={this.state.ownedByCurrentUser} />
+						<RequirementsHistogram blueprintKey={this.props.id} />
+						<GoogleAd />
+					</Col>
+					<Col md={8}>
+						<Card>
+							<Card.Header>
+								Details
+							</Card.Header>
+							<Card.Body>
+								<BlueprintMarkdown blueprintKey={this.props.id} />
+								<CopyBlueprintStringButton blueprintKey={this.props.id} />
+								<Button type='button' onClick={this.handleShowHideBase64}>
+									{
+										this.state.showBlueprint
+											? this.hideButton('Hide Blueprint')
+											: this.showButton('Show Blueprint')
+									}
+								</Button>
+								<FbeLink blueprintKey={this.props.id} />
+							</Card.Body>
+						</Card>
+						{
+							this.state.showBlueprint && <BlueprintStringCard blueprintKey={this.props.id} />
+						}
+						<Card>
+							<Card.Header>
+								Blueprint Titles
+							</Card.Header>
+							<Card.Body>
+								<BlueprintTitles blueprintKey={this.props.id} />
+							</Card.Body>
+						</Card>
+					</Col>
+				</Row>
+				{/*<Row className='w-100'>*/}
+				{/*	<Disqus.DiscussionEmbed*/}
+				{/*		shortname='factorio-blueprints'*/}
+				{/*		config={disqusConfig}*/}
+				{/*		className='w-100'*/}
+				{/*	/>*/}
+				{/*</Row>*/}
+			</Container>
 		);
-	}
-
-	getBookEntry(eachBlueprint)
-	{
-		if (eachBlueprint.blueprint)
-		{
-			return eachBlueprint.blueprint;
-		}
-
-		if (eachBlueprint.upgrade_planner)
-		{
-			return eachBlueprint.upgrade_planner;
-		}
-
-		if (eachBlueprint.deconstruction_planner)
-		{
-			return eachBlueprint.deconstruction_planner;
-		}
-
-		return eachBlueprint.blueprint_book;
 	}
 }
 
