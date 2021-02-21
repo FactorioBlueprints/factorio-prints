@@ -54,6 +54,7 @@ import FavoriteButton            from './single/FavoriteButton';
 import FbeLink                   from './single/FbeLink';
 import ImgurThumbnail            from './single/ImgurThumbnail';
 import RequirementsHistogram     from './single/RequirementsHistogram';
+import TagsPanel                 from './single/TagsPanel';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -240,30 +241,7 @@ class SingleBlueprint extends PureComponent
 					<Row>
 						<Col md={4}>
 							<ImgurThumbnail blueprintKey={this.props.id} />
-							{
-								blueprint.tags && blueprint.tags.length > 0 && <Card>
-									<Card.Header>
-										Tags
-									</Card.Header>
-									<Card.Body>
-										<h4>
-											{
-												flatMap(blueprint.tags, tag => (
-													<Link
-														key={`${tag.tag.category}/${tag.tag.name}`}
-														to={`/tagged/${tag.tag.category}/${tag.tag.name}/`}
-														className='m-1'
-													>
-														<Badge variant='warning'>
-															{`${tag.tag.category}/${tag.tag.name}`}
-														</Badge>
-													</Link>
-												))
-											}
-										</h4>
-									</Card.Body>
-								</Card>
-							}
+							<TagsPanel blueprintKey={this.props.id} />
 							<Card>
 								<Card.Header>
 									Info
