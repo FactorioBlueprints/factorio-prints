@@ -109,7 +109,7 @@ class BlueprintGrid extends PureComponent
 
 	renderMainGrid = () =>
 		<>
-			<Row className='blueprint-grid-row justify-content-center'>
+			<Row className='justify-content-center'>
 				{
 					this.props.blueprintSummaries.map(blueprintSummary =>
 						<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} my={this.props.my} />)

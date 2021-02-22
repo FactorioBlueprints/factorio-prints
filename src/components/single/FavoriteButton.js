@@ -36,6 +36,7 @@ function FavoriteButton({blueprintKey})
 			onSuccess: () =>
 			{
 				queryClient.invalidateQueries(queryKey);
+				queryClient.invalidateQueries([idToken, 'favorites']);
 			},
 		});
 

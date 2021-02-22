@@ -16,7 +16,6 @@ import {
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
-import myPropTypes                from '../propTypes/myPropTypes';
 import * as selectors             from '../selectors';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
@@ -27,7 +26,6 @@ import TagForm            from './TagForm';
 class MyFavoritesGrid extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		my                       : myPropTypes,
 		filterOnTags             : PropTypes.func.isRequired,
 		user                     : propTypes.userSchema,
 		blueprintSummaries       : PropTypes.arrayOf(BlueprintSummaryProjection).isRequired,
@@ -96,17 +94,16 @@ class MyFavoritesGrid extends PureComponent
 		</Jumbotron>;
 
 	renderMainGrid = () =>
-		<Row className='blueprint-grid-row justify-content-center'>
+		<Row className='justify-content-center'>
 			{
 				this.props.blueprintSummaries.map(blueprintSummary =>
-					<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} my={this.props.my} />)
+					<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
 			}
 		</Row>;
 }
 
 const mapStateToProps = storeState => (
 	{
-		my                       : storeState.my,
 		user                     : selectors.getFilteredUser(storeState),
 		blueprintSummaries       : storeState.blueprintMyFavorites.data,
 		blueprintSummariesLoading: storeState.blueprintMyFavorites.loading,

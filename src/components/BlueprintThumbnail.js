@@ -11,6 +11,8 @@ import {Link}         from 'react-router-dom';
 import NoAvailableImage from '../gif/No_available_image.gif';
 
 import buildImageUrl              from '../helpers/buildImageUrl';
+import useAuthored                from '../hooks/useAuthored';
+import useFavorites               from '../hooks/useFavorites';
 import useIsFavorite              from '../hooks/useIsFavorite';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
 
@@ -22,10 +24,11 @@ function BlueprintThumbnail({blueprintSummary})
 {
 	const {key, title, imgurImage, numberOfUpvotes} = blueprintSummary;
 
-	const {isSuccess, isLoading, isError, data} = useIsFavorite(key);
+	const {isSuccess, data}                         = useFavorites();
+	const authoredResult                            = useAuthored();
 
-	const mine     = false;
-	const favorite = isSuccess && data.data;
+	const mine     = authoredResult.isSuccess && authoredResult.data.has(key);
+	const favorite = isSuccess && data.has(key);
 
 	const tooltip  = (
 		<Tooltip>
@@ -45,7 +48,7 @@ function BlueprintThumbnail({blueprintSummary})
 				<Card.Img variant='top' src={imageUrl} referrerPolicy='no-referrer' />
 			</Link>
 			<p className='truncate p-1'>
-				<span className='mr-1'>{`${numberOfUpvotes}`} <span className='sr-only'>favourites</span></span>
+				<span className='mr-1'>{`${numberOfUpvotes}`} <span className='sr-only'>favorites</span></span>
 				<span className={favoriteStyle}>
 					{/* TODO: This heart should be a toggle button */}
 					<FontAwesomeIcon icon={faHeart} className='text-error' />

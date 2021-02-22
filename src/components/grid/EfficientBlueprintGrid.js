@@ -77,12 +77,11 @@ function EfficientBlueprintGrid(props)
 		);
 	}
 
-	console.log({data: data.data});
 	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber}}} = data.data;
 
 	return (
 		<>
-			<Row className='blueprint-grid-row justify-content-center'>
+			<Row className='justify-content-center'>
 				{
 					blueprintSummaries.map(blueprintSummary =>
 						(<BlueprintThumbnail
@@ -91,7 +90,7 @@ function EfficientBlueprintGrid(props)
 						/>))
 				}
 			</Row>
-			<Row>
+			<Row className='justify-content-center'>
 				{page !== pageNumber && <FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />}
 				<Col md={{span: 6, offset: 3}}>
 					<Button type='button' onClick={() => setPage(1)} disabled={page === 1}>
