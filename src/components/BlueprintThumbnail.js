@@ -1,31 +1,39 @@
 import {faHeart}          from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
-import React              from 'react';
-import Card               from 'react-bootstrap/Card';
-import OverlayTrigger     from 'react-bootstrap/OverlayTrigger';
-import Tooltip            from 'react-bootstrap/Tooltip';
-import {Link}             from 'react-router-dom';
+
+import React          from 'react';
+import Card           from 'react-bootstrap/Card';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip        from 'react-bootstrap/Tooltip';
+import {Link}         from 'react-router-dom';
+
 import NoAvailableImage from '../gif/No_available_image.gif';
 
 import buildImageUrl              from '../helpers/buildImageUrl';
+import useIsFavorite              from '../hooks/useIsFavorite';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
-import myPropTypes                from '../propTypes/myPropTypes';
 
-const BlueprintThumbnail = ({blueprintSummary, my}) =>
+BlueprintThumbnail.propTypes = forbidExtraProps({
+	blueprintSummary: BlueprintSummaryProjection,
+});
+
+function BlueprintThumbnail({blueprintSummary})
 {
 	const {key, title, imgurImage, numberOfUpvotes} = blueprintSummary;
 
-	const mine = my.blueprints.data.includes(key);
-	const favorite = my.favorites.data.includes(key);
+	const {isSuccess, isLoading, isError, data} = useIsFavorite(key);
+
+	const mine     = false;
+	const favorite = isSuccess && data.data;
 
 	const tooltip  = (
 		<Tooltip>
 			{title}
 		</Tooltip>
 	);
-	const imageUrl = imgurImage ? 
-		buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'b'):
+	const imageUrl = imgurImage ?
+		buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'b') :
 		NoAvailableImage;
 
 	const mineStyle     = mine ? 'text-warning' : 'text-default';
@@ -53,11 +61,6 @@ const BlueprintThumbnail = ({blueprintSummary, my}) =>
 			</p>
 		</Card>
 	);
-};
-
-BlueprintThumbnail.propTypes = forbidExtraProps({
-	blueprintSummary: BlueprintSummaryProjection,
-	my              : myPropTypes,
-});
+}
 
 export default BlueprintThumbnail;

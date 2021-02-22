@@ -25,10 +25,11 @@ import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection'
 import myPropTypes                from '../propTypes/myPropTypes';
 import * as selectors             from '../selectors';
 
-import BlueprintThumbnail from './BlueprintThumbnail';
-import PageHeader         from './PageHeader';
-import SearchForm         from './SearchForm';
-import TagForm            from './TagForm';
+import BlueprintThumbnail     from './BlueprintThumbnail';
+import EfficientBlueprintGrid from './grid/EfficientBlueprintGrid';
+import PageHeader             from './PageHeader';
+import SearchForm             from './SearchForm';
+import TagForm                from './TagForm';
 
 class BlueprintGrid extends PureComponent
 {
@@ -93,11 +94,7 @@ class BlueprintGrid extends PureComponent
 					<SearchForm />
 					<TagForm />
 				</Row>
-				{
-					this.props.blueprintSummariesLoading
-						? this.renderLoadingSpinner()
-						: this.renderMainGrid()
-				}
+				<EfficientBlueprintGrid />
 			</Container>
 		);
 	}

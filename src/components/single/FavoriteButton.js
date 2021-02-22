@@ -1,27 +1,16 @@
+import {forbidExtraProps}  from 'airbnb-prop-types';
 import axios               from 'axios';
 import PropTypes           from 'prop-types';
 import React, {useContext} from 'react';
 import Button              from 'react-bootstrap/Button';
 
-import {useMutation, useQuery, useQueryClient} from 'react-query';
+import {useMutation, useQueryClient} from 'react-query';
 
-import UserContext  from '../../context/userContext';
+import UserContext   from '../../context/userContext';
+import getHeaders    from '../../helpers/getHeaders';
+import useIsFavorite from '../../hooks/useIsFavorite';
+
 import FavoriteIcon from './FavoriteIcon';
-
-function getHeaders(idToken)
-{
-	return {
-		headers: {
-			Authorization: `Bearer ${idToken}`,
-		},
-	};
-}
-
-function getIsFavorite(blueprintKey, idToken)
-{
-	const headers = getHeaders(idToken);
-	return axios.get(`${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`, headers);
-}
 
 function postIsFavorite(blueprintKey, isFavorite, idToken)
 {
@@ -36,13 +25,7 @@ function FavoriteButton({blueprintKey})
 	const queryEnabled = idToken !== undefined;
 	const queryKey     = [idToken, 'isFavorite', blueprintKey];
 
-	const {isSuccess, isLoading, isError, data} = useQuery(
-		queryKey,
-		() => getIsFavorite(blueprintKey, idToken),
-		{
-			enabled: queryEnabled,
-		},
-	);
+	const {isSuccess, isLoading, isError, data} = useIsFavorite(blueprintKey);
 
 	const isFavorite = data && data.data;
 
@@ -76,8 +59,8 @@ function FavoriteButton({blueprintKey})
 	);
 }
 
-FavoriteButton.propTypes = {
+FavoriteButton.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 export default FavoriteButton;
