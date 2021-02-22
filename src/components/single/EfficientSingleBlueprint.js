@@ -53,7 +53,7 @@ ShowButton.propTypes = {
 
 EfficientSingleBlueprint.propTypes = {
 	blueprintKey: PropTypes.string.isRequired,
-	userId      : PropTypes.string.isRequired,
+	userId      : PropTypes.string,
 };
 
 function EfficientSingleBlueprint(props)
@@ -70,7 +70,7 @@ function EfficientSingleBlueprint(props)
 	);
 
 	const {isSuccess, data}  = result;
-	const ownedByCurrentUser = isSuccess && userId === data.data.author.authorId;
+	const ownedByCurrentUser = isSuccess && userId !== undefined && userId === data.data.author.authorId;
 
 	return (
 		<Container>

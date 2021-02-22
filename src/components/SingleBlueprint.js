@@ -11,10 +11,10 @@ import EfficientSingleBlueprint from './single/EfficientSingleBlueprint';
 
 class SingleBlueprint extends PureComponent
 {
-	static propTypes = forbidExtraProps({
+	static propTypes = {
 		id  : PropTypes.string.isRequired,
 		user: propTypes.userSchema,
-	});
+	};
 
 	componentDidMount()
 	{
@@ -23,10 +23,11 @@ class SingleBlueprint extends PureComponent
 
 	render()
 	{
+		const uid = this.props.user === undefined ? undefined : this.props.user.uid;
 		return (
 			<EfficientSingleBlueprint
 				blueprintKey={this.props.id}
-				userId={this.props.user.uid}
+				userId={uid}
 			/>
 		);
 	}
