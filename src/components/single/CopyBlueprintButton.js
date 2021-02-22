@@ -1,5 +1,6 @@
 import {faClipboard, faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}    from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}   from 'airbnb-prop-types';
 import PropTypes            from 'prop-types';
 import React                from 'react';
 import Button               from 'react-bootstrap/Button';
@@ -7,9 +8,9 @@ import CopyToClipboard      from 'react-copy-to-clipboard';
 
 import useBlueprintString from '../../hooks/useBlueprintString';
 
-CopyBlueprintStringButton.propTypes = {
+CopyBlueprintStringButton.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 function CopyBlueprintStringButton(props)
 {

@@ -1,13 +1,16 @@
-import axios          from 'axios';
-import PropTypes      from 'prop-types';
-import React          from 'react';
-import {useQuery}     from 'react-query';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
+import axios      from 'axios';
+import PropTypes  from 'prop-types';
+import React      from 'react';
+import {useQuery} from 'react-query';
+
 import ItemHistogram  from './ItemHistogram';
 import UpgradePlanner from './UpgradePlanner';
 
-RequirementsHistogram.propTypes = {
+RequirementsHistogram.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 function RequirementsHistogram(props)
 {

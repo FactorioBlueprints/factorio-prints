@@ -1,15 +1,20 @@
 import {faCog}           from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import axios             from 'axios';
-import flatMap           from 'lodash/flatMap';
-import React             from 'react';
-import PropTypes         from 'prop-types';
-import Badge             from 'react-bootstrap/Badge';
-import Card              from 'react-bootstrap/Card';
-import Image             from 'react-bootstrap/Image';
-import {useQuery}        from 'react-query';
-import {Link}            from 'react-router-dom';
-import buildImageUrl     from '../../helpers/buildImageUrl';
+
+import {forbidExtraProps} from 'airbnb-prop-types';
+import axios              from 'axios';
+
+import PropTypes  from 'prop-types';
+import React      from 'react';
+import Badge      from 'react-bootstrap/Badge';
+import Card       from 'react-bootstrap/Card';
+import {useQuery} from 'react-query';
+import {Link}     from 'react-router-dom';
+
+TagLink.propTypes = forbidExtraProps({
+	category: PropTypes.string.isRequired,
+	name    : PropTypes.string.isRequired,
+});
 
 function TagLink({category, name})
 {
@@ -24,14 +29,9 @@ function TagLink({category, name})
 	</Link>;
 }
 
-TagLink.propTypes = {
-	category: PropTypes.string.isRequired,
-	name    : PropTypes.string.isRequired,
-};
-
-TagsPanel.propTypes = {
+TagsPanel.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 function TagsPanel(props)
 {

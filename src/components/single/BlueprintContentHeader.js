@@ -1,13 +1,15 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import PropTypes from 'prop-types';
 import React     from 'react';
 import Card      from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 import ItemIcon  from '../ItemIcon';
 
-BlueprintContentHeader.propTypes = {
+BlueprintContentHeader.propTypes = forbidExtraProps({
 	data    : PropTypes.object.isRequired,
 	isActive: PropTypes.bool,
-};
+});
 
 function BlueprintContentHeader(props)
 {

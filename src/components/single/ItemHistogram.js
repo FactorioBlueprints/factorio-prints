@@ -1,3 +1,5 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import isEmpty           from 'lodash/isEmpty';
 import PropTypes         from 'prop-types';
 import React             from 'react';
@@ -5,13 +7,13 @@ import Card              from 'react-bootstrap/Card';
 import Table             from 'react-bootstrap/Table';
 import entitiesWithIcons from '../../data/entitiesWithIcons';
 
-ItemHistogram.propTypes = {
+ItemHistogram.propTypes = forbidExtraProps({
 	title: PropTypes.string.isRequired,
 	items: PropTypes.arrayOf(PropTypes.shape({
 		item : PropTypes.string.isRequired,
 		count: PropTypes.number.isRequired,
 	})).isRequired,
-};
+});
 
 function ItemHistogram(props)
 {
