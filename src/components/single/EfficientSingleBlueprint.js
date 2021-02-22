@@ -1,27 +1,29 @@
-import {faCog, faLink, faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}                        from '@fortawesome/react-fontawesome';
-import axios                                    from 'axios';
-import PropTypes                                from 'prop-types';
-import React, {useState}                        from 'react';
-import Button                                   from 'react-bootstrap/Button';
-import Card                                     from 'react-bootstrap/Card';
-import Col                                      from 'react-bootstrap/Col';
-import Container                                from 'react-bootstrap/Container';
-import Row                                      from 'react-bootstrap/Row';
-import DocumentTitle                            from 'react-document-title';
-import {useQuery}                               from 'react-query';
-import GoogleAd                                 from '../GoogleAd';
-import BlueprintInfoPanel                       from './BlueprintInfoPanel';
-import BlueprintMarkdown                        from './BlueprintMarkdown';
-import BlueprintStringCard                      from './BlueprintStringCard';
-import BlueprintTitle                           from './BlueprintTitle';
-import BlueprintTitles                          from './BlueprintTitles';
-import CopyBlueprintStringButton                from './CopyBlueprintButton';
-import FavoriteButton                           from './FavoriteButton';
-import FbeLink                                  from './FbeLink';
-import ImgurThumbnail                           from './ImgurThumbnail';
-import RequirementsHistogram                    from './RequirementsHistogram';
-import TagsPanel                                from './TagsPanel';
+import {faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
+
+import {forbidExtraProps} from 'airbnb-prop-types';
+import axios              from 'axios';
+import PropTypes          from 'prop-types';
+import React, {useState}  from 'react';
+import Button             from 'react-bootstrap/Button';
+import Card               from 'react-bootstrap/Card';
+import Col                from 'react-bootstrap/Col';
+import Container          from 'react-bootstrap/Container';
+import Row                from 'react-bootstrap/Row';
+import {useQuery}         from 'react-query';
+
+import GoogleAd                  from '../GoogleAd';
+import BlueprintInfoPanel        from './BlueprintInfoPanel';
+import BlueprintMarkdown         from './BlueprintMarkdown';
+import BlueprintStringCard       from './BlueprintStringCard';
+import BlueprintTitle            from './BlueprintTitle';
+import BlueprintTitles           from './BlueprintTitles';
+import CopyBlueprintStringButton from './CopyBlueprintButton';
+import FavoriteButton            from './FavoriteButton';
+import FbeLink                   from './FbeLink';
+import ImgurThumbnail            from './ImgurThumbnail';
+import RequirementsHistogram     from './RequirementsHistogram';
+import TagsPanel                 from './TagsPanel';
 
 function HideButton({text})
 {
@@ -33,9 +35,9 @@ function HideButton({text})
 	);
 }
 
-HideButton.propTypes = {
+HideButton.propTypes = forbidExtraProps({
 	text: PropTypes.string.isRequired,
-};
+});
 
 function ShowButton({text})
 {
@@ -47,14 +49,14 @@ function ShowButton({text})
 	);
 }
 
-ShowButton.propTypes = {
+ShowButton.propTypes = forbidExtraProps({
 	text: PropTypes.string.isRequired,
-};
+});
 
-EfficientSingleBlueprint.propTypes = {
+EfficientSingleBlueprint.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
 	userId      : PropTypes.string,
-};
+});
 
 function EfficientSingleBlueprint(props)
 {

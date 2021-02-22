@@ -1,14 +1,17 @@
 import {faCog, faLink}   from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import axios             from 'axios';
-import PropTypes         from 'prop-types';
-import React             from 'react';
-import DocumentTitle     from 'react-document-title';
-import {useQuery}        from 'react-query';
 
-BlueprintTitle.propTypes = {
+import {forbidExtraProps} from 'airbnb-prop-types';
+
+import axios         from 'axios';
+import PropTypes     from 'prop-types';
+import React         from 'react';
+import DocumentTitle from 'react-document-title';
+import {useQuery}    from 'react-query';
+
+BlueprintTitle.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 function BlueprintTitle(props)
 {

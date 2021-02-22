@@ -1,20 +1,23 @@
 import {faCalendar, faClock, faCodeBranch, faCog, faHeart, faUser} from '@fortawesome/free-solid-svg-icons';
 
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import axios             from 'axios';
-import moment            from 'moment';
-import PropTypes         from 'prop-types';
-import React             from 'react';
-import Card              from 'react-bootstrap/Card';
-import Table             from 'react-bootstrap/Table';
-import {useQuery}        from 'react-query';
-import {Link}            from 'react-router-dom';
-import BlueprintVersion  from './BlueprintVersion';
+import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
+import {forbidExtraProps} from 'airbnb-prop-types';
 
-BlueprintInfoPanel.propTypes = {
+import axios      from 'axios';
+import moment     from 'moment';
+import PropTypes  from 'prop-types';
+import React      from 'react';
+import Card       from 'react-bootstrap/Card';
+import Table      from 'react-bootstrap/Table';
+import {useQuery} from 'react-query';
+import {Link}     from 'react-router-dom';
+
+import BlueprintVersion from './BlueprintVersion';
+
+BlueprintInfoPanel.propTypes = forbidExtraProps({
 	blueprintKey      : PropTypes.string.isRequired,
 	ownedByCurrentUser: PropTypes.bool.isRequired,
-};
+});
 
 function BlueprintInfoPanel(props)
 {

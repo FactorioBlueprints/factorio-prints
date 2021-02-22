@@ -1,10 +1,11 @@
-import PropTypes         from 'prop-types';
-import React             from 'react';
-import entitiesWithIcons from '../data/entitiesWithIcons';
+import {forbidExtraProps} from 'airbnb-prop-types';
+import PropTypes          from 'prop-types';
+import React              from 'react';
+import entitiesWithIcons  from '../data/entitiesWithIcons';
 
-ItemIcon.propTypes = {
+ItemIcon.propTypes = forbidExtraProps({
 	item: PropTypes.string.isRequired,
-};
+});
 
 function ItemIcon({item})
 {

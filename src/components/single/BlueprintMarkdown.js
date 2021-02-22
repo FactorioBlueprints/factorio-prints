@@ -1,10 +1,13 @@
 import {faCog}           from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import axios             from 'axios';
-import marked            from 'marked';
-import PropTypes         from 'prop-types';
-import React             from 'react';
-import {useQuery}        from 'react-query';
+
+import {forbidExtraProps} from 'airbnb-prop-types';
+
+import axios      from 'axios';
+import marked     from 'marked';
+import PropTypes  from 'prop-types';
+import React      from 'react';
+import {useQuery} from 'react-query';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -28,9 +31,9 @@ marked.setOptions({
 	smartypants: false,
 });
 
-BlueprintMarkdown.propTypes = {
+BlueprintMarkdown.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 function BlueprintMarkdown(props)
 {

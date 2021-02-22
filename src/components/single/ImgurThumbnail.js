@@ -1,15 +1,19 @@
 import {faCog}           from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import axios             from 'axios';
-import React             from 'react';
-import PropTypes         from 'prop-types';
-import Image             from 'react-bootstrap/Image';
-import {useQuery}        from 'react-query';
-import buildImageUrl     from '../../helpers/buildImageUrl';
 
-ImgurThumbnail.propTypes = {
+import {forbidExtraProps} from 'airbnb-prop-types';
+
+import axios      from 'axios';
+import PropTypes  from 'prop-types';
+import React      from 'react';
+import Image      from 'react-bootstrap/Image';
+import {useQuery} from 'react-query';
+
+import buildImageUrl from '../../helpers/buildImageUrl';
+
+ImgurThumbnail.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 function ImgurThumbnail(props)
 {

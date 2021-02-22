@@ -1,10 +1,12 @@
+import {forbidExtraProps} from 'airbnb-prop-types';
+
 import PropTypes from 'prop-types';
 import React     from 'react';
 import Button    from 'react-bootstrap/Button';
 
-FbeLink.propTypes = {
+FbeLink.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
-};
+});
 
 function FbeLink(props)
 {
