@@ -20,6 +20,7 @@ function RequirementsHistogram(props)
 	const {isSuccess, isLoading, isError, data} = useQuery(
 		queryKey,
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintItems/${blueprintKey}`),
+		{retry: false},
 	);
 
 	if (!isSuccess)
