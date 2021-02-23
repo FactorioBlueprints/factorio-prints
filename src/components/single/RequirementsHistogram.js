@@ -3,6 +3,7 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import axios      from 'axios';
 import PropTypes  from 'prop-types';
 import React      from 'react';
+import Card       from 'react-bootstrap/Card';
 import {useQuery} from 'react-query';
 
 import ItemHistogram  from './ItemHistogram';
@@ -15,9 +16,9 @@ RequirementsHistogram.propTypes = forbidExtraProps({
 function RequirementsHistogram(props)
 {
 	const {blueprintKey} = props;
+	const queryKey       = ['blueprintItems', blueprintKey];
 
-	const queryKey                              = ['blueprintItems', blueprintKey];
-	const {isSuccess, isLoading, isError, data, error} = useQuery(
+	const {isSuccess, isError, data, error} = useQuery(
 		queryKey,
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintItems/${blueprintKey}`),
 		{retry: false},
@@ -25,7 +26,13 @@ function RequirementsHistogram(props)
 
 	if (isError)
 	{
-		console.log({error});
+		const {message} = error.response.data;
+		return (
+			<Card>
+				<Card.Header>{'Entities'}</Card.Header>
+				<Card.Body>{`Error loading data: ${message}`}</Card.Body>
+			</Card>
+		);
 	}
 
 	if (!isSuccess)

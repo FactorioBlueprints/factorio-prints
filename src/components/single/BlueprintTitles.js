@@ -14,9 +14,10 @@ BlueprintTitles.propTypes = forbidExtraProps({
 
 function BlueprintTitles(props)
 {
-	const {blueprintKey}                        = props;
-	const queryKey                              = ['blueprintTitles', blueprintKey];
-	const {isSuccess, isLoading, isError, data, error} = useQuery(
+	const {blueprintKey} = props;
+	const queryKey       = ['blueprintTitles', blueprintKey];
+
+	const {isLoading, isError, data, error} = useQuery(
 		queryKey,
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitles/${blueprintKey}`),
 		{retry: false},
@@ -34,8 +35,8 @@ function BlueprintTitles(props)
 
 	if (isError)
 	{
-		console.log({error});
-		return <Card>{'Error loading data'}</Card>;
+		const {message} = error.response.data;
+		return <Card>{`Error loading data: ${message}`}</Card>;
 	}
 
 	return <BlueprintContentHeader data={data.data} />;
