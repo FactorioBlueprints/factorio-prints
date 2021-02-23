@@ -16,7 +16,7 @@ function BlueprintVersion(props)
 {
 	const {blueprintKey}                        = props;
 	const queryKey                              = ['blueprintTitles', blueprintKey];
-	const {isSuccess, isLoading, isError, data} = useQuery(
+	const {isSuccess, isLoading, isError, data, error} = useQuery(
 		queryKey,
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitles/${blueprintKey}`),
 		{retry: false},
@@ -29,6 +29,7 @@ function BlueprintVersion(props)
 
 	if (isError)
 	{
+		console.log({error});
 		return 'Error';
 	}
 
