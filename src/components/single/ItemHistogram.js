@@ -1,10 +1,11 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 
-import isEmpty           from 'lodash/isEmpty';
-import PropTypes         from 'prop-types';
-import React             from 'react';
-import Card              from 'react-bootstrap/Card';
-import Table             from 'react-bootstrap/Table';
+import isEmpty   from 'lodash/isEmpty';
+import PropTypes from 'prop-types';
+import React     from 'react';
+import Card      from 'react-bootstrap/Card';
+import Table     from 'react-bootstrap/Table';
+
 import entitiesWithIcons from '../../data/entitiesWithIcons';
 
 ItemHistogram.propTypes = forbidExtraProps({
