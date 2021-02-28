@@ -16,6 +16,7 @@ function useFavorites()
 		() => getFavorites(idToken),
 		{
 			enabled: queryEnabled,
+			staleTime: 1000 * 60 * 60, // 60 minutes
 		},
 	);
 }

@@ -8,19 +8,19 @@ import {useQuery}        from 'react-query';
 import BlueprintThumbnail from '../BlueprintThumbnail';
 import PaginationControls from './PaginationControls';
 
-EfficientBlueprintGrid.propTypes = {};
+EfficientMostFavoritedGrid.propTypes = {};
 
-function EfficientBlueprintGrid(props)
+function EfficientMostFavoritedGrid(props)
 {
 	const [page, setPage] = useState(1);
 
-	const fetchBlueprintSummaries = (page = 1) => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`).then(data => data.data);
+	const fetchBlueprintSummaries = (page = 1) => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/top/page/${page}`).then(data => data.data);
 
 	const options = {
 		keepPreviousData: true,
 		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
-	const result  = useQuery(['blueprintSummaries', page], () => fetchBlueprintSummaries(page), options);
+	const result  = useQuery(['top', page], () => fetchBlueprintSummaries(page), options);
 
 	const {isLoading, isError, data, isPreviousData} = result;
 
@@ -64,4 +64,4 @@ function EfficientBlueprintGrid(props)
 	);
 }
 
-export default EfficientBlueprintGrid;
+export default EfficientMostFavoritedGrid;

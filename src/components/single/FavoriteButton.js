@@ -25,6 +25,7 @@ function FavoriteButton({blueprintKey})
 	const queryEnabled = idToken !== undefined;
 	const queryKey     = [idToken, 'isFavorite', blueprintKey];
 
+	// TODO: Switch to the other favorites hook
 	const {isSuccess, isLoading, isError, data} = useIsFavorite(blueprintKey);
 
 	const isFavorite = data && data.data;

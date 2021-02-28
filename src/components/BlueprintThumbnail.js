@@ -13,7 +13,6 @@ import NoAvailableImage from '../gif/No_available_image.gif';
 import buildImageUrl              from '../helpers/buildImageUrl';
 import useAuthored                from '../hooks/useAuthored';
 import useFavorites               from '../hooks/useFavorites';
-import useIsFavorite              from '../hooks/useIsFavorite';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
 
 BlueprintThumbnail.propTypes = forbidExtraProps({
@@ -24,8 +23,8 @@ function BlueprintThumbnail({blueprintSummary})
 {
 	const {key, title, imgurImage, numberOfUpvotes} = blueprintSummary;
 
-	const {isSuccess, data}                         = useFavorites();
-	const authoredResult                            = useAuthored();
+	const {isSuccess, data} = useFavorites();
+	const authoredResult    = useAuthored();
 
 	const mine     = authoredResult.isSuccess && authoredResult.data.has(key);
 	const favorite = isSuccess && data.has(key);
