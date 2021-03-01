@@ -21,7 +21,7 @@ import * as selectors             from '../selectors';
 import EfficientBlueprintGrid     from './grid/EfficientBlueprintGrid';
 import PageHeader                 from './PageHeader';
 import EfficientSearchForm        from './search/EfficientSearchForm';
-import TagForm                    from './TagForm';
+import EfficientTagForm           from './search/EfficientTagForm';
 
 class BlueprintGrid extends PureComponent
 {
@@ -84,7 +84,7 @@ class BlueprintGrid extends PureComponent
 				<PageHeader title='Most Recent' />
 				<Row>
 					<EfficientSearchForm />
-					<TagForm />
+					<EfficientTagForm />
 				</Row>
 				<EfficientBlueprintGrid />
 			</Container>

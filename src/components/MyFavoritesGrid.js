@@ -19,7 +19,7 @@ import * as selectors             from '../selectors';
 import BlueprintThumbnail  from './BlueprintThumbnail';
 import PageHeader          from './PageHeader';
 import EfficientSearchForm from './search/EfficientSearchForm';
-import TagForm             from './TagForm';
+import EfficientTagForm    from './search/EfficientTagForm';
 
 class MyFavoritesGrid extends PureComponent
 {
@@ -72,7 +72,7 @@ class MyFavoritesGrid extends PureComponent
 				<PageHeader title='My Favorites' />
 				<Row>
 					<EfficientSearchForm />
-					<TagForm />
+					<EfficientTagForm />
 				</Row>
 				{
 					this.props.blueprintSummariesLoading

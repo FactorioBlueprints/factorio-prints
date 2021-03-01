@@ -28,7 +28,6 @@ import Row                    from 'react-bootstrap/Row';
 import Dropzone             from 'react-dropzone';
 import {connect}            from 'react-redux';
 import Select               from 'react-select';
-import 'react-select/dist/react-select.css';
 import {bindActionCreators} from 'redux';
 
 import {subscribeToTags}      from '../actions/actionCreators';

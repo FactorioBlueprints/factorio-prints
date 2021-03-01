@@ -1,15 +1,11 @@
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-
-import Col       from 'react-bootstrap/Col';
-import {connect} from 'react-redux';
-
-import Select               from 'react-select';
-import 'react-select/dist/react-select.css';
-import {bindActionCreators} from 'redux';
+import {connect}              from 'react-redux';
+import {bindActionCreators}   from 'redux';
 
 import {filterOnTags, subscribeToTags} from '../actions/actionCreators';
+import EfficientTagForm                from './search/EfficientTagForm';
 
 class TagForm extends PureComponent
 {
@@ -34,16 +30,7 @@ class TagForm extends PureComponent
 	render()
 	{
 		return (
-			<Col md={6}>
-				<Select
-					value={this.props.filteredTags}
-					options={this.props.tags.map(value => ({value, label: value}))}
-					onChange={this.handleTagSelection}
-					multi
-					placeholder='search tags'
-					className='tag-form'
-				/>
-			</Col>
+			<EfficientTagForm />
 		);
 	}
 }

@@ -8,10 +8,11 @@ SearchState.propTypes = {
 
 function SearchState(props)
 {
-	const [titleFilter, setTitleFilter] = useState('');
+	const [titleFilter, setTitleFilter]   = useState('');
+	const [selectedTags, setSelectedTags] = useState([]);
 
 	return (
-		<SearchContext.Provider value={{titleFilter, setTitleFilter}}>
+		<SearchContext.Provider value={{titleFilter, setTitleFilter, selectedTags, setSelectedTags}}>
 			{props.children}
 		</SearchContext.Provider>
 	);

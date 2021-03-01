@@ -21,7 +21,7 @@ import * as selectors             from '../selectors';
 import EfficientMostFavoritedGrid from './grid/EfficientMostFavoritedGrid';
 import PageHeader                 from './PageHeader';
 import EfficientSearchForm        from './search/EfficientSearchForm';
-import TagForm                    from './TagForm';
+import EfficientTagForm           from './search/EfficientTagForm';
 
 class MostFavoritedGrid extends PureComponent
 {
@@ -79,7 +79,7 @@ class MostFavoritedGrid extends PureComponent
 				<PageHeader title='Most Favorited' />
 				<Row>
 					<EfficientSearchForm />
-					<TagForm />
+					<EfficientTagForm />
 				</Row>
 				<EfficientMostFavoritedGrid />
 			</Container>

@@ -15,12 +15,13 @@ EfficientBlueprintGrid.propTypes = {};
 function EfficientBlueprintGrid(props)
 {
 	const [page, setPage] = useState(1);
-	const {titleFilter}   = useContext(SearchContext);
+	const {titleFilter, selectedTags}   = useContext(SearchContext);
+	console.log({titleFilter, selectedTags});
 
-	const fetchBlueprintSummaries = async (page = 1, titleFilter) =>
+	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
 	{
 		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
-		const params = {title: titleFilter};
+		const params = {title: titleFilter, tag: selectedTags};
 		const result = await axios.get(url, {params});
 		return result.data;
 	};
@@ -29,7 +30,7 @@ function EfficientBlueprintGrid(props)
 		keepPreviousData: true,
 		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
-	const result  = useQuery(['blueprintSummaries', page, titleFilter], () => fetchBlueprintSummaries(page, titleFilter), options);
+	const result  = useQuery(['blueprintSummaries', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
 
 	const {isLoading, isError, data, isPreviousData} = result;
 

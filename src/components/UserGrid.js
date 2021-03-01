@@ -20,7 +20,7 @@ import BlueprintThumbnail  from './BlueprintThumbnail';
 import NoMatch             from './NoMatch';
 import PageHeader          from './PageHeader';
 import EfficientSearchForm from './search/EfficientSearchForm';
-import TagForm             from './TagForm';
+import EfficientTagForm    from './search/EfficientTagForm';
 
 class UserGrid extends PureComponent
 {
@@ -83,7 +83,7 @@ class UserGrid extends PureComponent
 				<PageHeader title={`Blueprints by ${this.props.displayName || '(Anonymous)'}${you}`} />
 				<Row>
 					<EfficientSearchForm />
-					<TagForm />
+					<EfficientTagForm />
 				</Row>
 				<Row>
 					{

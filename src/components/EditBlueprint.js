@@ -7,7 +7,6 @@ import classNames             from 'classnames';
 import update                 from 'immutability-helper';
 import difference             from 'lodash/difference';
 import isEmpty                from 'lodash/isEmpty';
-import isEqual                from 'lodash/isEqual';
 import some                   from 'lodash/some';
 import marked                 from 'marked';
 import PropTypes              from 'prop-types';
@@ -26,7 +25,6 @@ import Row                    from 'react-bootstrap/Row';
 import Dropzone               from 'react-dropzone';
 import {connect}              from 'react-redux';
 import Select                 from 'react-select';
-import 'react-select/dist/react-select.css';
 import {bindActionCreators}   from 'redux';
 
 import {subscribeToBlueprint, subscribeToTags} from '../actions/actionCreators';
