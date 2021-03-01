@@ -10,18 +10,16 @@ import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
-import {
-	filterOnTags,
-} from '../actions/actionCreators';
+import {filterOnTags} from '../actions/actionCreators';
 
 import * as propTypes             from '../propTypes';
 import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection';
 import * as selectors             from '../selectors';
 
-import BlueprintThumbnail from './BlueprintThumbnail';
-import PageHeader         from './PageHeader';
-import SearchForm         from './SearchForm';
-import TagForm            from './TagForm';
+import BlueprintThumbnail  from './BlueprintThumbnail';
+import PageHeader          from './PageHeader';
+import EfficientSearchForm from './search/EfficientSearchForm';
+import TagForm             from './TagForm';
 
 class MyFavoritesGrid extends PureComponent
 {
@@ -73,7 +71,7 @@ class MyFavoritesGrid extends PureComponent
 			<Container fluid>
 				<PageHeader title='My Favorites' />
 				<Row>
-					<SearchForm />
+					<EfficientSearchForm />
 					<TagForm />
 				</Row>
 				{

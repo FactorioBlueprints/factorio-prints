@@ -6,25 +6,13 @@ import DocumentTitle          from 'react-document-title';
 import {QueryClient, QueryClientProvider} from 'react-query';
 import {ReactQueryDevtools}               from 'react-query/devtools';
 import {connect}                          from 'react-redux';
-import {BrowserRouter, Route, Switch}     from 'react-router-dom';
 import {bindActionCreators}               from 'redux';
 import {authStateChanged}                 from '../actions/actionCreators';
 import {app}                              from '../base';
 
 import UserContext from '../context/userContext';
-
-import Account           from './Account';
-import BlueprintGrid     from './BlueprintGrid';
-import Contact           from './Contact';
-import Create            from './Create';
-import EditBlueprint     from './EditBlueprint';
-import Header            from './Header';
-import Intro             from './Intro';
-import MostFavoritedGrid from './MostFavoritedGrid';
-import FavoritesGrid     from './MyFavoritesGrid';
-import NoMatch           from './NoMatch';
-import SingleBlueprint   from './SingleBlueprint';
-import UserGrid          from './UserGrid';
+import Routes      from './Routes';
+import SearchState from './search/SearchState';
 
 // TODO: Add a top-level onError
 const queryClient = new QueryClient({
@@ -71,46 +59,15 @@ class Root extends PureComponent
 		);
 	}
 
-	renderIntro = () => (
-		<div>
-			<Intro />
-			<BlueprintGrid />
-		</div>
-	);
-
-	renderTag   = (props) =>
-	{
-		const {pathname} = props.location;
-		const tagId      = pathname.replace(/^\/tagged/, '');
-
-		return <BlueprintGrid initialTag={tagId} />;
-	};
-
 	render()
 	{
 		return (
 			<QueryClientProvider client={queryClient}>
 				<UserContext.Provider value={{idToken: this.state.idToken}}>
 					<DocumentTitle title='Factorio Prints'>
-						<BrowserRouter>
-							<div>
-								<Route path='/' component={Header} />
-								<Switch>
-									<Route path='/' exact render={this.renderIntro} />
-									<Route path='/blueprints' exact component={BlueprintGrid} />
-									<Route path='/top' exact component={MostFavoritedGrid} />
-									{/*<Route path='/create' exact component={Create} />*/}
-									<Route path='/favorites' exact component={FavoritesGrid} />
-									<Route path='/contact' exact component={Contact} />
-									<Route path='/account' exact component={Account} />
-									<Route path='/view/:blueprintId' component={SingleBlueprint} />
-									{/*<Route path='/edit/:blueprintId' component={EditBlueprint} />*/}
-									<Route path='/user/:userId' component={UserGrid} />
-									<Route path='/tagged/:tag' render={this.renderTag} />
-									<Route component={NoMatch} />
-								</Switch>
-							</div>
-						</BrowserRouter>
+						<SearchState>
+							<Routes />
+						</SearchState>
 					</DocumentTitle>
 				</UserContext.Provider>
 				<ReactQueryDevtools initialIsOpen />

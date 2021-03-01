@@ -1,9 +1,11 @@
-import {faCog}           from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import axios             from 'axios';
-import React, {useState} from 'react';
-import Row               from 'react-bootstrap/Row';
-import {useQuery}        from 'react-query';
+import {faCog}                       from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
+import axios                         from 'axios';
+import React, {useContext, useState} from 'react';
+import Row                           from 'react-bootstrap/Row';
+import {useQuery}                    from 'react-query';
+
+import SearchContext from '../../context/searchContext';
 
 import BlueprintThumbnail from '../BlueprintThumbnail';
 import PaginationControls from './PaginationControls';
@@ -13,14 +15,21 @@ EfficientBlueprintGrid.propTypes = {};
 function EfficientBlueprintGrid(props)
 {
 	const [page, setPage] = useState(1);
+	const {titleFilter}   = useContext(SearchContext);
 
-	const fetchBlueprintSummaries = (page = 1) => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`).then(data => data.data);
+	const fetchBlueprintSummaries = async (page = 1, titleFilter) =>
+	{
+		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
+		const params = {title: titleFilter};
+		const result = await axios.get(url, {params});
+		return result.data;
+	};
 
 	const options = {
 		keepPreviousData: true,
 		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
-	const result  = useQuery(['blueprintSummaries', page], () => fetchBlueprintSummaries(page), options);
+	const result  = useQuery(['blueprintSummaries', page, titleFilter], () => fetchBlueprintSummaries(page, titleFilter), options);
 
 	const {isLoading, isError, data, isPreviousData} = result;
 

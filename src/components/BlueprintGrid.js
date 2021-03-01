@@ -20,7 +20,7 @@ import myPropTypes                from '../propTypes/myPropTypes';
 import * as selectors             from '../selectors';
 import EfficientBlueprintGrid     from './grid/EfficientBlueprintGrid';
 import PageHeader                 from './PageHeader';
-import SearchForm                 from './SearchForm';
+import EfficientSearchForm        from './search/EfficientSearchForm';
 import TagForm                    from './TagForm';
 
 class BlueprintGrid extends PureComponent
@@ -83,7 +83,7 @@ class BlueprintGrid extends PureComponent
 			<Container fluid>
 				<PageHeader title='Most Recent' />
 				<Row>
-					<SearchForm />
+					<EfficientSearchForm />
 					<TagForm />
 				</Row>
 				<EfficientBlueprintGrid />

@@ -20,7 +20,7 @@ import myPropTypes                from '../propTypes/myPropTypes';
 import * as selectors             from '../selectors';
 import EfficientMostFavoritedGrid from './grid/EfficientMostFavoritedGrid';
 import PageHeader                 from './PageHeader';
-import SearchForm                 from './SearchForm';
+import EfficientSearchForm        from './search/EfficientSearchForm';
 import TagForm                    from './TagForm';
 
 class MostFavoritedGrid extends PureComponent
@@ -78,7 +78,7 @@ class MostFavoritedGrid extends PureComponent
 			<Container fluid>
 				<PageHeader title='Most Favorited' />
 				<Row>
-					<SearchForm />
+					<EfficientSearchForm />
 					<TagForm />
 				</Row>
 				<EfficientMostFavoritedGrid />

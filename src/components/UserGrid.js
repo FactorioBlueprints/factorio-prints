@@ -16,11 +16,11 @@ import BlueprintSummaryProjection from '../propTypes/BlueprintSummaryProjection'
 import myPropTypes                from '../propTypes/myPropTypes';
 import * as selectors             from '../selectors';
 
-import BlueprintThumbnail from './BlueprintThumbnail';
-import NoMatch            from './NoMatch';
-import PageHeader         from './PageHeader';
-import SearchForm         from './SearchForm';
-import TagForm            from './TagForm';
+import BlueprintThumbnail  from './BlueprintThumbnail';
+import NoMatch             from './NoMatch';
+import PageHeader          from './PageHeader';
+import EfficientSearchForm from './search/EfficientSearchForm';
+import TagForm             from './TagForm';
 
 class UserGrid extends PureComponent
 {
@@ -82,7 +82,7 @@ class UserGrid extends PureComponent
 			<Container fluid>
 				<PageHeader title={`Blueprints by ${this.props.displayName || '(Anonymous)'}${you}`} />
 				<Row>
-					<SearchForm />
+					<EfficientSearchForm />
 					<TagForm />
 				</Row>
 				<Row>
