@@ -7,23 +7,28 @@ import getHeaders from '../helpers/getHeaders';
 
 function useIsFavorite(blueprintKey)
 {
-	const {idToken}    = useContext(UserContext);
-	const queryEnabled = idToken !== undefined;
-	const queryKey     = [idToken, 'isFavorite', blueprintKey];
+	const {user}       = useContext(UserContext);
+	const queryEnabled = user !== undefined;
+	const email        = user === undefined ? undefined : user.email;
+	const queryKey     = [email, 'isFavorite', blueprintKey];
 
 	return useQuery(
 		queryKey,
-		() => getIsFavorite(blueprintKey, idToken),
+		() => getIsFavorite(blueprintKey, user),
 		{
-			enabled: queryEnabled,
+			enabled  : queryEnabled,
+			staleTime: 1000 * 60 * 60, // 60 minutes
 		},
 	);
 }
 
-function getIsFavorite(blueprintKey, idToken)
+async function getIsFavorite(blueprintKey, user)
 {
-	const headers = getHeaders(idToken);
-	return axios.get(`${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`, headers);
+	const idToken = user === undefined ? undefined : await user.getIdToken();
+
+	const headers  = getHeaders(idToken);
+	const response = await axios.get(`${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`, headers);
+	return response.data;
 }
 
 export default useIsFavorite;

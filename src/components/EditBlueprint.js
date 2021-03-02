@@ -439,16 +439,17 @@ class EditBlueprint extends PureComponent
 			blueprint.privateData.firebaseImageUrl = firebaseImageUrl;
 		}
 
+		const idToken = await this.context.user.getIdToken();
 		await axios.patch(
 			 `${process.env.REACT_APP_REST_URL}/api/blueprint/${this.props.id}`,
 			 blueprint,
 			 {
 				 headers: {
-					 Authorization: `Bearer ${this.context.idToken}`,
+					 Authorization: `Bearer ${idToken}`,
 				 },
 			 });
 
-		this.props.history.push(`/view/${this.props.id}`)
+		this.props.history.push(`/view/${this.props.id}`);
 
 		// TODO: Delete old images from storage and imgur
 	};
@@ -619,7 +620,7 @@ class EditBlueprint extends PureComponent
 		const allTagSuggestions    = generateTagSuggestions(
 			this.state.blueprint.title,
 			this.state.parsedBlueprint,
-			this.state.v15Decoded
+			this.state.v15Decoded,
 		);
 		const unusedTagSuggestions = difference(allTagSuggestions, this.state.blueprint.tags);
 
@@ -688,7 +689,7 @@ class EditBlueprint extends PureComponent
 							{`Deleting: ${blueprint.title}`}
 						</p>
 						<p>
-This cannot be undone.
+							This cannot be undone.
 						</p>
 					</Modal.Body>
 					<Modal.Footer>
@@ -869,7 +870,9 @@ This cannot be undone.
 												<input {...getInputProps()} />
 												{
 													isDragActive
-														? <p>Drop files here...</p>
+														? <p>
+															Drop files here...
+														</p>
 														: <p>
 															{'Drop an image file here, or click to open the file chooser.'}
 														</p>

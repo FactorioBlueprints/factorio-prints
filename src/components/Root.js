@@ -35,7 +35,7 @@ class Root extends PureComponent
 	{
 		super(props);
 		this.state = {
-			idToken: undefined,
+			user: undefined,
 		};
 	}
 
@@ -44,16 +44,8 @@ class Root extends PureComponent
 		app.auth().onAuthStateChanged(
 			async (user) =>
 			{
-				if (!user)
-				{
-					this.props.authStateChanged(user, null);
-					this.setState({idToken: undefined});
-					return;
-				}
-
-				const idToken = await user.getIdToken();
-				this.props.authStateChanged(user, idToken);
-				this.setState({idToken});
+				this.props.authStateChanged(user);
+				this.setState({user});
 			},
 			(...args) => console.log('Root.componentWillMount', args),
 		);
@@ -63,7 +55,7 @@ class Root extends PureComponent
 	{
 		return (
 			<QueryClientProvider client={queryClient}>
-				<UserContext.Provider value={{idToken: this.state.idToken}}>
+				<UserContext.Provider value={{user: this.state.user}}>
 					<DocumentTitle title='Factorio Prints'>
 						<SearchState>
 							<Routes />

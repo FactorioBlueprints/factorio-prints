@@ -13,11 +13,10 @@ EfficientSearchForm.propTypes = {};
 
 function EfficientSearchForm(props)
 {
-	const [localTitleFilter, setLocalTitleFilter] = useState('');
 	const {titleFilter, setTitleFilter}           = useContext(SearchContext);
+	const [localTitleFilter, setLocalTitleFilter] = useState(titleFilter);
 	const debouncedSetTitleFilter                 = useAsyncDebounce((value) =>
 	{
-		console.log('useAsyncDebounce', {value})
 		setTitleFilter(value || undefined);
 	}, 500);
 

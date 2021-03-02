@@ -12,8 +12,9 @@ import useIsFavorite from '../../hooks/useIsFavorite';
 
 import FavoriteIcon from './FavoriteIcon';
 
-function postIsFavorite(blueprintKey, isFavorite, idToken)
+async function postIsFavorite(blueprintKey, isFavorite, user)
 {
+	const idToken = user === undefined ? undefined : await user.getIdToken();
 	const headers = getHeaders(idToken);
 	return axios.put(`${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}?isFavorite=${isFavorite}`, null, headers);
 }
@@ -21,23 +22,20 @@ function postIsFavorite(blueprintKey, isFavorite, idToken)
 function FavoriteButton({blueprintKey})
 {
 	const queryClient  = useQueryClient();
-	const {idToken}    = useContext(UserContext);
-	const queryEnabled = idToken !== undefined;
-	const queryKey     = [idToken, 'isFavorite', blueprintKey];
+	const {user}       = useContext(UserContext);
+	const queryEnabled = user !== undefined;
 
 	// TODO: Switch to the other favorites hook
-	const {isSuccess, isLoading, isError, data} = useIsFavorite(blueprintKey);
-
-	const isFavorite = data && data.data;
+	const {isSuccess, isLoading, isError, data: isFavorite} = useIsFavorite(blueprintKey);
 
 	const toggleFavoriteMutation = useMutation(
-		() => postIsFavorite(blueprintKey, !isFavorite, idToken),
+		() => postIsFavorite(blueprintKey, !isFavorite, user),
 		{
 			enabled  : queryEnabled,
 			onSuccess: () =>
 			{
-				queryClient.invalidateQueries(queryKey);
-				queryClient.invalidateQueries([idToken, 'favorites']);
+				queryClient.invalidateQueries([user.email, 'isFavorite', blueprintKey]);
+				queryClient.invalidateQueries([user.email, 'favorites']);
 			},
 		});
 
@@ -55,7 +53,7 @@ function FavoriteButton({blueprintKey})
 				});
 			}}
 		>
-			<FavoriteIcon isLoading={isLoading} isError={isError} data={data} />
+			<FavoriteIcon isLoading={isLoading} isError={isError} isFavorite={isFavorite} />
 			{' Favorite'}
 		</Button>
 	);

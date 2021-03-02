@@ -14,7 +14,6 @@ EfficientTagForm.propTypes = {};
 function EfficientTagForm(props)
 {
 	const {selectedTags, setSelectedTags} = useContext(SearchContext);
-	console.log({selectedTags, setSelectedTags})
 
 	const options = {
 		placeholderData: [],
@@ -22,14 +21,12 @@ function EfficientTagForm(props)
 
 	const fetchTagsOptions = async () =>
 	{
-		const tags    = await axios.get(`${process.env.REACT_APP_REST_URL}/api/tags/`);
+		const tags = await axios.get(`${process.env.REACT_APP_REST_URL}/api/tags/`);
 		return tags.data.map(tag => ({label: `${tag.category}/${tag.name}`, value: `/${tag.category}/${tag.name}/`}));
 	};
 
-	const result = useQuery(['tags'], fetchTagsOptions, options);
+	const result     = useQuery(['tags'], fetchTagsOptions, options);
 	const tagOptions = result.data;
-
-	console.log({result});
 
 	return (
 		<Col md={6}>

@@ -6,7 +6,7 @@ import {forbidExtraProps}                      from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
 import React     from 'react';
 
-function FavoriteIcon({isLoading, isError, data})
+function FavoriteIcon({isLoading, isError, isFavorite})
 {
 	if (isLoading)
 	{
@@ -18,7 +18,6 @@ function FavoriteIcon({isLoading, isError, data})
 		return <FontAwesomeIcon icon={faExclamationTriangle} className={'text-default'} />;
 	}
 
-	const isFavorite = data && data.data;
 	if (isFavorite)
 	{
 		return <FontAwesomeIcon icon={faHeart} className={'text-warning'} />;
@@ -28,9 +27,9 @@ function FavoriteIcon({isLoading, isError, data})
 }
 
 FavoriteIcon.propTypes = forbidExtraProps({
-	isLoading: PropTypes.bool.isRequired,
-	isError  : PropTypes.bool.isRequired,
-	data     : PropTypes.shape({data: PropTypes.bool.isRequired}),
+	isLoading : PropTypes.bool.isRequired,
+	isError   : PropTypes.bool.isRequired,
+	isFavorite: PropTypes.bool,
 });
 
 export default FavoriteIcon;

@@ -16,12 +16,13 @@ function EfficientBlueprintGrid(props)
 {
 	const [page, setPage] = useState(1);
 	const {titleFilter, selectedTags}   = useContext(SearchContext);
-	console.log({titleFilter, selectedTags});
 
 	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
 	{
 		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
-		const params = {title: titleFilter, tag: selectedTags};
+		const params = new URLSearchParams();
+		params.append('title', titleFilter);
+		selectedTags.forEach(tag => params.append('tag', tag.value));
 		const result = await axios.get(url, {params});
 		return result.data;
 	};

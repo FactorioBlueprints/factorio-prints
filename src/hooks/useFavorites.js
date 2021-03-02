@@ -7,25 +7,28 @@ import getHeaders from '../helpers/getHeaders';
 
 function useFavorites()
 {
-	const {idToken}    = useContext(UserContext);
-	const queryEnabled = idToken !== undefined;
-	const queryKey     = [idToken, 'favorites'];
+	const {user}       = useContext(UserContext);
+	const queryEnabled = user !== undefined;
+	const email        = user === undefined ? undefined : user.email;
+	const queryKey     = [email, 'favorites'];
 
 	return useQuery(
 		queryKey,
-		() => getFavorites(idToken),
+		() => getFavorites(user),
 		{
-			enabled: queryEnabled,
+			enabled  : queryEnabled,
 			staleTime: 1000 * 60 * 60, // 60 minutes
 		},
 	);
 }
 
-function getFavorites(idToken)
+async function getFavorites(user)
 {
-	const headers = getHeaders(idToken);
-	return axios.get(`${process.env.REACT_APP_REST_URL}/api/my/favorites/`, headers)
-		.then(response => new Set(response.data));
+	const idToken = user === undefined ? undefined : await user.getIdToken();
+
+	const headers  = getHeaders(idToken);
+	const response = await axios.get(`${process.env.REACT_APP_REST_URL}/api/my/favorites/`, headers);
+	return new Set(response.data);
 }
 
 export default useFavorites;
