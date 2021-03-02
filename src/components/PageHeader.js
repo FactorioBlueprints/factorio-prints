@@ -14,7 +14,7 @@ const PageHeader = ({title}) =>
 	);
 
 PageHeader.propTypes = forbidExtraProps({
-	title: PropTypes.string.isRequired,
+	title: PropTypes.node.isRequired,
 });
 
 export default PageHeader;

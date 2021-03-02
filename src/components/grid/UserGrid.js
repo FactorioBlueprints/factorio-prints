@@ -1,5 +1,3 @@
-import {faCog}                       from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}            from 'airbnb-prop-types';
 import axios                         from 'axios';
 import PropTypes                     from 'prop-types';
@@ -12,6 +10,7 @@ import SearchContext from '../../context/searchContext';
 import UserContext   from '../../context/userContext';
 
 import BlueprintThumbnail  from '../BlueprintThumbnail';
+import LoadingIcon         from '../LoadingIcon';
 import PageHeader          from '../PageHeader';
 import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
@@ -48,7 +47,7 @@ function UserGrid(props)
 		const url    = `${process.env.REACT_APP_REST_URL}/api/user/${userId}/displayName/`;
 		const result = await axios.get(url);
 		return result.data;
-	}
+	};
 
 	const options = {
 		keepPreviousData: true,
@@ -61,7 +60,7 @@ function UserGrid(props)
 	// TODO: Refactor out grid commonality
 
 	const {isLoading, isError, data, isPreviousData} = result;
-	const {isLoading: isDisplayNameLoading, data: {_data: {displayName}}} = displayNameResult;
+	const {isLoading: isDisplayNameLoading, data: displayNameData} = displayNameResult;
 
 	if (isError)
 	{
@@ -75,18 +74,39 @@ function UserGrid(props)
 
 	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber}}} = data;
 
-	const ownedByCurrentUser = user && user.uid === userId;
-	const you                = ownedByCurrentUser ? ' (You)' : '';
+
+	const getTitle = () =>
+	{
+		const ownedByCurrentUser = user && user.uid === userId;
+		const you                = ownedByCurrentUser ? ' (You)' : '';
+
+		if (isDisplayNameLoading)
+		{
+			return (
+				<span>
+					{'Blueprints by '}
+					<LoadingIcon isLoading={isDisplayNameLoading} />
+				</span>
+			);
+		}
+
+		return (
+			<span>
+				{`Blueprints by ${displayNameData._data.displayName || '(Anonymous)'}${you}`}
+			</span>
+		);
+	};
+
 
 	return (
 		<Container fluid>
-			<PageHeader title={`Blueprints by ${displayName || '(Anonymous)'}${you}`} />
+			<PageHeader title={getTitle()} />
 			<Row>
 				<EfficientSearchForm />
 				<EfficientTagForm />
 			</Row>
 			{isLoading && <Row>
-				<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
+				<LoadingIcon isLoading={isLoading} />
 				{' Loading blueprints'}
 			</Row>}
 			<Row className='justify-content-center'>

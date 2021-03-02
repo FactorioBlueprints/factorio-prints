@@ -35,7 +35,7 @@ function MyFavoritesGrid(props)
 			params,
 			headers: {
 				Authorization: `Bearer ${idToken}`,
-			}
+			},
 		};
 
 		const result = await axios.get(url, options);
