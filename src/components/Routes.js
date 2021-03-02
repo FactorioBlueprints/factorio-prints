@@ -1,11 +1,11 @@
 import React                          from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import Account                        from './Account';
-import BlueprintGrid                  from './BlueprintGrid';
 import Contact                        from './Contact';
+import EfficientBlueprintGrid         from './grid/EfficientBlueprintGrid';
+import EfficientMostFavoritedGrid     from './grid/EfficientMostFavoritedGrid';
 import Header                         from './Header';
 import Intro                          from './Intro';
-import MostFavoritedGrid              from './MostFavoritedGrid';
 import FavoritesGrid                  from './MyFavoritesGrid';
 import NoMatch                        from './NoMatch';
 import SingleBlueprint                from './SingleBlueprint';
@@ -18,7 +18,7 @@ function renderIntro()
 	return (
 		<div>
 			<Intro />
-			<BlueprintGrid />
+			<EfficientBlueprintGrid />
 		</div>
 	);
 }
@@ -28,7 +28,7 @@ function renderTag(props)
 	const {pathname} = props.location;
 	const tagId      = pathname.replace(/^\/tagged/, '');
 
-	return <BlueprintGrid initialTag={tagId} />;
+	return <EfficientBlueprintGrid initialTag={tagId} />;
 }
 
 function Routes(props)
@@ -39,8 +39,8 @@ function Routes(props)
 				<Route path='/' component={Header} />
 				<Switch>
 					<Route path='/' exact render={renderIntro} />
-					<Route path='/blueprints' exact component={BlueprintGrid} />
-					<Route path='/top' exact component={MostFavoritedGrid} />
+					<Route path='/blueprints' exact component={EfficientBlueprintGrid} />
+					<Route path='/top' exact component={EfficientMostFavoritedGrid} />
 					{/* <Route path='/create' exact component={Create} /> */}
 					<Route path='/favorites' exact component={FavoritesGrid} />
 					<Route path='/contact' exact component={Contact} />

@@ -2,20 +2,24 @@ import {faCog}                       from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
 import axios                         from 'axios';
 import React, {useContext, useState} from 'react';
+import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
 
 import SearchContext from '../../context/searchContext';
 
-import BlueprintThumbnail from '../BlueprintThumbnail';
-import PaginationControls from './PaginationControls';
+import BlueprintThumbnail  from '../BlueprintThumbnail';
+import PageHeader          from '../PageHeader';
+import EfficientSearchForm from '../search/EfficientSearchForm';
+import EfficientTagForm    from '../search/EfficientTagForm';
+import PaginationControls  from './PaginationControls';
 
 EfficientBlueprintGrid.propTypes = {};
 
 function EfficientBlueprintGrid(props)
 {
-	const [page, setPage] = useState(1);
-	const {titleFilter, selectedTags}   = useContext(SearchContext);
+	const [page, setPage]             = useState(1);
+	const {titleFilter, selectedTags} = useContext(SearchContext);
 
 	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
 	{
@@ -33,6 +37,8 @@ function EfficientBlueprintGrid(props)
 	};
 	const result  = useQuery(['blueprintSummaries', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
 
+	// TODO: Refactor out grid commonality
+
 	const {isLoading, isError, data, isPreviousData} = result;
 
 	if (isError)
@@ -48,7 +54,12 @@ function EfficientBlueprintGrid(props)
 	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber}}} = data;
 
 	return (
-		<>
+		<Container fluid>
+			<PageHeader title='Most Recent' />
+			<Row>
+				<EfficientSearchForm />
+				<EfficientTagForm />
+			</Row>
 			{isLoading && <Row>
 				<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
 				{' Loading blueprints'}
@@ -71,7 +82,7 @@ function EfficientBlueprintGrid(props)
 				numberOfPages={numberOfPages}
 				isPreviousData={isPreviousData}
 			/>
-		</>
+		</Container>
 	);
 }
 

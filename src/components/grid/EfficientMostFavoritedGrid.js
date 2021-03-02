@@ -1,26 +1,43 @@
-import {faCog}           from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import axios             from 'axios';
-import React, {useState} from 'react';
-import Row               from 'react-bootstrap/Row';
-import {useQuery}        from 'react-query';
+import {faCog}                       from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
+import axios                         from 'axios';
+import React, {useContext, useState} from 'react';
+import Container                     from 'react-bootstrap/Container';
+import Row                           from 'react-bootstrap/Row';
+import {useQuery}                    from 'react-query';
 
-import BlueprintThumbnail from '../BlueprintThumbnail';
-import PaginationControls from './PaginationControls';
+import SearchContext from '../../context/searchContext';
+
+import BlueprintThumbnail  from '../BlueprintThumbnail';
+import PageHeader          from '../PageHeader';
+import EfficientSearchForm from '../search/EfficientSearchForm';
+import EfficientTagForm    from '../search/EfficientTagForm';
+import PaginationControls  from './PaginationControls';
 
 EfficientMostFavoritedGrid.propTypes = {};
 
 function EfficientMostFavoritedGrid(props)
 {
-	const [page, setPage] = useState(1);
+	const [page, setPage]             = useState(1);
+	const {titleFilter, selectedTags} = useContext(SearchContext);
 
-	const fetchBlueprintSummaries = (page = 1) => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/top/page/${page}`).then(data => data.data);
+	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
+	{
+		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/top/page/${page}`;
+		const params = new URLSearchParams();
+		params.append('title', titleFilter);
+		selectedTags.forEach(tag => params.append('tag', tag.value));
+		const result = await axios.get(url, {params});
+		return result.data;
+	};
 
 	const options = {
 		keepPreviousData: true,
 		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
-	const result  = useQuery(['top', page], () => fetchBlueprintSummaries(page), options);
+	const result  = useQuery(['top', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
+
+	// TODO: Refactor out grid commonality
 
 	const {isLoading, isError, data, isPreviousData} = result;
 
@@ -37,7 +54,12 @@ function EfficientMostFavoritedGrid(props)
 	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber}}} = data;
 
 	return (
-		<>
+		<Container fluid>
+			<PageHeader title='Most Favorited' />
+			<Row>
+				<EfficientSearchForm />
+				<EfficientTagForm />
+			</Row>
 			{isLoading && <Row>
 				<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
 				{' Loading blueprints'}
@@ -60,7 +82,7 @@ function EfficientMostFavoritedGrid(props)
 				numberOfPages={numberOfPages}
 				isPreviousData={isPreviousData}
 			/>
-		</>
+		</Container>
 	);
 }
 
