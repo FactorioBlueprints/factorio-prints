@@ -17,7 +17,7 @@ function EfficientSearchForm(props)
 	const [localTitleFilter, setLocalTitleFilter] = useState(titleFilter);
 	const debouncedSetTitleFilter                 = useAsyncDebounce((value) =>
 	{
-		setTitleFilter(value || undefined);
+		setTitleFilter(value || '');
 	}, 500);
 
 	const handleSearchString = (event) =>
