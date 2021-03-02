@@ -17,7 +17,7 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-EfficientUserGrid.propTypes = {
+UserGrid.propTypes = {
 	match: PropTypes.shape({
 		params: PropTypes.shape(forbidExtraProps({
 			userId: PropTypes.string.isRequired,
@@ -25,7 +25,7 @@ EfficientUserGrid.propTypes = {
 	}).isRequired,
 };
 
-function EfficientUserGrid(props)
+function UserGrid(props)
 {
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags} = useContext(SearchContext);
@@ -111,4 +111,4 @@ function EfficientUserGrid(props)
 	);
 }
 
-export default EfficientUserGrid;
+export default UserGrid;

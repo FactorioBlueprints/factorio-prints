@@ -14,16 +14,16 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-EfficientBlueprintGrid.propTypes = {};
+MostFavoritedGrid.propTypes = {};
 
-function EfficientBlueprintGrid(props)
+function MostFavoritedGrid(props)
 {
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags} = useContext(SearchContext);
 
 	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
 	{
-		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
+		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/top/page/${page}`;
 		const params = new URLSearchParams();
 		params.append('title', titleFilter);
 		selectedTags.forEach(tag => params.append('tag', tag.value));
@@ -35,7 +35,7 @@ function EfficientBlueprintGrid(props)
 		keepPreviousData: true,
 		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
-	const result  = useQuery(['blueprintSummaries', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
+	const result  = useQuery(['top', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
 
 	// TODO: Refactor out grid commonality
 
@@ -55,7 +55,7 @@ function EfficientBlueprintGrid(props)
 
 	return (
 		<Container fluid>
-			<PageHeader title='Most Recent' />
+			<PageHeader title='Most Favorited' />
 			<Row>
 				<EfficientSearchForm />
 				<EfficientTagForm />
@@ -86,4 +86,4 @@ function EfficientBlueprintGrid(props)
 	);
 }
 
-export default EfficientBlueprintGrid;
+export default MostFavoritedGrid;

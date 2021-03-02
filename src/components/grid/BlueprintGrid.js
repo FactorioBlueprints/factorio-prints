@@ -7,8 +7,6 @@ import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
 
 import SearchContext from '../../context/searchContext';
-import UserContext   from '../../context/userContext';
-import getHeaders    from '../../helpers/getHeaders';
 
 import BlueprintThumbnail  from '../BlueprintThumbnail';
 import PageHeader          from '../PageHeader';
@@ -16,49 +14,32 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-EfficientMyFavoritesGrid.propTypes = {};
+BlueprintGrid.propTypes = {};
 
-function EfficientMyFavoritesGrid(props)
+function BlueprintGrid(props)
 {
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags} = useContext(SearchContext);
 
-	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags, user) =>
+	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
 	{
-		const url    = `${process.env.REACT_APP_REST_URL}/api/my/favoriteBlueprints/page/${page}`;
+		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
 		const params = new URLSearchParams();
 		params.append('title', titleFilter);
 		selectedTags.forEach(tag => params.append('tag', tag.value));
-
-		const idToken = user === undefined ? undefined : await user.getIdToken();
-
-		const options = {
-			params,
-			headers: {
-				Authorization: `Bearer ${idToken}`,
-			}
-		};
-
-		const result = await axios.get(url, options);
+		const result = await axios.get(url, {params});
 		return result.data;
 	};
 
-	const {user}       = useContext(UserContext);
-	const queryEnabled = user !== undefined;
-	const email        = user === undefined ? undefined : user.email;
-	const queryKey     = [email, 'my', 'favoriteBlueprints', page, titleFilter, selectedTags];
-
-	const placeholderData = {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}};
 	const options = {
 		keepPreviousData: true,
-		placeholderData,
-		enabled         : queryEnabled,
+		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
-	const result          = useQuery(queryKey, () => fetchBlueprintSummaries(page, titleFilter, selectedTags, user), options);
+	const result  = useQuery(['blueprintSummaries', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
 
 	// TODO: Refactor out grid commonality
 
-	const {isSuccess, isLoading, isError, data, isPreviousData} = result;
+	const {isLoading, isError, data, isPreviousData} = result;
 
 	if (isError)
 	{
@@ -70,11 +51,11 @@ function EfficientMyFavoritesGrid(props)
 		);
 	}
 
-	const {_data: blueprintSummaries = [], _metadata: {pagination: {numberOfPages = 0, pageNumber = 0}}} = data || placeholderData;
+	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber}}} = data;
 
 	return (
 		<Container fluid>
-			<PageHeader title='My Favorites' />
+			<PageHeader title='Most Recent' />
 			<Row>
 				<EfficientSearchForm />
 				<EfficientTagForm />
@@ -105,4 +86,4 @@ function EfficientMyFavoritesGrid(props)
 	);
 }
 
-export default EfficientMyFavoritesGrid;
+export default BlueprintGrid;
