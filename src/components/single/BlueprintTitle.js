@@ -1,4 +1,4 @@
-import {faCog, faLink}   from '@fortawesome/free-solid-svg-icons';
+import {faLink}          from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps} from 'airbnb-prop-types';
@@ -8,6 +8,7 @@ import PropTypes     from 'prop-types';
 import React         from 'react';
 import DocumentTitle from 'react-document-title';
 import {useQuery}    from 'react-query';
+import LoadingIcon   from '../LoadingIcon';
 
 BlueprintTitle.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
@@ -28,7 +29,7 @@ function BlueprintTitle(props)
 	if (isLoading)
 	{
 		return <>
-			<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
+			<LoadingIcon isLoading={isLoading} />
 			{' Loading...'}
 		</>;
 	}

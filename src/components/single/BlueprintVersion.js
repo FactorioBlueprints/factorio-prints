@@ -1,12 +1,10 @@
-import {faCog}           from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-
 import {forbidExtraProps} from 'airbnb-prop-types';
 
-import axios      from 'axios';
-import PropTypes  from 'prop-types';
-import React      from 'react';
-import {useQuery} from 'react-query';
+import axios       from 'axios';
+import PropTypes   from 'prop-types';
+import React       from 'react';
+import {useQuery}  from 'react-query';
+import LoadingIcon from '../LoadingIcon';
 
 BlueprintVersion.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
@@ -25,7 +23,7 @@ function BlueprintVersion(props)
 
 	if (isLoading)
 	{
-		return <FontAwesomeIcon icon={faCog} spin />;
+		return <LoadingIcon isLoading={isLoading} />;
 	}
 
 	if (isError)

@@ -1,13 +1,11 @@
-import {faCog}           from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-
 import {forbidExtraProps} from 'airbnb-prop-types';
 
-import axios      from 'axios';
-import marked     from 'marked';
-import PropTypes  from 'prop-types';
-import React      from 'react';
-import {useQuery} from 'react-query';
+import axios       from 'axios';
+import marked      from 'marked';
+import PropTypes   from 'prop-types';
+import React       from 'react';
+import {useQuery}  from 'react-query';
+import LoadingIcon from '../LoadingIcon';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -49,10 +47,12 @@ function BlueprintMarkdown(props)
 	const {isSuccess, isLoading, isError, data} = result;
 	if (isLoading)
 	{
-		return (<>
-			<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
-			{' Loading...'}
-		</>);
+		return (
+			<>
+				<LoadingIcon isLoading={isLoading} />
+				{' Loading...'}
+			</>
+		);
 	}
 
 	if (isError)

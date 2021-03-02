@@ -1,6 +1,3 @@
-import {faCog}           from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-
 import {forbidExtraProps} from 'airbnb-prop-types';
 
 import axios      from 'axios';
@@ -10,6 +7,7 @@ import Image      from 'react-bootstrap/Image';
 import {useQuery} from 'react-query';
 
 import buildImageUrl from '../../helpers/buildImageUrl';
+import LoadingIcon   from '../LoadingIcon';
 
 ImgurThumbnail.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
@@ -29,10 +27,12 @@ function ImgurThumbnail(props)
 	const {isSuccess, isLoading, isError, data} = result;
 	if (isLoading)
 	{
-		return (<div className='border-warning'>
-			<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
-			{' Loading...'}
-		</div>);
+		return (
+			<div className='border-warning'>
+				<LoadingIcon isLoading={isLoading} />
+				{' Loading...'}
+			</div>
+		);
 	}
 
 	if (isError || !data.data.imgurImage)

@@ -1,16 +1,17 @@
-import {faCalendar, faClock, faCodeBranch, faCog, faHeart, faUser} from '@fortawesome/free-solid-svg-icons';
+import {faCalendar, faClock, faCodeBranch, faHeart, faUser} from '@fortawesome/free-solid-svg-icons';
 
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
 
-import axios      from 'axios';
-import moment     from 'moment';
-import PropTypes  from 'prop-types';
-import React      from 'react';
-import Card       from 'react-bootstrap/Card';
-import Table      from 'react-bootstrap/Table';
-import {useQuery} from 'react-query';
-import {Link}     from 'react-router-dom';
+import axios       from 'axios';
+import moment      from 'moment';
+import PropTypes   from 'prop-types';
+import React       from 'react';
+import Card        from 'react-bootstrap/Card';
+import Table       from 'react-bootstrap/Table';
+import {useQuery}  from 'react-query';
+import {Link}      from 'react-router-dom';
+import LoadingIcon from '../LoadingIcon';
 
 import BlueprintVersion from './BlueprintVersion';
 
@@ -34,7 +35,7 @@ function BlueprintInfoPanel(props)
 	if (isLoading)
 	{
 		return <>
-			<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
+			<LoadingIcon isLoading={isLoading} />
 			{' Loading...'}
 		</>;
 	}

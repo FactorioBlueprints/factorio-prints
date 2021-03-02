@@ -1,10 +1,9 @@
-import {faCog}            from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import Card               from 'react-bootstrap/Card';
 import useBlueprintString from '../../hooks/useBlueprintString';
+import LoadingIcon        from '../LoadingIcon';
 
 BlueprintStringCard.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
@@ -16,10 +15,12 @@ const getBody = function (result)
 
 	if (isLoading)
 	{
-		return (<>
-			<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
-			{' Loading...'}
-		</>);
+		return (
+			<>
+				<LoadingIcon isLoading={isLoading} />
+				{' Loading...'}
+			</>
+		);
 	}
 
 	if (isError)

@@ -1,11 +1,10 @@
-import {faCog}                from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import axios                  from 'axios';
 import PropTypes              from 'prop-types';
 import React                  from 'react';
 import Card                   from 'react-bootstrap/Card';
 import {useQuery}             from 'react-query';
+import LoadingIcon            from '../LoadingIcon';
 import BlueprintContentHeader from './BlueprintContentHeader';
 
 BlueprintTitles.propTypes = forbidExtraProps({
@@ -27,7 +26,7 @@ function BlueprintTitles(props)
 	{
 		return (
 			<Card>
-				<FontAwesomeIcon icon={faCog} spin />
+				<LoadingIcon isLoading={isLoading} />
 				{' Loading blueprint titles'}
 			</Card>
 		);

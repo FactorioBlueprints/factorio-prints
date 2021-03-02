@@ -1,15 +1,13 @@
-import {faCog}           from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-
 import {forbidExtraProps} from 'airbnb-prop-types';
 import axios              from 'axios';
 
-import PropTypes  from 'prop-types';
-import React      from 'react';
-import Badge      from 'react-bootstrap/Badge';
-import Card       from 'react-bootstrap/Card';
-import {useQuery} from 'react-query';
-import {Link}     from 'react-router-dom';
+import PropTypes   from 'prop-types';
+import React       from 'react';
+import Badge       from 'react-bootstrap/Badge';
+import Card        from 'react-bootstrap/Card';
+import {useQuery}  from 'react-query';
+import {Link}      from 'react-router-dom';
+import LoadingIcon from '../LoadingIcon';
 
 TagLink.propTypes = forbidExtraProps({
 	category: PropTypes.string.isRequired,
@@ -48,7 +46,7 @@ function TagsPanel(props)
 	if (isLoading)
 	{
 		return <>
-			<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
+			<LoadingIcon isLoading={isLoading} />
 			{' Loading...'}
 		</>;
 	}

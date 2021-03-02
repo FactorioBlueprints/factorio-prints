@@ -1,5 +1,5 @@
-import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}                            from '@fortawesome/react-fontawesome';
+import {faArrowLeft, faBan, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}                     from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import axios                  from 'axios';
@@ -40,6 +40,7 @@ import * as propTypes         from '../propTypes';
 import BlueprintProjection    from '../propTypes/BlueprintProjection';
 import TagProjection          from '../propTypes/TagProjection';
 import * as selectors         from '../selectors';
+import LoadingIcon            from './LoadingIcon';
 
 import NoMatch             from './NoMatch';
 import PageHeader          from './PageHeader';
@@ -595,7 +596,7 @@ class EditBlueprint extends PureComponent
 		{
 			return (
 				<h1>
-					<FontAwesomeIcon icon={faCog} spin />
+					<LoadingIcon isLoading={this.props.loading} />
 					{' Loading data'}
 				</h1>
 			);

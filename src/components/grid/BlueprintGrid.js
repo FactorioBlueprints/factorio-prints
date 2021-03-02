@@ -1,5 +1,3 @@
-import {faCog}                       from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
 import axios                         from 'axios';
 import React, {useContext, useState} from 'react';
 import Container                     from 'react-bootstrap/Container';
@@ -9,6 +7,7 @@ import {useQuery}                    from 'react-query';
 import SearchContext from '../../context/searchContext';
 
 import BlueprintThumbnail  from '../BlueprintThumbnail';
+import LoadingIcon         from '../LoadingIcon';
 import PageHeader          from '../PageHeader';
 import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
@@ -61,7 +60,7 @@ function BlueprintGrid(props)
 				<EfficientTagForm />
 			</Row>
 			{isLoading && <Row>
-				<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
+				<LoadingIcon isLoading={isLoading} />
 				{' Loading blueprints'}
 			</Row>}
 			<Row className='justify-content-center'>

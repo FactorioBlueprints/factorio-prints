@@ -1,4 +1,4 @@
-import {faAngleDoubleLeft, faAngleLeft, faAngleRight, faCog} from '@fortawesome/free-solid-svg-icons';
+import {faAngleDoubleLeft, faAngleLeft, faAngleRight} from '@fortawesome/free-solid-svg-icons';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
@@ -6,9 +6,10 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 
-import Button from 'react-bootstrap/Button';
-import Col    from 'react-bootstrap/Col';
-import Row    from 'react-bootstrap/Row';
+import Button      from 'react-bootstrap/Button';
+import Col         from 'react-bootstrap/Col';
+import Row         from 'react-bootstrap/Row';
+import LoadingIcon from '../LoadingIcon';
 
 PaginationControls.propTypes = forbidExtraProps({
 	page          : PropTypes.number.isRequired,
@@ -30,7 +31,7 @@ function PaginationControls({page, setPage, pageNumber, isPreviousData, numberOf
 
 	return (
 		<Row className='justify-content-center'>
-			{page !== pageNumber && <FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />}
+			<LoadingIcon isLoading={page !== pageNumber} />
 			<Col md={{span: 6, offset: 3}}>
 				<Button type='button' onClick={() => setPage(1)} disabled={page === 1}>
 					<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
