@@ -1,8 +1,9 @@
-import axios                         from 'axios';
-import React, {useContext, useState} from 'react';
-import Container                     from 'react-bootstrap/Container';
-import Row                           from 'react-bootstrap/Row';
-import {useQuery}                    from 'react-query';
+import axios                                    from 'axios';
+import PropTypes                                from 'prop-types';
+import React, {useContext, useEffect, useState} from 'react';
+import Container                                from 'react-bootstrap/Container';
+import Row                                      from 'react-bootstrap/Row';
+import {useQuery}                               from 'react-query';
 
 import SearchContext from '../../context/searchContext';
 
@@ -13,12 +14,14 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-BlueprintGrid.propTypes = {};
+BlueprintGrid.propTypes = {
+	initialTag: PropTypes.string,
+};
 
 function BlueprintGrid(props)
 {
 	const [page, setPage]             = useState(1);
-	const {titleFilter, selectedTags} = useContext(SearchContext);
+	const {titleFilter, selectedTags, setSelectedTags} = useContext(SearchContext);
 
 	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
 	{
@@ -39,6 +42,16 @@ function BlueprintGrid(props)
 	// TODO: Refactor out grid commonality
 
 	const {isLoading, isError, data, isPreviousData} = result;
+
+	useEffect(() =>
+	{
+		if (props.initialTag !== undefined && JSON.stringify([props.initialTag]) !== JSON.stringify(selectedTags))
+		{
+			console.log('initialTag', props.initialTag);
+			selectedTags.forEach(selectedTag => console.log('selectedTag', selectedTag));
+			setSelectedTags([props.initialTag]);
+		}
+	});
 
 	if (isError)
 	{
