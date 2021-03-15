@@ -28,6 +28,8 @@ function EfficientTagForm(props)
 	const result     = useQuery(['tags'], fetchTagsOptions, options);
 	const tagOptions = result.data;
 
+	console.log({tagOptions, selectedTags});
+
 	return (
 		<Col md={6}>
 			<Select
