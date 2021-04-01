@@ -1,16 +1,18 @@
 import {faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
 
-import {forbidExtraProps} from 'airbnb-prop-types';
-import axios              from 'axios';
-import PropTypes          from 'prop-types';
-import React, {useState}  from 'react';
-import Button             from 'react-bootstrap/Button';
-import Card               from 'react-bootstrap/Card';
-import Col                from 'react-bootstrap/Col';
-import Container          from 'react-bootstrap/Container';
-import Row                from 'react-bootstrap/Row';
-import {useQuery}         from 'react-query';
+import {forbidExtraProps}            from 'airbnb-prop-types';
+import axios                         from 'axios';
+import PropTypes                     from 'prop-types';
+import React, {useContext, useState} from 'react';
+import Button                        from 'react-bootstrap/Button';
+import Card                          from 'react-bootstrap/Card';
+import Col                           from 'react-bootstrap/Col';
+import Container                     from 'react-bootstrap/Container';
+import Row                           from 'react-bootstrap/Row';
+import {useQuery}                    from 'react-query';
+import {useParams}                   from 'react-router-dom';
+import UserContext                   from '../../context/userContext';
 
 import GoogleAd                  from '../GoogleAd';
 import BlueprintInfoPanel        from './BlueprintInfoPanel';
@@ -53,14 +55,10 @@ ShowButton.propTypes = forbidExtraProps({
 	text: PropTypes.string.isRequired,
 });
 
-EfficientSingleBlueprint.propTypes = forbidExtraProps({
-	blueprintKey: PropTypes.string.isRequired,
-	userId      : PropTypes.string,
-});
-
-function EfficientSingleBlueprint(props)
+function EfficientSingleBlueprint()
 {
-	const {blueprintKey, userId} = props;
+	const {blueprintId} = useParams();
+	const blueprintKey = blueprintId;
 
 	const [showBlueprintString, setShowBlueprintString] = useState(false);
 
@@ -71,7 +69,10 @@ function EfficientSingleBlueprint(props)
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
 	);
 
-	const {isSuccess, data}  = result;
+	const {isSuccess, data} = result;
+
+	const {user} = useContext(UserContext);
+	const userId = user && user.uid;
 	const ownedByCurrentUser = isSuccess && userId !== undefined && userId === data.data.author.authorId;
 
 	return (
