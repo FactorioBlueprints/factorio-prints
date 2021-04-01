@@ -13,9 +13,7 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-MostFavoritedGrid.propTypes = {};
-
-function MostFavoritedGrid(props)
+function MostFavoritedGrid()
 {
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags} = useContext(SearchContext);

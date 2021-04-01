@@ -15,9 +15,6 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-UserGrid.propTypes = {
-};
-
 function UserGrid()
 {
 	const [page, setPage]             = useState(1);

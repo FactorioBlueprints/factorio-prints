@@ -1,11 +1,13 @@
 import {faDiscord, faGithub, faReddit} from '@fortawesome/free-brands-svg-icons';
 import {faEnvelope}                    from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}               from '@fortawesome/react-fontawesome';
-import React                           from 'react';
-import Jumbotron                       from 'react-bootstrap/Jumbotron';
 
-const Contact = () =>
-	(
+import React     from 'react';
+import Jumbotron from 'react-bootstrap/Jumbotron';
+
+function Contact()
+{
+	return (
 		<Jumbotron>
 			<h1 className='display-4'>
 				Contact me
@@ -49,5 +51,6 @@ const Contact = () =>
 			</p>
 		</Jumbotron>
 	);
+}
 
 export default Contact;

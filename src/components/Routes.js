@@ -10,7 +10,7 @@ import Header                         from './Header';
 import Intro                          from './Intro';
 import NoMatch                        from './NoMatch';
 import ScrollToTop                    from './ScrollToTop';
-import EfficientSingleBlueprint       from './single/EfficientSingleBlueprint';
+import SingleBlueprint                from './single/EfficientSingleBlueprint';
 
 Routes.propTypes = {};
 
@@ -39,7 +39,7 @@ function Routes(props)
 					<Route path='/favorites' exact component={MyFavoritesGrid} />
 					<Route path='/contact' exact component={Contact} />
 					<Route path='/account' exact component={Account} />
-					<Route path='/view/:blueprintId' component={EfficientSingleBlueprint} />
+					<Route path='/view/:blueprintId' component={SingleBlueprint} />
 					{/* <Route path='/edit/:blueprintId' component={EditBlueprint} /> */}
 					<Route path='/user/:userId' component={UserGrid} />
 					<Route component={NoMatch} />

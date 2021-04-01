@@ -14,9 +14,7 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-MyFavoritesGrid.propTypes = {};
-
-function MyFavoritesGrid(props)
+function MyFavoritesGrid()
 {
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags} = useContext(SearchContext);
@@ -47,7 +45,7 @@ function MyFavoritesGrid(props)
 	const queryKey     = [email, 'my', 'favoriteBlueprints', page, titleFilter, selectedTags];
 
 	const placeholderData = {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}};
-	const options = {
+	const options         = {
 		keepPreviousData: true,
 		placeholderData,
 		enabled         : queryEnabled,
@@ -68,7 +66,9 @@ function MyFavoritesGrid(props)
 		);
 	}
 
-	const {_data: blueprintSummaries = [], _metadata: {pagination: {numberOfPages = 0, pageNumber = 0}}} = data || placeholderData;
+	const {_data       : blueprintSummaries = [],
+			  _metadata: {pagination: {numberOfPages = 0, pageNumber = 0}},
+		  } = data || placeholderData;
 
 	return (
 		<Container fluid>

@@ -1,13 +1,11 @@
 import axios                         from 'axios';
-import PropTypes                     from 'prop-types';
 import React, {useContext, useState} from 'react';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
 
-import SearchContext  from '../../context/searchContext';
-import useQueryString from '../../hooks/useQueryString';
-import useTagOptions  from '../../hooks/useTagOptions';
+import SearchContext from '../../context/searchContext';
+import useTagOptions from '../../hooks/useTagOptions';
 
 import BlueprintThumbnail  from '../BlueprintThumbnail';
 import LoadingIcon         from '../LoadingIcon';
@@ -16,14 +14,10 @@ import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
-BlueprintGrid.propTypes = {
-	initialTag: PropTypes.string,
-};
-
-function BlueprintGrid(props)
+function BlueprintGrid()
 {
 	const [page, setPage]             = useState(1);
-	const {titleFilter, selectedTags, setSelectedTags} = useContext(SearchContext);
+	const {titleFilter, selectedTags} = useContext(SearchContext);
 
 	const {tagValuesSet} = useTagOptions();
 
