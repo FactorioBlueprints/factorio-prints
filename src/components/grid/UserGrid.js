@@ -1,10 +1,9 @@
-import {forbidExtraProps}            from 'airbnb-prop-types';
 import axios                         from 'axios';
-import PropTypes                     from 'prop-types';
 import React, {useContext, useState} from 'react';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
+import {useParams}                   from 'react-router-dom';
 
 import SearchContext from '../../context/searchContext';
 import UserContext   from '../../context/userContext';
@@ -17,20 +16,15 @@ import EfficientTagForm    from '../search/EfficientTagForm';
 import PaginationControls  from './PaginationControls';
 
 UserGrid.propTypes = {
-	match: PropTypes.shape({
-		params: PropTypes.shape(forbidExtraProps({
-			userId: PropTypes.string.isRequired,
-		})).isRequired,
-	}).isRequired,
 };
 
-function UserGrid(props)
+function UserGrid()
 {
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags} = useContext(SearchContext);
 	const {user}                      = useContext(UserContext);
 
-	const userId = props.match.params.userId;
+	const {userId} = useParams();
 
 	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags, userId) =>
 	{
