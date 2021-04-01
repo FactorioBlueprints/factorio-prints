@@ -10,7 +10,6 @@ function useQueryString(key, initialValue)
 	const onSetValue        = useCallback(
 		(newValue) =>
 		{
-			console.log('useQueryString.onSetValue.useCallback', {key, newValue});
 			setValue(newValue);
 			setQueryStringValue(key, newValue);
 		},
