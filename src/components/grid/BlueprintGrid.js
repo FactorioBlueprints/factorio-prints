@@ -1,11 +1,13 @@
-import axios                                    from 'axios';
-import PropTypes                                from 'prop-types';
-import React, {useContext, useEffect, useState} from 'react';
-import Container                                from 'react-bootstrap/Container';
-import Row                                      from 'react-bootstrap/Row';
-import {useQuery}                               from 'react-query';
+import axios                         from 'axios';
+import PropTypes                     from 'prop-types';
+import React, {useContext, useState} from 'react';
+import Container                     from 'react-bootstrap/Container';
+import Row                           from 'react-bootstrap/Row';
+import {useQuery}                    from 'react-query';
 
-import SearchContext from '../../context/searchContext';
+import SearchContext  from '../../context/searchContext';
+import useQueryString from '../../hooks/useQueryString';
+import useTagOptions  from '../../hooks/useTagOptions';
 
 import BlueprintThumbnail  from '../BlueprintThumbnail';
 import LoadingIcon         from '../LoadingIcon';
@@ -23,12 +25,17 @@ function BlueprintGrid(props)
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags, setSelectedTags} = useContext(SearchContext);
 
-	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTags) =>
+	const {tagValuesSet} = useTagOptions();
+
+	const selectedTagValues = selectedTags
+		.filter(each => tagValuesSet.has(each));
+
+	const fetchBlueprintSummaries = async (page = 1, titleFilter, selectedTagValues) =>
 	{
 		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
 		const params = new URLSearchParams();
 		params.append('title', titleFilter);
-		selectedTags.forEach(tag => params.append('tag', tag.value));
+		selectedTags.forEach(tag => params.append('tag', '/' + tag + '/'));
 		const result = await axios.get(url, {params});
 		return result.data;
 	};
@@ -37,25 +44,20 @@ function BlueprintGrid(props)
 		keepPreviousData: true,
 		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
-	const result  = useQuery(['blueprintSummaries', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
+
+	const result = useQuery(
+		['blueprintSummaries', page, titleFilter, selectedTagValues],
+		() => fetchBlueprintSummaries(page, titleFilter, selectedTagValues),
+		options,
+	);
 
 	// TODO: Refactor out grid commonality
 
 	const {isLoading, isError, data, isPreviousData} = result;
 
-	useEffect(() =>
-	{
-		if (props.initialTag !== undefined && JSON.stringify([props.initialTag]) !== JSON.stringify(selectedTags))
-		{
-			console.log('initialTag', props.initialTag);
-			selectedTags.forEach(selectedTag => console.log('selectedTag', selectedTag));
-			setSelectedTags([props.initialTag]);
-		}
-	});
-
 	if (isError)
 	{
-		console.log({result});
+		console.log('BlueprintGrid isError=true', {result});
 		return (
 			<>
 				{'Error loading blueprint summaries.'}

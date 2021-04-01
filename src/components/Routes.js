@@ -9,6 +9,7 @@ import UserGrid                       from './grid/UserGrid';
 import Header                         from './Header';
 import Intro                          from './Intro';
 import NoMatch                        from './NoMatch';
+import ScrollToTop                    from './ScrollToTop';
 import SingleBlueprint                from './SingleBlueprint';
 
 Routes.propTypes = {};
@@ -23,23 +24,16 @@ function renderIntro()
 	);
 }
 
-function renderTag(props)
-{
-	const {pathname} = props.location;
-	const tagId      = pathname.replace(/^\/tagged/, '');
-
-	return <BlueprintGrid initialTag={tagId} />;
-}
-
 function Routes(props)
 {
 	return (
 		<BrowserRouter>
+			<ScrollToTop />
 			<div>
 				<Route path='/' component={Header} />
 				<Switch>
 					<Route path='/' exact render={renderIntro} />
-					<Route path='/blueprints' exact component={BlueprintGrid} />
+					<Route path='/blueprints' component={BlueprintGrid} />
 					<Route path='/top' exact component={MostFavoritedGrid} />
 					{/* <Route path='/create' exact component={Create} /> */}
 					<Route path='/favorites' exact component={MyFavoritesGrid} />
@@ -48,7 +42,6 @@ function Routes(props)
 					<Route path='/view/:blueprintId' component={SingleBlueprint} />
 					{/* <Route path='/edit/:blueprintId' component={EditBlueprint} /> */}
 					<Route path='/user/:userId' component={UserGrid} />
-					<Route path='/tagged/:tag' render={renderTag} />
 					<Route component={NoMatch} />
 				</Switch>
 			</div>

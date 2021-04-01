@@ -45,6 +45,7 @@
     "moment": "2.27.0",
     "pako": "1.0.11",
     "prop-types": "15.7.2",
+    "query-string": "^7.0.0",
     "re-base": "4.0.0",
     "react": "17.0.1",
     "react-bootstrap": "1.3.0",

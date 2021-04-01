@@ -37,7 +37,7 @@ function UserGrid(props)
 		const url    = `${process.env.REACT_APP_REST_URL}/api/user/${userId}/blueprintSummaries/page/${page}`;
 		const params = new URLSearchParams();
 		params.append('title', titleFilter);
-		selectedTags.forEach(tag => params.append('tag', tag));
+		selectedTags.forEach(tag => params.append('tag', '/' + tag + '/'));
 		const result = await axios.get(url, {params});
 		return result.data;
 	};

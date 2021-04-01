@@ -1,11 +1,10 @@
-import axios               from 'axios';
 import React, {useContext} from 'react';
 import Col                 from 'react-bootstrap/Col';
-import {useQuery}          from 'react-query';
 import Select              from 'react-select';
 import makeAnimated        from 'react-select/animated';
 
 import SearchContext from '../../context/searchContext';
+import useTagOptions from '../../hooks/useTagOptions';
 
 const animatedComponents = makeAnimated();
 
@@ -13,31 +12,28 @@ EfficientTagForm.propTypes = {};
 
 function EfficientTagForm(props)
 {
+	const {tagValuesSet, tagOptions} = useTagOptions();
+
 	const {selectedTags, setSelectedTags} = useContext(SearchContext);
 
-	const options = {
-		placeholderData: [],
-	};
+	const selectedTagOptions = selectedTags
+		.filter(each => tagValuesSet.has(each))
+		.map(value => ({label: value, value}));
 
-	const fetchTagsOptions = async () =>
+	const setSelectedTagValues = (selectedTags) =>
 	{
-		const tags = await axios.get(`${process.env.REACT_APP_REST_URL}/api/tags/`);
-		return tags.data.map(tag => ({label: `${tag.category}/${tag.name}`, value: `/${tag.category}/${tag.name}/`}));
+		const selectedTagValues = selectedTags.map(selectedTag => selectedTag.value);
+		setSelectedTags(selectedTagValues);
 	};
-
-	const result     = useQuery(['tags'], fetchTagsOptions, options);
-	const tagOptions = result.data;
-
-	console.log({tagOptions, selectedTags});
 
 	return (
 		<Col md={6}>
 			<Select
-				value={selectedTags}
+				value={selectedTagOptions}
 				options={tagOptions}
-				onChange={setSelectedTags}
+				onChange={setSelectedTagValues}
 				isMulti
-				closeMenuOnSelect={false}
+				closeMenuOnSelect
 				components={animatedComponents}
 				placeholder='search tags'
 				className='tag-form'

@@ -18,7 +18,7 @@ function TagLink({category, name})
 {
 	const tagString = `${category}/${name}`;
 	return <Link
-		to={`/tagged/${tagString}/`}
+		to={`/blueprints?tag[0]=${tagString}`}
 		className='m-1'
 	>
 		<Badge variant='warning'>
