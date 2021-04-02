@@ -5,8 +5,9 @@ import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
 import {useParams}                   from 'react-router-dom';
 
-import SearchContext from '../../context/searchContext';
-import UserContext   from '../../context/userContext';
+import SearchContext  from '../../context/searchContext';
+import UserContext    from '../../context/userContext';
+import useDisplayName from '../../hooks/useDisplayName';
 
 import BlueprintThumbnail  from '../BlueprintThumbnail';
 import LoadingIcon         from '../LoadingIcon';
@@ -33,27 +34,21 @@ function UserGrid()
 		return result.data;
 	};
 
-	const fetchDisplayName = async (userId) =>
-	{
-		const url    = `${process.env.REACT_APP_REST_URL}/api/user/${userId}/displayName/`;
-		const result = await axios.get(url);
-		return result.data;
-	};
-
 	const options = {
 		keepPreviousData: true,
 		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
 	};
 	const result  = useQuery(['user', userId, page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags, userId), options);
 
-	const displayNameResult = useQuery(['user', userId, 'displayName'], () => fetchDisplayName(userId));
+	const displayNameResult = useDisplayName(userId);
+	console.log('UserGrid', displayNameResult);
 
 	// TODO: Refactor out grid commonality
 
 	const {isLoading, isError, data, isPreviousData} = result;
 	const {isLoading: isDisplayNameLoading, data: displayNameData} = displayNameResult;
 
-	if (isError)
+	if (isError || displayNameData._data === null)
 	{
 		console.log({result});
 		return (

@@ -69,7 +69,7 @@ class Header extends PureComponent
 
 	handleEdit = () =>
 	{
-		this.props.history.push('account');
+		this.props.history.push('/account');
 	}
 
 	handleLogout = () =>
