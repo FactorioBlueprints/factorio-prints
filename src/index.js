@@ -16,14 +16,12 @@ import './css/style.css';
 
 import {saveState} from './localStorage';
 
-import rootReducer           from './reducers/rootReducer';
-import registerServiceWorker from './registerServiceWorker';
-import rootSaga              from './sagas/rootSaga';
+import rootReducer     from './reducers/rootReducer';
+import reportWebVitals from './reportWebVitals';
+import rootSaga        from './sagas/rootSaga';
 
 // Create the saga middleware
 const sagaMiddleware = createSagaMiddleware();
-
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 // Const preloadedState = loadState();
 
@@ -31,7 +29,7 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
 	rootReducer,
 	// PreloadedState,
-	composeEnhancers(applyMiddleware(sagaMiddleware))
+	compose(applyMiddleware(sagaMiddleware))
 );
 
 store.subscribe(throttle(() =>
@@ -79,8 +77,18 @@ sagaMiddleware.run(rootSaga);
 
 const provider = (
 	<Provider store={store}>
-		<Root />
+		<React.StrictMode>
+			<Root />
+		</React.StrictMode>
 	</Provider>
 );
-ReactDOM.render(provider, document.getElementById('root'));
-registerServiceWorker();
+
+ReactDOM.render(
+	provider,
+	document.getElementById('root')
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
