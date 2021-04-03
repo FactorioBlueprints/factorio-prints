@@ -41,7 +41,6 @@ function UserGrid()
 	const result  = useQuery(['user', userId, page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags, userId), options);
 
 	const displayNameResult = useDisplayName(userId);
-	console.log('UserGrid', displayNameResult);
 
 	// TODO: Refactor out grid commonality
 

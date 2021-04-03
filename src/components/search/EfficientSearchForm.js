@@ -11,14 +11,12 @@ import SearchContext from '../../context/searchContext';
 
 EfficientSearchForm.propTypes = {};
 
-function EfficientSearchForm(props)
+function EfficientSearchForm()
 {
 	const {titleFilter, setTitleFilter}           = useContext(SearchContext);
 	const [localTitleFilter, setLocalTitleFilter] = useState(titleFilter);
-	const debouncedSetTitleFilter                 = useAsyncDebounce((value) =>
-	{
-		setTitleFilter(value || '');
-	}, 500);
+
+	const debouncedSetTitleFilter = useAsyncDebounce((value) => setTitleFilter(value || ''), 500);
 
 	const handleSearchString = (event) =>
 	{
