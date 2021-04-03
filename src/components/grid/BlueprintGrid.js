@@ -29,7 +29,7 @@ function BlueprintGrid()
 		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
 		const params = new URLSearchParams();
 		params.append('title', titleFilter);
-		selectedTags.forEach(tag => params.append('tag', '/' + tag + '/'));
+		selectedTagValues.forEach(tag => params.append('tag', `/${tag}/`));
 		const result = await axios.get(url, {params});
 		return result.data;
 	};
