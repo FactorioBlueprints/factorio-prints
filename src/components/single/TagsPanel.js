@@ -1,13 +1,14 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 import axios              from 'axios';
 
-import PropTypes   from 'prop-types';
-import React       from 'react';
-import Badge       from 'react-bootstrap/Badge';
-import Card        from 'react-bootstrap/Card';
-import {useQuery}  from 'react-query';
-import {Link}      from 'react-router-dom';
-import LoadingIcon from '../LoadingIcon';
+import PropTypes           from 'prop-types';
+import React, {useContext} from 'react';
+import Badge               from 'react-bootstrap/Badge';
+import Card                from 'react-bootstrap/Card';
+import {useQuery}          from 'react-query';
+import {useHistory}        from 'react-router-dom';
+import SearchContext       from '../../context/searchContext';
+import LoadingIcon         from '../LoadingIcon';
 
 TagLink.propTypes = forbidExtraProps({
 	category: PropTypes.string.isRequired,
@@ -17,14 +18,26 @@ TagLink.propTypes = forbidExtraProps({
 function TagLink({category, name})
 {
 	const tagString = `${category}/${name}`;
-	return <Link
-		to={`/blueprints?tag[0]=${tagString}`}
-		className='m-1'
-	>
-		<Badge variant='warning'>
-			{tagString}
-		</Badge>
-	</Link>;
+
+	const {setTitleFilter, setSelectedTags} = useContext(SearchContext);
+
+	const history = useHistory();
+
+	const handleClick = () =>
+	{
+		setTitleFilter('');
+		setSelectedTags([tagString]);
+		console.log('history.push', `/blueprints?tag[0]=${tagString}`);
+		history.push(`/blueprints?tag[0]=${tagString}`);
+	};
+
+	return (
+		<a onClick={handleClick} style={{cursor: 'pointer'}}>
+			<Badge variant='warning' className='mr-1'>
+				{tagString}
+			</Badge>
+		</a>
+	);
 }
 
 TagsPanel.propTypes = forbidExtraProps({
@@ -70,7 +83,9 @@ function TagsPanel(props)
 		<Card.Body>
 			<h4>
 				{
-					tags.map(tag => tag.tag).filter(tag => tag !== null).map(({category, name}) => (
+					tags.map(tag => tag.tag)
+						.filter(tag => tag !== null)
+						.map(({category, name}) => (
 						<TagLink
 							category={category}
 							name={name}
