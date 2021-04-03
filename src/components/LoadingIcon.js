@@ -10,8 +10,8 @@ LoadingIcon.propTypes = {
 function LoadingIcon(props)
 {
 	return props.isLoading
-		? <></>
-		: <FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />;
+		? <FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
+		: <></>;
 }
 
 export default LoadingIcon;
