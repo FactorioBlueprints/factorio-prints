@@ -2,12 +2,16 @@ import {decodeV15Base64} from './parser/decodeFromBase64';
 
 class Blueprint
 {
-	constructor(encodedText)
+	private readonly encodedText: string;
+
+	private cachedDecodedObject: any;
+
+	constructor(encodedText: string)
 	{
 		this.encodedText = encodedText;
 	}
 
-	get decodedObject()
+	get decodedObject(): any
 	{
 		if (this.cachedDecodedObject == null)
 		{
@@ -16,31 +20,31 @@ class Blueprint
 		return this.cachedDecodedObject;
 	}
 
-	convertEncodedTextToObject = () =>
+	convertEncodedTextToObject(): any
 	{
-		const jsonString = decodeV15Base64(this.encodedText);
+		const jsonString: string = decodeV15Base64(this.encodedText);
 		return JSON.parse(jsonString);
-	};
+	}
 
-	isBook = () =>
+	isBook(): boolean
 	{
 		return this.decodedObject.blueprint_book !== undefined;
-	};
+	}
 
-	isBlueprint = () =>
+	isBlueprint(): boolean
 	{
 		return this.decodedObject.blueprint !== undefined;
-	};
+	}
 
-	isUpgradePlanner = () =>
+	isUpgradePlanner(): boolean
 	{
 		return this.decodedObject.upgrade_planner !== undefined;
-	};
+	}
 
-	getV15Decoded = () =>
+	getV15Decoded(): any
 	{
 		return this.decodedObject;
-	};
+	}
 }
 
 export default Blueprint;

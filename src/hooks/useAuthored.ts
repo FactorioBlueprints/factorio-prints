@@ -1,15 +1,15 @@
-import axios               from 'axios';
-import React, {useContext} from 'react';
-import {useQuery}          from 'react-query';
-import UserContext         from '../context/userContext';
+import axios from 'axios';
+import {useContext} from 'react';
+import {useQuery} from 'react-query';
+import UserContext from '../context/userContext';
 
 import getHeaders from '../helpers/getHeaders';
 
 function useAuthored()
 {
-	const {user}       = useContext(UserContext);
+	const {user}: any  = useContext(UserContext);
 	const queryEnabled = user !== undefined;
-	const email = user === undefined ? undefined : user.email;
+	const email        = user?.email;
 	const queryKey     = [email, 'authored'];
 
 	return useQuery(
@@ -22,9 +22,9 @@ function useAuthored()
 	);
 }
 
-async function getAuthored(user)
+async function getAuthored(user: any)
 {
-	const idToken = user === undefined ? undefined : await user.getIdToken();
+	const idToken = await user?.getIdToken();
 
 	const headers  = getHeaders(idToken);
 	const response = await axios.get(`${process.env.REACT_APP_REST_URL}/api/my/blueprints/`, headers);

@@ -1,4 +1,4 @@
-function getHeaders(idToken)
+function getHeaders(idToken: string)
 {
 	return {
 		headers: {

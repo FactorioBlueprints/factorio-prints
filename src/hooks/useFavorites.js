@@ -1,7 +1,7 @@
-import axios               from 'axios';
-import React, {useContext} from 'react';
-import {useQuery}          from 'react-query';
-import UserContext         from '../context/userContext';
+import axios        from 'axios';
+import {useContext} from 'react';
+import {useQuery}   from 'react-query';
+import UserContext  from '../context/userContext';
 
 import getHeaders from '../helpers/getHeaders';
 
