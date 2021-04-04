@@ -29,7 +29,7 @@ const sagaMiddleware = createSagaMiddleware();
 const store = createStore(
 	rootReducer,
 	// PreloadedState,
-	compose(applyMiddleware(sagaMiddleware))
+	compose(applyMiddleware(sagaMiddleware)),
 );
 
 store.subscribe(throttle(() =>
@@ -77,15 +77,13 @@ sagaMiddleware.run(rootSaga);
 
 const provider = (
 	<Provider store={store}>
-		<React.StrictMode>
-			<Root />
-		</React.StrictMode>
+		<Root />
 	</Provider>
 );
 
 ReactDOM.render(
 	provider,
-	document.getElementById('root')
+	document.getElementById('root'),
 );
 
 // If you want to start measuring performance in your app, pass a function
