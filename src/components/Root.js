@@ -55,7 +55,7 @@ class Root extends PureComponent
 	{
 		return (
 			<QueryClientProvider client={queryClient}>
-				<UserContext.Provider value={{user: this.state.user}}>
+				<UserContext.Provider value={this.state.user}>
 					<DocumentTitle title='Factorio Prints'>
 						<SearchState>
 							<Routes />
