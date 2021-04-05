@@ -13,6 +13,7 @@ import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
 import {useParams}                   from 'react-router-dom';
 import UserContext                   from '../../context/userContext';
+import useIsModerator                from '../../hooks/useIsModerator';
 
 import GoogleAd                  from '../GoogleAd';
 import BlueprintInfoPanel        from './BlueprintInfoPanel';
@@ -76,6 +77,8 @@ function EfficientSingleBlueprint()
 
 	const ownedByCurrentUser = isSuccess && userId !== undefined && userId === data.data.author.authorId;
 
+	const isModerator = useIsModerator();
+
 	return (
 		<Container>
 			<Row>
@@ -85,7 +88,7 @@ function EfficientSingleBlueprint()
 					</div>
 				</Col>
 				<Col md={3} className='d-flex align-items-center justify-content-end'>
-					{/*	{(ownedByCurrentUser || isModerator) && this.renderEditButton()}*/}
+					{(ownedByCurrentUser || isModerator) && renderEditButton()}
 					{!ownedByCurrentUser && <FavoriteButton blueprintKey={blueprintKey} />}
 				</Col>
 			</Row>
