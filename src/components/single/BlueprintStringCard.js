@@ -9,9 +9,9 @@ BlueprintStringCard.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
 });
 
-const getBody = function (result)
+function getBody(result)
 {
-	const {isSuccess, isLoading, isError, data} = result;
+	const {isLoading, isError, data} = result;
 
 	if (isLoading)
 	{
@@ -38,7 +38,7 @@ const getBody = function (result)
 			{data.data}
 		</div>
 	);
-};
+}
 
 function BlueprintStringCard(props)
 {

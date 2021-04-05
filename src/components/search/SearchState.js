@@ -1,7 +1,7 @@
-import PropTypes         from 'prop-types';
-import React, {useState} from 'react';
-import SearchContext     from '../../context/searchContext';
-import useQueryString    from '../../hooks/useQueryString';
+import PropTypes      from 'prop-types';
+import React          from 'react';
+import SearchContext  from '../../context/searchContext';
+import useQueryString from '../../hooks/useQueryString';
 
 SearchState.propTypes = {
 	children: PropTypes.node.isRequired,

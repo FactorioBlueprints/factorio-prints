@@ -10,7 +10,7 @@ const animatedComponents = makeAnimated();
 
 EfficientTagForm.propTypes = {};
 
-function EfficientTagForm(props)
+function EfficientTagForm()
 {
 	const {tagValuesSet, tagOptions} = useTagOptions();
 

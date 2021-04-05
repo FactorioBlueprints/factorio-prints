@@ -11,16 +11,7 @@ BlueprintContentHeader.propTypes = forbidExtraProps({
 	isActive: PropTypes.bool,
 });
 
-function BlueprintContentHeader(props)
-{
-	const {data, isActive} = props;
-	const body             = getBody(data);
-	const bg               = isActive ? 'dark' : 'primary';
-
-	return body;
-}
-
-function getBody(data)
+function BlueprintContentHeader({data})
 {
 	if (data.blueprint_book)
 	{
@@ -44,16 +35,11 @@ function getBody(data)
 	}
 }
 
-function getRowContent(data)
-{
-
-}
-
 function getBlueprintBook(data)
 {
 	const firstRow = getBlueprint(data);
 
-	const {icons, item, label, blueprints, active_index} = data;
+	const {blueprints, active_index} = data;
 
 	return (
 		<>
@@ -73,7 +59,7 @@ function getBlueprintBook(data)
 			</Card>
 		</>
 	);
-};
+}
 
 function getBlueprint(data)
 {

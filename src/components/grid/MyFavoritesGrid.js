@@ -54,7 +54,7 @@ function MyFavoritesGrid()
 
 	// TODO: Refactor out grid commonality
 
-	const {isSuccess, isLoading, isError, data, isPreviousData} = result;
+	const {isLoading, isError, data, isPreviousData} = result;
 
 	if (isError)
 	{

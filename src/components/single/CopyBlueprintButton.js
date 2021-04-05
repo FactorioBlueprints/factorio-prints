@@ -18,7 +18,7 @@ function CopyBlueprintStringButton(props)
 	const {blueprintKey} = props;
 	const result         = useBlueprintString(blueprintKey);
 
-	const {isSuccess, isLoading, isError, data} = result;
+	const {isLoading, isError, data} = result;
 
 	if (isLoading)
 	{

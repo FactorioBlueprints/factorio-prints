@@ -24,7 +24,7 @@ function ImgurThumbnail(props)
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
 	);
 
-	const {isSuccess, isLoading, isError, data} = result;
+	const {isLoading, isError, data} = result;
 	if (isLoading)
 	{
 		return (

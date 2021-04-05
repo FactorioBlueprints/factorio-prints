@@ -31,7 +31,7 @@ function BlueprintInfoPanel(props)
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
 	);
 
-	const {isSuccess, isLoading, isError, data} = result;
+	const {isLoading, isError, data} = result;
 	if (isLoading)
 	{
 		return <>
@@ -50,7 +50,7 @@ function BlueprintInfoPanel(props)
 		);
 	}
 
-	const {createdOn, systemFrom, author: {userId: authorId, displayName}, title, numberOfUpvotes} = data.data;
+	const {createdOn, systemFrom, author: {userId: authorId, displayName}, numberOfUpvotes} = data.data;
 
 	return (
 		<Card>
