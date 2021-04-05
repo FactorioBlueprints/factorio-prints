@@ -22,7 +22,7 @@ async function postIsFavorite(blueprintKey, isFavorite, user)
 function FavoriteButton({blueprintKey})
 {
 	const queryClient  = useQueryClient();
-	const {user}       = useContext(UserContext);
+	const user         = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 
 	// TODO: Switch to the other favorites hook

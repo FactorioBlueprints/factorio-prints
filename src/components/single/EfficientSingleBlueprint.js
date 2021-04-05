@@ -58,7 +58,7 @@ ShowButton.propTypes = forbidExtraProps({
 function EfficientSingleBlueprint()
 {
 	const {blueprintId} = useParams();
-	const blueprintKey = blueprintId;
+	const blueprintKey  = blueprintId;
 
 	const [showBlueprintString, setShowBlueprintString] = useState(false);
 
@@ -71,8 +71,9 @@ function EfficientSingleBlueprint()
 
 	const {isSuccess, data} = result;
 
-	const {user} = useContext(UserContext);
+	const user   = useContext(UserContext);
 	const userId = user && user.uid;
+
 	const ownedByCurrentUser = isSuccess && userId !== undefined && userId === data.data.author.authorId;
 
 	return (

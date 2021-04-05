@@ -39,7 +39,7 @@ function MyFavoritesGrid()
 		return result.data;
 	};
 
-	const {user}       = useContext(UserContext);
+	const user         = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 	const email        = user === undefined ? undefined : user.email;
 	const queryKey     = [email, 'my', 'favoriteBlueprints', page, titleFilter, selectedTags];
@@ -66,7 +66,8 @@ function MyFavoritesGrid()
 		);
 	}
 
-	const {_data       : blueprintSummaries = [],
+	const {
+			  _data    : blueprintSummaries = [],
 			  _metadata: {pagination: {numberOfPages = 0, pageNumber = 0}},
 		  } = data || placeholderData;
 

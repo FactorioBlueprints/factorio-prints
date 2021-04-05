@@ -1,5 +1,10 @@
-import React from 'react';
+import React, {Context} from 'react';
 
-const UserContext = React.createContext({user: undefined});
+export interface User
+{
+	uid: string
+}
+
+const UserContext: Context<User | undefined> = React.createContext<User | undefined>(undefined);
 
 export default UserContext;

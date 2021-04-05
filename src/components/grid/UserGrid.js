@@ -20,7 +20,7 @@ function UserGrid()
 {
 	const [page, setPage]             = useState(1);
 	const {titleFilter, selectedTags} = useContext(SearchContext);
-	const {user}                      = useContext(UserContext);
+	const user                        = useContext(UserContext);
 
 	const {userId} = useParams();
 
@@ -44,7 +44,7 @@ function UserGrid()
 
 	// TODO: Refactor out grid commonality
 
-	const {isLoading, isError, data, isPreviousData} = result;
+	const {isLoading, isError, data, isPreviousData}               = result;
 	const {isLoading: isDisplayNameLoading, data: displayNameData} = displayNameResult;
 
 	if (isError || displayNameData._data === null)
@@ -58,7 +58,6 @@ function UserGrid()
 	}
 
 	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber}}} = data;
-
 
 	const getTitle = () =>
 	{
@@ -81,7 +80,6 @@ function UserGrid()
 			</span>
 		);
 	};
-
 
 	return (
 		<Container fluid>
