@@ -7,7 +7,7 @@ import getHeaders from '../helpers/getHeaders';
 
 function useAuthored()
 {
-	const {user}: any  = useContext(UserContext);
+	const user         = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 	const email        = user?.email;
 	const queryKey     = [email, 'authored'];

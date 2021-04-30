@@ -1,5 +1,5 @@
-import {faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
+import {faEdit, faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}                 from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}            from 'airbnb-prop-types';
 import axios                         from 'axios';
@@ -11,7 +11,7 @@ import Col                           from 'react-bootstrap/Col';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
-import {useParams}                   from 'react-router-dom';
+import {useHistory, useParams}       from 'react-router-dom';
 import UserContext                   from '../../context/userContext';
 import useIsModerator                from '../../hooks/useIsModerator';
 
@@ -56,6 +56,17 @@ ShowButton.propTypes = forbidExtraProps({
 	text: PropTypes.string.isRequired,
 });
 
+function renderEditButton(handleTransitionToEdit)
+{
+	return <Button
+		size='lg'
+		onClick={handleTransitionToEdit}
+	>
+		<FontAwesomeIcon icon={faEdit} />
+		{' Edit'}
+	</Button>;
+}
+
 function EfficientSingleBlueprint()
 {
 	const {blueprintId} = useParams();
@@ -79,6 +90,13 @@ function EfficientSingleBlueprint()
 
 	const isModerator = useIsModerator();
 
+	const history = useHistory();
+
+	function handleTransitionToEdit()
+	{
+		history.push(`/edit/${blueprintKey}`);
+	}
+
 	return (
 		<Container>
 			<Row>
@@ -88,7 +106,7 @@ function EfficientSingleBlueprint()
 					</div>
 				</Col>
 				<Col md={3} className='d-flex align-items-center justify-content-end'>
-					{(ownedByCurrentUser || isModerator) && renderEditButton()}
+					{(ownedByCurrentUser || isModerator) && renderEditButton(handleTransitionToEdit)}
 					{!ownedByCurrentUser && <FavoriteButton blueprintKey={blueprintKey} />}
 				</Col>
 			</Row>

@@ -105,8 +105,7 @@ const scaleImage = (img, config) =>
 		canvas = scaleCanvasWithAlgorithm(canvas, config);
 	}
 
-	const imageData = canvas.toDataURL('image/jpeg', config.quality);
-	return imageData;
+	return canvas.toDataURL('image/jpeg', config.quality);
 };
 
 const scaleFile = (file, {

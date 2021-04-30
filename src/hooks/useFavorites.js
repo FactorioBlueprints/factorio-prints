@@ -7,7 +7,7 @@ import getHeaders from '../helpers/getHeaders';
 
 function useFavorites()
 {
-	const {user}       = useContext(UserContext);
+	const user         = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 	const email        = user === undefined ? undefined : user.email;
 	const queryKey     = [email, 'favorites'];
