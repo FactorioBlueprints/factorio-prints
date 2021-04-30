@@ -1,8 +1,9 @@
 import React                          from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import Account                        from './Account';
-import Contact                        from './Contact';
-import BlueprintGrid                  from './grid/BlueprintGrid';
+import Contact                from './Contact';
+import EfficientEditBlueprint from './EfficientEditBlueprint';
+import BlueprintGrid          from './grid/BlueprintGrid';
 import MostFavoritedGrid              from './grid/MostFavoritedGrid';
 import MyFavoritesGrid                from './grid/MyFavoritesGrid';
 import UserGrid                       from './grid/UserGrid';
@@ -40,7 +41,7 @@ function Routes()
 					<Route path='/contact' exact component={Contact} />
 					<Route path='/account' exact component={Account} />
 					<Route path='/view/:blueprintId' component={SingleBlueprint} />
-					{/* <Route path='/edit/:blueprintId' component={EditBlueprint} /> */}
+					<Route path='/edit/:blueprintId' component={EfficientEditBlueprint} />
 					<Route path='/user/:userId' component={UserGrid} />
 					<Route component={NoMatch} />
 				</Switch>
