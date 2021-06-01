@@ -1,13 +1,12 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import axios              from 'axios';
 
 import PropTypes           from 'prop-types';
 import React, {useContext} from 'react';
 import Badge               from 'react-bootstrap/Badge';
 import Card                from 'react-bootstrap/Card';
-import {useQuery}          from 'react-query';
 import {useHistory}        from 'react-router-dom';
 import SearchContext       from '../../context/searchContext';
+import useBlueprint        from '../../hooks/useBlueprint';
 import LoadingIcon         from '../LoadingIcon';
 
 TagLink.propTypes = forbidExtraProps({
@@ -48,12 +47,7 @@ function TagsPanel(props)
 {
 	const {blueprintKey} = props;
 
-	const queryKey = ['blueprintDetails', blueprintKey];
-
-	const result = useQuery(
-		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
-	);
+	const result = useBlueprint(blueprintKey);
 
 	const {isLoading, isError, data} = result;
 	if (isLoading)

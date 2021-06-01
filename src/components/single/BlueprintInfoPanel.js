@@ -2,16 +2,14 @@ import {faCalendar, faClock, faCodeBranch, faHeart, faUser} from '@fortawesome/f
 
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
-
-import axios       from 'axios';
-import moment      from 'moment';
-import PropTypes   from 'prop-types';
-import React       from 'react';
-import Card        from 'react-bootstrap/Card';
-import Table       from 'react-bootstrap/Table';
-import {useQuery}  from 'react-query';
-import {Link}      from 'react-router-dom';
-import LoadingIcon from '../LoadingIcon';
+import moment             from 'moment';
+import PropTypes          from 'prop-types';
+import React              from 'react';
+import Card               from 'react-bootstrap/Card';
+import Table              from 'react-bootstrap/Table';
+import {Link}             from 'react-router-dom';
+import useBlueprint       from '../../hooks/useBlueprint';
+import LoadingIcon        from '../LoadingIcon';
 
 import BlueprintVersion from './BlueprintVersion';
 
@@ -23,13 +21,7 @@ BlueprintInfoPanel.propTypes = forbidExtraProps({
 function BlueprintInfoPanel(props)
 {
 	const {blueprintKey} = props;
-
-	const queryKey = ['blueprintDetails', blueprintKey];
-
-	const result = useQuery(
-		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
-	);
+	const result = useBlueprint(blueprintKey);
 
 	const {isLoading, isError, data} = result;
 	if (isLoading)

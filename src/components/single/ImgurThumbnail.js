@@ -1,12 +1,10 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-
-import axios      from 'axios';
-import PropTypes  from 'prop-types';
-import React      from 'react';
-import Image      from 'react-bootstrap/Image';
-import {useQuery} from 'react-query';
+import PropTypes          from 'prop-types';
+import React              from 'react';
+import Image              from 'react-bootstrap/Image';
 
 import buildImageUrl from '../../helpers/buildImageUrl';
+import useBlueprint  from '../../hooks/useBlueprint';
 import LoadingIcon   from '../LoadingIcon';
 
 ImgurThumbnail.propTypes = forbidExtraProps({
@@ -17,12 +15,7 @@ function ImgurThumbnail(props)
 {
 	const {blueprintKey} = props;
 
-	const queryKey = ['blueprintDetails', blueprintKey];
-
-	const result = useQuery(
-		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
-	);
+	const result = useBlueprint(blueprintKey);
 
 	const {isLoading, isError, data} = result;
 	if (isLoading)

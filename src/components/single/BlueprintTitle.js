@@ -2,13 +2,11 @@ import {faLink}          from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps} from 'airbnb-prop-types';
-
-import axios         from 'axios';
-import PropTypes     from 'prop-types';
-import React         from 'react';
-import DocumentTitle from 'react-document-title';
-import {useQuery}    from 'react-query';
-import LoadingIcon   from '../LoadingIcon';
+import PropTypes          from 'prop-types';
+import React              from 'react';
+import DocumentTitle      from 'react-document-title';
+import useBlueprint       from '../../hooks/useBlueprint';
+import LoadingIcon        from '../LoadingIcon';
 
 BlueprintTitle.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
@@ -17,13 +15,7 @@ BlueprintTitle.propTypes = forbidExtraProps({
 function BlueprintTitle(props)
 {
 	const {blueprintKey} = props;
-
-	const queryKey = ['blueprintDetails', blueprintKey];
-
-	const result = useQuery(
-		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
-	);
+	const result         = useBlueprint(blueprintKey);
 
 	const {isLoading, isError, data} = result;
 	if (isLoading)

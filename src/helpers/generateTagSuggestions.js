@@ -1,21 +1,21 @@
-import concat from 'lodash/concat';
-import every from 'lodash/every';
-import flatMap from 'lodash/flatMap';
-import forOwn from 'lodash/forOwn';
-import countBy from 'lodash/fp/countBy';
-import fpFlatMap from 'lodash/fp/flatMap';
-import flow from 'lodash/fp/flow';
-import fromPairs from 'lodash/fp/fromPairs';
-import fpMap from 'lodash/fp/map';
-import reject from 'lodash/fp/reject';
-import reverse from 'lodash/fp/reverse';
-import sortBy from 'lodash/fp/sortBy';
-import toPairs from 'lodash/fp/toPairs';
-import has from 'lodash/has';
-import identity from 'lodash/identity';
-import isEmpty from 'lodash/isEmpty';
+import concat      from 'lodash/concat';
+import every       from 'lodash/every';
+import flatMap     from 'lodash/flatMap';
+import forOwn      from 'lodash/forOwn';
+import countBy     from 'lodash/fp/countBy';
+import fpFlatMap   from 'lodash/fp/flatMap';
+import flow        from 'lodash/fp/flow';
+import fromPairs   from 'lodash/fp/fromPairs';
+import fpMap       from 'lodash/fp/map';
+import reject      from 'lodash/fp/reject';
+import reverse     from 'lodash/fp/reverse';
+import sortBy      from 'lodash/fp/sortBy';
+import toPairs     from 'lodash/fp/toPairs';
+import has         from 'lodash/has';
+import identity    from 'lodash/identity';
+import isEmpty     from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import some from 'lodash/some';
+import some        from 'lodash/some';
 
 import entitiesWithIcons from '../data/entitiesWithIcons';
 
@@ -87,7 +87,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 	{
 		if (entityCounts['rocket-silo'] > 0)
 		{
-			tagSuggestions.push('/production/rocket parts/');
+			tagSuggestions.push('production/rocket parts');
 			if (recipeCounts['high-tech-science-pack'] > 0
 				|| recipeCounts['military-science-pack'] > 0
 				|| recipeCounts['production-science-pack'] > 0
@@ -95,7 +95,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 				|| recipeCounts['science-pack-2'] > 0
 				|| recipeCounts['science-pack-3'] > 0)
 			{
-				tagSuggestions.push('/production/science/');
+				tagSuggestions.push('production/science');
 			}
 		}
 		else if (recipeCounts['high-tech-science-pack'] > 0
@@ -105,67 +105,67 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 			|| recipeCounts['science-pack-2'] > 0
 			|| recipeCounts['science-pack-3'] > 0)
 		{
-			tagSuggestions.push('/production/science/');
+			tagSuggestions.push('production/science');
 		}
 		else if (recipeCounts['low-density-structure'] > 0
 			|| recipeCounts['rocket-fuel'] > 0
 			|| recipeCounts['rocket-control-unit'] > 0)
 		{
-			tagSuggestions.push('/production/rocket parts/');
+			tagSuggestions.push('production/rocket parts');
 		}
 		else if (recipeCounts['speed-module-3'] > 0
 			|| recipeCounts['productivity-module-3'] > 0
 			|| recipeCounts['effectivity-module-3'] > 0)
 		{
-			tagSuggestions.push('/production/modules/');
+			tagSuggestions.push('production/modules');
 		}
 		else if (recipeCounts['processing-unit'] > 0)
 		{
-			tagSuggestions.push('/production/processing unit (blue)/');
+			tagSuggestions.push('production/processing unit (blue)');
 		}
 		else if (recipeCounts['construction-robot']
 			|| recipeCounts['flying-robot-frame']
 			|| recipeCounts['logistic-robot'])
 		{
-			tagSuggestions.push('/production/robots/');
+			tagSuggestions.push('production/robots');
 		}
 		else if (recipeCounts.battery > 0)
 		{
-			tagSuggestions.push('/production/batteries/');
+			tagSuggestions.push('production/batteries');
 		}
 		else if (recipeCounts['advanced-circuit'] > 0)
 		{
-			tagSuggestions.push('/production/advanced circuit (red)/');
+			tagSuggestions.push('production/advanced circuit (red)');
 		}
 		else if (recipeCounts['plastic-bar'] > 0)
 		{
-			tagSuggestions.push('/production/plastic/');
+			tagSuggestions.push('production/plastic');
 		}
 		else if (recipeCounts['coal-liquefaction'] > 0)
 		{
-			tagSuggestions.push('/production/coal liquification/');
+			tagSuggestions.push('production/coal liquification');
 		}
 		else if (recipeCounts['advanced-oil-processing'] > 0
 			|| recipeCounts['oil-processing'] > 0
 			|| entityCounts.pumpjack > 0)
 		{
-			tagSuggestions.push('/production/oil processing/');
+			tagSuggestions.push('production/oil processing');
 		}
 		else if (recipeCounts['kovarex-enrichment-process'])
 		{
-			tagSuggestions.push('/power/kovarex enrichment/');
+			tagSuggestions.push('power/kovarex enrichment');
 			if (recipeCounts['uranium-processing'])
 			{
-				tagSuggestions.push('/production/uranium/');
+				tagSuggestions.push('production/uranium');
 			}
 		}
 		else if (recipeCounts['uranium-processing'])
 		{
-			tagSuggestions.push('/production/uranium/');
+			tagSuggestions.push('production/uranium');
 		}
 		else if (recipeCounts.inserter > 0)
 		{
-			tagSuggestions.push('/production/inserters/');
+			tagSuggestions.push('production/inserters');
 		}
 		else if (recipeCounts['firearm-magazine']
 			|| recipeCounts['piercing-rounds-magazine']
@@ -174,23 +174,23 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 			|| recipeCounts['destroyer-capsule']
 			|| recipeCounts['distractor-capsule'])
 		{
-			tagSuggestions.push('/production/guns and ammo/');
+			tagSuggestions.push('production/guns and ammo');
 		}
 		else if (recipeCounts['electronic-circuit'] > 0)
 		{
-			tagSuggestions.push('/production/electronic circuit (green)/');
+			tagSuggestions.push('production/electronic circuit (green)');
 		}
 		else if (some(allBeltTypes, each => recipeCounts[each] > 0))
 		{
-			tagSuggestions.push('/production/belts/');
+			tagSuggestions.push('production/belts');
 		}
 		else if (entityCounts['electric-furnace'] > 0 || entityCounts['steel-furnace'] > 0 || entityCounts['stone-furnace'] > 0)
 		{
-			tagSuggestions.push('/production/smelting/');
+			tagSuggestions.push('production/smelting');
 		}
 		else if (entityCounts['electric-mining-drill'] > 0)
 		{
-			tagSuggestions.push('/production/mining/');
+			tagSuggestions.push('production/mining');
 		}
 	};
 
@@ -203,7 +203,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 
 		if (every(entityHistogram, pair => allBeltTypes.includes(pair[0])))
 		{
-			tagSuggestions.push('/belt/balancer/');
+			tagSuggestions.push('belt/balancer');
 
 			const checkBeltSpeed = (beltTypes, tag) =>
 			{
@@ -213,16 +213,16 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 				}
 			};
 
-			checkBeltSpeed(expressBeltTypes, '/belt/express transport belt (blue)/');
-			checkBeltSpeed(fastBeltTypes, '/belt/fast transport belt (red)/');
-			checkBeltSpeed(slowBeltTypes, '/belt/transport belt (yellow)/');
+			checkBeltSpeed(expressBeltTypes, 'belt/express transport belt (blue)');
+			checkBeltSpeed(fastBeltTypes, 'belt/fast transport belt (red)');
+			checkBeltSpeed(slowBeltTypes, 'belt/transport belt (yellow)');
 		}
 
 		// Most common item
 		// eslint-disable-next-line
 		if (entityHistogram[0][0] === 'small-lamp' || entityCounts['small-lamp'] > 100 && entityHistogram[1] && entityHistogram[1][0] === 'small-lamp')
 		{
-			tagSuggestions.push('/circuit/indicator/');
+			tagSuggestions.push('circuit/indicator');
 		}
 	};
 
@@ -231,7 +231,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		// Mutually exclusive
 		if (entityCounts.lab > 0)
 		{
-			tagSuggestions.push('/production/research (labs)/');
+			tagSuggestions.push('production/research (labs)');
 		}
 		else if (!entityCounts['train-stop']
 			&& entityCounts['stone-wall']
@@ -239,7 +239,7 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 			&& entityCounts['straight-rail']
 			&& entityCounts['rail-signal'])
 		{
-			tagSuggestions.push('/train/crossing/');
+			tagSuggestions.push('train/crossing');
 		}
 		else if (!entityCounts['train-stop']
 			&& entityCounts['curved-rail'] > 0
@@ -247,31 +247,31 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 			&& entityCounts['rail-signal'] > 0
 			&& entityCounts['straight-rail'] > 0)
 		{
-			tagSuggestions.push('/train/junction/');
-			tagSuggestions.push('/train/roundabout/');
+			tagSuggestions.push('train/junction');
+			tagSuggestions.push('train/roundabout');
 		}
 
 		if (entityCounts['nuclear-reactor'] > 0)
 		{
-			tagSuggestions.push('/power/nuclear/');
+			tagSuggestions.push('power/nuclear');
 		}
 		else if (entityCounts['solar-panel'] > 10)
 		{
-			tagSuggestions.push('/power/solar/');
+			tagSuggestions.push('power/solar');
 		}
 		else if (entityCounts['steam-engine'] > 1)
 		{
-			tagSuggestions.push('/power/steam/');
+			tagSuggestions.push('power/steam');
 		}
 		else if (entityCounts.accumulator > 1)
 		{
-			tagSuggestions.push('/power/accumulator/');
+			tagSuggestions.push('power/accumulator');
 		}
 
 		// Additional
 		if (entityCounts.beacon > 10)
 		{
-			tagSuggestions.push('/general/beaconized/');
+			tagSuggestions.push('general/beaconized');
 		}
 	};
 
@@ -280,53 +280,53 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		// Train
 		if (/\b(pax)\b/i.test(title))
 		{
-			tagSuggestions.push('/train/pax/');
+			tagSuggestions.push('train/pax');
 		}
 		// Contains word starting with "unload"
 		if (/\b(train)\b/i.test(title) && /\b(unload)/i.test(title))
 		{
-			tagSuggestions.push('/train/unloading station/');
+			tagSuggestions.push('train/unloading station');
 		}
 		// Contains word starting with "load"
 		if (/\b(train)\b/i.test(title) && /\b(load)/i.test(title))
 		{
-			tagSuggestions.push('/train/loading station/');
+			tagSuggestions.push('train/loading station');
 		}
 		if (/\b(lhd)\b/i.test(title) || /\b(left hand drive)\b/i.test(title))
 		{
-			tagSuggestions.push('/train/left-hand-drive/');
+			tagSuggestions.push('train/left-hand-drive');
 		}
 		if (/\b(rhd)\b/i.test(title) || /\b(right hand drive)\b/i.test(title))
 		{
-			tagSuggestions.push('/train/right-hand-drive/');
+			tagSuggestions.push('train/right-hand-drive');
 		}
 
 		if (/\b(mall)\b/i.test(title))
 		{
-			tagSuggestions.push('/production/mall (make everything)/');
+			tagSuggestions.push('production/mall (make everything)');
 		}
 
 		if (/\b(early)\b/i.test(title))
 		{
-			tagSuggestions.push('/general/early game/');
+			tagSuggestions.push('general/early game');
 		}
 		if (/\b(mid)\b/i.test(title))
 		{
-			tagSuggestions.push('/general/mid game/');
+			tagSuggestions.push('general/mid game');
 		}
 		if (/\b(late)\b/i.test(title) || /\b(megabase)\b/i.test(title))
 		{
-			tagSuggestions.push('/general/late game (megabase)/');
+			tagSuggestions.push('general/late game (megabase)');
 		}
 
 		if (/\b(compact)\b/i.test(title))
 		{
-			tagSuggestions.push('/general/compact/');
+			tagSuggestions.push('general/compact');
 		}
 
 		if (/\b(tileable)\b/i.test(title) || /\b(tile)\b/i.test(title))
 		{
-			tagSuggestions.push('/general/tileable/');
+			tagSuggestions.push('general/tileable');
 		}
 	};
 
@@ -334,14 +334,14 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 	{
 		if (/\b(Factorissimo)\b/i.test(title))
 		{
-			tagSuggestions.push('/mods/factorissimo/');
+			tagSuggestions.push('mods/factorissimo');
 			return;
 		}
 
 		const allVanilla = every(allGameEntities, each => entitiesWithIcons[each] === true);
 		if (allVanilla)
 		{
-			tagSuggestions.push('/mods/vanilla/');
+			tagSuggestions.push('mods/vanilla');
 			return;
 		}
 
@@ -356,27 +356,27 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 
 		if (creativeMod)
 		{
-			tagSuggestions.push('/mods/creative/');
+			tagSuggestions.push('mods/creative');
 		}
 		if (bobsMod)
 		{
-			tagSuggestions.push('/mods/bobs/');
+			tagSuggestions.push('mods/bobs');
 		}
 		if (angelsMod)
 		{
-			tagSuggestions.push('/mods/angels/');
+			tagSuggestions.push('mods/angels');
 		}
 		if (lightedElectricPolesMod)
 		{
-			tagSuggestions.push('/mods/lighted-electric-poles/');
+			tagSuggestions.push('mods/lighted-electric-poles');
 		}
 		if (warehousingMod)
 		{
-			tagSuggestions.push('/mods/warehousing/');
+			tagSuggestions.push('mods/warehousing');
 		}
 		if (!creativeMod && !bobsMod && !angelsMod && !lightedElectricPolesMod && !warehousingMod)
 		{
-			tagSuggestions.push('/mods/other/');
+			tagSuggestions.push('mods/other');
 		}
 	};
 

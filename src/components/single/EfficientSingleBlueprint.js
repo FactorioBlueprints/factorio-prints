@@ -2,7 +2,6 @@ import {faEdit, faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons
 import {FontAwesomeIcon}                 from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}            from 'airbnb-prop-types';
-import axios                         from 'axios';
 import PropTypes                     from 'prop-types';
 import React, {useContext, useState} from 'react';
 import Button                        from 'react-bootstrap/Button';
@@ -10,9 +9,9 @@ import Card                          from 'react-bootstrap/Card';
 import Col                           from 'react-bootstrap/Col';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
-import {useQuery}                    from 'react-query';
 import {useHistory, useParams}       from 'react-router-dom';
 import UserContext                   from '../../context/userContext';
+import useBlueprint                  from '../../hooks/useBlueprint';
 import useIsModerator                from '../../hooks/useIsModerator';
 
 import GoogleAd                  from '../GoogleAd';
@@ -74,12 +73,7 @@ function EfficientSingleBlueprint()
 
 	const [showBlueprintString, setShowBlueprintString] = useState(false);
 
-	const queryKey = ['blueprintDetails', blueprintKey];
-
-	const result = useQuery(
-		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
-	);
+	const result = useBlueprint(blueprintKey);
 
 	const {isSuccess, data} = result;
 

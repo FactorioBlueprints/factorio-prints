@@ -1,32 +1,30 @@
 import {faArrowLeft, faBan, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}                     from '@fortawesome/react-fontawesome';
-
-import axios      from 'axios';
-import classNames from 'classnames';
-import update     from 'immutability-helper';
-import difference from 'lodash/difference';
-import isEmpty    from 'lodash/isEmpty';
-import some       from 'lodash/some';
-import marked     from 'marked';
+import classNames                            from 'classnames';
+import update                                from 'immutability-helper';
+import difference                            from 'lodash/difference';
+import isEmpty                               from 'lodash/isEmpty';
+import some                                  from 'lodash/some';
+import marked                                from 'marked';
 
 import React, {useContext, useState} from 'react';
 
-import Alert                       from 'react-bootstrap/Alert';
-import Button                      from 'react-bootstrap/Button';
-import ButtonToolbar               from 'react-bootstrap/ButtonToolbar';
-import Card                        from 'react-bootstrap/Card';
-import Col                         from 'react-bootstrap/Col';
-import Container                   from 'react-bootstrap/Container';
-import Form                        from 'react-bootstrap/Form';
-import FormControl                 from 'react-bootstrap/FormControl';
-import Modal                       from 'react-bootstrap/Modal';
-import ProgressBar                 from 'react-bootstrap/ProgressBar';
-import Row                         from 'react-bootstrap/Row';
-import Dropzone                    from 'react-dropzone';
-import {useQuery, UseQueryOptions} from 'react-query';
+import Alert         from 'react-bootstrap/Alert';
+import Button        from 'react-bootstrap/Button';
+import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
+import Card          from 'react-bootstrap/Card';
+import Col           from 'react-bootstrap/Col';
+import Container     from 'react-bootstrap/Container';
+import Form          from 'react-bootstrap/Form';
+import FormControl   from 'react-bootstrap/FormControl';
+import Modal         from 'react-bootstrap/Modal';
+import ProgressBar   from 'react-bootstrap/ProgressBar';
+import Row           from 'react-bootstrap/Row';
 
+import Dropzone                from 'react-dropzone';
 import {useHistory, useParams} from 'react-router-dom';
 import Select                  from 'react-select';
+import makeAnimated            from 'react-select/animated';
 
 import Blueprint                  from "../Blueprint";
 import UserContext                from '../context/userContext';
@@ -34,6 +32,8 @@ import noImageAvailable           from "../gif/No_available_image.gif";
 import buildImageUrl              from "../helpers/buildImageUrl";
 import generateTagSuggestions     from '../helpers/generateTagSuggestions';
 import scaleImage                 from "../helpers/ImageScaler";
+import useBlueprint               from "../hooks/useBlueprint";
+import useBlueprintString         from "../hooks/useBlueprintString";
 import useIsModerator             from "../hooks/useIsModerator";
 import useTagOptions, {TagOption} from "../hooks/useTagOptions";
 import BlueprintStringControl     from "./edit/BlueprintStringControl";
@@ -47,16 +47,29 @@ import TagSuggestionButton from './TagSuggestionButton';
 
 EfficientEditBlueprint.propTypes = {};
 
+const animatedComponents = makeAnimated();
+
+function convertTagOptionToTag(selectedTag: TagOption): { tag: Tag }
+{
+	const [category, name] = selectedTag.value.split("/");
+	return {tag: {category, name}};
+}
+
 function EfficientEditBlueprint()
 {
 	const user        = useContext(UserContext);
 	const isModerator = useIsModerator();
 
-	const {tagValuesSet, tagOptions}: { tagValuesSet: Set<string>; tagOptions: TagOption[] } = useTagOptions();
+	const {
+			  tagValues,
+			  tagValuesSet,
+			  tagOptions
+		  }: { tagValues: string[]; tagValuesSet: Set<string>; tagOptions: TagOption[] } = useTagOptions();
 
 	const history = useHistory();
 
 	const [blueprint, setBlueprint]                               = useState<BlueprintFromServer>();
+	const [blueprintString, setBlueprintString]                   = useState<string>();
 	const [uploadProgressBarVisible, setUploadProgressBarVisible] = useState(false);
 	const [deletionModalVisible, setDeletionModalVisible]         = useState(false);
 	const [uploadProgressPercent, setUploadProgressPercent]       = useState(0);
@@ -65,22 +78,37 @@ function EfficientEditBlueprint()
 	const [acceptedFiles, setAcceptedFiles]                       = useState<any>([]);
 	const [rejectedFiles, setRejectedFiles]                       = useState<any>([]);
 	const [thumbnail, setThumbnail]                               = useState<string>();
+	const [renderedMarkdown, setRenderedMarkdown]                 = useState<string>();
+	const [parsedBlueprint, setParsedBlueprint]                   = useState<Blueprint>();
+	const [v15Decoded, setV15Decoded]                             = useState<any>();
 
 	const {blueprintId} = useParams<{ blueprintId: string }>();
 	const blueprintKey  = blueprintId;
 
 	const queryKey = ['blueprintDetails', blueprintKey];
 
-	const options: UseQueryOptions = {onSuccess: (data: any) => setBlueprint(data.data)};
-	const result                   = useQuery(
-		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
-		options,
-	);
-
+	const result                   = useBlueprint(blueprintKey);
 	const {isLoading, isError, data} = result;
 
-	console.log('EfficientEditBlueprint', {isLoading, isError, data, blueprint});
+	React.useEffect(() =>
+	{
+		const blueprintData: any = data?.data;
+		setRenderedMarkdown(blueprintData ? marked(blueprintData.descriptionMarkdown) : '');
+		return setBlueprint(blueprintData);
+	}, [blueprintKey, data?.data]);
+
+	const {
+			  isLoading: blueprintStringIsLoading,
+			  isError  : blueprintStringIsError,
+			  data     : blueprintStringData
+		  } = useBlueprintString(blueprintKey);
+	React.useEffect(() =>
+	{
+		const parsedBlueprint: Blueprint | undefined = parseBlueprint(blueprintString);
+		setParsedBlueprint(parsedBlueprint);
+		setV15Decoded(parsedBlueprint?.getV15Decoded());
+		return setBlueprintString(blueprintStringData?.data);
+	}, [blueprintKey, blueprintStringData?.data]);
 
 	if (!user)
 	{
@@ -131,28 +159,22 @@ function EfficientEditBlueprint()
 		);
 	}
 
-	// TODO: memoize
-	const renderedMarkdown                       = blueprint ? marked(blueprint.descriptionMarkdown) : '';
-	const blueprintString: string | undefined    = blueprint?.blueprintString?.blueprintString;
-	const parsedBlueprint: Blueprint | undefined = parseBlueprint(blueprintString);
-	const v15Decoded: any                        = parsedBlueprint?.getV15Decoded();
-
 	const allTagSuggestions: string[] = generateTagSuggestions(
 		blueprint.title,
 		parsedBlueprint,
 		v15Decoded,
 	);
-	const selectedValues: string[]      = blueprint?.tags
+	const selectedValues: string[]     = blueprint?.tags
 		.map(wrapper => wrapper.tag)
 		.filter(tag => tag !== null)
 		.map(({category, name}) => `${category}/${name}`) || [];
+	const selectedOptions: TagOption[] = selectedValues.map((value => ({label: value, value})));
 
 	const unusedTagSuggestions: string[] = difference(allTagSuggestions, selectedValues);
 
-	console.log({selectedValues, tagOptions});
-
 	const actuallySaveBlueprintEdits: () => Promise<void> = async (): Promise<void> =>
 	{
+		console.log('EfficientEditBlueprint actuallySaveBlueprintEdits');
 		// const [file] = this.state.files;
 		// let imagePromise;
 		// let uploadTask;
@@ -250,7 +272,7 @@ function EfficientEditBlueprint()
 		{
 			throw new Error();
 		}
-		const submissionErrors: string[] = validateInputs(blueprint);
+		const submissionErrors: string[] = validateInputs(blueprint, blueprintString);
 		if (submissionErrors.length > 0)
 		{
 			setSubmissionErrors(submissionErrors);
@@ -364,24 +386,30 @@ function EfficientEditBlueprint()
 		setBlueprint(newBlueprint);
 	}
 
-	function handleTagSelection(selectedTag: any): void
+	function handleTagSelection(selectedTags: any /*TagOption[]*/): void
 	{
 		if (blueprint === undefined)
 		{
 			return;
 		}
-		const [category, name]: any = selectedTag.value.split("/");
+		if (selectedTags === null)
+		{
+			return;
+		}
+		const tags = selectedTags.map(convertTagOptionToTag);
 
 		const newBlueprint: any = {
 			...blueprint,
-			tags: [...blueprint.tags, {tag: {category, name}}],
+			tags,
 		};
 		setBlueprint(newBlueprint);
 	}
 
-	function addTag(tag: Tag): void
+	function addTag(tag: string): void
 	{
-		const newBlueprint: any = update(blueprint, {tags: {$push: [{tag}]}});
+		const [category, name]: any = tag.split('/');
+		const newTag: Tag           = {category, name};
+		const newBlueprint: any     = update(blueprint, {tags: {$push: [{tag: newTag}]}});
 		setBlueprint(newBlueprint);
 	}
 
@@ -446,7 +474,7 @@ function EfficientEditBlueprint()
 	{
 		event.preventDefault();
 
-		const submissionErrors = validateInputs(blueprint);
+		const submissionErrors = validateInputs(blueprint, blueprintString);
 
 		if (submissionErrors.length > 0)
 		{
@@ -454,7 +482,7 @@ function EfficientEditBlueprint()
 			return;
 		}
 
-		const submissionWarnings = validateWarnings(blueprint, v15Decoded);
+		const submissionWarnings = validateWarnings(blueprint, blueprintString || '', v15Decoded);
 		if (submissionWarnings.length > 0)
 		{
 			setSubmissionWarnings(submissionWarnings);
@@ -571,6 +599,7 @@ function EfficientEditBlueprint()
 							variant='danger'
 							className='alert-fixed'
 							onClose={handleDismissError}
+							dismissible
 						>
 							<h4>
 								Error editing blueprint
@@ -632,13 +661,18 @@ function EfficientEditBlueprint()
 								<Card>
 									<div
 										style={{minHeight: 200}}
-										dangerouslySetInnerHTML={{__html: renderedMarkdown}}
+										dangerouslySetInnerHTML={{__html: renderedMarkdown || ''}}
 									/>
 								</Card>
 							</Col>
 						</Form.Group>
 
-						<BlueprintStringControl blueprint={blueprint} handleChange={handleChange} />
+						<BlueprintStringControl
+							blueprintString={blueprintString}
+							setBlueprintString={setBlueprintString}
+							isLoading={blueprintStringIsLoading}
+							isError={blueprintStringIsError}
+						/>
 
 						{
 							unusedTagSuggestions.length > 0
@@ -668,11 +702,14 @@ function EfficientEditBlueprint()
 							</Form.Label>
 							<Col sm={10}>
 								<Select
-									value={selectedValues}
+									value={selectedOptions}
 									options={tagOptions}
 									onChange={handleTagSelection}
-									multi
+									isMulti
+									closeMenuOnSelect
+									components={animatedComponents}
 									placeholder='Select at least one tag'
+									className='tag-form'
 								/>
 							</Col>
 						</Form.Group>
@@ -769,7 +806,7 @@ function parseBlueprint(blueprintString: string | undefined): Blueprint | undefi
 	}
 }
 
-function validateInputs(blueprint: BlueprintFromServer | undefined): string[]
+function validateInputs(blueprint: BlueprintFromServer | undefined, blueprintString: string | undefined): string[]
 {
 	if (blueprint === undefined)
 	{
@@ -795,11 +832,11 @@ function validateInputs(blueprint: BlueprintFromServer | undefined): string[]
 		submissionErrors.push('Description Markdown must be at least 10 characters');
 	}
 
-	if (!blueprint.blueprintString)
+	if (!blueprintString)
 	{
 		submissionErrors.push('Blueprint String may not be empty');
 	}
-	else if (blueprint.blueprintString.blueprintString.trim().length < 10)
+	else if (blueprintString.trim().length < 10)
 	{
 		submissionErrors.push('Blueprint String must be at least 10 characters');
 	}
@@ -807,7 +844,11 @@ function validateInputs(blueprint: BlueprintFromServer | undefined): string[]
 	return submissionErrors;
 }
 
-function validateWarnings(blueprintState: BlueprintFromServer | undefined, v15Decoded: any): string[]
+function validateWarnings(
+	blueprintState: BlueprintFromServer | undefined,
+	blueprintString: string,
+	v15Decoded: any
+): string[]
 {
 	if (blueprintState === undefined)
 	{
@@ -821,18 +862,18 @@ function validateWarnings(blueprintState: BlueprintFromServer | undefined, v15De
 		submissionWarnings.push('The blueprint has no tags. Consider adding a few tags.');
 	}
 
-	const blueprint = new Blueprint(blueprintState.blueprintString.blueprintString.trim());
+	const blueprint = new Blueprint(blueprintString.trim());
 	if (isEmpty(blueprint.decodedObject))
 	{
 		submissionWarnings.push('Could not parse blueprint.');
 		return submissionWarnings;
 	}
 
-	if (!blueprint.isBook() && isEmpty(v15Decoded.blueprint.label))
+	if (blueprint.isBlueprint() && isEmpty(v15Decoded.blueprint.label))
 	{
 		submissionWarnings.push('Blueprint has no name. Consider adding a name.');
 	}
-	if (!blueprint.isBook() && isEmpty(v15Decoded.blueprint.icons))
+	if (blueprint.isBlueprint() && isEmpty(v15Decoded.blueprint.icons))
 	{
 		submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 	}

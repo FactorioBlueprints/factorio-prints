@@ -1,11 +1,9 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-
-import axios       from 'axios';
-import marked      from 'marked';
-import PropTypes   from 'prop-types';
-import React       from 'react';
-import {useQuery}  from 'react-query';
-import LoadingIcon from '../LoadingIcon';
+import marked             from 'marked';
+import PropTypes          from 'prop-types';
+import React              from 'react';
+import useBlueprint       from '../../hooks/useBlueprint';
+import LoadingIcon        from '../LoadingIcon';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -36,13 +34,7 @@ BlueprintMarkdown.propTypes = forbidExtraProps({
 function BlueprintMarkdown(props)
 {
 	const {blueprintKey} = props;
-
-	const queryKey = ['blueprintDetails', blueprintKey];
-
-	const result = useQuery(
-		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintDetails/${blueprintKey}`),
-	);
+	const result = useBlueprint(blueprintKey);
 
 	const {isLoading, isError, data} = result;
 	if (isLoading)

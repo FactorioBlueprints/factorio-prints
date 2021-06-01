@@ -12,9 +12,9 @@ const useTagOptions = (): { tagValuesSet: Set<string>; tagOptions: TagOption[]; 
 	}
 
 	const result: any                   = useQuery(['tags'], fetchTagValues, {placeholderData: []});
-	const tagValues: string[]           = result.data;
+	const tagValues: string[]           = result.data || [];
 	const tagValuesSet: Set<string>     = new Set(tagValues);
-	const tagOptions: TagOption[]       = tagValues.map((value: string) => ({label: value, value}));
+	const tagOptions: TagOption[]       = tagValues.map((value) => ({label: value, value}));
 	const tagOptionsSet: Set<TagOption> = new Set(tagOptions);
 	return {tagValues, tagValuesSet, tagOptions, tagOptionsSet};
 };
