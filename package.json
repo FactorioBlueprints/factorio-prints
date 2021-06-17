@@ -34,7 +34,7 @@
     "axios": "^0.21.1",
     "bootstrap": "4.5.2",
     "classnames": "2.2.6",
-    "disqus-react": "1.0.9",
+    "disqus-react": "1.1.0",
     "fastestsmallesttextencoderdecoder": "1.0.22",
     "firebase": "7.19.1",
     "grpc": "1.24.3",
