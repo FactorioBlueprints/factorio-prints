@@ -8,8 +8,8 @@ import getHeaders from '../helpers/getHeaders';
 function useIsFavorite(blueprintKey)
 {
 	const user         = useContext(UserContext);
-	const queryEnabled = user !== undefined;
-	const email        = user === undefined ? undefined : user.email;
+	const queryEnabled = user !== undefined && user !== null;
+	const email        = queryEnabled ? user.email : undefined;
 	const queryKey     = [email, 'isFavorite', blueprintKey];
 
 	return useQuery(
