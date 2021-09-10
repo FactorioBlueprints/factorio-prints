@@ -6,6 +6,6 @@ export interface User
 	email: string
 }
 
-const UserContext: Context<User | undefined> = React.createContext<User | undefined>(undefined);
+const UserContext: Context<User | null | undefined> = React.createContext<User | null | undefined>(undefined);
 
 export default UserContext;

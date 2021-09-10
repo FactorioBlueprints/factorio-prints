@@ -5,8 +5,8 @@ import moderators from "../helpers/moderators";
 
 function useIsModerator(): boolean
 {
-	const user: User | undefined = useContext(UserContext);
-	if (user === undefined)
+	const user: User | null | undefined = useContext(UserContext);
+	if (user === undefined || user === null)
 	{
 		return false;
 	}
