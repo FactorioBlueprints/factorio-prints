@@ -31,7 +31,7 @@ function TagLink({category, name})
 
 	return (
 		<a onClick={handleClick} style={{cursor: 'pointer'}}>
-			<Badge variant='warning' className='mr-1'>
+			<Badge bg='warning' className='mr-1 text-light'>
 				{tagString}
 			</Badge>
 		</a>

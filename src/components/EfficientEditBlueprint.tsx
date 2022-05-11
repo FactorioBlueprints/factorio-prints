@@ -264,7 +264,7 @@ function EfficientEditBlueprint()
 		// // TODO: Delete old images from storage and imgur
 	};
 
-	function handleForceSaveBlueprintEdits(event: React.MouseEvent<HTMLInputElement>): void
+	function handleForceSaveBlueprintEdits(event: React.MouseEvent<HTMLButtonElement>): void
 	{
 		event.preventDefault();
 
@@ -297,7 +297,7 @@ function EfficientEditBlueprint()
 		setSubmissionWarnings([]);
 	}
 
-	function handleShowConfirmDelete(event: React.MouseEvent<HTMLInputElement>): void
+	function handleShowConfirmDelete(event: React.MouseEvent<HTMLButtonElement>): void
 	{
 		event.preventDefault();
 		setDeletionModalVisible(true);
@@ -470,7 +470,7 @@ function EfficientEditBlueprint()
 		);
 	}
 
-	function handleSaveBlueprintEdits(event: React.MouseEvent<HTMLInputElement>)
+	function handleSaveBlueprintEdits(event: React.MouseEvent<HTMLButtonElement>)
 	{
 		event.preventDefault();
 
