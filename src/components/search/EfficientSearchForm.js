@@ -45,11 +45,9 @@ function EfficientSearchForm()
 					onChange={handleSearchString}
 					onKeyDown={handleKeyDown}
 				/>
-				<InputGroup.Append>
-					<InputGroup.Text>
-						<FontAwesomeIcon icon={faSearch} />
-					</InputGroup.Text>
-				</InputGroup.Append>
+				<InputGroup.Text>
+					<FontAwesomeIcon icon={faSearch} />
+				</InputGroup.Text>
 			</InputGroup>
 		</Col>
 	);
