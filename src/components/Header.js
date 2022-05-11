@@ -1,4 +1,4 @@
-import {faGithub, faGoogle}   from '@fortawesome/free-brands-svg-icons';
+import {faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
 import {
 	faClock,
 	faCogs,
@@ -9,86 +9,64 @@ import {
 	faTrophy,
 	faUser,
 	faWrench,
-}                             from '@fortawesome/free-solid-svg-icons';
+}                           from '@fortawesome/free-solid-svg-icons';
 import {
 	FontAwesomeIcon,
-}                             from '@fortawesome/react-fontawesome';
+}                           from '@fortawesome/react-fontawesome';
 import {
 	forbidExtraProps,
-}                             from 'airbnb-prop-types';
-import firebase               from 'firebase/app';
+}                           from 'airbnb-prop-types';
+import firebase             from 'firebase/app';
 import 'firebase/auth';
-import PropTypes              from 'prop-types';
-import React, {PureComponent} from 'react';
-import Button                 from 'react-bootstrap/Button';
-import Dropdown               from 'react-bootstrap/Dropdown';
-import Nav                    from 'react-bootstrap/Nav';
-import Navbar                 from 'react-bootstrap/Navbar';
-import NavDropdown            from 'react-bootstrap/NavDropdown';
-import {
-	connect,
-}                             from 'react-redux';
+import React, {useContext}  from 'react';
+import Button               from 'react-bootstrap/Button';
+import Dropdown             from 'react-bootstrap/Dropdown';
+import Nav                  from 'react-bootstrap/Nav';
+import Navbar               from 'react-bootstrap/Navbar';
+import NavDropdown          from 'react-bootstrap/NavDropdown';
 import {
 	Link,
 	useNavigate,
-}                             from 'react-router-dom';
-import {bindActionCreators}   from 'redux';
-import {app}                  from '../base';
-import {
-	historySchema,
-	locationSchema,
-}                             from '../propTypes';
-import * as selectors         from '../selectors';
+}                           from 'react-router-dom';
+import {app}                from '../base';
+import UserContext          from '../context/userContext';
 
-class Header extends PureComponent
+const googleProvider   = new firebase.auth.GoogleAuthProvider();
+const facebookProvider = new firebase.auth.FacebookAuthProvider();
+const twitterProvider  = new firebase.auth.TwitterAuthProvider();
+const githubProvider   = new firebase.auth.GithubAuthProvider();
+
+/*
+ * Choose between multiple google accounts
+ * http://stackoverflow.com/a/40551683/23572
+ */
+googleProvider.setCustomParameters({prompt: 'consent select_account'});
+githubProvider.setCustomParameters({allow_signup: true});
+
+function Header()
 {
-	static propTypes = forbidExtraProps({
-		user: PropTypes.shape(forbidExtraProps({
-			uid        : PropTypes.string.isRequired,
-			displayName: PropTypes.string,
-			photoURL   : PropTypes.string,
-		})),
-		location     : locationSchema,
-		history      : historySchema,
-		staticContext: PropTypes.shape(forbidExtraProps({})),
-	});
+	const user                          = useContext(UserContext);
 
-	constructor()
+	const navigate = useNavigate();
+
+	const handleEdit = () =>
 	{
-		super();
-
-		this.googleProvider   = new firebase.auth.GoogleAuthProvider();
-		this.facebookProvider = new firebase.auth.FacebookAuthProvider();
-		this.twitterProvider  = new firebase.auth.TwitterAuthProvider();
-		this.githubProvider   = new firebase.auth.GithubAuthProvider();
-
-		/*
-		 * Choose between multiple google accounts
-		 * http://stackoverflow.com/a/40551683/23572
-		 */
-		this.googleProvider.setCustomParameters({prompt: 'consent select_account'});
-		this.githubProvider.setCustomParameters({allow_signup: true});
-	}
-
-	handleEdit = () =>
-	{
-		const navigate = useNavigate();
 		navigate('/account');
 	}
 
-	handleLogout = () =>
+	const handleLogout = () =>
 	{
 		app.auth().signOut();
 	};
 
-	getDisplayName = () =>
+	const getDisplayName = () =>
 	{
-		if (this.props.user.displayName)
+		if (user && user.displayName)
 		{
 			return (
 				<h2>
 					<b>
-						{this.props.user.displayName}
+						{user.displayName}
 					</b>
 				</h2>
 			);
@@ -96,7 +74,7 @@ class Header extends PureComponent
 		return false;
 	};
 
-	authenticate = (provider) =>
+	const authenticate = (provider) =>
 	{
 		app.auth().signInWithPopup(provider)
 			.then((authData) =>
@@ -106,9 +84,9 @@ class Header extends PureComponent
 			.catch(error => console.error({error}));
 	};
 
-	renderAuthentication = () =>
+	const renderAuthentication = () =>
 	{
-		if (this.props.user)
+		if (user)
 		{
 			return (
 				<Dropdown className='text-light'>
@@ -117,16 +95,16 @@ class Header extends PureComponent
 					</Dropdown.Toggle>
 					<Dropdown.Menu className='dropdown-menu-right'>
 						<Dropdown.Item className='user-photo-container'>
-							{this.getDisplayName()}
+							{getDisplayName()}
 						</Dropdown.Item>
 						<Dropdown.Item>
-							<Button type='button' block variant='warning' size='lg' onClick={this.handleEdit}>
+							<Button type='button' className='btn-block' variant='warning' size='lg' onClick={handleEdit}>
 								<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth />
 								{' Edit'}
 							</Button>
 						</Dropdown.Item>
 						<Dropdown.Item>
-							<Button type='button' block variant='warning' size='lg' onClick={this.handleLogout}>
+							<Button type='button' className='btn-block' variant='warning' size='lg' onClick={handleLogout}>
 								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
 								{' Log out'}
 							</Button>
@@ -145,11 +123,11 @@ class Header extends PureComponent
 
 		return (
 			<NavDropdown title={title} style={{minWidth: '210px'}}>
-				<Button type='button' block className='google' onClick={() => this.authenticate(this.googleProvider)}>
+				<Button type='button' className='google' onClick={() => authenticate(googleProvider)}>
 					<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
 					{' Log in with Google'}
 				</Button>
-				<Button type='button' block className='github' onClick={() => this.authenticate(this.githubProvider)}>
+				<Button type='button' className='github' onClick={() => authenticate(githubProvider)}>
 					<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
 					{' Log in with GitHub'}
 				</Button>
@@ -157,61 +135,50 @@ class Header extends PureComponent
 		);
 	};
 
-	render()
-	{
-		return (
-			<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
-				<Navbar.Brand>
-					<Link to='/'>
-						<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
-						{' Factorio Prints'}
-					</Link>
-				</Navbar.Brand>
-				<Navbar.Toggle />
+	return (
+		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
+			<Navbar.Brand>
+				<Link to='/'>
+					<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
+					{' Factorio Prints'}
+				</Link>
+			</Navbar.Brand>
+			<Navbar.Toggle />
 
-				<Navbar.Collapse>
-					<Nav className='mr-auto'>
-						{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
-						<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
-							<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
-							{' Most Recent'}
-						</Nav.Link>
-						<Nav.Link as={Link} href='/top' to='/top' className='text-light'>
-							<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
-							{' Most Favorited'}
-						</Nav.Link>
-						{this.props.user
+			<Navbar.Collapse>
+				<Nav className='mr-auto'>
+					{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
+					<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
+						<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
+						{' Most Recent'}
+					</Nav.Link>
+					<Nav.Link as={Link} href='/top' to='/top' className='text-light'>
+						<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
+						{' Most Favorited'}
+					</Nav.Link>
+					{user
 						&& <Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
 							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
 							{' My Favorites'}
 						</Nav.Link>}
-						{this.props.user
-						&& <Nav.Link as={Link} href={`/user/${this.props.user.uid}`} to={`/user/${this.props.user.uid}`} className='text-light'>
+					{user
+						&& <Nav.Link as={Link} href={`/user/${user.uid}`} to={`/user/${user.uid}`} className='text-light'>
 							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 							{' My Blueprints'}
 						</Nav.Link>}
-						<Nav.Link as={Link} href='/contact' to='/contact' className='text-light'>
-							<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
-							{' Contact me'}
-						</Nav.Link>
-					</Nav>
-					<Nav className='mr-sm-2' justify>
-						{this.renderAuthentication()}
-					</Nav>
-				</Navbar.Collapse>
-			</Navbar>
-		);
-	}
+					<Nav.Link as={Link} href='/contact' to='/contact' className='text-light'>
+						<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
+						{' Contact me'}
+					</Nav.Link>
+				</Nav>
+				<Nav className='mr-sm-2' justify>
+					{renderAuthentication()}
+				</Nav>
+			</Navbar.Collapse>
+		</Navbar>
+	);
 }
 
-const mapStateToProps = storeState => ({
-	user: selectors.getUser(storeState),
-});
+Header.propTypes = forbidExtraProps({});
 
-const mapDispatchToProps = (dispatch) =>
-{
-	const actionCreators = {};
-	return bindActionCreators(actionCreators, dispatch);
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Header);
+export default Header;
