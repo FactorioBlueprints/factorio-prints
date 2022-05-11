@@ -1,7 +1,7 @@
 import {forbidExtraProps}     from 'airbnb-prop-types';
+import {Helmet}               from 'react-helmet';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
-import DocumentTitle          from 'react-document-title';
 
 import {QueryClient, QueryClientProvider} from 'react-query';
 import {ReactQueryDevtools}               from 'react-query/devtools';
@@ -13,6 +13,7 @@ import {app}                              from '../base';
 import UserContext from '../context/userContext';
 import Routes      from './Routes';
 import SearchState from './search/SearchState';
+import Title       from './Title';
 
 // TODO: Add a top-level onError
 const queryClient = new QueryClient({
@@ -56,11 +57,12 @@ class Root extends PureComponent
 		return (
 			<QueryClientProvider client={queryClient}>
 				<UserContext.Provider value={this.state.user}>
-					<DocumentTitle title='Factorio Prints'>
-						<SearchState>
-							<Routes />
-						</SearchState>
-					</DocumentTitle>
+					<Helmet>
+						<title>Factorio Prints</title>
+					</Helmet>
+					<SearchState>
+						<Routes />
+					</SearchState>
 				</UserContext.Provider>
 				<ReactQueryDevtools initialIsOpen />
 			</QueryClientProvider>
