@@ -722,6 +722,7 @@
     <inspection_tool class="PlatformDetectionJS" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="PointlessIndexOfComparison" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="PointlessNullCheck" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="ProblematicWhitespace" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="PropertyValueSetToItself" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="ProtectedMemberInFinalClass" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="PublicConstructorInNonPublicClass" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -753,7 +754,6 @@
     </inspection_tool>
     <inspection_tool class="RedundantImport" enabled="true" level="INSPECTION" enabled_by_default="true" />
     <inspection_tool class="RedundantMethodOverride" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="RedundantSuppression" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantThrowsDeclaration" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="ReferencesToClassesFromDefaultPackagesInJSPFile" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="ReflectionForUnavailableAnnotation" enabled="false" level="WARNING" enabled_by_default="false" />
@@ -974,7 +974,6 @@
       </replaceConfiguration>
       <replaceConfiguration name="assertNotContains" text="Assert.assertFalse($string$, $collection$.contains($obj$))" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.test.Verify.assertNotContains($string$, $obj$, $collection$)">
         <constraint name="string" nameOfExprType="String" minCount="0" within="" contains="" />
-        <constraint name="coll" within="" contains="" />
         <constraint name="collection" within="" contains="" />
         <constraint name="obj" within="" contains="" />
       </replaceConfiguration>
@@ -1096,11 +1095,9 @@
         <constraint name="array" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="ArrayIterate.asList() to FastList.newListWith()" text="ArrayIterate.asList(new Object[]{$expr$})" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.list.mutable.FastList.newListWith($expr$)">
-        <constraint name="obj" within="" contains="" />
         <constraint name="expr" minCount="0" maxCount="2147483647" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="Iterate to ArrayIterate" text="Iterate.$method$(Arrays.asList($array$), $expr$)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.utility.ArrayIterate.$method$($array$, $expr$)">
-        <constraint name="list" within="" contains="" />
         <constraint name="array" within="" contains="" />
         <constraint name="expr" minCount="0" maxCount="2147483647" within="" contains="" />
         <constraint name="method" within="" contains="" />
@@ -1132,9 +1129,6 @@
       </replaceConfiguration>
       <replaceConfiguration name="newSetWith 7" text="$coll$ = UnifiedSet.newSet();&#10;$coll$.add($expr$);" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="$coll$ = UnifiedSet.newSetWith($expr$);">
         <constraint name="coll" within="" contains="" />
-        <constraint name="type" within="" contains="" />
-        <constraint name="expr1" within="" contains="" />
-        <constraint name="expr2" within="" contains="" />
         <constraint name="expr" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="newSetWith 8" text="$coll$ = UnifiedSet.&lt;$type$&gt;newSetWith($expr1$);&#10;$coll$.add($expr2$);" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="$coll$ = UnifiedSet.&lt;$type$&gt;newSetWith($expr1$, $expr2$);">
@@ -1145,33 +1139,20 @@
       </replaceConfiguration>
       <replaceConfiguration name="newSetWith 9" text="$coll$ = UnifiedSet.newSetWith($expr1$);&#10;$coll$.add($expr2$);" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="$coll$ = UnifiedSet.newSetWith($expr1$, $expr2$);">
         <constraint name="coll" within="" contains="" />
-        <constraint name="type" within="" contains="" />
         <constraint name="expr1" within="" contains="" />
         <constraint name="expr2" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="size of array 1" text="Assert.assertTrue($string$, $array$.length == $size$)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.test.Verify.assertSize($string$, $size$, $array$)">
-        <constraint name="coll" within="" contains="" />
-        <constraint name="type" within="" contains="" />
-        <constraint name="expr1" within="" contains="" />
-        <constraint name="expr2" within="" contains="" />
         <constraint name="string" minCount="0" within="" contains="" />
         <constraint name="array" within="" contains="" />
         <constraint name="size" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="size of array 2" text="Assert.assertEquals($string$, $size$, $array$.length)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.test.Verify.assertSize($string$, $size$, $array$)">
-        <constraint name="coll" within="" contains="" />
-        <constraint name="type" within="" contains="" />
-        <constraint name="expr1" within="" contains="" />
-        <constraint name="expr2" within="" contains="" />
         <constraint name="string" minCount="0" within="" contains="" />
         <constraint name="array" within="" contains="" />
         <constraint name="size" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="size of array 3" text="Assert.assertTrue($string$, $size$ == $array$.length)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.test.Verify.assertSize($string$, $size$, $array$)">
-        <constraint name="coll" within="" contains="" />
-        <constraint name="type" within="" contains="" />
-        <constraint name="expr1" within="" contains="" />
-        <constraint name="expr2" within="" contains="" />
         <constraint name="string" minCount="0" within="" contains="" />
         <constraint name="array" within="" contains="" />
         <constraint name="size" within="" contains="" />
@@ -1197,8 +1178,6 @@
       </replaceConfiguration>
       <replaceConfiguration name="Verify.assertNotNull" text="Assert.assertTrue($string$, $expr$ != null)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.test.Verify.assertNotNull($string$, $expr$)">
         <constraint name="string" nameOfExprType="String" minCount="0" within="" contains="" />
-        <constraint name="left" within="" contains="" />
-        <constraint name="right" within="" contains="" />
         <constraint name="expr" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="not Iterate.notEmpty()" text="!Iterate.notEmpty($iterable$)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.utility.Iterate.isEmpty($iterable$)">
@@ -1267,26 +1246,18 @@
         <constraint name="expr2" script="&quot;&quot;" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="synchronizedList() to asSynchronized()" text="Collections.synchronizedList($list$)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="$list$.asSynchronized()">
-        <constraint name="set" script="&quot;&quot;" nameOfExprType="MutableSet" exprTypeWithinHierarchy="true" within="" contains="" />
         <constraint name="list" script="&quot;&quot;" nameOfExprType="MutableList" exprTypeWithinHierarchy="true" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="synchronizedSet() to asSynchronized()" text="Collections.synchronizedSet($set$)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="$set$.asSynchronized()">
         <constraint name="set" script="&quot;&quot;" nameOfExprType="MutableSet" exprTypeWithinHierarchy="true" within="" contains="" />
-        <constraint name="list" script="&quot;&quot;" nameOfExprType="MutableList" exprTypeWithinHierarchy="true" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="synchronizedMap() to asSynchronized()" text="Collections.synchronizedMap($map$)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="$map$.asSynchronized()">
-        <constraint name="set" script="&quot;&quot;" nameOfExprType="MutableSet" exprTypeWithinHierarchy="true" within="" contains="" />
-        <constraint name="list" script="&quot;&quot;" nameOfExprType="MutableList" exprTypeWithinHierarchy="true" within="" contains="" />
         <constraint name="map" script="&quot;&quot;" nameOfExprType="MutableMap" exprTypeWithinHierarchy="true" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="synchronizedCollection() to asSynchronized()" text="Collections.synchronizedCollection($collection$)" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="$collection$.asSynchronized()">
-        <constraint name="set" script="&quot;&quot;" nameOfExprType="MutableSet" exprTypeWithinHierarchy="true" within="" contains="" />
-        <constraint name="list" script="&quot;&quot;" nameOfExprType="MutableList" exprTypeWithinHierarchy="true" within="" contains="" />
-        <constraint name="map" script="&quot;&quot;" nameOfExprType="MutableMap" exprTypeWithinHierarchy="true" within="" contains="" />
         <constraint name="collection" script="&quot;&quot;" nameOfExprType="MutableCollection" exprTypeWithinHierarchy="true" within="" contains="" />
       </replaceConfiguration>
       <replaceConfiguration name="Verify.assertCount()" text="Assert.assertEquals($expectedCount$, Iterate.count($iterable$, $discriminator$);" recursive="false" caseInsensitive="true" type="XML" reformatAccordingToStyle="false" shortenFQN="true" replacement="org.eclipse.collections.impl.test.Verify.assertCount($expectedCount$, $iterable$, $discriminator$);">
-        <constraint name="size" within="" contains="" />
         <constraint name="iterable" within="" contains="" />
         <constraint name="discriminator" within="" contains="" />
         <constraint name="expectedCount" within="" contains="" />
@@ -1578,9 +1549,6 @@
     </inspection_tool>
     <inspection_tool class="UnresolvedPropertyKey" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="UnsecureRandomNumberGeneration" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="UnterminatedStatementJS" enabled="false" level="WARNING" enabled_by_default="false">
-      <option name="ignoreSemicolonAtEndOfBlock" value="true" />
-    </inspection_tool>
     <inspection_tool class="UnusedCatchParameter" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="m_ignoreCatchBlocksWithComments" value="true" />
       <option name="m_ignoreTestCases" value="true" />
