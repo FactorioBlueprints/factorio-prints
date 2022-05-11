@@ -4,7 +4,7 @@ import pickBy    from 'lodash/pickBy';
 
 import throttle from 'lodash/throttle';
 import React    from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import {Provider} from 'react-redux';
 
@@ -75,16 +75,17 @@ store.subscribe(throttle(() =>
 
 sagaMiddleware.run(rootSaga);
 
-const provider = (
+const rootWrapper = (
 	<Provider store={store}>
-		<Root />
+		<React.StrictMode>
+			<Root />
+		</React.StrictMode>
 	</Provider>
 );
 
-ReactDOM.render(
-	provider,
-	document.getElementById('root'),
-);
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(rootWrapper);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
