@@ -10,7 +10,7 @@ import Card                          from 'react-bootstrap/Card';
 import Col                           from 'react-bootstrap/Col';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
-import {useHistory, useParams}       from 'react-router-dom';
+import {useNavigate, useParams}      from 'react-router-dom';
 import UserContext                   from '../../context/userContext';
 import useBlueprint                  from '../../hooks/useBlueprint';
 import useIsModerator                from '../../hooks/useIsModerator';
@@ -86,11 +86,11 @@ function EfficientSingleBlueprint()
 
 	const isModerator = useIsModerator();
 
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	function handleTransitionToEdit()
 	{
-		history.push(`/edit/${blueprintKey}`);
+		navigate(`/edit/${blueprintKey}`);
 	}
 
 	if (isLoading)

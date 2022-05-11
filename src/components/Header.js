@@ -10,8 +10,12 @@ import {
 	faUser,
 	faWrench,
 }                             from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
-import {forbidExtraProps}     from 'airbnb-prop-types';
+import {
+	FontAwesomeIcon,
+}                             from '@fortawesome/react-fontawesome';
+import {
+	forbidExtraProps,
+}                             from 'airbnb-prop-types';
 import firebase               from 'firebase/app';
 import 'firebase/auth';
 import PropTypes              from 'prop-types';
@@ -21,8 +25,13 @@ import Dropdown               from 'react-bootstrap/Dropdown';
 import Nav                    from 'react-bootstrap/Nav';
 import Navbar                 from 'react-bootstrap/Navbar';
 import NavDropdown            from 'react-bootstrap/NavDropdown';
-import {connect}              from 'react-redux';
-import {Link}                 from 'react-router-dom';
+import {
+	connect,
+}                             from 'react-redux';
+import {
+	Link,
+	useNavigate,
+}                             from 'react-router-dom';
 import {bindActionCreators}   from 'redux';
 import {app}                  from '../base';
 import {
@@ -39,12 +48,6 @@ class Header extends PureComponent
 			displayName: PropTypes.string,
 			photoURL   : PropTypes.string,
 		})),
-		match: PropTypes.shape(forbidExtraProps({
-			params : PropTypes.shape(forbidExtraProps({})).isRequired,
-			path   : PropTypes.string.isRequired,
-			url    : PropTypes.string.isRequired,
-			isExact: PropTypes.bool.isRequired,
-		})).isRequired,
 		location     : locationSchema,
 		history      : historySchema,
 		staticContext: PropTypes.shape(forbidExtraProps({})),
@@ -69,7 +72,8 @@ class Header extends PureComponent
 
 	handleEdit = () =>
 	{
-		this.props.history.push('/account');
+		const navigate = useNavigate();
+		navigate('/account');
 	}
 
 	handleLogout = () =>

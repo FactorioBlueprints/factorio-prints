@@ -1,19 +1,26 @@
-import {forbidExtraProps}     from 'airbnb-prop-types';
-import {Helmet}               from 'react-helmet';
-import PropTypes              from 'prop-types';
-import React, {PureComponent} from 'react';
+import {forbidExtraProps} from 'airbnb-prop-types';
+import React, {useState}  from 'react';
+import {Helmet}           from 'react-helmet';
 
 import {QueryClient, QueryClientProvider} from 'react-query';
 import {ReactQueryDevtools}               from 'react-query/devtools';
-import {connect}                          from 'react-redux';
-import {bindActionCreators}               from 'redux';
-import {authStateChanged}                 from '../actions/actionCreators';
+import {BrowserRouter, Route, Routes}     from 'react-router-dom';
 import {app}                              from '../base';
 
-import UserContext from '../context/userContext';
-import Routes      from './Routes';
-import SearchState from './search/SearchState';
-import Title       from './Title';
+import UserContext            from '../context/userContext';
+import Account                from './Account';
+import Contact                from './Contact';
+import EfficientEditBlueprint from './EfficientEditBlueprint';
+import BlueprintGrid          from './grid/BlueprintGrid';
+import MostFavoritedGrid      from './grid/MostFavoritedGrid';
+import MyFavoritesGrid        from './grid/MyFavoritesGrid';
+import UserGrid               from './grid/UserGrid';
+import Header                 from './Header';
+import Intro                  from './Intro';
+import NoMatch                from './NoMatch';
+import ScrollToTop            from './ScrollToTop';
+import SearchState            from './search/SearchState';
+import SingleBlueprint        from './single/EfficientSingleBlueprint';
 
 // TODO: Add a top-level onError
 const queryClient = new QueryClient({
@@ -24,54 +31,56 @@ const queryClient = new QueryClient({
 		},
 	},
 });
-queryClient.getQueryDefaults()
+queryClient.getQueryDefaults();
 
-class Root extends PureComponent
+function Root()
 {
-	static propTypes = forbidExtraProps({
-		authStateChanged: PropTypes.func.isRequired,
-	});
+	const [user, setUser] = useState(undefined);
 
-	constructor(props)
+	React.useEffect(() =>
 	{
-		super(props);
-		this.state = {
-			user: undefined,
-		};
-	}
-
-	UNSAFE_componentWillMount()
-	{
-		app.auth().onAuthStateChanged(
+		const unsubscribe = app.auth().onAuthStateChanged(
 			async (user) =>
 			{
-				this.props.authStateChanged(user);
-				this.setState({user});
+				// authStateChanged(user);
+				setUser(user);
 			},
 			(...args) => console.log('Root.componentWillMount', args),
 		);
-	}
+		return () => unsubscribe();
+	}, []);
 
-	render()
-	{
-		return (
-			<QueryClientProvider client={queryClient}>
-				<UserContext.Provider value={this.state.user}>
-					<Helmet>
-						<title>Factorio Prints</title>
-					</Helmet>
-					<SearchState>
-						<Routes />
-					</SearchState>
-				</UserContext.Provider>
-				<ReactQueryDevtools initialIsOpen />
-			</QueryClientProvider>
-		);
-	}
+	return (
+		<QueryClientProvider client={queryClient}>
+			<UserContext.Provider value={user}>
+				<Helmet>
+					<title>Factorio Prints</title>
+				</Helmet>
+				<SearchState>
+					<BrowserRouter>
+						<ScrollToTop />
+						<Header />
+						<Routes>
+							<Route path='/' element={<div><Intro /><BlueprintGrid /></div>} />
+							<Route path='/blueprints' element={<BlueprintGrid />} />
+							<Route path='/top' element={<MostFavoritedGrid />} />
+							{/* <Route path='/create' element={<Create />} /> */}
+							<Route path='/favorites' element={<MyFavoritesGrid />} />
+							<Route path='/contact' element={<Contact />} />
+							<Route path='/account' element={<Account />} />
+							<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
+							<Route path='/edit/:blueprintId' element={<EfficientEditBlueprint />} />
+							<Route path='/user/:userId' element={<UserGrid />} />
+							<Route element={<NoMatch />} />
+						</Routes>
+					</BrowserRouter>
+				</SearchState>
+			</UserContext.Provider>
+			<ReactQueryDevtools initialIsOpen />
+		</QueryClientProvider>
+	);
 }
 
-const mapStateToProps = () => ({});
+Root.propTypes = forbidExtraProps({});
 
-const mapDispatchToProps = dispatch => bindActionCreators({authStateChanged}, dispatch);
-
-export default connect(mapStateToProps, mapDispatchToProps)(Root);
+export default Root;

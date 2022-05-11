@@ -7,7 +7,7 @@ import Container                     from 'react-bootstrap/Container';
 import Form                          from 'react-bootstrap/Form';
 import FormControl                   from 'react-bootstrap/FormControl';
 import Row                           from 'react-bootstrap/Row';
-import {useHistory}                  from 'react-router-dom';
+import {useNavigate}                 from 'react-router-dom';
 import UserContext                   from '../context/userContext';
 import PageHeader                    from './PageHeader';
 
@@ -18,7 +18,7 @@ function Account()
 	const user                          = useContext(UserContext);
 	const [displayName, setDisplayName] = useState(user.displayName);
 
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	function handleChange(event)
 	{
@@ -32,13 +32,13 @@ function Account()
 
 		// TODO: POST new displayName at user.uid
 
-		history.push(`user/${user.uid}`);
+		navigate(`user/${user.uid}`);
 	}
 
 	function handleCancel(event)
 	{
 		event.preventDefault();
-		history.push(`user/${user.uid}`);
+		navigate(`user/${user.uid}`);
 	}
 
 	if (!user)

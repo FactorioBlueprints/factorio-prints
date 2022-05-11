@@ -4,7 +4,7 @@ import PropTypes           from 'prop-types';
 import React, {useContext} from 'react';
 import Badge               from 'react-bootstrap/Badge';
 import Card                from 'react-bootstrap/Card';
-import {useHistory}        from 'react-router-dom';
+import {useNavigate}       from 'react-router-dom';
 import SearchContext       from '../../context/searchContext';
 import useBlueprint        from '../../hooks/useBlueprint';
 
@@ -19,14 +19,14 @@ function TagLink({category, name})
 
 	const {setTitleFilter, setSelectedTags} = useContext(SearchContext);
 
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	const handleClick = () =>
 	{
 		setTitleFilter('');
 		setSelectedTags([tagString]);
-		console.log('history.push', `/blueprints?tag[0]=${tagString}`);
-		history.push(`/blueprints?tag[0]=${tagString}`);
+		console.log('navigate', `/blueprints?tag[0]=${tagString}`);
+		navigate(`/blueprints?tag[0]=${tagString}`);
 	};
 
 	return (

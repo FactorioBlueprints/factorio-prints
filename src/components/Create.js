@@ -430,7 +430,7 @@ class Create extends PureComponent
 									.then(() =>
 									{
 										this.setState(Create.initialState);
-										this.props.history.push(`/view/${newBlueprintRef.key}`);
+										this.props.navigate(`/view/${newBlueprintRef.key}`);
 									});
 							});
 						})
@@ -442,7 +442,7 @@ class Create extends PureComponent
 	handleCancel = () =>
 	{
 		localStorage.removeItem('factorio-blueprint-create-form');
-		this.props.history.push('/blueprints');
+		this.props.navigate('/blueprints');
 	};
 
 	parseBlueprint = (blueprintString) =>

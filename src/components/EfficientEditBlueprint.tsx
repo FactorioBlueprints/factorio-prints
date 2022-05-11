@@ -21,10 +21,10 @@ import Modal         from 'react-bootstrap/Modal';
 import ProgressBar   from 'react-bootstrap/ProgressBar';
 import Row           from 'react-bootstrap/Row';
 
-import Dropzone                from 'react-dropzone';
-import {useHistory, useParams} from 'react-router-dom';
-import Select                  from 'react-select';
-import makeAnimated            from 'react-select/animated';
+import Dropzone                 from 'react-dropzone';
+import {useNavigate, useParams} from 'react-router-dom';
+import Select                   from 'react-select';
+import makeAnimated             from 'react-select/animated';
 
 import Blueprint                  from "../Blueprint";
 import UserContext                from '../context/userContext';
@@ -66,7 +66,7 @@ function EfficientEditBlueprint()
 			  tagOptions
 		  }: { tagValues: string[]; tagValuesSet: Set<string>; tagOptions: TagOption[] } = useTagOptions();
 
-	const history = useHistory();
+	const navigate = useNavigate();
 
 	const [blueprint, setBlueprint]                               = useState<BlueprintFromServer>();
 	const [blueprintString, setBlueprintString]                   = useState<string>();
@@ -87,7 +87,7 @@ function EfficientEditBlueprint()
 
 	const queryKey = ['blueprintDetails', blueprintKey];
 
-	const result                   = useBlueprint(blueprintKey);
+	const result                     = useBlueprint(blueprintKey);
 	const {isLoading, isError, data} = result;
 
 	React.useEffect(() =>
@@ -259,7 +259,7 @@ function EfficientEditBlueprint()
 		// 		},
 		// 	});
 		//
-		// this.props.history.push(`/view/${this.props.id}`);
+		// this.props.navigate(`/view/${this.props.id}`);
 		//
 		// // TODO: Delete old images from storage and imgur
 	};
@@ -333,7 +333,7 @@ function EfficientEditBlueprint()
 						}
 						return undefined;
 					})
-					.then(() => this.props.history.push(`/user/${authorId}`));
+					.then(() => this.props.navigate(`/user/${authorId}`));
 		*/
 	}
 
@@ -494,7 +494,7 @@ function EfficientEditBlueprint()
 
 	function handleCancel()
 	{
-		history.push(`/view/${blueprintId}`);
+		navigate(`/view/${blueprintId}`);
 	}
 
 	return (
@@ -801,7 +801,7 @@ function parseBlueprint(blueprintString: string | undefined): Blueprint | undefi
 	}
 	catch (ignored)
 	{
-		console.log('EditBlueprint.parseBlueprint', {ignored});
+		console.log('EfficientEditBlueprint.parseBlueprint', {ignored});
 		return undefined;
 	}
 }
