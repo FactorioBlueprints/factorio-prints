@@ -6,7 +6,6 @@ import Col                           from 'react-bootstrap/Col';
 import Container                     from 'react-bootstrap/Container';
 import Form                          from 'react-bootstrap/Form';
 import FormControl                   from 'react-bootstrap/FormControl';
-import Jumbotron                     from 'react-bootstrap/Jumbotron';
 import Row                           from 'react-bootstrap/Row';
 import {useHistory}                  from 'react-router-dom';
 import UserContext                   from '../context/userContext';
@@ -45,14 +44,14 @@ function Account()
 	if (!user)
 	{
 		return (
-			<Jumbotron>
+			<div className="p-5 rounded-lg jumbotron">
 				<h1 className='display-4'>
 					{'Account Settings'}
 				</h1>
 				<p className='lead'>
 					{'Please log in with Google or GitHub in order to edit your account settings.'}
 				</p>
-			</Jumbotron>
+			</div>
 		);
 	}
 

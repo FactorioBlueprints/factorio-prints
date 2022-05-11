@@ -20,7 +20,6 @@ import Col                    from 'react-bootstrap/Col';
 import Container              from 'react-bootstrap/Container';
 import Form                   from 'react-bootstrap/Form';
 import FormControl            from 'react-bootstrap/FormControl';
-import Jumbotron              from 'react-bootstrap/Jumbotron';
 import Modal                  from 'react-bootstrap/Modal';
 import ProgressBar            from 'react-bootstrap/ProgressBar';
 import Row                    from 'react-bootstrap/Row';
@@ -506,14 +505,14 @@ class Create extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<Jumbotron>
+				<div className="p-5 rounded-lg jumbotron">
 					<h1 className='display-4'>
 						{'Create a Blueprint'}
 					</h1>
 					<p className='lead'>
 						{'Please log in with Google or GitHub in order to add a Blueprint.'}
 					</p>
-				</Jumbotron>
+				</div>
 			);
 		}
 
