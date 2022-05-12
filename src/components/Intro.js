@@ -1,25 +1,19 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
-
 import isEmpty from 'lodash/isEmpty';
 
-import React from 'react';
+import React, {useContext} from 'react';
+import UserContext         from '../context/userContext';
 
-import {connect}            from 'react-redux';
-import {bindActionCreators} from 'redux';
-
-import {userSchema} from '../propTypes';
-
-import * as selectors from '../selectors';
-
-const Intro = ({user}) =>
+const Intro = () =>
 {
+	const user = useContext(UserContext);
+
 	if (!isEmpty(user))
 	{
 		return false;
 	}
 
 	return (
-		<div className="p-5 rounded-lg jumbotron">
+		<div className='p-5 rounded-lg jumbotron'>
 			<h1 className='display-4'>
 				{'Factorio Prints'}
 			</h1>
@@ -50,20 +44,10 @@ const Intro = ({user}) =>
 				{', and '}
 				<a href='https://mods.factorio.com/mods/killkrog/KBlueprints'>
 					{'Killkrog\'s Blueprint Manager'}
-		d		</a>
+				</a>
 			</p>
 		</div>
 	);
 };
 
-Intro.propTypes = forbidExtraProps({
-	user: userSchema,
-});
-
-const mapStateToProps = storeState => ({
-	user: selectors.getFilteredUser(storeState),
-});
-
-const mapDispatchToProps = dispatch => bindActionCreators({}, dispatch);
-
-export default connect(mapStateToProps, mapDispatchToProps)(Intro);
+export default Intro;
