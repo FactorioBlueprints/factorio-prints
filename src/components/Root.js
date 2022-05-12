@@ -45,7 +45,7 @@ function Root()
 				// authStateChanged(user);
 				setUser(user);
 			},
-			(...args) => console.log('Root.componentWillMount', args),
+			(...args) => console.log('Root onAuthStateChanged error', args),
 		);
 		return () => unsubscribe();
 	}, []);
