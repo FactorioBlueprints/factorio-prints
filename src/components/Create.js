@@ -1,3 +1,4 @@
+/*
 import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
@@ -728,7 +729,7 @@ class Create extends PureComponent
 								</Form.Label>
 								<Col sm={10}>
 									<Dropzone
-										accept=' image/*'
+										accept=' image/!*'
 										maxSize={10000000}
 										onDrop={this.handleDrop}
 									>
@@ -797,3 +798,4 @@ const mapDispatchToProps = (dispatch) =>
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Create);
+*/
