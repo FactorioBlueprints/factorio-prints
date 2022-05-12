@@ -69,7 +69,7 @@
 		"react-router-bootstrap": "^0.26.1",
 		"react-router-dom": "^6.3.0",
 		"react-scripts": "^5.0.1",
-		"react-select": "^4.3.0",
+		"react-select": "^5.3.2",
 		"reduce-reducers": "1.0.4",
 		"redux": "4.0.5",
 		"redux-saga": "1.1.3",
