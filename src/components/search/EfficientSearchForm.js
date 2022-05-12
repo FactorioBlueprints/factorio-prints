@@ -3,9 +3,9 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 import React, {useContext, useState} from 'react';
 
-import Col        from 'react-bootstrap/Col';
-import Form       from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
+import Col         from 'react-bootstrap/Col';
+import FormControl from 'react-bootstrap/FormControl';
+import InputGroup  from 'react-bootstrap/InputGroup';
 
 import SearchContext from '../../context/searchContext';
 
@@ -38,14 +38,13 @@ function EfficientSearchForm()
 	return (
 		<Col md={6}>
 			<InputGroup size='sm' className='search-form'>
-				<Form.Control
-					type='text'
+				<FormControl
 					placeholder='search titles'
 					value={localTitleFilter}
 					onChange={handleSearchString}
 					onKeyDown={handleKeyDown}
 				/>
-				<InputGroup.Text>
+				<InputGroup.Text className='p-1'>
 					<FontAwesomeIcon icon={faSearch} />
 				</InputGroup.Text>
 			</InputGroup>
