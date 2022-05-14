@@ -1,13 +1,11 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import React, {useState}  from 'react';
+import React              from 'react';
 import {Helmet}           from 'react-helmet';
 
 import {QueryClient, QueryClientProvider} from 'react-query';
 import {ReactQueryDevtools}               from 'react-query/devtools';
 import {BrowserRouter, Route, Routes}     from 'react-router-dom';
-import {app}                              from '../base';
 
-import UserContext            from '../context/userContext';
 import Account                from './Account';
 import Contact                from './Contact';
 import EfficientEditBlueprint from './EfficientEditBlueprint';
@@ -21,6 +19,7 @@ import NoMatch                from './NoMatch';
 import ScrollToTop            from './ScrollToTop';
 import SearchState            from './search/SearchState';
 import SingleBlueprint        from './single/EfficientSingleBlueprint';
+import UserState              from './user/UserState';
 
 // TODO: Add a top-level onError
 const queryClient = new QueryClient({
@@ -35,27 +34,12 @@ queryClient.getQueryDefaults();
 
 function Root()
 {
-	const [user, setUser] = useState(undefined);
-
-	React.useEffect(() =>
-	{
-		const unsubscribe = app.auth().onAuthStateChanged(
-			async (user) =>
-			{
-				// authStateChanged(user);
-				setUser(user);
-			},
-			(...args) => console.log('Root onAuthStateChanged error', args),
-		);
-		return () => unsubscribe();
-	}, []);
-
 	return (
 		<QueryClientProvider client={queryClient}>
-			<UserContext.Provider value={user}>
-				<Helmet>
-					<title>Factorio Prints</title>
-				</Helmet>
+			<Helmet>
+				<title>Factorio Prints</title>
+			</Helmet>
+			<UserState>
 				<SearchState>
 					<BrowserRouter>
 						<ScrollToTop />
@@ -75,7 +59,7 @@ function Root()
 						</Routes>
 					</BrowserRouter>
 				</SearchState>
-			</UserContext.Provider>
+			</UserState>
 			<ReactQueryDevtools initialIsOpen />
 		</QueryClientProvider>
 	);
