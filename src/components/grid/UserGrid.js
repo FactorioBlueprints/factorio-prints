@@ -1,3 +1,5 @@
+import {faExclamationTriangle}       from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
 import axios                         from 'axios';
 import React, {useContext, useState} from 'react';
 import Container                     from 'react-bootstrap/Container';
@@ -14,6 +16,7 @@ import LoadingIcon         from '../LoadingIcon';
 import PageHeader          from '../PageHeader';
 import EfficientSearchForm from '../search/EfficientSearchForm';
 import EfficientTagForm    from '../search/EfficientTagForm';
+import Spinner             from '../single/Spinner';
 import PaginationControls  from './PaginationControls';
 
 function UserGrid()
@@ -47,13 +50,21 @@ function UserGrid()
 	const {isLoading, isError, data, isPreviousData}               = result;
 	const {isLoading: isDisplayNameLoading, data: displayNameData} = displayNameResult;
 
+	if (isLoading)
+	{
+		return <Spinner />
+	}
+
 	if (isError || displayNameData._data === null)
 	{
 		console.log({result});
 		return (
-			<>
-				{'Error loading blueprint summaries.'}
-			</>
+			<div className='p-5 rounded-lg jumbotron'>
+				<h1>
+					<FontAwesomeIcon icon={faExclamationTriangle} size='lg' fixedWidth />
+					{'Error loading blueprint summaries.'}
+				</h1>
+			</div>
 		);
 	}
 
@@ -88,10 +99,6 @@ function UserGrid()
 				<EfficientSearchForm />
 				<EfficientTagForm />
 			</Row>
-			{isLoading && <Row>
-				<LoadingIcon isLoading={isLoading} />
-				{' Loading blueprints'}
-			</Row>}
 			<Row className='justify-content-center'>
 				{
 					blueprintSummaries.map(blueprintSummary =>
