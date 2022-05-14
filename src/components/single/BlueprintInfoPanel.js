@@ -9,7 +9,6 @@ import Card               from 'react-bootstrap/Card';
 import Table              from 'react-bootstrap/Table';
 import {Link}             from 'react-router-dom';
 import useBlueprint       from '../../hooks/useBlueprint';
-import LoadingIcon        from '../LoadingIcon';
 
 import BlueprintVersion from './BlueprintVersion';
 
@@ -18,31 +17,11 @@ BlueprintInfoPanel.propTypes = forbidExtraProps({
 	ownedByCurrentUser: PropTypes.bool.isRequired,
 });
 
-function BlueprintInfoPanel(props)
+function BlueprintInfoPanel({blueprintKey, ownedByCurrentUser})
 {
-	const {blueprintKey} = props;
 	const result = useBlueprint(blueprintKey);
-
-	const {isLoading, isError, data} = result;
-	if (isLoading)
-	{
-		return <>
-			<LoadingIcon isLoading={isLoading} />
-			{' Loading...'}
-		</>;
-	}
-
-	if (isError)
-	{
-		console.log({result});
-		return (
-			<>
-				{'Error loading blueprint details.'}
-			</>
-		);
-	}
-
-	const {createdOn, systemFrom, author: {userId: authorId, displayName}, numberOfUpvotes} = data.data;
+	
+	const {createdOn, systemFrom, author: {userId: authorId, displayName}, numberOfUpvotes} = result.data.data;
 
 	return (
 		<Card>
@@ -59,7 +38,7 @@ function BlueprintInfoPanel(props)
 						<td>
 							<Link to={`/user/${authorId}`}>
 								{displayName}
-								{props.ownedByCurrentUser && <span className='pull-right'><b>{' (You)'}</b></span>}
+								{ownedByCurrentUser && <span className='pull-right'><b>{' (You)'}</b></span>}
 							</Link>
 						</td>
 					</tr>
@@ -104,12 +83,13 @@ function BlueprintInfoPanel(props)
 							{' Version'}
 						</td>
 						<td>
-							<BlueprintVersion blueprintKey={props.blueprintKey} />
+							<BlueprintVersion blueprintKey={blueprintKey} />
 						</td>
 					</tr>
 				</tbody>
 			</Table>
-		</Card>);
+		</Card>
+	);
 }
 
 export default BlueprintInfoPanel;

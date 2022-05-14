@@ -40,11 +40,10 @@ function getBody(result)
 	);
 }
 
-function BlueprintStringCard(props)
+function BlueprintStringCard({blueprintKey})
 {
-	const {blueprintKey} = props;
-	const result         = useBlueprintString(blueprintKey);
-	const body           = getBody(result);
+	const result = useBlueprintString(blueprintKey);
+	const body   = getBody(result);
 
 	return (
 		<Card>

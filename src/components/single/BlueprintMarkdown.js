@@ -3,7 +3,6 @@ import marked             from 'marked';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import useBlueprint       from '../../hooks/useBlueprint';
-import LoadingIcon        from '../LoadingIcon';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -31,33 +30,10 @@ BlueprintMarkdown.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
 });
 
-function BlueprintMarkdown(props)
+function BlueprintMarkdown({blueprintKey})
 {
-	const {blueprintKey} = props;
-	const result = useBlueprint(blueprintKey);
-
-	const {isLoading, isError, data} = result;
-	if (isLoading)
-	{
-		return (
-			<>
-				<LoadingIcon isLoading={isLoading} />
-				{' Loading...'}
-			</>
-		);
-	}
-
-	if (isError)
-	{
-		console.log({result});
-		return (
-			<>
-				{'Error loading blueprint details.'}
-			</>
-		);
-	}
-
-	const {descriptionMarkdown} = data.data;
+	const result                = useBlueprint(blueprintKey);
+	const {descriptionMarkdown} = result.data.data;
 	const renderedMarkdown      = marked(descriptionMarkdown);
 
 	return <div dangerouslySetInnerHTML={{__html: renderedMarkdown}} />;

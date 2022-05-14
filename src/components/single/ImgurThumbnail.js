@@ -5,40 +5,25 @@ import Image              from 'react-bootstrap/Image';
 
 import buildImageUrl from '../../helpers/buildImageUrl';
 import useBlueprint  from '../../hooks/useBlueprint';
-import LoadingIcon   from '../LoadingIcon';
 
 ImgurThumbnail.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
 });
 
-function ImgurThumbnail(props)
+function ImgurThumbnail({blueprintKey})
 {
-	const {blueprintKey} = props;
+	const result       = useBlueprint(blueprintKey);
+	const {imgurImage} = result.data.data;
 
-	const result = useBlueprint(blueprintKey);
-
-	const {isLoading, isError, data} = result;
-	if (isLoading)
-	{
-		return (
-			<div className='border-warning'>
-				<LoadingIcon isLoading={isLoading} />
-				{' Loading...'}
-			</div>
-		);
-	}
-
-	if (isError || !data.data.imgurImage)
+	if (!imgurImage)
 	{
 		console.log({result});
 		return (
 			<div className='border-warning'>
-				{'Error loading blueprint details.'}
+				{'Error loading imgur image.'}
 			</div>
 		);
 	}
-
-	const {imgurImage} = data.data;
 
 	const thumbnail = buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
 	return (

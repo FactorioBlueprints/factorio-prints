@@ -7,7 +7,6 @@ import Card                from 'react-bootstrap/Card';
 import {useHistory}        from 'react-router-dom';
 import SearchContext       from '../../context/searchContext';
 import useBlueprint        from '../../hooks/useBlueprint';
-import LoadingIcon         from '../LoadingIcon';
 
 TagLink.propTypes = forbidExtraProps({
 	category: PropTypes.string.isRequired,
@@ -43,32 +42,11 @@ TagsPanel.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
 });
 
-function TagsPanel(props)
+function TagsPanel({blueprintKey})
 {
-	const {blueprintKey} = props;
-
 	const result = useBlueprint(blueprintKey);
 
-	const {isLoading, isError, data} = result;
-	if (isLoading)
-	{
-		return <>
-			<LoadingIcon isLoading={isLoading} />
-			{' Loading...'}
-		</>;
-	}
-
-	if (isError)
-	{
-		console.log({result});
-		return (
-			<>
-				{'Error loading blueprint details.'}
-			</>
-		);
-	}
-
-	const {tags} = data.data;
+	const {tags} = result.data.data;
 
 	return tags && tags.length > 0 && <Card>
 		<Card.Header>
@@ -80,12 +58,12 @@ function TagsPanel(props)
 					tags.map(tag => tag.tag)
 						.filter(tag => tag !== null)
 						.map(({category, name}) => (
-						<TagLink
-							category={category}
-							name={name}
-							key={`${category}/${name}`}
-						/>),
-					)
+							<TagLink
+								category={category}
+								name={name}
+								key={`${category}/${name}`}
+							/>),
+						)
 				}
 			</h4>
 		</Card.Body>

@@ -1,5 +1,6 @@
-import {faEdit, faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}                 from '@fortawesome/react-fontawesome';
+import {faEdit, faExclamationTriangle, faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
+
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}            from 'airbnb-prop-types';
 import PropTypes                     from 'prop-types';
@@ -25,6 +26,7 @@ import FavoriteButton            from './FavoriteButton';
 import FbeLink                   from './FbeLink';
 import ImgurThumbnail            from './ImgurThumbnail';
 import RequirementsHistogram     from './RequirementsHistogram';
+import Spinner                   from './Spinner';
 import TagsPanel                 from './TagsPanel';
 
 function HideButton({text})
@@ -75,7 +77,7 @@ function EfficientSingleBlueprint()
 
 	const result = useBlueprint(blueprintKey);
 
-	const {isSuccess, data} = result;
+	const {isSuccess, data, isLoading, isError} = result;
 
 	const user   = useContext(UserContext);
 	const userId = user && user.uid;
@@ -89,6 +91,24 @@ function EfficientSingleBlueprint()
 	function handleTransitionToEdit()
 	{
 		history.push(`/edit/${blueprintKey}`);
+	}
+
+	if (isLoading)
+	{
+		return <Spinner />
+	}
+
+	if (isError)
+	{
+		console.log({result});
+		return (
+			<div className='p-5 rounded-lg jumbotron'>
+				<h1>
+					<FontAwesomeIcon icon={faExclamationTriangle} size='lg' fixedWidth />
+					{'Error loading blueprint details.'}
+				</h1>
+			</div>
+		);
 	}
 
 	return (

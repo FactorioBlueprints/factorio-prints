@@ -8,9 +8,8 @@ FbeLink.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
 });
 
-function FbeLink(props)
+function FbeLink({blueprintKey})
 {
-	const {blueprintKey} = props;
 	return (
 		<>
 			<Button

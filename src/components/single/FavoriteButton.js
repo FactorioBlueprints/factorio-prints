@@ -26,7 +26,7 @@ function FavoriteButton({blueprintKey})
 	const queryEnabled = user !== undefined;
 
 	// TODO: Switch to the other favorites hook
-	const {isSuccess, isLoading, isError, data: isFavorite} = useIsFavorite(blueprintKey);
+	const {isSuccess, data: isFavorite} = useIsFavorite(blueprintKey);
 
 	const toggleFavoriteMutation = useMutation(
 		() => postIsFavorite(blueprintKey, !isFavorite, user),
@@ -53,7 +53,7 @@ function FavoriteButton({blueprintKey})
 				});
 			}}
 		>
-			<FavoriteIcon isLoading={isLoading} isError={isError} isFavorite={isFavorite} />
+			<FavoriteIcon isFavorite={isFavorite} />
 			{' Favorite'}
 		</Button>
 	);
