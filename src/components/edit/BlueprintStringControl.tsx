@@ -16,7 +16,7 @@ interface Props
 }
 
 BlueprintStringControl.propTypes = forbidExtraProps({
-	blueprintString   : PropTypes.string.isRequired,
+	blueprintString   : PropTypes.string,
 	setBlueprintString: PropTypes.func.isRequired,
 	isLoading         : PropTypes.bool.isRequired,
 	isError           : PropTypes.bool.isRequired,
