@@ -9,7 +9,7 @@ const Intro = () =>
 
 	if (!isEmpty(user))
 	{
-		return false;
+		return <></>;
 	}
 
 	return (
