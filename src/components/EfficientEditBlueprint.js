@@ -234,8 +234,10 @@ function EfficientEditBlueprint()
 		try
 		{
 			firebaseImageUrl = await fileNameRef.getDownloadURL();
-			setSubmissionErrors([`File with name ${file.name} already exists.`]);
-			return;
+			const message            = `File with name ${file.name} already exists.`;
+			console.log(message);
+			setSubmissionErrors([message]);
+			return {imgurImage: undefined, firebaseImageUrl: undefined};
 		}
 		catch (e)
 		{
@@ -262,8 +264,10 @@ function EfficientEditBlueprint()
 			if (!(response.status === 200 || response.status === 0))
 			{
 				console.log({response});
-				setSubmissionErrors([`${response.statusText}`]);
-				return;
+				const message = `${response.statusText}`;
+				console.log(message);
+				setSubmissionErrors([message]);
+				return {imgurImage: undefined, firebaseImageUrl: undefined};
 			}
 
 			const json   = await response.json();
@@ -281,7 +285,10 @@ function EfficientEditBlueprint()
 		catch (error)
 		{
 			console.log(error);
-			setSubmissionErrors([error.message ? error.message : `${error}`]);
+			const message = error.message ? error.message : `${error}`;
+			console.log(message);
+			setSubmissionErrors([message]);
+			return {imgurImage: undefined, firebaseImageUrl: undefined};
 		}
 	}
 
@@ -289,40 +296,28 @@ function EfficientEditBlueprint()
 	{
 		console.log('EfficientEditBlueprint actuallySaveBlueprintEdits');
 
-		try
+		const {imgurImage, firebaseImageUrl} = await getImage();
+		if (!(imgurImage && firebaseImageUrl))
 		{
-			const {imgurImage, firebaseImageUrl} = await getImage();
-			const newBlueprint = {
-				...blueprint,
-				privateData: {
-					thumbnailData: thumbnail,
-				},
-			};
-
-			const [file] = acceptedFiles;
-			if (file)
-			{
-				newBlueprint.privateData.fileName = file.name;
-			}
-
-			if (imgurImage)
-			{
-				blueprint.imgurImage = imgurImage;
-			}
-
-			console.log('PATCH', {blueprint})
-
-			console.log({mutationStatus, mutationData, mutationError});
-
-			mutate({user, blueprintKey, blueprint})
-
-			// TODO: Delete old images from storage and imgur
+			return;
 		}
-		catch (e)
+
+		const newBlueprint = {
+			...blueprint,
+			privateData: {
+				thumbnailData: thumbnail,
+			},
+		};
+
+		const [file] = acceptedFiles;
+		if (file)
 		{
-			console.log(e)
-			setSubmissionErrors([`${e}`]);
+			newBlueprint.privateData.fileName = file.name;
 		}
+		blueprint.imgurImage = imgurImage;
+		console.log('PATCH', {blueprint});
+		console.log({mutationStatus, mutationData, mutationError});
+		mutate({user, blueprintKey, blueprint});
 	};
 
 	function handleForceSaveBlueprintEdits(event)
