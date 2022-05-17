@@ -1,10 +1,13 @@
+import Alert  from 'react-bootstrap/Alert';
+import Button from 'react-bootstrap/Button';
+
 export default function ErrorFallback({error, resetErrorBoundary})
 {
 	return (
-		<div role='alert'>
-			<p>Something went wrong:</p>
+		<Alert onClose={resetErrorBoundary} dismissible>
+			<h4>Something went wrong:</h4>
 			<pre>{error.message}</pre>
-			<button onClick={resetErrorBoundary}>Try again</button>
-		</div>
+			<Button onClick={resetErrorBoundary}>Try again</Button>
+		</Alert>
 	);
 }
