@@ -27,10 +27,10 @@ const queryClient = new QueryClient({
 		queries: {
 			cacheTime: 1000 * 60 * 60 * 1, // 1 hour
 			staleTime: 1000 * 60 * 5, // 5 minutes
+			retry: (failureCount, error: any) => error?.response?.status !== 410 && failureCount < 2
 		},
 	},
 });
-queryClient.getQueryDefaults();
 
 function Root()
 {
