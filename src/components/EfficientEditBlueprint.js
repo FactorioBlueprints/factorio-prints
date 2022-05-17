@@ -262,7 +262,7 @@ function EfficientEditBlueprint()
 			if (!(response.status === 200 || response.status === 0))
 			{
 				console.log({response});
-				setSubmissionErrors([response.statusText]);
+				setSubmissionErrors([`${response.statusText}`]);
 				return;
 			}
 
@@ -280,7 +280,8 @@ function EfficientEditBlueprint()
 		}
 		catch (error)
 		{
-			setSubmissionErrors([error.message ? error.message : error]);
+			console.log(error);
+			setSubmissionErrors([error.message ? error.message : `${error}`]);
 		}
 	}
 
@@ -319,7 +320,8 @@ function EfficientEditBlueprint()
 		}
 		catch (e)
 		{
-			setSubmissionErrors([e]);
+			console.log(e)
+			setSubmissionErrors([`${e}`]);
 		}
 	};
 
