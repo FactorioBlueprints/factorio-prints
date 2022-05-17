@@ -22,8 +22,15 @@ class Blueprint
 
 	convertEncodedTextToObject(): any
 	{
-		const jsonString: string = decodeV15Base64(this.encodedText);
-		return JSON.parse(jsonString);
+		try
+		{
+			const jsonString: string = decodeV15Base64(this.encodedText);
+			return JSON.parse(jsonString);
+		}
+		catch (e)
+		{
+			return undefined;
+		}
 	}
 
 	isBook(): boolean
