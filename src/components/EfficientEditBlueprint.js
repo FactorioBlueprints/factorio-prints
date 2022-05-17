@@ -122,7 +122,7 @@ function EfficientEditBlueprint()
 
 	const result                     = useBlueprint(blueprintKey);
 	const {isLoading, isError, data} = result;
-
+	// TODO: USe onComplete instead?
 	React.useEffect(() =>
 	{
 		const blueprintData = data?.data;
@@ -134,14 +134,16 @@ function EfficientEditBlueprint()
 			  isLoading: blueprintStringIsLoading,
 			  isError  : blueprintStringIsError,
 			  data     : blueprintStringData
-		  } = useBlueprintString(blueprintKey);
+		  }   = useBlueprintString(blueprintKey);
+	const newBlueprintString = blueprintStringData?.data;
+	// TODO: USe onComplete instead?
 	React.useEffect(() =>
 	{
-		const parsedBlueprint = parseBlueprint(blueprintString);
+		const parsedBlueprint = parseBlueprint(newBlueprintString);
 		setParsedBlueprint(parsedBlueprint);
 		setV15Decoded(parsedBlueprint?.getV15Decoded());
-		return setBlueprintString(blueprintStringData?.data);
-	}, [blueprintKey, blueprintStringData?.data]);
+		return setBlueprintString(newBlueprintString);
+	}, [blueprintKey, newBlueprintString]);
 
 	if (!user)
 	{
