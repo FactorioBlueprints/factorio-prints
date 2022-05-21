@@ -32,8 +32,8 @@ import {app}                from '../base';
 import UserContext          from '../context/userContext';
 
 const googleProvider   = new firebase.auth.GoogleAuthProvider();
-const facebookProvider = new firebase.auth.FacebookAuthProvider();
-const twitterProvider  = new firebase.auth.TwitterAuthProvider();
+// const facebookProvider = new firebase.auth.FacebookAuthProvider();
+// const twitterProvider  = new firebase.auth.TwitterAuthProvider();
 const githubProvider   = new firebase.auth.GithubAuthProvider();
 
 /*
