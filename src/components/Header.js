@@ -77,10 +77,6 @@ function Header()
 	const authenticate = (provider) =>
 	{
 		app.auth().signInWithPopup(provider)
-			.then((authData) =>
-			{
-				console.log({authData});
-			})
 			.catch(error => console.error({error}));
 	};
 
