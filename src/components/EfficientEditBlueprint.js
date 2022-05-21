@@ -296,12 +296,6 @@ function EfficientEditBlueprint()
 	{
 		console.log('EfficientEditBlueprint actuallySaveBlueprintEdits');
 
-		const {imgurImage, firebaseImageUrl} = await getImage();
-		if (!(imgurImage && firebaseImageUrl))
-		{
-			return;
-		}
-
 		const newBlueprint = {
 			...blueprint,
 			privateData: {
@@ -313,8 +307,16 @@ function EfficientEditBlueprint()
 		if (file)
 		{
 			newBlueprint.privateData.fileName = file.name;
+			const {imgurImage, firebaseImageUrl} = await getImage();
+			if (!(imgurImage && firebaseImageUrl))
+			{
+				console.log({imgurImage, firebaseImageUrl});
+				return;
+			}
+			blueprint.imgurImage = imgurImage;
+			blueprint.privateData.firebaseImageUrl = firebaseImageUrl;
 		}
-		blueprint.imgurImage = imgurImage;
+
 		console.log('PATCH', {blueprint});
 		console.log({mutationStatus, mutationData, mutationError});
 		mutate({user, blueprintKey, blueprint});
