@@ -89,7 +89,12 @@ function EfficientEditBlueprint()
 		onSuccess: data => {
 			queryClient.setQueryData(queryKey, data)
 			navigate(`/view/${blueprintKey}`);
-		}
+		},
+		onError: (error, variables, context) => {
+			console.log({error, variables, context})
+			console.log(`rolling back optimistic update with id ${context.id}`)
+			setSubmissionErrors([error.response.data.join(", ")])
+		  },
 	})
 	const {mutate, status: mutationStatus, data: mutationData, error: mutationError} = mutation;
 
@@ -301,6 +306,9 @@ function EfficientEditBlueprint()
 			privateData: {
 				thumbnailData: thumbnail,
 			},
+			blueprintString: {
+				blueprintString: blueprintString
+			}
 		};
 
 		const [file] = acceptedFiles;
@@ -313,13 +321,13 @@ function EfficientEditBlueprint()
 				console.log({imgurImage, firebaseImageUrl});
 				return;
 			}
-			blueprint.imgurImage = imgurImage;
-			blueprint.privateData.firebaseImageUrl = firebaseImageUrl;
+			newBlueprint.imgurImage = imgurImage;
+			newBlueprint.privateData.firebaseImageUrl = firebaseImageUrl;
 		}
 
-		console.log('PATCH', {blueprint});
+		console.log('PATCH', {newBlueprint});
 		console.log({mutationStatus, mutationData, mutationError});
-		mutate({user, blueprintKey, blueprint});
+		mutate({user, blueprintKey, blueprint: newBlueprint});
 	};
 
 	function handleForceSaveBlueprintEdits(event)
