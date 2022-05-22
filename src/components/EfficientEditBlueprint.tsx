@@ -5,7 +5,7 @@ import update                                from 'immutability-helper';
 import difference                            from 'lodash/difference';
 import isEmpty                               from 'lodash/isEmpty';
 import some                                  from 'lodash/some';
-import marked                                from 'marked';
+import {marked}                              from 'marked';
 
 import React, {useContext, useState} from 'react';
 

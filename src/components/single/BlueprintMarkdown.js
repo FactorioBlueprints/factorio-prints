@@ -1,5 +1,5 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import marked             from 'marked';
+import {marked}           from 'marked';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import useBlueprint       from '../../hooks/useBlueprint';
