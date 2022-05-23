@@ -800,7 +800,7 @@ function EfficientEditBlueprint()
 							</Form.Label>
 							<Col sm={10}>
 								<Dropzone
-									accept=' image/*'
+									accept={{'image/*': []}}
 									maxSize={10000000}
 									onDrop={handleDrop}
 								>
