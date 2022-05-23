@@ -35,7 +35,7 @@
 		"bootstrap": "4.5.2",
 		"classnames": "^2.3.1",
 		"concurrently": "7.2.1",
-		"disqus-react": "1.0.9",
+		"disqus-react": "1.1.3",
 		"eslint-config-airbnb": "^19.0.4",
 		"eslint-find-rules": "4.1.0",
 		"eslint-plugin-filenames": "1.3.2",
