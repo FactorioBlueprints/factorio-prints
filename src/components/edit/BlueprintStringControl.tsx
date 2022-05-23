@@ -34,15 +34,6 @@ function getBody(blueprintString: string | undefined, setBlueprintString: any, i
 		);
 	}
 
-	if (isError)
-	{
-		return (
-			<>
-				{'Error loading blueprint string.'}
-			</>
-		);
-	}
-
 	function handleChange(event: React.ChangeEvent<HTMLInputElement>)
 	{
 		setBlueprintString(event.target.value);
