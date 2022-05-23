@@ -44,7 +44,7 @@
 		"eslint-plugin-jsx-a11y": "^6.4.1",
 		"eslint-plugin-lodash": "^7.1.0",
 		"eslint-plugin-promise": "^4.3.1",
-		"eslint-plugin-react": "^7.22.0",
+		"eslint-plugin-react": "^7.30.0",
 		"eslint-plugin-react-hooks": "^4.2.0",
 		"fastestsmallesttextencoderdecoder": "1.0.22",
 		"firebase": "7.19.1",
