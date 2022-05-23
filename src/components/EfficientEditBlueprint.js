@@ -140,7 +140,7 @@ function EfficientEditBlueprint()
 			  isError  : blueprintStringIsError,
 			  data     : blueprintStringData
 		  }   = useBlueprintString(blueprintKey);
-	const newBlueprintString = blueprintStringData?.data;
+	const newBlueprintString = blueprintStringIsError ? "" : blueprintStringData?.data;
 	// TODO: USe onComplete instead?
 	React.useEffect(() =>
 	{
