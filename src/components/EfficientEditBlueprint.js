@@ -144,11 +144,15 @@ function EfficientEditBlueprint()
 	// TODO: USe onComplete instead?
 	React.useEffect(() =>
 	{
-		const parsedBlueprint = parseBlueprint(newBlueprintString);
-		setParsedBlueprint(parsedBlueprint);
-		setV15Decoded(parsedBlueprint?.getV15Decoded());
 		return setBlueprintString(newBlueprintString);
 	}, [blueprintKey, newBlueprintString]);
+	React.useEffect(() =>
+	{
+		const parsedBlueprint = parseBlueprint(blueprintString);
+		console.log('setParsedBlueprint', {parsedBlueprint});
+		setParsedBlueprint(parsedBlueprint);
+		setV15Decoded(parsedBlueprint?.getV15Decoded());
+	}, [blueprintKey, blueprintString]);
 
 	if (!user)
 	{
