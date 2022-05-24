@@ -26,7 +26,7 @@
 		"@types/react-dom": "^18.0.4",
 		"@types/react-helmet": "^6.1.5",
 		"@types/react-router-dom": "^5.1.7",
-		"@types/react-select": "^4.0.14",
+		"@types/react-select": "^5.0.1",
 		"airbnb-prop-types": "2.16.0",
 		"antlr4": "4.10.1",
 		"atob": "2.1.2",
