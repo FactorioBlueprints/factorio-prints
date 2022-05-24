@@ -23,6 +23,7 @@ import Modal         from 'react-bootstrap/Modal';
 import ProgressBar   from 'react-bootstrap/ProgressBar';
 import Row           from 'react-bootstrap/Row';
 
+// TODO 2022-05-24: Consider switching from the component style to the hook style for react-dropzone
 import Dropzone                      from 'react-dropzone';
 import {ErrorBoundary}               from 'react-error-boundary';
 import {useMutation, useQueryClient} from 'react-query';
