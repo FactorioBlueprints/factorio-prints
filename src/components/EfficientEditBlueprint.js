@@ -230,6 +230,67 @@ function EfficientEditBlueprint()
 		setUploadProgressPercent(uploadProgressPercent)
 	};
 
+	async function uploadFirebaseImage()
+	{
+		const [file] = acceptedFiles;
+		if (!file)
+		{
+			return null;
+		}
+
+		const fileName = `${blueprintKey} v${blueprint.version.number} ${file.name}`;
+		console.log({fileName});
+		try
+		{
+			await app.storage().ref().child(fileName).getDownloadURL();
+		}
+		catch (e)
+		{
+			setUploadProgressBarVisible(true);
+			// TODO 2022-05-24: Prefix the file name with the blueprint key and the version number
+			const uploadTask = app.storage().ref().child(fileName).put(file);
+			uploadTask.on('state_changed', handleUploadProgress, handleFirebaseStorageError);
+			const snapshot = await uploadTask;
+			return snapshot.ref.getDownloadURL();
+		}
+
+		throw new Error(`File with name ${file.name} already exists.`)
+	}
+
+	async function uploadImgurImage()
+	{
+		const [file] = acceptedFiles;
+		if (!file)
+		{
+			return null;
+		}
+
+		const response = await fetch('https://api.imgur.com/3/upload.json', {
+			method : 'POST',
+			headers: imgurHeaders,
+			body   : file,
+		});
+
+		if (!(response.status === 200 || response.status === 0))
+		{
+			console.log({response});
+			const message = `${response.statusText}`;
+			throw new Error(message);
+		}
+
+		const json   = await response.json();
+		const data   = json.data;
+		console.log({data});
+		const imgurImage = {
+			imgurId        : data.id,
+			deletehash: data.deletehash,
+			imgurType      : data.type,
+			height    : data.height,
+			width     : data.width,
+		};
+		return imgurImage;
+	}
+
 	async function getImage()
 	{
 		const [file] = acceptedFiles;
@@ -239,64 +300,18 @@ function EfficientEditBlueprint()
 			return {imgurImage: blueprint?.imgurImage, firebaseImageUrl: undefined};
 		}
 
-		const fileNameRef = app.storage().ref().child(file.name);
-		let firebaseImageUrl;
 		try
 		{
-			firebaseImageUrl = await fileNameRef.getDownloadURL();
-			const message            = `File with name ${file.name} already exists.`;
-			console.log(message);
-			setSubmissionErrors([message]);
-			return {imgurImage: undefined, firebaseImageUrl: undefined};
-		}
-		catch (e)
-		{
-			setUploadProgressBarVisible(true);
-			const uploadTask = fileNameRef.put(file);
-			uploadTask.on('state_changed', handleUploadProgress, handleFirebaseStorageError, () => {
-				uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-					console.log('File available at', downloadURL);
-				});
-			});
-			firebaseImageUrl = await uploadTask.snapshot.ref.getDownloadURL();
-			const something = await uploadTask;
-			console.log({something});
-		}
-
-		try
-		{
-			const response = await fetch('https://api.imgur.com/3/upload.json', {
-				method : 'POST',
-				headers: imgurHeaders,
-				body   : file,
-			});
-
-			if (!(response.status === 200 || response.status === 0))
-			{
-				console.log({response});
-				const message = `${response.statusText}`;
-				console.log(message);
-				setSubmissionErrors([message]);
-				return {imgurImage: undefined, firebaseImageUrl: undefined};
-			}
-
-			const json   = await response.json();
-			const data   = json.data;
-			console.log({data});
-			const imgurImage = {
-				imgurId        : data.id,
-				deletehash: data.deletehash,
-				imgurType      : data.type,
-				height    : data.height,
-				width     : data.width,
-			};
+			const firebaseImageUrl = await uploadFirebaseImage();
+			const imgurImage       = await uploadImgurImage();
+			console.log({imgurImage});
 			return {imgurImage, firebaseImageUrl};
 		}
 		catch (error)
 		{
-			console.log(error);
+			console.log({error});
 			const message = error.message ? error.message : `${error}`;
-			console.log(message);
+			console.log({message});
 			setSubmissionErrors([message]);
 			return {imgurImage: undefined, firebaseImageUrl: undefined};
 		}
