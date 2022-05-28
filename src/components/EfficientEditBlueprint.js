@@ -116,7 +116,7 @@ function EfficientEditBlueprint()
 	const [submissionErrors, setSubmissionErrors]                 = useState([]);
 	const [acceptedFiles, setAcceptedFiles]                       = useState([]);
 	const [rejectedFiles, setRejectedFiles]                       = useState([]);
-	const [thumbnail, setThumbnail]                               = useState();
+	const [thumbnailData, setThumbnailData]                       = useState();
 	const [renderedMarkdown, setRenderedMarkdown]                 = useState();
 	const [parsedBlueprint, setParsedBlueprint]                   = useState();
 	const [v15Decoded, setV15Decoded]                             = useState(undefined);
@@ -315,9 +315,9 @@ function EfficientEditBlueprint()
 		const data   = json.data;
 		console.log({data});
 		const imgurImage = {
-			imgurId        : data.id,
-			deletehash: data.deletehash,
-			imgurType      : data.type,
+			imgurId   : data.id,
+			deleteHash: data.deletehash,
+			imgurType : data.type,
 			height    : data.height,
 			width     : data.width,
 		};
@@ -356,9 +356,6 @@ function EfficientEditBlueprint()
 
 		const newBlueprint = {
 			...blueprint,
-			privateData: {
-				thumbnailData: thumbnail,
-			},
 			blueprintString: {
 				blueprintString: blueprintString
 			}
@@ -367,15 +364,19 @@ function EfficientEditBlueprint()
 		const [file] = acceptedFiles;
 		if (file)
 		{
-			newBlueprint.privateData.fileName = file.name;
 			const {imgurImage, firebaseImageUrl} = await getImage();
 			if (!(imgurImage && firebaseImageUrl))
 			{
 				console.log({imgurImage, firebaseImageUrl});
 				return;
 			}
-			newBlueprint.imgurImage = imgurImage;
-			newBlueprint.privateData.firebaseImageUrl = firebaseImageUrl;
+
+			newBlueprint.imgurImage  = imgurImage;
+			newBlueprint.privateData = {
+				fileName     : file.name,
+				thumbnailData: thumbnailData,
+				firebaseImageUrl,
+			};
 		}
 
 		console.log('PATCH', {newBlueprint});
@@ -475,11 +476,11 @@ function EfficientEditBlueprint()
 	{
 		setAcceptedFiles(acceptedFiles);
 		setRejectedFiles(rejectedFiles);
-		const newBlueprint = {
-			...blueprint,
-			imageUrl: acceptedFiles.length > 1 && acceptedFiles[0].preview,
-		};
-		setBlueprint(newBlueprint);
+		if (acceptedFiles.length > 1 && acceptedFiles[0].preview)
+		{
+			// setImageUrl(acceptedFiles[0].preview);
+			console.log({preview: acceptedFiles[0].preview});
+		}
 
 		if (acceptedFiles.length === 0)
 		{
@@ -491,7 +492,7 @@ function EfficientEditBlueprint()
 			maxHeight: 600,
 			quality  : 0.70,
 		};
-		scaleImage(acceptedFiles[0], config, (imageData) => setThumbnail(imageData));
+		scaleImage(acceptedFiles[0], config, (imageData) => setThumbnailData(imageData));
 	}
 
 	function handleChange(event)
@@ -568,7 +569,7 @@ function EfficientEditBlueprint()
 
 	function renderPreview()
 	{
-		if (!thumbnail || !blueprint)
+		if (!thumbnailData || !blueprint)
 		{
 			return <div />;
 		}
@@ -580,7 +581,7 @@ function EfficientEditBlueprint()
 				</Form.Label>
 				<Col sm={10}>
 					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
-						<Card.Img variant='top' src={thumbnail || noImageAvailable} />
+						<Card.Img variant='top' src={thumbnailData || noImageAvailable} />
 						<Card.Title className='truncate'>
 							{blueprint.title}
 						</Card.Title>
