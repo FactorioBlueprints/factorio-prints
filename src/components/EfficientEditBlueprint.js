@@ -127,7 +127,23 @@ function EfficientEditBlueprint()
 	const queryKey = ['blueprintDetails', blueprintKey];
 
 	const result                     = useBlueprint(blueprintKey);
-	const {isLoading, isError, data} = result;
+	const {
+			  isLoading,
+			  isError,
+			  data,
+			  error,
+			  isFetched,
+			  isFetchedAfterMount,
+			  isFetching,
+			  isIdle,
+			  isLoadingError,
+			  isPlaceholderData,
+			  isPreviousData,
+			  isRefetchError,
+			  isRefetching,
+			  isStale,
+			  isSuccess,
+		  } = result;
 	// TODO: USe onComplete instead?
 	React.useEffect(() =>
 	{
@@ -179,9 +195,26 @@ function EfficientEditBlueprint()
 		);
 	}
 
-	if (isError)
+	if (isError && !isStale)
 	{
-		console.log('EfficientEditBlueprint isError=true', {result});
+		console.log('EfficientEditBlueprint isError=true', {
+			result,
+			isLoading,
+			isError,
+			data,
+			error,
+			isFetched,
+			isFetchedAfterMount,
+			isFetching,
+			isIdle,
+			isLoadingError,
+			isPlaceholderData,
+			isPreviousData,
+			isRefetchError,
+			isRefetching,
+			isStale,
+			isSuccess,
+		});
 		return (
 			<>
 				{'Error loading blueprint.'}
@@ -672,47 +705,48 @@ function EfficientEditBlueprint()
 			</Modal>
 			<Container>
 				<Row>
-					{
-						rejectedFiles.length > 0 && <Alert
-							variant='warning'
-							className='alert-fixed'
-							onClose={handleDismissAlert}
-						>
-							<h4>
-								{'Error uploading files'}
-							</h4>
-							<ul>
-								{
-									rejectedFiles.map((rejectedFile) => (
-										<li key={rejectedFile.name}>
-											{rejectedFile.name}
-										</li>
-									))
-								}
-							</ul>
-						</Alert>
-					}
-					{
-						submissionErrors.length > 0 && <Alert
-							variant='danger'
-							className='alert-fixed'
-							onClose={handleDismissError}
-							dismissible
-						>
-							<h4>
-								Error editing blueprint
-							</h4>
-							<ul>
-								{
-									submissionErrors.map((submissionError) => (
-										<li key={submissionError}>
-											{submissionError}
-										</li>
-									))
-								}
-							</ul>
-						</Alert>
-					}
+					<Alert variant='danger' show={isError && isStale} closeLabel='Close'>
+						<h4>{'Error loading blueprint, showing stale data.'}</h4>
+					</Alert>
+					<Alert
+						variant='warning'
+						className='alert-fixed'
+						onClose={handleDismissAlert}
+						show={rejectedFiles.length > 0}
+					>
+						<h4>
+							{'Error uploading files'}
+						</h4>
+						<ul>
+							{
+								rejectedFiles.map((rejectedFile) => (
+									<li key={rejectedFile.name}>
+										{rejectedFile.name}
+									</li>
+								))
+							}
+						</ul>
+					</Alert>
+					<Alert
+						variant='danger'
+						className='alert-fixed'
+						onClose={handleDismissError}
+						dismissible
+						show={submissionErrors.length > 0}
+					>
+						<h4>
+							Error editing blueprint
+						</h4>
+						<ul>
+							{
+								submissionErrors.map((submissionError) => (
+									<li key={submissionError}>
+										{submissionError}
+									</li>
+								))
+							}
+						</ul>
+					</Alert>
 				</Row>
 				<PageHeader title={`Editing: ${blueprint.title}`} />
 				<Row>
