@@ -7,6 +7,7 @@ import update     from 'immutability-helper';
 import difference from 'lodash/difference';
 import isEmpty    from 'lodash/isEmpty';
 import some       from 'lodash/some';
+import isArray    from 'lodash/isArray';
 import {marked}   from 'marked';
 
 import React, {useContext, useState} from 'react';
@@ -93,8 +94,15 @@ function EfficientEditBlueprint()
 		},
 		onError: (error, variables, context) => {
 			console.log({error, variables, context})
-			console.log(`rolling back optimistic update with id ${context.id}`)
-			setSubmissionErrors([error.response.data.join(", ")])
+			if (error.response.data.message)
+			{
+				setSubmissionErrors([error.response.data.message])
+			}
+			else if (isArray(error.response.data))
+			{
+				setSubmissionErrors([error.response.data.join(", ")])
+			}
+			setUploadProgressBarVisible(false);
 		  },
 	})
 	const {mutate, status: mutationStatus, data: mutationData, error: mutationError} = mutation;
