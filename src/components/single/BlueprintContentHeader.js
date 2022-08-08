@@ -39,7 +39,11 @@ function getBlueprintBook(data)
 {
 	const firstRow = getBlueprint(data);
 
-	const {blueprints, active_index} = data;
+	let {blueprints, active_index} = data;
+	if (blueprints === undefined)
+	{
+		blueprints = [];
+	}
 
 	return (
 		<>
