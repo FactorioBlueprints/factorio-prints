@@ -20,7 +20,7 @@
 		"@types/jest": "^29.0.0",
 		"@types/lodash": "^4.14.184",
 		"@types/marked": "^4.0.7",
-		"@types/node": "^18.7.16",
+		"@types/node": "^18.7.17",
 		"@types/pako": "^2.0.0",
 		"@types/react": "^18.0.18",
 		"@types/react-dom": "^18.0.6",
