@@ -4819,10 +4819,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-disqus-react@1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/disqus-react/-/disqus-react-1.1.3.tgz#e9701c8e3e7062b4f0ce2f6822dc0bb24a25573f"
-  integrity sha512-DwKdmbHTMPyhBECBeRYAPNcIqZNKMvsRiyVdF89BdmFCbZpWb7+xMj/lvAuckBSx1ilOHpTKYYyW11uodaJ6ig==
+disqus-react@1.1.5:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/disqus-react/-/disqus-react-1.1.5.tgz#e844d040eed8f55467106e49d00e29d629e07043"
+  integrity sha512-9fdG5m6c3wJzlCDLaMheuUagMVj3s5qgUSXdekpCsvzYOKG21AiuOoqyDzA0oXrpPnYzgpnsvPYqZ+i0hJPGZw==
 
 dlv@^1.1.3:
   version "1.1.3"
