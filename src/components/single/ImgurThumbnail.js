@@ -35,7 +35,7 @@ function ImgurThumbnail(props)
 		</div>);
 	}
 
-	if (isError)
+	if (isError || !data.data.imgurImage)
 	{
 		console.log({result});
 		return (
@@ -47,7 +47,7 @@ function ImgurThumbnail(props)
 
 	const {imgurImage} = data.data;
 
-	const thumbnail = imgurImage && buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
+	const thumbnail = buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
 	return (
 		<a
 			href={`http://imgur.com/${imgurImage.imgurId}`}
