@@ -6,7 +6,6 @@ const BlueprintSummaryProjection = PropTypes.shape(forbidExtraProps({
 	key              : PropTypes.string.isRequired,
 	title            : PropTypes.string.isRequired,
 	numberOfUpvotes  : PropTypes.number.isRequired,
-	numberOfDownvotes: PropTypes.number.isRequired,
 	imgurImage       : ImgurImageSummaryProjection.isRequired,
 	systemFrom       : PropTypes.string,
 }));
