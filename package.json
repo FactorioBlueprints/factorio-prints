@@ -34,7 +34,7 @@
 		"axios": "^1.2.0",
 		"bootstrap": "4.5.2",
 		"classnames": "^2.3.2",
-		"concurrently": "7.4.0",
+		"concurrently": "7.6.0",
 		"disqus-react": "1.1.5",
 		"eslint-config-airbnb": "^19.0.4",
 		"eslint-find-rules": "4.1.0",
