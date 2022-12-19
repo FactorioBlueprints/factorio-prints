@@ -14,9 +14,19 @@ import FavoriteIcon from './FavoriteIcon';
 
 async function postIsFavorite(blueprintKey, isFavorite, user)
 {
+	const url     = `${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`;
+	const body    = null;
 	const idToken = user === undefined ? undefined : await user.getIdToken();
-	const headers = getHeaders(idToken);
-	return axios.put(`${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}?isFavorite=${isFavorite}`, null, headers);
+	const config  = {
+		headers: {
+			Authorization: `Bearer ${idToken}`,
+			'content-type': 'application/json',
+		},
+		params : {
+			isFavorite,
+		},
+	};
+	return axios.put(url, body, config);
 }
 
 function FavoriteButton({blueprintKey})
