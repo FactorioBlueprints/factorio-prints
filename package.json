@@ -19,7 +19,7 @@
 		"@types/classnames": "^2.3.1",
 		"@types/jest": "^29.2.4",
 		"@types/lodash": "^4.14.191",
-		"@types/marked": "^4.0.7",
+		"@types/marked": "^4.0.8",
 		"@types/node": "^18.11.17",
 		"@types/pako": "^2.0.0",
 		"@types/react": "^18.0.26",
