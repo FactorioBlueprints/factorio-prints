@@ -8,8 +8,9 @@ const BlueprintDetailsProjection = PropTypes.shape(forbidExtraProps({
 	key                : PropTypes.string.isRequired,
 	title              : PropTypes.string.isRequired,
 	descriptionMarkdown: PropTypes.string.isRequired,
-	numberOfUpvotes    : PropTypes.number.isRequired,
-	numberOfDownvotes  : PropTypes.number.isRequired,
+	voteSummary        : PropTypes.shape(forbidExtraProps({
+		numberOfUpvotes: PropTypes.number.isRequired,
+	})),
 	systemFrom         : PropTypes.string,
 	systemTo           : PropTypes.string,
 	createdOn          : PropTypes.string.isRequired,

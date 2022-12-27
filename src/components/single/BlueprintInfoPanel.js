@@ -20,8 +20,8 @@ BlueprintInfoPanel.propTypes = forbidExtraProps({
 function BlueprintInfoPanel({blueprintKey, ownedByCurrentUser})
 {
 	const result = useBlueprint(blueprintKey);
-	
-	const {createdOn, systemFrom, author: {userId: authorId, displayName}, numberOfUpvotes} = result.data.data;
+
+	const {createdOn, systemFrom, author: {userId: authorId, displayName}, voteSummary: {numberOfUpvotes}} = result.data.data;
 
 	return (
 		<Card>
