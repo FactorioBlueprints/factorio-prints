@@ -20,6 +20,7 @@ import ScrollToTop            from './ScrollToTop';
 import SearchState            from './search/SearchState';
 import SingleBlueprint        from './single/EfficientSingleBlueprint';
 import UserState              from './user/UserState';
+import DuplicateBlueprintGrid from "./grid/DuplicateBlueprintGrid";
 
 // TODO: Add a top-level onError
 const queryClient = new QueryClient({
@@ -47,6 +48,7 @@ function Root()
 						<Routes>
 							<Route path='/' element={<div><Intro /><BlueprintGrid /></div>} />
 							<Route path='/blueprints' element={<BlueprintGrid />} />
+							<Route path='/duplicates' element={<DuplicateBlueprintGrid />} />
 							<Route path='/top' element={<MostFavoritedGrid />} />
 							{/* <Route path='/create' element={<Create />} /> */}
 							<Route path='/favorites' element={<MyFavoritesGrid />} />

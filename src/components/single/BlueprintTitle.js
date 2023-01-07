@@ -19,8 +19,6 @@ function BlueprintTitle({blueprintKey})
 	return (
 		<a
 			className='mr-1'
-			target='_blank'
-			rel='noopener noreferrer'
 			href={`https://factorioprints.com/view/${blueprintKey}`}
 		>
 			<Helmet>
