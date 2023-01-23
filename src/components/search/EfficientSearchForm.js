@@ -1,22 +1,23 @@
 import {faSearch}        from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 
 import Col         from 'react-bootstrap/Col';
 import FormControl from 'react-bootstrap/FormControl';
 import InputGroup  from 'react-bootstrap/InputGroup';
 
-import SearchContext from '../../context/searchContext';
+import {StringParam, useQueryParam, withDefault} from 'use-query-params';
 
 EfficientSearchForm.propTypes = {};
 
 function EfficientSearchForm()
 {
-	const {titleFilter, setTitleFilter}           = useContext(SearchContext);
+	const [titleFilter, setTitle] = useQueryParam('title', withDefault(StringParam, ''));
+
 	const [localTitleFilter, setLocalTitleFilter] = useState(titleFilter);
 
-	const debouncedSetTitleFilter = useAsyncDebounce((value) => setTitleFilter(value || ''), 500);
+	const debouncedSetTitleFilter = useAsyncDebounce((value) => setTitle(value || ''), 500);
 
 	const handleSearchString = (event) =>
 	{
@@ -32,6 +33,7 @@ function EfficientSearchForm()
 		if (event.key === 'Escape')
 		{
 			event.target.select();
+			setTitle(event.target.value || '')
 		}
 	};
 

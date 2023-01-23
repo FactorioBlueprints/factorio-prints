@@ -174,7 +174,6 @@ function EfficientEditBlueprint()
 	React.useEffect(() =>
 	{
 		const parsedBlueprint = parseBlueprint(blueprintString);
-		console.log('setParsedBlueprint', {parsedBlueprint});
 		setParsedBlueprint(parsedBlueprint);
 		setV15Decoded(parsedBlueprint?.getV15Decoded());
 	}, [blueprintKey, blueprintString]);

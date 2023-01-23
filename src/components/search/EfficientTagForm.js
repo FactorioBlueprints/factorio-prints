@@ -1,9 +1,10 @@
-import React, {useContext} from 'react';
-import Col                 from 'react-bootstrap/Col';
-import Select              from 'react-select';
-import makeAnimated        from 'react-select/animated';
+import React        from 'react';
+import Col          from 'react-bootstrap/Col';
+import Select       from 'react-select';
+import makeAnimated from 'react-select/animated';
 
-import SearchContext from '../../context/searchContext';
+import {ArrayParam, useQueryParam, withDefault} from 'use-query-params';
+
 import useTagOptions from '../../hooks/useTagOptions';
 
 const animatedComponents = makeAnimated();
@@ -14,7 +15,7 @@ function EfficientTagForm()
 {
 	const {tagValuesSet, tagOptions} = useTagOptions();
 
-	const {selectedTags, setSelectedTags} = useContext(SearchContext);
+	const [selectedTags, setTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const selectedTagOptions = selectedTags
 		.filter(each => tagValuesSet.has(each))
@@ -23,7 +24,7 @@ function EfficientTagForm()
 	const setSelectedTagValues = (selectedTags) =>
 	{
 		const selectedTagValues = selectedTags.map(selectedTag => selectedTag.value);
-		setSelectedTags(selectedTagValues);
+		setTags(selectedTagValues);
 	};
 
 	return (

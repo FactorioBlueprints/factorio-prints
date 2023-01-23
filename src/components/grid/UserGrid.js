@@ -7,7 +7,8 @@ import Row                           from 'react-bootstrap/Row';
 import {useQuery}                    from 'react-query';
 import {useParams}                   from 'react-router-dom';
 
-import SearchContext  from '../../context/searchContext';
+import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
+
 import UserContext    from '../../context/userContext';
 import useDisplayName from '../../hooks/useDisplayName';
 
@@ -21,8 +22,11 @@ import PaginationControls  from './PaginationControls';
 
 function UserGrid()
 {
-	const [page, setPage]             = useState(1);
-	const {titleFilter, selectedTags} = useContext(SearchContext);
+	const [page, setPage]     = useState(1);
+
+	const [titleFilter]  = useQueryParam('title', StringParam);
+	const [selectedTags] = useQueryParam('tags', withDefault(ArrayParam, []));
+
 	const user                        = useContext(UserContext);
 
 	const {userId} = useParams();
@@ -31,7 +35,10 @@ function UserGrid()
 	{
 		const url    = `${process.env.REACT_APP_REST_URL}/api/user/${userId}/blueprintSummaries/page/${page}`;
 		const params = new URLSearchParams();
-		params.append('title', titleFilter);
+		if (titleFilter)
+		{
+			params.append('title', titleFilter);
+		}
 		selectedTags.forEach(tag => params.append('tag', '/' + tag + '/'));
 		const result = await axios.get(url, {params});
 		return result.data;

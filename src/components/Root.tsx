@@ -5,6 +5,8 @@ import {Helmet}           from 'react-helmet';
 import {QueryClient, QueryClientProvider} from 'react-query';
 import {ReactQueryDevtools}               from 'react-query/devtools';
 import {BrowserRouter, Route, Routes}     from 'react-router-dom';
+import { QueryParamProvider } from 'use-query-params';
+import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';
 
 import Account                from './Account';
 import Contact                from './Contact';
@@ -17,7 +19,6 @@ import Header                 from './Header';
 import Intro                  from './Intro';
 import NoMatch                from './NoMatch';
 import ScrollToTop            from './ScrollToTop';
-import SearchState            from './search/SearchState';
 import SingleBlueprint        from './single/EfficientSingleBlueprint';
 import UserState              from './user/UserState';
 import DuplicateBlueprintGrid from "./grid/DuplicateBlueprintGrid";
@@ -41,8 +42,8 @@ function Root()
 				<title>Factorio Prints</title>
 			</Helmet>
 			<UserState>
-				<SearchState>
-					<BrowserRouter>
+				<BrowserRouter>
+					<QueryParamProvider adapter={ReactRouter6Adapter}>
 						<ScrollToTop />
 						<Header />
 						<Routes>
@@ -59,8 +60,8 @@ function Root()
 							<Route path='/user/:userId' element={<UserGrid />} />
 							<Route element={<NoMatch />} />
 						</Routes>
-					</BrowserRouter>
-				</SearchState>
+					</QueryParamProvider>
+				</BrowserRouter>
 			</UserState>
 			<ReactQueryDevtools initialIsOpen />
 		</QueryClientProvider>

@@ -1,12 +1,15 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 
-import PropTypes           from 'prop-types';
-import React, {useContext} from 'react';
-import Badge               from 'react-bootstrap/Badge';
-import Card                from 'react-bootstrap/Card';
-import {useNavigate}       from 'react-router-dom';
-import SearchContext       from '../../context/searchContext';
-import useBlueprint        from '../../hooks/useBlueprint';
+import PropTypes from 'prop-types';
+import React     from 'react';
+import Badge     from 'react-bootstrap/Badge';
+import Card      from 'react-bootstrap/Card';
+
+import {useNavigate} from 'react-router-dom';
+
+import {ArrayParam, useQueryParam, withDefault} from 'use-query-params';
+
+import useBlueprint from '../../hooks/useBlueprint';
 
 TagLink.propTypes = forbidExtraProps({
 	category: PropTypes.string.isRequired,
@@ -17,14 +20,13 @@ function TagLink({category, name})
 {
 	const tagString = `${category}/${name}`;
 
-	const {setTitleFilter, setSelectedTags} = useContext(SearchContext);
+	const [selectedTags, setTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const navigate = useNavigate();
 
 	const handleClick = () =>
 	{
-		setTitleFilter('');
-		setSelectedTags([tagString]);
+		setTags([tagString]);
 		console.log('navigate', `/blueprints?tag[0]=${tagString}`);
 		navigate(`/blueprints?tag[0]=${tagString}`);
 	};

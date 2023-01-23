@@ -1,12 +1,13 @@
-import {faExclamationTriangle}       from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
-import axios                         from 'axios';
-import React, {useContext, useState} from 'react';
-import Container                     from 'react-bootstrap/Container';
-import Row                           from 'react-bootstrap/Row';
-import {useQuery}                    from 'react-query';
+import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}       from '@fortawesome/react-fontawesome';
+import axios                   from 'axios';
+import React, {useState}       from 'react';
+import Container               from 'react-bootstrap/Container';
+import Row                     from 'react-bootstrap/Row';
+import {useQuery}              from 'react-query';
 
-import SearchContext from '../../context/searchContext';
+import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
+
 import useTagOptions from '../../hooks/useTagOptions';
 
 import BlueprintThumbnail  from '../BlueprintThumbnail';
@@ -19,9 +20,11 @@ import PaginationControls  from './PaginationControls';
 function BlueprintGrid()
 {
 	const [page, setPage]             = useState(1);
-	const {titleFilter, selectedTags} = useContext(SearchContext);
 
 	const {tagValuesSet} = useTagOptions();
+
+	const [titleFilter, setTitle] = useQueryParam('title', StringParam);
+	const [selectedTags, setTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const selectedTagValues = selectedTags
 		.filter(each => tagValuesSet.has(each));
@@ -30,7 +33,10 @@ function BlueprintGrid()
 	{
 		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
 		const params = new URLSearchParams();
-		params.append('title', titleFilter);
+		if (titleFilter)
+		{
+			params.append('title', titleFilter);
+		}
 		selectedTagValues.forEach(tag => params.append('tag', `/${tag}/`));
 		const result = await axios.get(url, {params});
 		return result.data;
