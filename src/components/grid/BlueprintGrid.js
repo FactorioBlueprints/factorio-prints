@@ -23,8 +23,8 @@ function BlueprintGrid()
 
 	const {tagValuesSet} = useTagOptions();
 
-	const [titleFilter, setTitle] = useQueryParam('title', StringParam);
-	const [selectedTags, setTags] = useQueryParam('tags', withDefault(ArrayParam, []));
+	const [titleFilter]  = useQueryParam('title', StringParam);
+	const [selectedTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const selectedTagValues = selectedTags
 		.filter(each => tagValuesSet.has(each));
@@ -64,7 +64,6 @@ function BlueprintGrid()
 
 	if (isError)
 	{
-		console.log({result});
 		return (
 			<div className='p-5 rounded-lg jumbotron'>
 				<h1>

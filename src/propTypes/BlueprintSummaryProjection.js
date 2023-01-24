@@ -5,7 +5,7 @@ import ImgurImageSummaryProjection from './ImgurImageSummaryProjection';
 const BlueprintSummaryProjection = PropTypes.shape(forbidExtraProps({
 	key        : PropTypes.string.isRequired,
 	title      : PropTypes.string.isRequired,
-	numberOfUpvotes: PropTypes.number.isRequired,
+	numberOfUpvotes: PropTypes.number,
 	voteSummary: PropTypes.shape(forbidExtraProps({
 		numberOfUpvotes: PropTypes.number.isRequired,
 	})),
