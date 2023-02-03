@@ -19,9 +19,10 @@ BlueprintThumbnail.propTypes = forbidExtraProps({
 	blueprintSummary: BlueprintSummaryProjection,
 });
 
-function BlueprintThumbnail({blueprintSummary})
-{
-	const {key, title, imgurImage, voteSummary: {numberOfUpvotes}} = blueprintSummary;
+function BlueprintThumbnail({
+  blueprintSummary: { key, title, imgurImage, voteSummary },
+}) {
+  const numberOfUpvotes = voteSummary?.numberOfUpvotes;
 
 	const {isSuccess, data} = useFavorites();
 	const authoredResult    = useAuthored();
