@@ -79,8 +79,8 @@
 	"scripts": {
 		"start": "craco start",
 		"watch": "concurrently --names 'webpack, stylus' --prefix name 'npm run start' 'npm run styles:watch'",
-		"build": "sh -ac '. .env.${REACT_APP_ENV:-production}; craco build'",
-		"build:local": "REACT_APP_ENV=local npm run build",
+		"build": "REACT_APP_ENV=production craco build",
+		"build:local": "REACT_APP_ENV=local craco build",
 		"test": "craco test --env=jsdom",
 		"eject": "react-scripts eject",
 		"styles": "stylus -u autoprefixer-stylus ./src/css/style.styl -o ./src/css/style.css",
