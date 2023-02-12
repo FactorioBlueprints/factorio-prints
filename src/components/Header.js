@@ -2,6 +2,7 @@ import {faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
 import {
 	faClock,
 	faCogs,
+	faDonate,
 	faEnvelope,
 	faHeart,
 	faSignInAlt,
@@ -166,6 +167,11 @@ function Header()
 						<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
 						{' Contact me'}
 					</Nav.Link>
+					<Nav.Link as={Link} href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target="_blank" rel="noopener noreferrer">
+						<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
+						{' Donate'}
+					</Nav.Link>
+
 				</Nav>
 				<Nav className='mr-sm-2' justify>
 					{renderAuthentication()}
