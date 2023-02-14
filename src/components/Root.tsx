@@ -9,7 +9,7 @@ import { QueryParamProvider } from 'use-query-params';
 import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';
 
 import Account                from './Account';
-import Contact                from './Contact';
+import Chat                   from './Chat';
 import EfficientEditBlueprint from './EfficientEditBlueprint';
 import BlueprintGrid          from './grid/BlueprintGrid';
 import MostFavoritedGrid      from './grid/MostFavoritedGrid';
@@ -53,7 +53,7 @@ function Root()
 							<Route path='/top' element={<MostFavoritedGrid />} />
 							{/* <Route path='/create' element={<Create />} /> */}
 							<Route path='/favorites' element={<MyFavoritesGrid />} />
-							<Route path='/contact' element={<Contact />} />
+							<Route path='/chat' element={<Chat />} />
 							<Route path='/account' element={<Account />} />
 							<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
 							<Route path='/edit/:blueprintId' element={<EfficientEditBlueprint />} />

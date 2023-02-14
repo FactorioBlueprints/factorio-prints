@@ -4,52 +4,45 @@ import {FontAwesomeIcon}               from '@fortawesome/react-fontawesome';
 
 import React from 'react';
 
-function Contact()
+function Chat()
 {
 	return (
 		<div className="p-5 rounded-lg jumbotron">
-			<h1 className='display-4'>
-				Contact me
-			</h1>
 			<p className='lead'>
-				<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
+				<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
+				{' Discord: '}
 				<a
 					target='_blank'
 					rel='noopener noreferrer'
-					href='mailto:factorio.prints@gmail.com'
+					href=' https://discord.gg/uvUUw5a9Qc '
 				>
-					{' factorio dot prints at gmail dot com'}
+					{'Server Invitation'}
 				</a>
 			</p>
 			<p className='lead'>
 				<FontAwesomeIcon icon={faReddit} size='lg' fixedWidth />
+				{' Reddit: User '}
 				<a
 					target='_blank'
 					rel='noopener noreferrer'
 					href='https://www.reddit.com/user/FactorioBlueprints/'
 				>
-					{' /u/FactorioBlueprints'}
+					{'/u/FactorioBlueprints'}
 				</a>
 			</p>
 			<p className='lead'>
-				<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
-				{' FactorioBlueprints#7181'}
-			</p>
-			<p className='lead'>
 				<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
+				{' GitHub: Issues '}
 				<a
 					target='_blank'
 					rel='noopener noreferrer'
 					href='https://github.com/FactorioBlueprints/factorio-prints/issues'
 				>
-					{' FactorioBlueprints/factorio-prints'}
+					{'FactorioBlueprints/factorio-prints'}
 				</a>
-			</p>
-			<p className='lead'>
-				Please reach out with any feedback, especially to report bugs!
 			</p>
 		</div>
 	);
 }
 
-export default Contact;
+export default Chat;

@@ -1,36 +1,30 @@
-import {faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
+import {faDiscord, faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
+
 import {
 	faClock,
 	faCogs,
 	faDonate,
-	faEnvelope,
 	faHeart,
 	faSignInAlt,
 	faSignOutAlt,
 	faTrophy,
 	faUser,
 	faWrench,
-}                           from '@fortawesome/free-solid-svg-icons';
-import {
-	FontAwesomeIcon,
-}                           from '@fortawesome/react-fontawesome';
-import {
-	forbidExtraProps,
-}                           from 'airbnb-prop-types';
-import firebase             from 'firebase/app';
+} from '@fortawesome/free-solid-svg-icons';
+
+import {FontAwesomeIcon}   from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}  from 'airbnb-prop-types';
+import firebase            from 'firebase/app';
 import 'firebase/auth';
-import React, {useContext}  from 'react';
-import Button               from 'react-bootstrap/Button';
-import Dropdown             from 'react-bootstrap/Dropdown';
-import Nav                  from 'react-bootstrap/Nav';
-import Navbar               from 'react-bootstrap/Navbar';
-import NavDropdown          from 'react-bootstrap/NavDropdown';
-import {
-	Link,
-	useNavigate,
-}                           from 'react-router-dom';
-import {app}                from '../base';
-import UserContext          from '../context/userContext';
+import React, {useContext} from 'react';
+import Button              from 'react-bootstrap/Button';
+import Dropdown            from 'react-bootstrap/Dropdown';
+import Nav                 from 'react-bootstrap/Nav';
+import Navbar              from 'react-bootstrap/Navbar';
+import NavDropdown         from 'react-bootstrap/NavDropdown';
+import {Link, useNavigate} from 'react-router-dom';
+import {app}               from '../base';
+import UserContext         from '../context/userContext';
 
 const googleProvider   = new firebase.auth.GoogleAuthProvider();
 // const facebookProvider = new firebase.auth.FacebookAuthProvider();
@@ -163,9 +157,9 @@ function Header()
 							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 							{' My Blueprints'}
 						</Nav.Link>}
-					<Nav.Link as={Link} href='/contact' to='/contact' className='text-light'>
-						<FontAwesomeIcon icon={faEnvelope} size='lg' fixedWidth />
-						{' Contact me'}
+					<Nav.Link as={Link} href='/chat' to='/chat' className='text-light'>
+						<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
+						{' Chat'}
 					</Nav.Link>
 					<Nav.Link as={Link} href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target="_blank" rel="noopener noreferrer">
 						<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
