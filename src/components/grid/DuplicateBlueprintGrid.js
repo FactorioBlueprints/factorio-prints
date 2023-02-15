@@ -6,7 +6,6 @@ import Container               from 'react-bootstrap/Container';
 import Row                     from 'react-bootstrap/Row';
 import {useQuery}              from 'react-query';
 
-import BlueprintThumbnail      from '../BlueprintThumbnail';
 import FactorioPrintsThumbnail from '../FactorioPrintsThumbnail';
 import PageHeader              from '../PageHeader';
 import EfficientSearchForm     from '../search/EfficientSearchForm';
@@ -36,7 +35,7 @@ function DuplicateBlueprintGrid()
 
 	// TODO: Refactor out grid commonality
 
-	const {isLoading, isError, data, isPreviousData} = result;
+	const {isLoading, isError, data} = result;
 
 	if (isLoading)
 	{

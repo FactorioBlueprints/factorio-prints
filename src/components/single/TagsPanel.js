@@ -20,7 +20,7 @@ function TagLink({category, name})
 {
 	const tagString = `${category}/${name}`;
 
-	const [selectedTags, setTags] = useQueryParam('tags', withDefault(ArrayParam, []));
+	const [, setTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const navigate = useNavigate();
 
