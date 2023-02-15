@@ -7,7 +7,6 @@ import Button              from 'react-bootstrap/Button';
 import {useMutation, useQueryClient} from 'react-query';
 
 import UserContext   from '../../context/userContext';
-import getHeaders    from '../../helpers/getHeaders';
 import useIsFavorite from '../../hooks/useIsFavorite';
 
 import FavoriteIcon from './FavoriteIcon';

@@ -107,11 +107,7 @@ function EfficientEditBlueprint()
 	})
 	const {mutate, status: mutationStatus, data: mutationData, error: mutationError} = mutation;
 
-	const {
-			  tagValues,
-			  tagValuesSet,
-			  tagOptions
-		  } = useTagOptions();
+	const {tagOptions} = useTagOptions();
 
 	const queryClient  = useQueryClient();
 
