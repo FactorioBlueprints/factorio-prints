@@ -2,7 +2,7 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 
 import PropTypes from 'prop-types';
 import React     from 'react';
-import Badge     from 'react-bootstrap/Badge';
+import Button    from 'react-bootstrap/Button';
 import Card      from 'react-bootstrap/Card';
 
 import {useNavigate} from 'react-router-dom';
@@ -32,11 +32,10 @@ function TagLink({category, name})
 	};
 
 	return (
-		<a onClick={handleClick} style={{cursor: 'pointer'}}>
-			<Badge bg='warning' className='mr-1 text-light'>
-				{tagString}
-			</Badge>
-		</a>
+		<Button variant="outline-warning" onClick={handleClick} className='mt-1 ml-1' size="sm">
+			{tagString}
+		</Button>
+
 	);
 }
 
