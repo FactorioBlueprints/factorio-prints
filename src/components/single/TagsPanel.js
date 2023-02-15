@@ -27,8 +27,7 @@ function TagLink({category, name})
 	const handleClick = () =>
 	{
 		setTags([tagString]);
-		console.log('navigate', `/blueprints?tag[0]=${tagString}`);
-		navigate(`/blueprints?tag[0]=${tagString}`);
+		navigate(`/blueprints?tags=${tagString}`);
 	};
 
 	return (
