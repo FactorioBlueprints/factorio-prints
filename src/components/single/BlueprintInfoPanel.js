@@ -21,7 +21,11 @@ function BlueprintInfoPanel({blueprintKey, ownedByCurrentUser})
 {
 	const result = useBlueprint(blueprintKey);
 
-	const {createdOn, systemFrom, author: {userId: authorId, displayName}, voteSummary: {numberOfUpvotes}} = result.data.data;
+	const {
+			  author     : {displayName},
+			  voteSummary: {numberOfUpvotes},
+			  version    : {createdOn, systemFrom, createdBy: {userId: authorId}},
+		  } = result.data.data;
 
 	return (
 		<Card>
