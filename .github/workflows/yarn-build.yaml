@@ -16,10 +16,13 @@ jobs:
         with:
           node-version: 18
 
+      - run: pwd
+      - run: ls -la
+
       - uses: borales/actions-yarn@v4
         with:
           cmd: install --ignore-engines
 
       - uses: borales/actions-yarn@v4
         with:
-          cmd: build
+          cmd: build:production
