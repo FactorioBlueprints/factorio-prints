@@ -1,4 +1,4 @@
-import {faDiscord, faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
+import {faPatreon, faDiscord, faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
 
 import {
 	faClock,
@@ -160,6 +160,10 @@ function Header()
 					<Nav.Link as={Link} href='/chat' to='/chat' className='text-light'>
 						<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
 						{' Chat'}
+					</Nav.Link>
+					<Nav.Link as={Link} href='/contributors' to='/contributors' className='text-light'>
+						<FontAwesomeIcon icon={faPatreon} size='lg' fixedWidth />
+						{' Contributors'}
 					</Nav.Link>
 					<Nav.Link as={Link} href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target="_blank" rel="noopener noreferrer">
 						<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />

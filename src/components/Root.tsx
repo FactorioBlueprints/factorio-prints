@@ -22,6 +22,7 @@ import ScrollToTop            from './ScrollToTop';
 import SingleBlueprint        from './single/EfficientSingleBlueprint';
 import UserState              from './user/UserState';
 import DuplicateBlueprintGrid from "./grid/DuplicateBlueprintGrid";
+import Contributors           from "./Contributors";
 
 // TODO: Add a top-level onError
 const queryClient = new QueryClient({
@@ -58,6 +59,7 @@ function Root()
 							<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
 							<Route path='/edit/:blueprintId' element={<EfficientEditBlueprint />} />
 							<Route path='/user/:userId' element={<UserGrid />} />
+							<Route path='/contributors' element={<Contributors />} />
 							<Route element={<NoMatch />} />
 						</Routes>
 					</QueryParamProvider>
