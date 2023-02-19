@@ -11,6 +11,8 @@ import useIsFavorite from '../../hooks/useIsFavorite';
 
 import FavoriteIcon from './FavoriteIcon';
 
+import {app}               from '../../base';
+
 async function postIsFavorite(blueprintKey, isFavorite, user)
 {
 	const url     = `${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`;
@@ -25,7 +27,22 @@ async function postIsFavorite(blueprintKey, isFavorite, user)
 			isFavorite,
 		},
 	};
-	return axios.put(url, body, config);
+	let put       = axios.put(url, body, config);
+
+	const {uid}                = user;
+
+	const wasFavorite          = !isFavorite;
+
+	console.log('postIsFavorite', {blueprintKey, isFavorite, user, uid, wasFavorite});
+
+	const updates = {
+		[`/blueprints/${blueprintKey}/favorites/${uid}`]         : wasFavorite ? null : true,
+		[`/users/${uid}/favorites/${blueprintKey}`]              : wasFavorite ? null : true,
+	};
+
+	app.database().ref().update(updates);
+
+	return put;
 }
 
 function FavoriteButton({blueprintKey})
