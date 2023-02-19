@@ -62,6 +62,7 @@ function FavoriteButton({blueprintKey})
 			{
 				queryClient.invalidateQueries([user.email, 'isFavorite', blueprintKey]);
 				queryClient.invalidateQueries([user.email, 'favorites']);
+				queryClient.invalidateQueries(['blueprintDetails', blueprintKey]);
 			},
 		});
 
