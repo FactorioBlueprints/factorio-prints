@@ -1,7 +1,7 @@
-git pushf origin HEAD:stable \
-	&& git pushf github HEAD:stable \
+git pushf open-source HEAD:factorio-prints.com \
+	&& git pushf open-source HEAD:factorio-prints.com \
 	&& yarn install \
-	&& GENERATE_SOURCEMAP=false yarn run build \
+	&& yarn run build \
 	&& firebase deploy \
 	&& git tag prod HEAD -f \
-	&& git pushf origin prod -f
+	&& git pushf open-source prod -f
