@@ -188,12 +188,16 @@ const myFavoriteSummariesInputs = [
 ];
 
 const myFavoriteSummariesFilter = (myFavorites, titleFilter, loadingTags, filteredTags, byTag) =>
-	sortBy(values(myFavorites), each => each.key)
+{
+	console.log('myFavoriteSummariesFilter', {myFavorites, titleFilter, loadingTags, filteredTags, byTag});
+	return sortBy(values(myFavorites), each => each.key)
 		.filter(blueprintSummary => blueprintSummary.title !== '')
+		.filter(blueprintSummary => blueprintSummary.title !== undefined)
 		.filter(blueprintSummary => blueprintSummary.title.toLowerCase().includes(titleFilter.toLowerCase()))
 		.filter(blueprintSummary => loadingTags
 			|| every(filteredTags, selectedTag => get(byTag, [selectedTag, 'data', blueprintSummary.key], false) === true))
 		.reverse();
+};
 
 export const getMyFavoriteBlueprintSummaries = createSelector(
 	myFavoriteSummariesInputs,
