@@ -1,0 +1,36 @@
+/* titillium-web-regular - latin-ext_latin */
+@font-face {
+    font-family: 'Titillium Web';
+    font-style: normal;
+    font-weight: 400;
+    src: url('titillium-web/titillium-web-v8-latin-ext_latin-regular.eot'); /* IE9 Compat Modes */
+    src: local('Titillium Web Regular'), local('TitilliumWeb-Regular'),
+    url('titillium-web/titillium-web-v8-latin-ext_latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+    url('titillium-web/titillium-web-v8-latin-ext_latin-regular.woff') format('woff'), /* Modern Browsers */
+    url('titillium-web/titillium-web-v8-latin-ext_latin-regular.ttf') format('truetype'); /* Safari, Android, iOS */
+}
+
+/* titillium-web-600 - latin-ext_latin */
+@font-face {
+    font-family: 'Titillium Web';
+    font-style: normal;
+    font-weight: 600;
+    src: url('titillium-web/titillium-web-v8-latin-ext_latin-600.eot'); /* IE9 Compat Modes */
+    src: local('Titillium Web SemiBold'), local('TitilliumWeb-SemiBold'),
+    url('titillium-web/titillium-web-v8-latin-ext_latin-600.woff2') format('woff2'), /* Super Modern Browsers */
+    url('titillium-web/titillium-web-v8-latin-ext_latin-600.woff') format('woff'), /* Modern Browsers */
+    url('titillium-web/titillium-web-v8-latin-ext_latin-600.ttf') format('truetype'); /* Safari, Android, iOS */
+}
+
+/* titillium-web-700 - latin-ext_latin */
+@font-face {
+    font-family: 'Titillium Web';
+    font-style: normal;
+    font-weight: 700;
+    src: url('titillium-web/titillium-web-v8-latin-ext_latin-700.eot'); /* IE9 Compat Modes */
+    src: local('Titillium Web Bold'), local('TitilliumWeb-Bold'),
+    url('titillium-web/titillium-web-v8-latin-ext_latin-700.woff2') format('woff2'), /* Super Modern Browsers */
+    url('titillium-web/titillium-web-v8-latin-ext_latin-700.woff') format('woff'), /* Modern Browsers */
+    url('titillium-web/titillium-web-v8-latin-ext_latin-700.ttf') format('truetype'); /* Safari, Android, iOS */
+}
+
