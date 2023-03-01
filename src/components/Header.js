@@ -1,4 +1,4 @@
-import {faPatreon, faDiscord, faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
+import {faDiscord, faGithub, faGoogle, faPatreon} from '@fortawesome/free-brands-svg-icons';
 
 import {
 	faClock,
@@ -130,7 +130,8 @@ function Header()
 	};
 
 	return (
-		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
+		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning' fixed='top' >
+
 			<Navbar.Brand>
 				<Link to='/'>
 					<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
@@ -140,7 +141,7 @@ function Header()
 			<Navbar.Toggle />
 
 			<Navbar.Collapse>
-				<Nav className='mr-auto'>
+				<Nav >
 					{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
 					<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
 						<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
@@ -177,10 +178,10 @@ function Header()
 						{' Donate'}
 					</Nav.Link>
 				</Nav>
-				<Nav className='mr-sm-2' justify>
+			</Navbar.Collapse>
+			<Nav className="justify-content-end">
 				{renderAuthentication()}
 			</Nav>
-			</Navbar.Collapse>
 		</Navbar>
 	);
 }
