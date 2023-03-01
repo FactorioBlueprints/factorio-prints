@@ -18,11 +18,14 @@ import {forbidExtraProps}  from 'airbnb-prop-types';
 import firebase            from 'firebase/app';
 import 'firebase/auth';
 import React, {useContext} from 'react';
-import Button              from 'react-bootstrap/Button';
-import Dropdown            from 'react-bootstrap/Dropdown';
-import Nav                 from 'react-bootstrap/Nav';
-import Navbar              from 'react-bootstrap/Navbar';
-import NavDropdown         from 'react-bootstrap/NavDropdown';
+
+import Button      from 'react-bootstrap/Button';
+import Container   from 'react-bootstrap/Container';
+import Dropdown    from 'react-bootstrap/Dropdown';
+import Nav         from 'react-bootstrap/Nav';
+import Navbar      from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+
 import {Link, useNavigate} from 'react-router-dom';
 import {app}               from '../base';
 import UserContext         from '../context/userContext';
@@ -174,11 +177,10 @@ function Header()
 						<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
 						{' Donate'}
 					</Nav.Link>
-
 				</Nav>
 				<Nav className='mr-sm-2' justify>
-					{renderAuthentication()}
-				</Nav>
+				{renderAuthentication()}
+			</Nav>
 			</Navbar.Collapse>
 		</Navbar>
 	);
