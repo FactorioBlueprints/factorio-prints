@@ -28,9 +28,12 @@ import Contributors           from "./Contributors";
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
-			cacheTime: 1000 * 60 * 60 * 1, // 1 hour
-			staleTime: 1000 * 60 * 5, // 5 minutes
-			retry: (failureCount, error: any) => error?.response?.status !== 410 && failureCount < 2
+			cacheTime: 1000 * 60 * 60 * 24, // 24 hours
+			staleTime: 1000 * 60 * 60 * 1, // 1 hour
+			retry: (failureCount, error: any) => error?.response?.status !== 410 && failureCount < 2,
+			refetchOnMount: true,
+			refetchOnWindowFocus: true,
+			refetchOnReconnect: true,
 		},
 	},
 });
