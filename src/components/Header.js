@@ -5,6 +5,7 @@ import {
 	faCogs,
 	faDonate,
 	faHeart,
+	faPlusSquare,
 	faSignInAlt,
 	faSignOutAlt,
 	faTrophy,
@@ -146,6 +147,10 @@ function Header()
 					<Nav.Link as={Link} href='/top' to='/top' className='text-light'>
 						<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
 						{' Most Favorited'}
+					</Nav.Link>
+					<Nav.Link href='https://factorioprints.com/create' to='https://factorioprints.com/create' className='text-light'>
+						<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
+						{' Create'}
 					</Nav.Link>
 					{user
 						&& <Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
