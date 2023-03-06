@@ -83,6 +83,7 @@ function EfficientSingleBlueprint()
 	const userId = user && user.uid;
 
 	const ownedByCurrentUser = isSuccess && userId !== undefined && userId === data.data.author.authorId;
+	const blueprintStringSha = isSuccess ? data.data.blueprintString.sha : undefined;
 
 	const isModerator = useIsModerator();
 
@@ -142,7 +143,7 @@ function EfficientSingleBlueprint()
 						</Card.Header>
 						<Card.Body>
 							<BlueprintMarkdown blueprintKey={blueprintKey} />
-							<CopyBlueprintStringButton blueprintKey={blueprintKey} />
+							<CopyBlueprintStringButton blueprintStringSha={blueprintStringSha} />
 							<Button type='button' onClick={() => setShowBlueprintString(!showBlueprintString)}>
 								{
 									showBlueprintString
@@ -154,14 +155,14 @@ function EfficientSingleBlueprint()
 						</Card.Body>
 					</Card>
 					{
-						showBlueprintString && <BlueprintStringCard blueprintKey={blueprintKey} />
+						showBlueprintString && <BlueprintStringCard blueprintStringSha={blueprintStringSha} />
 					}
 					<Card>
 						<Card.Header>
 							Blueprint Titles
 						</Card.Header>
 						<Card.Body>
-							<BlueprintTitles blueprintKey={blueprintKey} />
+							<BlueprintTitles blueprintStringSha={blueprintStringSha} />
 						</Card.Body>
 					</Card>
 				</Col>

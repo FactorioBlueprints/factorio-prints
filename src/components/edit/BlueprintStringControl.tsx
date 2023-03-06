@@ -7,22 +7,24 @@ import FormControl        from 'react-bootstrap/FormControl';
 import Row                from 'react-bootstrap/Row';
 import LoadingIcon        from "../LoadingIcon";
 
+import BlueprintStringSummaryProjection from "../../propTypes/BlueprintStringSummaryProjection";
+
 interface Props
 {
-	blueprintString: string | undefined,
+	blueprintString: any | undefined,
 	setBlueprintString: any,
 	isLoading: boolean,
 	isError: boolean,
 }
 
 BlueprintStringControl.propTypes = forbidExtraProps({
-	blueprintString   : PropTypes.string,
+	blueprintString   : BlueprintStringSummaryProjection,
 	setBlueprintString: PropTypes.func.isRequired,
 	isLoading         : PropTypes.bool.isRequired,
 	isError           : PropTypes.bool.isRequired,
 });
 
-function getBody(blueprintString: string | undefined, setBlueprintString: any, isLoading: boolean, isError: boolean)
+function getBody(blueprintString: any | undefined, setBlueprintString: any, isLoading: boolean, isError: boolean)
 {
 	if (isLoading)
 	{
@@ -45,7 +47,7 @@ function getBody(blueprintString: string | undefined, setBlueprintString: any, i
 			as='textarea'
 			name='blueprintString'
 			placeholder='Blueprint String'
-			value={blueprintString}
+			value={blueprintString?.blueprintString}
 			onChange={handleChange}
 		/>
 	);

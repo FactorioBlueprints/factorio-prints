@@ -2,11 +2,12 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import Card               from 'react-bootstrap/Card';
-import useBlueprintString from '../../hooks/useBlueprintString';
-import LoadingIcon        from '../LoadingIcon';
+
+import useBlueprintStringSha from '../../hooks/useBlueprintStringSha';
+import LoadingIcon           from '../LoadingIcon';
 
 BlueprintStringCard.propTypes = forbidExtraProps({
-	blueprintKey: PropTypes.string.isRequired,
+	blueprintStringSha: PropTypes.string,
 });
 
 function getBody(result)
@@ -35,14 +36,14 @@ function getBody(result)
 
 	return (
 		<div className='blueprintString'>
-			{data.data}
+			{data.data?.blueprintString}
 		</div>
 	);
 }
 
-function BlueprintStringCard({blueprintKey})
+function BlueprintStringCard({blueprintStringSha})
 {
-	const result = useBlueprintString(blueprintKey);
+	const result = useBlueprintStringSha(blueprintStringSha);
 	const body   = getBody(result);
 
 	return (

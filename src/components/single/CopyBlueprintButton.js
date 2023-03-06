@@ -6,17 +6,17 @@ import React              from 'react';
 import Button             from 'react-bootstrap/Button';
 import CopyToClipboard    from 'react-copy-to-clipboard';
 
-import useBlueprintString from '../../hooks/useBlueprintString';
-import LoadingIcon        from '../LoadingIcon';
+import useBlueprintStringSha from '../../hooks/useBlueprintStringSha';
+import LoadingIcon           from '../LoadingIcon';
 
 CopyBlueprintStringButton.propTypes = forbidExtraProps({
-	blueprintKey: PropTypes.string.isRequired,
+	blueprintStringSha: PropTypes.string,
 });
 
 function CopyBlueprintStringButton(props)
 {
-	const {blueprintKey} = props;
-	const result         = useBlueprintString(blueprintKey);
+	const {blueprintStringSha} = props;
+	const result               = useBlueprintStringSha(blueprintStringSha);
 
 	const {isLoading, isError, data} = result;
 
@@ -41,7 +41,7 @@ function CopyBlueprintStringButton(props)
 		);
 	}
 
-	const blueprintString = data.data;
+	const blueprintString = data.data.blueprintString;
 
 	return (
 		<CopyToClipboard text={blueprintString}>

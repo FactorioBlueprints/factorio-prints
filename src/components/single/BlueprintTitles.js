@@ -8,18 +8,22 @@ import LoadingIcon            from '../LoadingIcon';
 import BlueprintContentHeader from './BlueprintContentHeader';
 
 BlueprintTitles.propTypes = forbidExtraProps({
-	blueprintKey: PropTypes.string.isRequired,
+	blueprintStringSha: PropTypes.string.isRequired,
 });
 
-function BlueprintTitles(props)
+function BlueprintTitles({blueprintStringSha})
 {
-	const {blueprintKey} = props;
-	const queryKey       = ['blueprintTitles', blueprintKey];
+	const queryKey       = ['blueprintTitles', blueprintStringSha];
 
 	const {isLoading, isError, data, error} = useQuery(
 		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitles/${blueprintKey}`),
-		{retry: false},
+		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
+		{
+			enabled: blueprintStringSha !== undefined,
+			retry: false,
+			cacheTime: 'Infinity',
+			staleTime: 'Infinity',
+		},
 	);
 
 	if (isLoading)

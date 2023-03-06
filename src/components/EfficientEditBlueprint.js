@@ -5,9 +5,9 @@ import axios      from 'axios';
 import classNames from 'classnames';
 import update     from 'immutability-helper';
 import difference from 'lodash/difference';
+import isArray    from 'lodash/isArray';
 import isEmpty    from 'lodash/isEmpty';
 import some       from 'lodash/some';
-import isArray    from 'lodash/isArray';
 import {marked}   from 'marked';
 
 import React, {useContext, useState} from 'react';
@@ -40,7 +40,7 @@ import buildImageUrl          from '../helpers/buildImageUrl';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import scaleImage             from '../helpers/ImageScaler';
 import useBlueprint           from '../hooks/useBlueprint';
-import useBlueprintString     from '../hooks/useBlueprintString';
+import useBlueprintStringSha  from '../hooks/useBlueprintStringSha';
 import useIsModerator         from '../hooks/useIsModerator';
 import useTagOptions          from '../hooks/useTagOptions';
 import BlueprintStringControl from './edit/BlueprintStringControl';
@@ -148,7 +148,7 @@ function EfficientEditBlueprint()
 			  isStale,
 			  isSuccess,
 		  } = result;
-	// TODO: USe onComplete instead?
+	// TODO: Use onComplete instead?
 	React.useEffect(() =>
 	{
 		const blueprintData = data?.data;
@@ -160,7 +160,7 @@ function EfficientEditBlueprint()
 			  isLoading: blueprintStringIsLoading,
 			  isError  : blueprintStringIsError,
 			  data     : blueprintStringData
-		  }   = useBlueprintString(blueprintKey);
+		  }   = useBlueprintStringSha(blueprint?.blueprintString?.sha);
 	const newBlueprintString = blueprintStringIsError ? "" : blueprintStringData?.data;
 	// TODO: USe onComplete instead?
 	React.useEffect(() =>
