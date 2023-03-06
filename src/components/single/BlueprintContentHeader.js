@@ -72,12 +72,10 @@ function getBlueprint(data)
 	return (
 		<>
 			<ItemIcon item={item} />
-			<span className='mr-3' />
+			<span className='p-1' />
 			{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
-			<span className='mr-3' />
-			<span>
-				{` ${label || ''}`}
-			</span>
+			<span className='p-1' />
+			<span>{`${label || ''}`}</span>
 		</>
 	);
 }
