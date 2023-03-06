@@ -1,4 +1,4 @@
-import {faDiscord, faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
+import {faDiscord, faGithub, faGoogle, faPatreon} from '@fortawesome/free-brands-svg-icons';
 
 import {
 	faBug,
@@ -194,6 +194,10 @@ class Header extends PureComponent
 						<Nav.Link as={Link} href='/chat' to='/chat' className='text-light'>
 							<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
 							{' Chat'}
+						</Nav.Link>
+						<Nav.Link href='https://www.factorio.school/contributors' to='https://www.factorio.school/contributors' className='text-light'>
+							<FontAwesomeIcon icon={faPatreon} size='lg' fixedWidth />
+							{' Contributors'}
 						</Nav.Link>
 						<Nav.Link href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target="_blank" rel="noopener noreferrer">
 							<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
