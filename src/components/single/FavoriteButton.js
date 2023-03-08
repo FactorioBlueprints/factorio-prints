@@ -4,7 +4,7 @@ import PropTypes           from 'prop-types';
 import React, {useContext} from 'react';
 import Button              from 'react-bootstrap/Button';
 
-import {useMutation, useQueryClient} from 'react-query';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 
 import UserContext   from '../../context/userContext';
 import useIsFavorite from '../../hooks/useIsFavorite';

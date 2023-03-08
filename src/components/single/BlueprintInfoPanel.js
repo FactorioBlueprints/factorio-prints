@@ -14,10 +14,11 @@ import BlueprintVersion from './BlueprintVersion';
 
 BlueprintInfoPanel.propTypes = forbidExtraProps({
 	blueprintKey      : PropTypes.string.isRequired,
+	blueprintStringSha: PropTypes.string,
 	ownedByCurrentUser: PropTypes.bool.isRequired,
 });
 
-function BlueprintInfoPanel({blueprintKey, ownedByCurrentUser})
+function BlueprintInfoPanel({blueprintKey, blueprintStringSha, ownedByCurrentUser})
 {
 	const result = useBlueprint(blueprintKey);
 
@@ -87,7 +88,7 @@ function BlueprintInfoPanel({blueprintKey, ownedByCurrentUser})
 							{' Version'}
 						</td>
 						<td>
-							<BlueprintVersion blueprintKey={blueprintKey} />
+							<BlueprintVersion blueprintStringSha={blueprintStringSha} />
 						</td>
 					</tr>
 				</tbody>

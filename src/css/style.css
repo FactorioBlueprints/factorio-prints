@@ -107,9 +107,20 @@ input[type=button].google:after {
 h4 .label {
   line-height: 2.2;
 }
+/*
+tbody > tr > td.icon {
+	padding: 3px;
+	vertical-align: middle;
+}
+*/
 td.number {
   text-align: end;
 }
+/*
+.item-icon > img {
+	border: 1px solid black;
+}
+*/
 .btn-toolbar {
   margin: 0.5em;
 }

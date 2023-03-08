@@ -1,38 +1,45 @@
+import {useQuery}         from '@tanstack/react-query';
 import {forbidExtraProps} from 'airbnb-prop-types';
 
-import axios       from 'axios';
-import PropTypes   from 'prop-types';
-import React       from 'react';
-import {useQuery}  from 'react-query';
-import LoadingIcon from '../LoadingIcon';
+import axios            from 'axios';
+import PropTypes        from 'prop-types';
+import React            from 'react';
+import ReactQueryStatus from '../search/ReactQueryStatus';
 
 BlueprintVersion.propTypes = forbidExtraProps({
-	blueprintKey: PropTypes.string.isRequired,
+	blueprintStringSha: PropTypes.string,
 });
 
-function BlueprintVersion(props)
+function BlueprintVersion({blueprintStringSha})
 {
-	const {blueprintKey} = props;
-	const queryKey       = ['blueprintTitles', blueprintKey];
+	const queryKey       = ['blueprintTitles', blueprintStringSha];
 
-	const {isLoading, isError, data, error} = useQuery(
+	const result                                           = useQuery(
 		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitles/${blueprintKey}`),
-		{retry: false},
+		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
+		{
+			enabled: blueprintStringSha !== undefined,
+			retry: false,
+			cacheTime: 'Infinity',
+			staleTime: 'Infinity',
+			refetchOnMount: false,
+			refetchOnWindowFocus: false,
+			refetchOnReconnect: false,
+		},
 	);
 
-	if (isLoading)
-	{
-		return <LoadingIcon isLoading={isLoading} />;
-	}
+	const {isLoading, data, error, isFetching, isSuccess} = result;
 
-	if (isError)
-	{
-		const {code} = error.response.data;
-		return `Error: ${code}`;
-	}
-
-	return getVersion(data.data);
+	return <>
+		<ReactQueryStatus
+			isLoading={isLoading}
+			error={error}
+			data={data}
+			isFetching={isFetching}
+			isSuccess={isSuccess}
+		/>
+		{isSuccess && getVersion(data.data)}
+	</>;
 }
 
 function getVersion(data)

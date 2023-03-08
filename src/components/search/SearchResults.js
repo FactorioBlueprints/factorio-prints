@@ -1,7 +1,7 @@
 import axios                         from 'axios';
 import React, {useState}             from 'react';
 import Row                           from 'react-bootstrap/Row';
-import {useQuery}                    from 'react-query';
+import {useQuery}                    from '@tanstack/react-query';
 import BlueprintThumbnail            from '../BlueprintThumbnail';
 import BlueprintThumbnailPlaceholder from '../BlueprintThumbnailPlaceholder';
 import CustomPagination              from '../pagination/CustomPagination';

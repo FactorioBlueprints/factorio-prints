@@ -27,7 +27,7 @@ import Row           from 'react-bootstrap/Row';
 // TODO 2022-05-24: Consider switching from the component style to the hook style for react-dropzone
 import Dropzone                      from 'react-dropzone';
 import {ErrorBoundary}               from 'react-error-boundary';
-import {useMutation, useQueryClient} from 'react-query';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useNavigate, useParams}      from 'react-router-dom';
 import Select                        from 'react-select';
 import makeAnimated                  from 'react-select/animated';

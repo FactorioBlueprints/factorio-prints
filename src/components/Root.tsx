@@ -2,8 +2,8 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import React              from 'react';
 import {Helmet}           from 'react-helmet';
 
-import {QueryClient, QueryClientProvider} from 'react-query';
-import {ReactQueryDevtools}               from 'react-query/devtools';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ReactQueryDevtools}               from '@tanstack/react-query-devtools';
 import {BrowserRouter, Route, Routes}     from 'react-router-dom';
 import { QueryParamProvider } from 'use-query-params';
 import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {useContext} from 'react';
-import {useQuery} from 'react-query';
+import {useQuery} from '@tanstack/react-query';
 import UserContext from '../context/userContext';
 
 import getHeaders from '../helpers/getHeaders';

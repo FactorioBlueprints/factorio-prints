@@ -101,7 +101,7 @@ function EfficientSingleBlueprint()
 
 	if (isError)
 	{
-		console.log({result});
+		console.log('Error loading blueprint details.', {result});
 		return (
 			<div className='p-5 rounded-lg jumbotron'>
 				<h1>
@@ -131,9 +131,10 @@ function EfficientSingleBlueprint()
 					<TagsPanel blueprintKey={blueprintKey} />
 					<BlueprintInfoPanel
 						blueprintKey={blueprintKey}
+						blueprintStringSha={blueprintStringSha}
 						ownedByCurrentUser={ownedByCurrentUser}
 					/>
-					<RequirementsHistogram blueprintKey={blueprintKey} />
+					<RequirementsHistogram blueprintStringSha={blueprintStringSha} />
 					<GoogleAd />
 				</Col>
 				<Col md={8}>

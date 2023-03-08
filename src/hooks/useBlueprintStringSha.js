@@ -1,5 +1,5 @@
 import axios      from 'axios';
-import {useQuery} from 'react-query';
+import {useQuery} from '@tanstack/react-query';
 
 function useBlueprintStringSha(blueprintStringSha)
 {
@@ -9,6 +9,9 @@ function useBlueprintStringSha(blueprintStringSha)
 		enabled  : blueprintStringSha !== undefined,
 		cacheTime: 'Infinity',
 		staleTime: 'Infinity',
+		refetchOnMount: false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect: false,
 	};
 	return useQuery(queryKey, () => axios.get(url), options);
 }

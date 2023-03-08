@@ -4,7 +4,7 @@ import axios                   from 'axios';
 import React                   from 'react';
 import Container               from 'react-bootstrap/Container';
 import Row                     from 'react-bootstrap/Row';
-import {useQuery}              from 'react-query';
+import {useQuery}              from '@tanstack/react-query';
 
 import FactorioPrintsThumbnail from '../FactorioPrintsThumbnail';
 import PageHeader              from '../PageHeader';
