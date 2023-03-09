@@ -130,7 +130,7 @@ function EfficientEditBlueprint()
 
 	const queryKey = ['blueprintDetails', blueprintKey];
 
-	const result                     = useBlueprint(blueprintKey);
+	const result = useBlueprint(blueprintKey);
 	const {
 			  isLoading,
 			  isError,
@@ -317,7 +317,6 @@ function EfficientEditBlueprint()
 
 		const json   = await response.json();
 		const data   = json.data;
-		console.log({data});
 		const imgurImage = {
 			imgurId   : data.id,
 			deleteHash: data.deletehash,

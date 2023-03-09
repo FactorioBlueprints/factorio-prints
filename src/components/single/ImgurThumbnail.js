@@ -17,7 +17,6 @@ function ImgurThumbnail({blueprintKey})
 
 	if (!imgurImage)
 	{
-		console.log({result});
 		return (
 			<div className='border-warning'>
 				{'Error loading imgur image.'}
