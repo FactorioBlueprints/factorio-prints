@@ -94,6 +94,19 @@ function EfficientSingleBlueprint()
 		navigate(`/edit/${blueprintKey}`);
 	}
 
+	function renderEditLink()
+	{
+		const url = `https://factorioprints.com/edit/${blueprintKey}`;
+		return <Button
+			size='lg'
+			href={url}
+		>
+			<FontAwesomeIcon icon={faEdit} />
+			{' Edit'}
+		</Button>;
+
+	}
+
 	if (isLoading)
 	{
 		return <Spinner />
@@ -121,7 +134,8 @@ function EfficientSingleBlueprint()
 					</div>
 				</Col>
 				<Col md={3} className='d-flex align-items-center justify-content-end'>
-					{(ownedByCurrentUser || isModerator) && renderEditButton(handleTransitionToEdit)}
+					{/*{(ownedByCurrentUser || isModerator) && renderEditButton(handleTransitionToEdit)}*/}
+					{(ownedByCurrentUser || isModerator) && renderEditLink()}
 					{!ownedByCurrentUser && <FavoriteButton blueprintKey={blueprintKey} />}
 				</Col>
 			</Row>
