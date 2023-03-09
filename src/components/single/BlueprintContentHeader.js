@@ -51,9 +51,9 @@ function getBlueprintBook(data)
 			<Card>
 				<ListGroup variant='flush'>
 					{
-						blueprints.map(each =>
+						blueprints.map((each, index) =>
 							(
-								<ListGroup.Item key={each.index} active={each.index === active_index}>
+								<ListGroup.Item key={index} active={index === active_index}>
 									<BlueprintContentHeader data={each} />
 								</ListGroup.Item>
 							),
