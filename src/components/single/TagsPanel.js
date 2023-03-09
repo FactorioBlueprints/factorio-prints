@@ -54,16 +54,12 @@ function TagsPanel({blueprintKey})
 		</Card.Header>
 		<Card.Body>
 			<h4>
-				{
-					tags.map(tag => tag.tag)
-						.filter(tag => tag !== null)
-						.map(({category, name}) => (
-							<TagLink
-								category={category}
-								name={name}
-								key={`${category}/${name}`}
-							/>),
-						)
+				{tags.map(({tagCategory, tagName}) => (
+					<TagLink
+						category={tagCategory}
+						name={tagName}
+						key={`${tagCategory}/${tagName}`}
+					/>))
 				}
 			</h4>
 		</Card.Body>
