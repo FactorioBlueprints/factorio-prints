@@ -13,10 +13,9 @@ CopyBlueprintStringButton.propTypes = forbidExtraProps({
 	blueprintStringSha: PropTypes.string,
 });
 
-function CopyBlueprintStringButton(props)
+function CopyBlueprintStringButton({blueprintStringSha})
 {
-	const {blueprintStringSha} = props;
-	const result               = useBlueprintStringSha(blueprintStringSha);
+	const result = useBlueprintStringSha(blueprintStringSha);
 
 	const {isLoading, isError, data} = result;
 

@@ -9,8 +9,8 @@ function useIsFavorite(blueprintKey)
 {
 	const user         = useContext(UserContext);
 	const queryEnabled = user !== undefined && user !== null;
-	const email        = queryEnabled ? user.email : undefined;
-	const queryKey     = [email, 'isFavorite', blueprintKey];
+	const uid          = queryEnabled ? user.uid : undefined;
+	const queryKey     = ['api/my/favorite/', blueprintKey, uid];
 
 	return useQuery(
 		queryKey,

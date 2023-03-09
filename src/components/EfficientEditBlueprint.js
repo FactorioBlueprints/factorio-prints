@@ -156,23 +156,24 @@ function EfficientEditBlueprint()
 		return setBlueprint(blueprintData);
 	}, [blueprintKey, data?.data]);
 
+	const blueprintStringSha = blueprint?.blueprintString?.sha;
 	const {
 			  isLoading: blueprintStringIsLoading,
 			  isError  : blueprintStringIsError,
 			  data     : blueprintStringData
-		  }   = useBlueprintStringSha(blueprint?.blueprintString?.sha);
+		  }                  = useBlueprintStringSha(blueprintStringSha);
 	const newBlueprintString = blueprintStringIsError ? "" : blueprintStringData?.data;
 	// TODO: USe onComplete instead?
 	React.useEffect(() =>
 	{
 		return setBlueprintString(newBlueprintString);
-	}, [blueprintKey, newBlueprintString]);
+	}, [blueprintStringSha, newBlueprintString]);
 	React.useEffect(() =>
 	{
 		const parsedBlueprint = parseBlueprint(blueprintString);
 		setParsedBlueprint(parsedBlueprint);
 		setV15Decoded(parsedBlueprint?.getV15Decoded());
-	}, [blueprintKey, blueprintString]);
+	}, [blueprintStringSha, blueprintString]);
 
 	if (!user)
 	{

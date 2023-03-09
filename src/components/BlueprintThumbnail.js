@@ -27,8 +27,8 @@ function BlueprintThumbnail({
 	const {isSuccess, data} = useFavorites();
 	const authoredResult    = useAuthored();
 
-	const mine     = authoredResult.isSuccess && authoredResult.data.has(key);
-	const favorite = isSuccess && data.has(key);
+	const mine     = authoredResult.isSuccess && authoredResult.data.includes(key);
+	const favorite = isSuccess && data.includes(key);
 
 	const tooltip  = (
 		<Tooltip>

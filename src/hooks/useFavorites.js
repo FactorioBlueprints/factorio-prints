@@ -9,8 +9,8 @@ function useFavorites()
 {
 	const user         = useContext(UserContext);
 	const queryEnabled = user !== undefined && user !== null;
-	const email        = queryEnabled ? user.email : undefined;
-	const queryKey     = [email, 'favorites'];
+	const uid        = queryEnabled ? user.uid : undefined;
+	const queryKey     = ['api/my/favorites/', uid];
 
 	return useQuery(
 		queryKey,
@@ -28,7 +28,7 @@ async function getFavorites(user)
 
 	const headers  = getHeaders(idToken);
 	const response = await axios.get(`${process.env.REACT_APP_REST_URL}/api/my/favorites/`, headers);
-	return new Set(response.data);
+	return response.data;
 }
 
 export default useFavorites;

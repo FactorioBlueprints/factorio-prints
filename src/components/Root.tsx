@@ -4,6 +4,10 @@ import {Helmet}           from 'react-helmet';
 
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ReactQueryDevtools}               from '@tanstack/react-query-devtools';
+import { persistQueryClient, removeOldestQuery } from '@tanstack/react-query-persist-client'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+
 import {BrowserRouter, Route, Routes}     from 'react-router-dom';
 import { QueryParamProvider } from 'use-query-params';
 import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';
@@ -39,10 +43,15 @@ const queryClient = new QueryClient({
 	},
 });
 
+const localStoragePersister = createSyncStoragePersister({
+	storage: window.localStorage,
+	retry: removeOldestQuery
+})
+
 function Root()
 {
 	return (
-		<QueryClientProvider client={queryClient}>
+		<PersistQueryClientProvider client={queryClient} persistOptions={{ persister: localStoragePersister }}>
 			<Helmet>
 				<title>Factorio Prints</title>
 			</Helmet>
@@ -71,7 +80,7 @@ function Root()
 				</BrowserRouter>
 			</UserState>
 			<ReactQueryDevtools initialIsOpen />
-		</QueryClientProvider>
+		</PersistQueryClientProvider>
 	);
 }
 
