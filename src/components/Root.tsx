@@ -2,15 +2,14 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 import React              from 'react';
 import {Helmet}           from 'react-helmet';
 
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {ReactQueryDevtools}               from '@tanstack/react-query-devtools';
-import { persistQueryClient, removeOldestQuery } from '@tanstack/react-query-persist-client'
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import {QueryClient}                                   from '@tanstack/react-query';
+import {ReactQueryDevtools}                            from '@tanstack/react-query-devtools';
+import {PersistQueryClientProvider, removeOldestQuery} from '@tanstack/react-query-persist-client';
+import {createSyncStoragePersister}                    from '@tanstack/query-sync-storage-persister';
 
-import {BrowserRouter, Route, Routes}     from 'react-router-dom';
-import { QueryParamProvider } from 'use-query-params';
-import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';
+import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import {QueryParamProvider}           from 'use-query-params';
+import {ReactRouter6Adapter}          from 'use-query-params/adapters/react-router-6';
 
 import Account                from './Account';
 import Chat                   from './Chat';
@@ -26,8 +25,8 @@ import ScrollToTop            from './ScrollToTop';
 import SingleBlueprint        from './single/EfficientSingleBlueprint';
 import UserState              from './user/UserState';
 import DuplicateBlueprintGrid from "./grid/DuplicateBlueprintGrid";
-import Contributors from "./Contributors";
-import Search       from "./search/Search";
+import Contributors           from "./Contributors";
+import Search                 from "./search/Search";
 
 // TODO: Add a top-level onError
 const queryClient = new QueryClient({

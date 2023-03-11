@@ -10,7 +10,7 @@ import Card                          from 'react-bootstrap/Card';
 import Col                           from 'react-bootstrap/Col';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
-import {useNavigate, useParams}      from 'react-router-dom';
+import {useParams}                   from 'react-router-dom';
 import UserContext                   from '../../context/userContext';
 import useBlueprint                  from '../../hooks/useBlueprint';
 import useIsModerator                from '../../hooks/useIsModerator';
@@ -57,6 +57,7 @@ ShowButton.propTypes = forbidExtraProps({
 	text: PropTypes.string.isRequired,
 });
 
+/*
 function renderEditButton(handleTransitionToEdit)
 {
 	return <Button
@@ -67,6 +68,7 @@ function renderEditButton(handleTransitionToEdit)
 		{' Edit'}
 	</Button>;
 }
+*/
 
 function EfficientSingleBlueprint()
 {
@@ -87,12 +89,15 @@ function EfficientSingleBlueprint()
 
 	const isModerator = useIsModerator();
 
+
+	/*
 	const navigate = useNavigate();
 
 	function handleTransitionToEdit()
 	{
 		navigate(`/edit/${blueprintKey}`);
 	}
+	*/
 
 	function renderEditLink()
 	{

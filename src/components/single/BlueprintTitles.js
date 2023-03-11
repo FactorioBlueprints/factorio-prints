@@ -31,9 +31,9 @@ function BlueprintTitles({blueprintStringSha})
 
 	if (isLoading)
 	{
+		// TODO 2023-03-08: implement placeholder
 		return (
 			<Card>
-				// TODO 2023-03-08: implement placeholder
 				<LoadingIcon isLoading={isLoading} />
 				{' Loading blueprint titles'}
 			</Card>
