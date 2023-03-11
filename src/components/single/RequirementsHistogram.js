@@ -1,10 +1,10 @@
+import {useQuery}         from '@tanstack/react-query';
 import {forbidExtraProps} from 'airbnb-prop-types';
 
-import axios      from 'axios';
-import PropTypes  from 'prop-types';
-import React      from 'react';
-import Card       from 'react-bootstrap/Card';
-import {useQuery} from '@tanstack/react-query';
+import axios     from 'axios';
+import PropTypes from 'prop-types';
+import React     from 'react';
+import Card      from 'react-bootstrap/Card';
 
 import ItemHistogram  from './ItemHistogram';
 import UpgradePlanner from './UpgradePlanner';
@@ -17,7 +17,7 @@ function RequirementsHistogram({blueprintStringSha})
 {
 	const queryKey       = ['blueprintItems', blueprintStringSha];
 
-	const {isLoading, isError, isSuccess, data, error} = useQuery(
+	const {isError, isSuccess, data, error} = useQuery(
 		queryKey,
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintItemsBySha/${blueprintStringSha}`),
 		{

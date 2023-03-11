@@ -1,8 +1,6 @@
-import {faSearch}        from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React             from 'react';
-import Form              from 'react-bootstrap/Form';
-import InputGroup        from 'react-bootstrap/InputGroup';
+import React      from 'react';
+import Form       from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 
 const SearchTextForm = ({textState, setTextState}) =>
 {

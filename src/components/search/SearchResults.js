@@ -1,13 +1,12 @@
+import {useQuery}                    from '@tanstack/react-query';
 import axios                         from 'axios';
+import 'holderjs';
 import React, {useState}             from 'react';
 import Row                           from 'react-bootstrap/Row';
-import {useQuery}                    from '@tanstack/react-query';
 import BlueprintThumbnail            from '../BlueprintThumbnail';
 import BlueprintThumbnailPlaceholder from '../BlueprintThumbnailPlaceholder';
 import CustomPagination              from '../pagination/CustomPagination';
-import Spinner                       from '../single/Spinner';
 import ReactQueryStatus              from './ReactQueryStatus';
-import 'holderjs';
 
 const SearchResults = ({searchState}) =>
 {
@@ -15,12 +14,12 @@ const SearchResults = ({searchState}) =>
 
 	const {
 			  textState,
-			  sortOrderState,
+			  // sortOrderState,
 			  tagState,
 			  entityState,
 			  recipeState,
 			  versionState,
-			  blueprintTypeState
+			  // blueprintTypeState
 		  } = searchState || {};
 
 	const fetchBlueprintSummaries = async () =>
@@ -64,7 +63,7 @@ const SearchResults = ({searchState}) =>
 		options,
 	);
 
-	const {isLoading, isError, data, isPreviousData, isSuccess, isFetched, error, isFetching, isIdle} = result;
+	const {data, isSuccess, isFetching, isIdle} = result;
 
 	if (!isSuccess && isFetching)
 	{
