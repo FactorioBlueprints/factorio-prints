@@ -2,17 +2,92 @@ import {forbidExtraProps} from 'airbnb-prop-types';
 
 import PropTypes from 'prop-types';
 import React     from 'react';
+
+import Button    from 'react-bootstrap/Button';
 import Card      from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
-import ItemIcon  from '../ItemIcon';
+
+import ItemIcon from '../ItemIcon';
 
 BlueprintContentHeader.propTypes = forbidExtraProps({
-	data    : PropTypes.object.isRequired,
-	isActive: PropTypes.bool,
+	data              : PropTypes.object.isRequired,
+	blueprintKey      : PropTypes.string.isRequired,
+	blueprintStringSha: PropTypes.string.isRequired,
+	position          : PropTypes.objectOf(PropTypes.number),
 });
 
-function BlueprintContentHeader({data})
+function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, position = {position: 0}})
 {
+	function getBlueprintBook(data)
+	{
+		const firstRow = getFirstRow(data);
+
+		let {blueprints, active_index} = data;
+		if (blueprints === undefined)
+		{
+			blueprints = [];
+		}
+
+		return (
+			<>
+				{firstRow}
+				<Card>
+					<ListGroup variant='flush'>
+						{
+							blueprints.map((each, index) => (
+								<ListGroup.Item key={index} active={index === active_index}>
+									<BlueprintContentHeader
+										data={each}
+										blueprintStringSha={blueprintStringSha}
+										blueprintKey={blueprintKey}
+										position={position}
+									/>
+								</ListGroup.Item>),
+							)
+						}
+					</ListGroup>
+				</Card>
+			</>
+		);
+	}
+
+	function getBlueprint(data)
+	{
+		const {icons, item, label} = data;
+		position.position++;
+
+		return (
+			<>
+				<ItemIcon item={item} />
+				<span className='p-1' />
+				{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
+				<span className='p-1' />
+				<span>{`${label || ''}`}</span>
+
+				<span className='p-1' />
+
+				<Button
+					type='button'
+					href={`https://fbe.teoxoy.com/?source=https://www.factorio.school/view/${blueprintKey}&index=${position.position / 2 - 1}`}
+					target='_blank'
+					className='float-end'
+					size='sm'
+				>
+					<img
+						height={'20px'}
+						width={'20px'}
+						src={'/icons/fbe.png'}
+						alt={'fbe'}
+					/>
+					<span className='p-1' />
+					Render image
+					<span className='p-1' />
+					{position.position / 2 - 1}
+				</Button>
+			</>
+		);
+	}
+
 	if (data.blueprint_book)
 	{
 		return getBlueprintBook(data.blueprint_book);
@@ -35,37 +110,7 @@ function BlueprintContentHeader({data})
 	}
 }
 
-function getBlueprintBook(data)
-{
-	const firstRow = getBlueprint(data);
-
-	let {blueprints, active_index} = data;
-	if (blueprints === undefined)
-	{
-		blueprints = [];
-	}
-
-	return (
-		<>
-			{firstRow}
-			<Card>
-				<ListGroup variant='flush'>
-					{
-						blueprints.map((each, index) =>
-							(
-								<ListGroup.Item key={index} active={index === active_index}>
-									<BlueprintContentHeader data={each} />
-								</ListGroup.Item>
-							),
-						)
-					}
-				</ListGroup>
-			</Card>
-		</>
-	);
-}
-
-function getBlueprint(data)
+function getFirstRow(data)
 {
 	const {icons, item, label} = data;
 

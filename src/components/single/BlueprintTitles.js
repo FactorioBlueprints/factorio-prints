@@ -8,10 +8,11 @@ import LoadingIcon            from '../LoadingIcon';
 import BlueprintContentHeader from './BlueprintContentHeader';
 
 BlueprintTitles.propTypes = forbidExtraProps({
+	blueprintKey      : PropTypes.string.isRequired,
 	blueprintStringSha: PropTypes.string,
 });
 
-function BlueprintTitles({blueprintStringSha})
+function BlueprintTitles({blueprintKey, blueprintStringSha})
 {
 	const queryKey = ['blueprintTitles', blueprintStringSha];
 
@@ -19,13 +20,13 @@ function BlueprintTitles({blueprintStringSha})
 		queryKey,
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
 		{
-			enabled  : blueprintStringSha !== undefined,
-			retry    : false,
-			cacheTime: 'Infinity',
-			staleTime: 'Infinity',
-			refetchOnMount: false,
+			enabled             : blueprintStringSha !== undefined,
+			retry               : false,
+			cacheTime           : 'Infinity',
+			staleTime           : 'Infinity',
+			refetchOnMount      : false,
 			refetchOnWindowFocus: false,
-			refetchOnReconnect: false,
+			refetchOnReconnect  : false,
 		},
 	);
 
@@ -48,7 +49,11 @@ function BlueprintTitles({blueprintStringSha})
 
 	if (isSuccess)
 	{
-		return <BlueprintContentHeader data={data.data} />;
+		return <BlueprintContentHeader
+			data={data.data}
+			blueprintKey={blueprintKey}
+			blueprintStringSha={blueprintStringSha}
+		/>;
 	}
 
 	return null;

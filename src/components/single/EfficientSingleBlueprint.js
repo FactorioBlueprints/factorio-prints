@@ -182,7 +182,7 @@ function EfficientSingleBlueprint()
 							Blueprint Titles
 						</Card.Header>
 						<Card.Body>
-							<BlueprintTitles blueprintStringSha={blueprintStringSha} />
+							<BlueprintTitles blueprintStringSha={blueprintStringSha} blueprintKey={blueprintKey} />
 						</Card.Body>
 					</Card>
 				</Col>
