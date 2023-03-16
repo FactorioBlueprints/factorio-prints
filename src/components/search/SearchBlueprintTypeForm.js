@@ -1,7 +1,7 @@
 import React from 'react';
 import Form  from 'react-bootstrap/Form';
 
-const SearchBlueprintTypeForm = ({recipeState, setBlueprintTypeState}) =>
+const SearchBlueprintTypeForm = ({blueprintTypeState, setBlueprintTypeState}) =>
 {
 	const handleBlueprintType = e =>
 	{
@@ -14,7 +14,7 @@ const SearchBlueprintTypeForm = ({recipeState, setBlueprintTypeState}) =>
 			<Form.Label>
 				Blueprint type
 			</Form.Label>
-			<Form.Select size="sm" aria-label='Select blueprint type' onChange={handleBlueprintType} value={recipeState}>
+			<Form.Select size="sm" aria-label='Select blueprint type' onChange={handleBlueprintType} value={blueprintTypeState}>
 				<option value={''}>Any blueprint Type</option>
 				<option value={'blueprint'}>Blueprint</option>
 				<option value={'blueprint-book'}>Blueprint Book</option>
