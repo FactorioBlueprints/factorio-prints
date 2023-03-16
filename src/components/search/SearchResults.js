@@ -10,26 +10,34 @@ import ReactQueryStatus              from './ReactQueryStatus';
 
 const SearchResults = ({searchState}) =>
 {
-	const [page, setPage]             = useState(1);
+	const [page, setPage] = useState(1);
 
 	const {
 			  textState,
-			  // sortOrderState,
+			  sortOrderState,
 			  tagState,
 			  entityState,
 			  recipeState,
 			  versionState,
-			  // blueprintTypeState
+			  blueprintTypeState
 		  } = searchState || {};
 
 	const fetchBlueprintSummaries = async () =>
 	{
 		const url    = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/search/page/${page}`;
 		const params = new URLSearchParams();
-		params.append("pageSize", 12);
+		params.append('pageSize', 12);
 		if (textState)
 		{
 			params.append('text', textState);
+		}
+		if (sortOrderState)
+		{
+			params.append('orderBy', sortOrderState);
+		}
+		if (tagState)
+		{
+			params.append('tag', `/${tagState}/`);
 		}
 		if (recipeState)
 		{
@@ -43,9 +51,9 @@ const SearchResults = ({searchState}) =>
 		{
 			params.append('gameVersionLong', versionState);
 		}
-		if (tagState)
+		if (blueprintTypeState)
 		{
-			params.append('tag', `/${tagState}/`);
+			params.append('blueprintType', blueprintTypeState);
 		}
 
 		const result = await axios.get(url, {params});
@@ -54,11 +62,20 @@ const SearchResults = ({searchState}) =>
 
 	const options = {
 		keepPreviousData: true,
-		enabled: searchState !== undefined,
+		enabled         : searchState !== undefined,
 	};
 
 	const result = useQuery(
-		['blueprintSearch', textState, recipeState, entityState, versionState, tagState, page],
+		['blueprintSearch', {
+			textState,
+			recipeState,
+			entityState,
+			versionState,
+			tagState,
+			sortOrderState,
+			blueprintTypeState,
+			page,
+		}],
 		() => fetchBlueprintSummaries(),
 		options,
 	);
@@ -80,11 +97,11 @@ const SearchResults = ({searchState}) =>
 	}
 	if (isIdle)
 	{
-		return <>Enter criteria and click search</>
+		return <>Enter criteria and click search</>;
 	}
 	if (!isSuccess)
 	{
-		return <ReactQueryStatus {...result} />
+		return <ReactQueryStatus {...result} />;
 	}
 
 	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber: dataPageNumber}}} = data;
@@ -100,7 +117,12 @@ const SearchResults = ({searchState}) =>
 						/>
 					))
 			}
-			<CustomPagination pageNumber={page} dataPageNumber={dataPageNumber} numberOfPages={numberOfPages} setPage={setPage} />
+			<CustomPagination
+				pageNumber={page}
+				dataPageNumber={dataPageNumber}
+				numberOfPages={numberOfPages}
+				setPage={setPage}
+			/>
 		</Row>
 	);
 };
