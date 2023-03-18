@@ -11,19 +11,12 @@ const SearchEntityForm = ({entityState, setEntityState}) =>
 		setEntityState(e.target.value);
 	};
 
-	const {isLoading, error, data, isFetching, isSuccess} = useEntityOptions();
-
+	const result = useEntityOptions();
+	const {data, isSuccess} = result;
 	return (
 		<Form.Group className='mb-3'>
 			<Form.Label>
-				Entities
-				<ReactQueryStatus
-					isLoading={isLoading}
-					error={error}
-					data={data}
-					isFetching={isFetching}
-					isSuccess={isSuccess}
-				/>
+				Entities <ReactQueryStatus {...result} />
 			</Form.Label>
 			<Form.Select size="sm" aria-label='Select entity' onChange={handleEntity} value={entityState}>
 				<option value={''}>Any entity</option>

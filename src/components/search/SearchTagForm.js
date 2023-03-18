@@ -11,19 +11,13 @@ const SearchTagForm = ({tagState, setTagState}) =>
 		setTagState(e.target.value);
 	};
 
-	const {isLoading, error, data, isFetching, isSuccess} = useSimpleTagOptions();
+	const result = useSimpleTagOptions();
+	const {data, isSuccess} = result;
 
 	return (
 		<Form.Group className='mb-3'>
 			<Form.Label>
-				Tags
-				<ReactQueryStatus
-					isLoading={isLoading}
-					error={error}
-					data={data}
-					isFetching={isFetching}
-					isSuccess={isSuccess}
-				/>
+				{'Tags '}<ReactQueryStatus{...result} />
 			</Form.Label>
 			<Form.Select size="sm" aria-label='Select tag' onChange={handleTag} value={tagState}>
 				<option value={''}>Any tag</option>
