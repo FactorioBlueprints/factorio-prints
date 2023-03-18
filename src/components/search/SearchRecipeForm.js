@@ -11,21 +11,15 @@ const SearchRecipeForm = ({recipeState, setRecipeState}) =>
 		setRecipeState(e.target.value);
 	};
 
-	const {isLoading, error, data, isFetching, isSuccess} = useRecipeOptions();
+	const result            = useRecipeOptions();
+	const {data, isSuccess} = result;
 
 	return (
 		<Form.Group className='mb-3'>
 			<Form.Label>
-				Recipes
-				<ReactQueryStatus
-					isLoading={isLoading}
-					error={error}
-					data={data}
-					isFetching={isFetching}
-					isSuccess={isSuccess}
-				/>
+				Recipes <ReactQueryStatus {...result} />
 			</Form.Label>
-			<Form.Select size="sm" aria-label='Select recipe' onChange={handleRecipe} value={recipeState}>
+			<Form.Select size='sm' aria-label='Select recipe' onChange={handleRecipe} value={recipeState}>
 				<option value={''}>Any recipe</option>
 				{
 					isSuccess && data.data.map(

@@ -12,32 +12,26 @@ BlueprintVersion.propTypes = forbidExtraProps({
 
 function BlueprintVersion({blueprintStringSha})
 {
-	const queryKey       = ['blueprintTitles', blueprintStringSha];
+	const queryKey = ['blueprintTitles', blueprintStringSha];
 
-	const result                                           = useQuery(
+	const result = useQuery(
 		queryKey,
 		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
 		{
-			enabled: blueprintStringSha !== undefined,
-			retry: false,
-			cacheTime: 'Infinity',
-			staleTime: 'Infinity',
-			refetchOnMount: false,
+			enabled             : blueprintStringSha !== undefined,
+			retry               : false,
+			cacheTime           : 'Infinity',
+			staleTime           : 'Infinity',
+			refetchOnMount      : false,
 			refetchOnWindowFocus: false,
-			refetchOnReconnect: false,
+			refetchOnReconnect  : false,
 		},
 	);
 
-	const {isLoading, data, error, isFetching, isSuccess} = result;
+	const {data, isSuccess} = result;
 
 	return <>
-		<ReactQueryStatus
-			isLoading={isLoading}
-			error={error}
-			data={data}
-			isFetching={isFetching}
-			isSuccess={isSuccess}
-		/>
+		<ReactQueryStatus{...result} />
 		{isSuccess && getVersion(data.data)}
 	</>;
 }

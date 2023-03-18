@@ -80,14 +80,15 @@ const SearchResults = ({searchState}) =>
 		options,
 	);
 
-	const {data, isSuccess, isFetching, isIdle} = result;
+	const {data, isSuccess, isFetching} = result;
 
 	if (!isSuccess && isFetching)
 	{
 		return (
 			<Row className='justify-content-center'>
-				<p>Loading</p>
-				<ReactQueryStatus {...result} />
+				<div className='d-flex justify-content-center'>
+					<ReactQueryStatus {...result} />
+				</div>
 				{
 					[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 						.map(index => <BlueprintThumbnailPlaceholder key={index} />)
@@ -95,19 +96,20 @@ const SearchResults = ({searchState}) =>
 			</Row>
 		);
 	}
-	if (isIdle)
-	{
-		return <>Enter criteria and click search</>;
-	}
 	if (!isSuccess)
 	{
-		return <ReactQueryStatus {...result} />;
+		return <div className='d-flex justify-content-center'>
+			<ReactQueryStatus {...result} />
+		</div>;
 	}
 
 	const {_data: blueprintSummaries, _metadata: {pagination: {numberOfPages, pageNumber: dataPageNumber}}} = data;
 
 	return (
 		<Row className='justify-content-center'>
+			<div className='d-flex justify-content-center'>
+				<ReactQueryStatus {...result} />
+			</div>
 			{
 				blueprintSummaries.map(blueprintSummary =>
 					(
