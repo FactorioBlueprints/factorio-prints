@@ -60,9 +60,8 @@ function FavoriteButton({blueprintKey})
 			enabled  : queryEnabled,
 			onSuccess: () =>
 			{
-				queryClient.invalidateQueries([user.email, 'isFavorite', blueprintKey]);
-				queryClient.invalidateQueries([user.email, 'favorites']);
-				queryClient.invalidateQueries(['blueprintDetails', blueprintKey]);
+				queryClient.invalidateQueries(['api/my/favorite/', blueprintKey, user.uid]);
+				queryClient.invalidateQueries(['/api/my/favoriteBlueprints/page', user.email]);
 			},
 		});
 

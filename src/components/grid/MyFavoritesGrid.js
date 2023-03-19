@@ -50,7 +50,7 @@ function MyFavoritesGrid()
 	const user         = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 	const email        = user === undefined ? undefined : user.email;
-	const queryKey     = [email, 'my', 'favoriteBlueprints', page, titleFilter, selectedTags];
+	const queryKey     = ['/api/my/favoriteBlueprints/page', email, page, titleFilter, selectedTags];
 
 	const placeholderData = {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}};
 	const options         = {
