@@ -45,13 +45,6 @@ function Header()
 {
 	const user                          = useContext(UserContext);
 
-	const navigate = useNavigate();
-
-	const handleEdit = () =>
-	{
-		navigate('/account');
-	}
-
 	const handleLogout = () =>
 	{
 		app.auth().signOut();
@@ -85,24 +78,28 @@ function Header()
 			return (
 				<Dropdown className='text-light'>
 					<Dropdown.Toggle variant='link'>
-						Account Settings
+						My Account
 					</Dropdown.Toggle>
-					<Dropdown.Menu className='dropdown-menu-right' align="end">
+					<Dropdown.Menu align="end">
 						<Dropdown.Item className='user-photo-container'>
 							{getDisplayName()}
 						</Dropdown.Item>
-						<Dropdown.Item>
-							<Button type='button' className='btn-block' variant='warning' size='lg' onClick={handleEdit}>
-								<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth />
-								{' Edit'}
-							</Button>
-						</Dropdown.Item>
-						<Dropdown.Item>
-							<Button type='button' className='btn-block' variant='warning' size='lg' onClick={handleLogout}>
-								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
-								{' Log out'}
-							</Button>
-						</Dropdown.Item>
+						<Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
+							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
+							{' My Favorites'}
+						</Nav.Link>
+						<Nav.Link as={Link} href={`/user/${user.uid}`} to={`/user/${user.uid}`} className='text-light'>
+							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
+							{' My Blueprints'}
+						</Nav.Link>
+						<Nav.Link as={Link} href='/account' to='/account' className='text-light'>
+							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth />
+							{' My Display Name'}
+						</Nav.Link>
+						<Nav.Link as={Link} className='text-light' onClick={handleLogout}>
+							<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
+							{' Log out'}
+						</Nav.Link>
 					</Dropdown.Menu>
 				</Dropdown>
 			);
@@ -116,7 +113,7 @@ function Header()
 		);
 
 		return (
-			<NavDropdown title={title} style={{minWidth: '210px'}}>
+			<NavDropdown title={title} style={{minWidth: '210px'}} align="end">
 				<Button type='button' className='google' onClick={() => authenticate(googleProvider)}>
 					<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
 					{' Log in with Google'}
@@ -155,16 +152,6 @@ function Header()
 						<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
 						{' Create'}
 					</Nav.Link>
-					{user
-						&& <Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
-							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
-							{' My Favorites'}
-						</Nav.Link>}
-					{user
-						&& <Nav.Link as={Link} href={`/user/${user.uid}`} to={`/user/${user.uid}`} className='text-light'>
-							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
-							{' My Blueprints'}
-						</Nav.Link>}
 					<Nav.Link as={Link} href='/chat' to='/chat' className='text-light'>
 						<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
 						{' Chat'}
