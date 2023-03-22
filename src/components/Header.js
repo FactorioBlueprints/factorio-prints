@@ -11,6 +11,7 @@ import {
 	faTrophy,
 	faUser,
 	faWrench,
+	faSearch,
 } from '@fortawesome/free-solid-svg-icons';
 
 import {FontAwesomeIcon}   from '@fortawesome/react-fontawesome';
@@ -85,19 +86,19 @@ function Header()
 							{getDisplayName()}
 						</Dropdown.Item>
 						<Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
-							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
+							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth style={{'color': 'var(--bs-orange)'}} />
 							{' My Favorites'}
 						</Nav.Link>
 						<Nav.Link as={Link} href={`/user/${user.uid}`} to={`/user/${user.uid}`} className='text-light'>
-							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
+							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth style={{'color': 'var(--bs-orange)'}} />
 							{' My Blueprints'}
 						</Nav.Link>
 						<Nav.Link as={Link} href='/account' to='/account' className='text-light'>
-							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth />
+							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth style={{'color': 'var(--bs-orange)'}} />
 							{' My Display Name'}
 						</Nav.Link>
 						<Nav.Link as={Link} className='text-light' onClick={handleLogout}>
-							<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
+							<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth style={{'color': 'var(--bs-orange)'}} />
 							{' Log out'}
 						</Nav.Link>
 					</Dropdown.Menu>
@@ -128,7 +129,6 @@ function Header()
 
 	return (
 		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning' fixed='top' >
-
 			<Navbar.Brand>
 				<Link to='/'>
 					<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
@@ -140,6 +140,10 @@ function Header()
 			<Navbar.Collapse>
 				<Nav >
 					{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
+					<Nav.Link as={Link} href='/search' to='/search' className='text-light'>
+						<FontAwesomeIcon icon={faSearch} size='lg' fixedWidth />
+						{' Search'}
+					</Nav.Link>
 					<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
 						<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
 						{' Most Recent'}
