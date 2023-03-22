@@ -87,7 +87,7 @@ function Header()
 					<Dropdown.Toggle variant='link'>
 						Account Settings
 					</Dropdown.Toggle>
-					<Dropdown.Menu className='dropdown-menu-right'>
+					<Dropdown.Menu className='dropdown-menu-right' align="end">
 						<Dropdown.Item className='user-photo-container'>
 							{getDisplayName()}
 						</Dropdown.Item>
