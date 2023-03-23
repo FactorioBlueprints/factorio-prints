@@ -16,7 +16,7 @@ BlueprintContentHeader.propTypes = forbidExtraProps({
 	position          : PropTypes.objectOf(PropTypes.number),
 });
 
-function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, position = {position: 0}})
+function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, position = undefined})
 {
 	function getBlueprintBook(data)
 	{
@@ -26,6 +26,11 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 		if (blueprints === undefined)
 		{
 			blueprints = [];
+		}
+
+		if (position === undefined)
+		{
+			position = {position: 0};
 		}
 
 		return (
@@ -51,10 +56,42 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 		);
 	}
 
+	function getFbeButton()
+	{
+		if (position === undefined)
+		{
+			return <> </>;
+		}
+
+		const href = `https://fbe.teoxoy.com/?source=https://www.factorio.school/view/${blueprintKey}&index=${position.position / 2 - 1}`;
+
+		return <Button
+			type='button'
+			href={href}
+			target='_blank'
+			className='float-end'
+			size='sm'
+		>
+			<img
+				height={'20px'}
+				width={'20px'}
+				src={'/icons/fbe.png'}
+				alt={'fbe'}
+			/>
+			<span className='p-1' />
+			Render image
+			<span className='p-1' />
+			{position.position / 2 - 1}
+		</Button>
+	}
+
 	function getBlueprint(data)
 	{
 		const {icons, item, label} = data;
-		position.position++;
+		if (position)
+		{
+			position.position++;
+		}
 
 		return (
 			<>
@@ -66,24 +103,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 
 				<span className='p-1' />
 
-				<Button
-					type='button'
-					href={`https://fbe.teoxoy.com/?source=https://www.factorio.school/view/${blueprintKey}&index=${position.position / 2 - 1}`}
-					target='_blank'
-					className='float-end'
-					size='sm'
-				>
-					<img
-						height={'20px'}
-						width={'20px'}
-						src={'/icons/fbe.png'}
-						alt={'fbe'}
-					/>
-					<span className='p-1' />
-					Render image
-					<span className='p-1' />
-					{position.position / 2 - 1}
-				</Button>
+				{getFbeButton()}
 			</>
 		);
 	}
