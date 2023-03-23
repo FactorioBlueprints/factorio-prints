@@ -63,7 +63,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 			return <> </>;
 		}
 
-		const href = `https://fbe.teoxoy.com/?source=https://www.factorio.school/view/${blueprintKey}&index=${position.position / 2 - 1}`;
+		const href = `https://fbe.teoxoy.com/?source=https://www.factorio.school/view/${blueprintKey}&index=${position.position - 1}`;
 
 		return <Button
 			type='button'
@@ -81,7 +81,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 			<span className='p-1' />
 			Render image
 			<span className='p-1' />
-			{position.position / 2 - 1}
+			{position.position - 1}
 		</Button>
 	}
 
