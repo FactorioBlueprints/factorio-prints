@@ -18,7 +18,6 @@ import useIsModerator                from '../../hooks/useIsModerator';
 import GoogleAd                  from '../GoogleAd';
 import BlueprintInfoPanel        from './BlueprintInfoPanel';
 import BlueprintMarkdown         from './BlueprintMarkdown';
-import BlueprintStringCard       from './BlueprintStringCard';
 import BlueprintTitle            from './BlueprintTitle';
 import BlueprintTitles           from './BlueprintTitles';
 import CopyBlueprintStringButton from './CopyBlueprintButton';
@@ -28,34 +27,6 @@ import ImgurThumbnail            from './ImgurThumbnail';
 import RequirementsHistogram     from './RequirementsHistogram';
 import Spinner                   from './Spinner';
 import TagsPanel                 from './TagsPanel';
-
-function HideButton({text})
-{
-	return (
-		<>
-			<FontAwesomeIcon icon={faToggleOn} size='lg' fixedWidth className='text-success' />
-			{` ${text}`}
-		</>
-	);
-}
-
-HideButton.propTypes = forbidExtraProps({
-	text: PropTypes.string.isRequired,
-});
-
-function ShowButton({text})
-{
-	return (
-		<>
-			<FontAwesomeIcon icon={faToggleOff} size='lg' fixedWidth />
-			{` ${text}`}
-		</>
-	);
-}
-
-ShowButton.propTypes = forbidExtraProps({
-	text: PropTypes.string.isRequired,
-});
 
 /*
 function renderEditButton(handleTransitionToEdit)
@@ -74,8 +45,6 @@ function EfficientSingleBlueprint()
 {
 	const {blueprintId} = useParams();
 	const blueprintKey  = blueprintId;
-
-	const [showBlueprintString, setShowBlueprintString] = useState(false);
 
 	const result = useBlueprint(blueprintKey);
 
@@ -164,19 +133,9 @@ function EfficientSingleBlueprint()
 						<Card.Body>
 							<BlueprintMarkdown blueprintKey={blueprintKey} />
 							<CopyBlueprintStringButton blueprintStringSha={blueprintStringSha} />
-							<Button type='button' onClick={() => setShowBlueprintString(!showBlueprintString)}>
-								{
-									showBlueprintString
-										? <HideButton text={'Hide Blueprint'} />
-										: <ShowButton text={'Show Blueprint'} />
-								}
-							</Button>
 							<FbeLink blueprintKey={blueprintKey} />
 						</Card.Body>
 					</Card>
-					{
-						showBlueprintString && <BlueprintStringCard blueprintStringSha={blueprintStringSha} />
-					}
 					<Card>
 						<Card.Header>
 							Blueprint Titles
