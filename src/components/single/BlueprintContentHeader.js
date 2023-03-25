@@ -92,14 +92,13 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 		{
 			position.position++;
 		}
-
 		return (
 			<>
 				<ItemIcon item={item} />
 				<span className='p-1' />
 				{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 				<span className='p-1' />
-				<span>{`${label || ''}`}</span>
+				<span>{transformLabelIcons(label)}</span>
 
 				<span className='p-1' />
 
@@ -107,6 +106,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 			</>
 		);
 	}
+
 
 	if (data.blueprint_book)
 	{
@@ -130,6 +130,27 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 	}
 }
 
+function transformLabelIcons(label)
+{
+	const labelParts = label && label.split(/(\[[^\]]+])/);
+
+	// Transform each labelPart. If it matches the form [item=transport-belt], then replace it with an icon pointing to a url of the form http://localhost:3000/icons/transport-belt.png. Otherwise return it as a string.
+	const transformedLabelParts = labelParts && labelParts.map(labelPart =>
+	{
+		const match = labelPart && labelPart.match(/^\[(item|recipe|entity)=([^\]]+)]$/);
+		if (match)
+		{
+			const itemName = match[2];
+			return <ItemIcon key={itemName} item={itemName} />;
+		}
+		else
+		{
+			return labelPart;
+		}
+	});
+	return transformedLabelParts;
+}
+
 function getFirstRow(data)
 {
 	const {icons, item, label} = data;
@@ -140,7 +161,7 @@ function getFirstRow(data)
 			<span className='p-1' />
 			{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 			<span className='p-1' />
-			<span>{`${label || ''}`}</span>
+			<span>{transformLabelIcons(label)}</span>
 		</>
 	);
 }
