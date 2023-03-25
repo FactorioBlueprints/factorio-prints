@@ -6,12 +6,12 @@ import {
 	faDonate,
 	faHeart,
 	faPlusSquare,
+	faSearch,
 	faSignInAlt,
 	faSignOutAlt,
 	faTrophy,
 	faUser,
 	faWrench,
-	faSearch,
 } from '@fortawesome/free-solid-svg-icons';
 
 import {FontAwesomeIcon}   from '@fortawesome/react-fontawesome';
@@ -26,9 +26,10 @@ import Nav         from 'react-bootstrap/Nav';
 import Navbar      from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 
-import {Link, useNavigate} from 'react-router-dom';
-import {app}               from '../base';
-import UserContext         from '../context/userContext';
+import {Link} from 'react-router-dom';
+
+import {app}       from '../base';
+import UserContext from '../context/userContext';
 
 const googleProvider   = new firebase.auth.GoogleAuthProvider();
 // const facebookProvider = new firebase.auth.FacebookAuthProvider();

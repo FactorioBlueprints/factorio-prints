@@ -1,19 +1,18 @@
-import {faEdit, faExclamationTriangle, faToggleOff, faToggleOn} from '@fortawesome/free-solid-svg-icons';
+import {faEdit, faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
-import {forbidExtraProps}            from 'airbnb-prop-types';
-import PropTypes                     from 'prop-types';
-import React, {useContext, useState} from 'react';
-import Button                        from 'react-bootstrap/Button';
-import Card                          from 'react-bootstrap/Card';
-import Col                           from 'react-bootstrap/Col';
-import Container                     from 'react-bootstrap/Container';
-import Row                           from 'react-bootstrap/Row';
-import {useParams}                   from 'react-router-dom';
-import UserContext                   from '../../context/userContext';
-import useBlueprint                  from '../../hooks/useBlueprint';
-import useIsModerator                from '../../hooks/useIsModerator';
+import React, {useContext} from 'react';
+import Button              from 'react-bootstrap/Button';
+import Card                from 'react-bootstrap/Card';
+import Col                 from 'react-bootstrap/Col';
+import Container           from 'react-bootstrap/Container';
+import Row                 from 'react-bootstrap/Row';
+import {useParams}         from 'react-router-dom';
+
+import UserContext    from '../../context/userContext';
+import useBlueprint   from '../../hooks/useBlueprint';
+import useIsModerator from '../../hooks/useIsModerator';
 
 import GoogleAd                  from '../GoogleAd';
 import BlueprintInfoPanel        from './BlueprintInfoPanel';
