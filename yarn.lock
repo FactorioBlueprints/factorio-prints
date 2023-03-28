@@ -10827,10 +10827,10 @@ use-isomorphic-layout-effect@^1.1.2:
   resolved "https://registry.yarnpkg.com/use-isomorphic-layout-effect/-/use-isomorphic-layout-effect-1.1.2.tgz#497cefb13d863d687b08477d9e5a164ad8c1a6fb"
   integrity sha512-49L8yCO3iGT/ZF9QttjwLF/ZD9Iwto5LnH5LmEdk/6cFmXddqi2ulF0edxTwjj+7mqvpVVGQWvbXZdn32wRSHA==
 
-use-query-params@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/use-query-params/-/use-query-params-2.2.0.tgz#921aa5bf5be653260a763e06ad004e7a960807e5"
-  integrity sha512-MPBwXVZYzFeJEdjv0YgPNFsafUOM8WTpwBEZfNEMlyzbTsf2c+ZpOBkdM95/w4rxzk4eVO3E4DW7v33+VDbiQw==
+use-query-params@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/use-query-params/-/use-query-params-2.2.1.tgz#c558ab70706f319112fbccabf6867b9f904e947d"
+  integrity sha512-i6alcyLB8w9i3ZK3caNftdb+UnbfBRNPDnc89CNQWkGRmDrm/gfydHvMBfVsQJRq3NoHOM2dt/ceBWG2397v1Q==
   dependencies:
     serialize-query-params "^2.0.2"
 
