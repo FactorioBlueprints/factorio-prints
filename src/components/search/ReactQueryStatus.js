@@ -38,8 +38,6 @@ const ReactQueryStatus = (props) =>
 		</>;
 	}
 
-	console.log({props});
-
 	return <>
 		<FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin style={{'color': 'var(--bs-orange)'}} />
 		{status}
