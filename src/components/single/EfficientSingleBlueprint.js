@@ -23,6 +23,7 @@ import CopyBlueprintStringButton from './CopyBlueprintButton';
 import FavoriteButton            from './FavoriteButton';
 import FbeLink                   from './FbeLink';
 import ImgurThumbnail            from './ImgurThumbnail';
+import NewRequirementsHistogram  from './NewRequirementsHistogram';
 import RequirementsHistogram     from './RequirementsHistogram';
 import Spinner                   from './Spinner';
 import TagsPanel                 from './TagsPanel';
@@ -122,6 +123,7 @@ function EfficientSingleBlueprint()
 						ownedByCurrentUser={ownedByCurrentUser}
 					/>
 					<RequirementsHistogram blueprintStringSha={blueprintStringSha} />
+					<NewRequirementsHistogram blueprintStringSha={blueprintStringSha} />
 					<GoogleAd />
 				</Col>
 				<Col md={8}>

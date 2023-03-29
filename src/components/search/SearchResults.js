@@ -19,7 +19,8 @@ const SearchResults = ({searchState}) =>
 			  entityState,
 			  recipeState,
 			  versionState,
-			  blueprintTypeState
+			  blueprintTypeState,
+			  modState,
 		  } = searchState || {};
 
 	const fetchBlueprintSummaries = async () =>
@@ -55,6 +56,10 @@ const SearchResults = ({searchState}) =>
 		{
 			params.append('blueprintType', blueprintTypeState);
 		}
+		if (modState)
+		{
+			params.append('mod', modState);
+		}
 
 		const result = await axios.get(url, {params});
 		return result.data;
@@ -74,6 +79,7 @@ const SearchResults = ({searchState}) =>
 			tagState,
 			sortOrderState,
 			blueprintTypeState,
+			modState,
 			page,
 		}],
 		() => fetchBlueprintSummaries(),

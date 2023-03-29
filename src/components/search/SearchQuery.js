@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import Button                  from 'react-bootstrap/Button';
 import SearchBlueprintTypeForm from './SearchBlueprintTypeForm';
 import SearchEntityForm        from './SearchEntityForm';
+import SearchModForm           from './SearchModForm';
 import SearchRecipeForm        from './SearchRecipeForm';
 import SearchSortOrderForm     from './SearchSortOrderForm';
 import SearchTagForm           from './SearchTagForm';
@@ -18,6 +19,7 @@ const SearchQuery = ({setSearchState}) =>
 	const [recipeState,        setRecipeState]        = useState('');
 	const [versionState,       setVersionState]       = useState('');
 	const [blueprintTypeState, setBlueprintTypeState] = useState('');
+	const [modState,           setModState]           = useState('');
 
 	const getSearchState = () => ({
 		textState,
@@ -26,7 +28,8 @@ const SearchQuery = ({setSearchState}) =>
 		entityState,
 		recipeState,
 		versionState,
-		blueprintTypeState
+		blueprintTypeState,
+		modState,
 	});
 
 	const handleSubmit = e =>
@@ -45,6 +48,7 @@ const SearchQuery = ({setSearchState}) =>
 		setRecipeState('');
 		setVersionState('');
 		setBlueprintTypeState('');
+		setModState('');
 		setSearchState(getSearchState());
 	}
 
@@ -52,6 +56,7 @@ const SearchQuery = ({setSearchState}) =>
 		<SearchTextForm textState={textState} setTextState={setTextState} />
 
 		<SearchSortOrderForm     sortOrderState={sortOrderState}         setSortOrderState={setSortOrderState}         />
+		<SearchModForm           modState={modState}                     setModState={setModState}                     />
 		<SearchTagForm           tagState={tagState}                     setTagState={setTagState}                     />
 		<SearchEntityForm        entityState={entityState}               setEntityState={setEntityState}               />
 		<SearchRecipeForm        recipeState={recipeState}               setRecipeState={setRecipeState}               />
