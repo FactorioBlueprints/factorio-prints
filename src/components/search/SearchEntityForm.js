@@ -1,34 +1,43 @@
-import React            from 'react';
-import Form             from 'react-bootstrap/Form';
+import React  from 'react';
+import Form   from 'react-bootstrap/Form';
+import Select from 'react-select';
+
 import useEntityOptions from '../../hooks/useEntityOptions';
 import ReactQueryStatus from './ReactQueryStatus';
 
 const SearchEntityForm = ({entityState, setEntityState}) =>
 {
-	const handleEntity = e =>
+	const handleEntity = selected =>
 	{
-		e.preventDefault();
-		setEntityState(e.target.value);
+		if (selected === null || selected === undefined)
+		{
+			setEntityState(null);
+			return;
+		}
+		setEntityState(selected.value);
 	};
 
-	const result = useEntityOptions();
-	const {data, isSuccess} = result;
+	const result                       = useEntityOptions();
+	const {data, isSuccess, isLoading} = result;
+
+	const options = isSuccess
+		? data.data.map((value) => ({value: value, label: value}))
+		: [];
+
 	return (
 		<Form.Group className='mb-3'>
 			<Form.Label>
 				Entities <ReactQueryStatus {...result} />
 			</Form.Label>
-			<Form.Select size="sm" aria-label='Select entity' onChange={handleEntity} value={entityState}>
-				<option value={''}>Any entity</option>
-				{
-					isSuccess && data.data.map(
-						(entityOptionString, index) =>
-							<option key={index} value={entityOptionString}>
-								{entityOptionString}
-							</option>,
-					)
-				}
-			</Form.Select>
+
+			<Select
+				options={options}
+				isLoading={isLoading}
+				isClearable={true}
+				placeholder={'Any entity'}
+				value={entityState === null ? null : {value: entityState, label: entityState}}
+				onChange={handleEntity}
+			/>
 		</Form.Group>
 	);
 };

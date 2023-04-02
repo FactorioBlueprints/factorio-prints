@@ -1,35 +1,43 @@
-import React               from 'react';
-import Form                from 'react-bootstrap/Form';
+import React  from 'react';
+import Form   from 'react-bootstrap/Form';
+import Select from 'react-select';
+
 import useSimpleTagOptions from '../../hooks/useSimpleTagOptions';
 import ReactQueryStatus    from './ReactQueryStatus';
 
 const SearchTagForm = ({tagState, setTagState}) =>
 {
-	const handleTag = e =>
+	const handleTag = selected =>
 	{
-		e.preventDefault();
-		setTagState(e.target.value);
+		if (selected === null)
+		{
+			setTagState(null);
+			return;
+		}
+		setTagState(selected.value);
 	};
 
-	const result = useSimpleTagOptions();
-	const {data, isSuccess} = result;
+	const result                       = useSimpleTagOptions();
+	const {data, isSuccess, isLoading} = result;
+
+	const options = isSuccess
+		? data.map((value) => ({value: value, label: value}))
+		: [];
 
 	return (
 		<Form.Group className='mb-3'>
 			<Form.Label>
-				{'Tags '}<ReactQueryStatus{...result} />
+				{'Tags '}<ReactQueryStatus {...result} />
 			</Form.Label>
-			<Form.Select size="sm" aria-label='Select tag' onChange={handleTag} value={tagState}>
-				<option value={''}>Any tag</option>
-				{
-					isSuccess && data.map(
-						(tagOptionString, index) =>
-							<option key={index} value={tagOptionString}>
-								{tagOptionString}
-							</option>,
-					)
-				}
-			</Form.Select>
+
+			<Select
+				options={options}
+				isLoading={isLoading}
+				isClearable={true}
+				placeholder={'Any tag'}
+				value={tagState === null ? null : {value: tagState, label: tagState}}
+				onChange={handleTag}
+			/>
 		</Form.Group>
 	);
 };
