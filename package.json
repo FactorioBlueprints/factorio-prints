@@ -63,7 +63,7 @@
 		"query-string": "^8.1.0",
 		"re-base": "4.0.0",
 		"react": "^18.2.0",
-		"react-bootstrap": "^2.7.2",
+		"react-bootstrap": "^2.7.4",
 		"react-copy-to-clipboard": "5.1.0",
 		"react-dom": "^18.2.0",
 		"react-dropzone": "14.2.3",
