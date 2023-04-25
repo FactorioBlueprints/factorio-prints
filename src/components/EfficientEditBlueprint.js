@@ -83,7 +83,7 @@ const editBlueprint = async ({user, blueprintKey, blueprint}) =>
 
 function EfficientEditBlueprint()
 {
-	const user        = useContext(UserContext);
+	const {user}        = useContext(UserContext);
 	const isModerator = useIsModerator();
 
 	const navigate = useNavigate();

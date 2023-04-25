@@ -1,8 +1,6 @@
-import firebase from 'firebase/app';
-import 'firebase/database';
-import 'firebase/storage';
+import { initializeApp } from 'firebase/app';
 
-export const app = firebase.initializeApp({
+export const app = initializeApp({
 	apiKey           : 'AIzaSyAcZJ7hGfxYKhkGHJwAnsLS3z5Tg9kWw2s',
 	authDomain       : 'facorio-blueprints.firebaseapp.com',
 	databaseURL      : 'https://facorio-blueprints.firebaseio.com',

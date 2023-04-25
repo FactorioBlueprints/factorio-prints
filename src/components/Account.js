@@ -15,8 +15,8 @@ Account.propTypes = {};
 
 function Account()
 {
-	const user                          = useContext(UserContext);
-	const [displayName, setDisplayName] = useState(user.displayName);
+	const {user}                        = useContext(UserContext);
+	const [displayName, setDisplayName] = useState(user?.displayName);
 
 	const navigate = useNavigate();
 

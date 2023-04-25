@@ -5,7 +5,7 @@ import UserContext         from '../context/userContext';
 
 const Intro = () =>
 {
-	const user = useContext(UserContext);
+	const {user} = useContext(UserContext);
 
 	if (!isEmpty(user))
 	{

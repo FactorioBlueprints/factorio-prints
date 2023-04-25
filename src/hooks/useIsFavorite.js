@@ -7,7 +7,7 @@ import getHeaders from '../helpers/getHeaders';
 
 function useIsFavorite(blueprintKey)
 {
-	const user         = useContext(UserContext);
+	const {user}         = useContext(UserContext);
 	const queryEnabled = user !== undefined && user !== null;
 	const uid          = queryEnabled ? user.uid : undefined;
 	const queryKey     = ['api/my/favorite/', blueprintKey, uid];

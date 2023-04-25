@@ -14,10 +14,11 @@ import {
 	faWrench,
 } from '@fortawesome/free-solid-svg-icons';
 
-import {FontAwesomeIcon}   from '@fortawesome/react-fontawesome';
-import {forbidExtraProps}  from 'airbnb-prop-types';
-import firebase            from 'firebase/app';
-import 'firebase/auth';
+import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
+import {forbidExtraProps} from 'airbnb-prop-types';
+
+import {GithubAuthProvider, GoogleAuthProvider} from 'firebase/auth';
+
 import React, {useContext} from 'react';
 
 import Button      from 'react-bootstrap/Button';
@@ -28,29 +29,23 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 
 import {Link} from 'react-router-dom';
 
-import {app}       from '../base';
 import UserContext from '../context/userContext';
 
-const googleProvider   = new firebase.auth.GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
 // const facebookProvider = new firebase.auth.FacebookAuthProvider();
 // const twitterProvider  = new firebase.auth.TwitterAuthProvider();
-const githubProvider   = new firebase.auth.GithubAuthProvider();
+const githubProvider = new GithubAuthProvider();
 
 /*
  * Choose between multiple google accounts
  * http://stackoverflow.com/a/40551683/23572
  */
 googleProvider.setCustomParameters({prompt: 'consent select_account'});
-githubProvider.setCustomParameters({allow_signup: true});
+githubProvider.setCustomParameters({prompt: 'consent select_account'});
 
 function Header()
 {
-	const user                          = useContext(UserContext);
-
-	const handleLogout = () =>
-	{
-		app.auth().signOut();
-	};
+	const {user, authenticate, handleLogout} = useContext(UserContext);
 
 	const getDisplayName = () =>
 	{
@@ -65,12 +60,6 @@ function Header()
 			);
 		}
 		return false;
-	};
-
-	const authenticate = (provider) =>
-	{
-		app.auth().signInWithPopup(provider)
-			.catch(error => console.error({error}));
 	};
 
 	const renderAuthentication = () =>
@@ -129,7 +118,7 @@ function Header()
 	};
 
 	return (
-		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning' fixed='top' >
+		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning' fixed='top'>
 			<Navbar.Brand>
 				<Link to='/'>
 					<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
@@ -139,7 +128,7 @@ function Header()
 			<Navbar.Toggle />
 
 			<Navbar.Collapse>
-				<Nav >
+				<Nav>
 					{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
 					<Nav.Link as={Link} href='/search' to='/search' className='text-light'>
 						<FontAwesomeIcon icon={faSearch} size='lg' fixedWidth />

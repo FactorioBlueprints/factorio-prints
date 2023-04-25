@@ -27,7 +27,7 @@ function UserGrid()
 	const [titleFilter]  = useQueryParam('title', StringParam);
 	const [selectedTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
-	const user                        = useContext(UserContext);
+	const {user}                        = useContext(UserContext);
 
 	const {userId} = useParams();
 
