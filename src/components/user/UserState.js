@@ -1,7 +1,12 @@
+import {getAuth, onAuthStateChanged, signInWithPopup} from 'firebase/auth';
+
 import PropTypes         from 'prop-types';
 import React, {useState} from 'react';
-import {app}             from '../../base';
-import UserContext       from '../../context/userContext';
+
+import {app}       from '../../base';
+import UserContext from '../../context/userContext';
+
+const auth = getAuth(app);
 
 UserState.propTypes = {
 	children: PropTypes.node.isRequired,
@@ -11,20 +16,35 @@ function UserState(props)
 {
 	const [user, setUser] = useState(undefined);
 
-	React.useEffect(() =>
-	{
-		const unsubscribe = app.auth().onAuthStateChanged(
-			async (user) => setUser(user),
-			(...args) => console.log('UserState onAuthStateChanged error', args),
-		);
-		return () => unsubscribe();
-	}, []);
+	onAuthStateChanged(auth, setUser);
 
-	return (
-		<UserContext.Provider value={user}>
-			{props.children}
-		</UserContext.Provider>
-	);
+	const authenticate = (provider) =>
+	{
+		signInWithPopup(auth, provider)
+			.then((result) =>
+			{
+				const user = result.user;
+				setUser(user);
+			}).catch((error) =>
+		{
+			// Handle Errors here.
+			const errorCode    = error.code;
+			const errorMessage = error.message;
+			// The email of the user's account used.
+			const email        = error.customData.email;
+			console.log({error, errorCode, errorMessage, email});
+			setUser(undefined);
+		});
+	};
+
+	const handleLogout = () =>
+	{
+		auth.signOut();
+	};
+
+	return (<UserContext.Provider value={{user, authenticate, handleLogout}}>
+		{props.children}
+	</UserContext.Provider>);
 }
 
 export default UserState;

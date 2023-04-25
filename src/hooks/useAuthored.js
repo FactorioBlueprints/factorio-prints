@@ -7,7 +7,7 @@ import getHeaders from '../helpers/getHeaders';
 
 function useAuthored()
 {
-	const user         = useContext(UserContext);
+	const {user}         = useContext(UserContext);
 	const queryEnabled = user !== undefined && user !== null && user.uid !== undefined;
 	const uid          = user?.uid;
 	const queryKey     = ['api/my/blueprints/', uid];
@@ -22,7 +22,7 @@ function useAuthored()
 	);
 }
 
-async function getAuthored(user: any)
+async function getAuthored(user)
 {
 	const idToken = await user?.getIdToken();
 

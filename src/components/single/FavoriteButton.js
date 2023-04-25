@@ -1,17 +1,19 @@
-import {forbidExtraProps}  from 'airbnb-prop-types';
-import axios               from 'axios';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {forbidExtraProps}            from 'airbnb-prop-types';
+import axios                         from 'axios';
+
+import {getDatabase, ref, update} from 'firebase/database';
+
 import PropTypes           from 'prop-types';
 import React, {useContext} from 'react';
 import Button              from 'react-bootstrap/Button';
 
-import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {app} from '../../base';
 
 import UserContext   from '../../context/userContext';
 import useIsFavorite from '../../hooks/useIsFavorite';
 
 import FavoriteIcon from './FavoriteIcon';
-
-import {app}               from '../../base';
 
 async function postIsFavorite(blueprintKey, isFavorite, user)
 {
@@ -40,7 +42,9 @@ async function postIsFavorite(blueprintKey, isFavorite, user)
 		[`/users/${uid}/favorites/${blueprintKey}`]              : wasFavorite ? null : true,
 	};
 
-	app.database().ref().update(updates);
+	const database = getDatabase(app);
+
+	update(ref(database), updates);
 
 	return put;
 }
@@ -48,7 +52,7 @@ async function postIsFavorite(blueprintKey, isFavorite, user)
 function FavoriteButton({blueprintKey})
 {
 	const queryClient  = useQueryClient();
-	const user         = useContext(UserContext);
+	const {user}         = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 
 	// TODO: Switch to the other favorites hook

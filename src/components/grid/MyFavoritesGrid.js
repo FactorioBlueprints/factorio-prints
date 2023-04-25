@@ -47,7 +47,7 @@ function MyFavoritesGrid()
 		return result.data;
 	};
 
-	const user         = useContext(UserContext);
+	const {user}         = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 	const email        = user === undefined ? undefined : user.email;
 	const queryKey     = ['/api/my/favoriteBlueprints/page', email, page, titleFilter, selectedTags];
