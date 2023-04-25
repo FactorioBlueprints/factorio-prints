@@ -24,7 +24,7 @@ BlueprintStringControl.propTypes = forbidExtraProps({
 	isError           : PropTypes.bool.isRequired,
 });
 
-function getBody(blueprintString: any | undefined, setBlueprintString: any, isLoading: boolean, isError: boolean)
+function getBody(blueprintString: any | undefined, setBlueprintString: any, isLoading: boolean)
 {
 	if (isLoading)
 	{
@@ -55,9 +55,9 @@ function getBody(blueprintString: any | undefined, setBlueprintString: any, isLo
 
 function BlueprintStringControl(props: Props): JSX.Element
 {
-	const {blueprintString, setBlueprintString, isLoading, isError} = props;
+	const {blueprintString, setBlueprintString, isLoading} = props;
 
-	const body: JSX.Element = getBody(blueprintString, setBlueprintString, isLoading, isError);
+	const body: JSX.Element = getBody(blueprintString, setBlueprintString, isLoading);
 
 	return (
 		<Form.Group as={Row}>
