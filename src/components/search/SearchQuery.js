@@ -17,7 +17,7 @@ const SearchQuery = ({setSearchState}) =>
 	const [tagState,           setTagState]           = useState(null);
 	const [entityState,        setEntityState]        = useState(null);
 	const [recipeState,        setRecipeState]        = useState(null);
-	const [versionState,       setVersionState]       = useState('');
+	const [versionState,       setVersionState]       = useState(null);
 	const [blueprintTypeState, setBlueprintTypeState] = useState('');
 	const [modState,           setModState]           = useState('');
 
@@ -44,9 +44,9 @@ const SearchQuery = ({setSearchState}) =>
 		setTextState('');
 		setSortOrderState('Favorites');
 		setTagState(null);
-		setEntityState('');
-		setRecipeState('');
-		setVersionState('');
+		setEntityState(null);
+		setRecipeState(null);
+		setVersionState(null);
 		setBlueprintTypeState('');
 		setModState('');
 		setSearchState(getSearchState());

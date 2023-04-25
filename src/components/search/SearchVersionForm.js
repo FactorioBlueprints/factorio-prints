@@ -16,7 +16,7 @@ const SearchVersionForm = ({versionState, setVersionState}) =>
 {
 	const handleVersion = selected =>
 	{
-		if (selected === null)
+		if (selected === null || selected === undefined)
 		{
 			setVersionState(null);
 			return;
