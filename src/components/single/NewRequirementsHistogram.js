@@ -48,8 +48,9 @@ function NewRequirementsHistogram({blueprintStringSha})
 
 	return (
 		<>
-			<NewItemHistogram title='Entities' items={data.data.entities} />
-			<NewItemHistogram title='Recipes' items={data.data.recipes} />
+			<NewItemHistogram title='Entities' type='entity' items={data.data.entities} />
+			<NewItemHistogram title='Recipes' type='recipe' items={data.data.recipes} />
+			{/*{upgradePlanner && <UpgradePlanner mappers={upgradePlanner.mappers} />}*/}
 		</>
 	);
 }
