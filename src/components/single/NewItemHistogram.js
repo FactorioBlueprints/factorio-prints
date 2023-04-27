@@ -13,9 +13,37 @@ NewItemHistogram.propTypes = forbidExtraProps({
 	items: PropTypes.arrayOf(PropTypes.shape({
 		name : PropTypes.string.isRequired,
 		count: PropTypes.number.isRequired,
-		mod  : PropTypes.number.isRequired,
+		mod  : PropTypes.string.isRequired,
 	})).isRequired,
+	type: PropTypes.string.isRequired
 });
+
+function ItemHistogramRow(item)
+{
+	return <tr>
+		<td className={`icon icon-${entitiesWithIcons[item.name]}`}>
+			{
+				entitiesWithIcons[item.name]
+					? <img
+						height={'32px'}
+						width={'32px'}
+						src={`/icons/${item.name}.png`}
+						alt={item.name}
+					/>
+					: ''
+			}
+		</td>
+		<td className='number'>
+			{item.count}
+		</td>
+		<td>
+			{item.name}
+		</td>
+		<td>
+			{item.mod}
+		</td>
+	</tr>
+}
 
 function NewItemHistogram(props)
 {
@@ -38,33 +66,7 @@ function NewItemHistogram(props)
 				</colgroup>
 
 				<tbody>
-					{
-						props.items.map(item => (
-							<tr key={item.name}>
-								<td className={`icon icon-${entitiesWithIcons[item.name]}`}>
-									{
-										entitiesWithIcons[item.name]
-											? <img
-												height={'32px'}
-												width={'32px'}
-												src={`/icons/${item.name}.png`}
-												alt={item.name}
-											/>
-											: ''
-									}
-								</td>
-								<td className='number'>
-									{item.count}
-								</td>
-								<td>
-									{item.name}
-								</td>
-								<td>
-									{item.mod}
-								</td>
-							</tr>
-						))
-					}
+					{props.items.map(item => <ItemHistogramRow {...item} key={item.name} />)}
 				</tbody>
 			</Table>
 		</Card>
