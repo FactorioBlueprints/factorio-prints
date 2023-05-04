@@ -24,7 +24,7 @@ const SearchVersionForm = ({versionState, setVersionState}) =>
 		setVersionState(selected.value);
 	};
 
-	const selectedValue = optionsByValue[versionState];
+	const selectedValue = versionState in optionsByValue ? optionsByValue[versionState] : null;
 
 	return (
 		<Form.Group className='mb-3'>
