@@ -49,7 +49,7 @@ function Header()
 
 	const getDisplayName = () =>
 	{
-		if (user && user.displayName)
+		if (user?.displayName)
 		{
 			return (
 				<h2>

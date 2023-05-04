@@ -50,7 +50,7 @@ function EfficientSingleBlueprint()
 	const {isSuccess, data, isLoading, isError} = result;
 
 	const {user}   = useContext(UserContext);
-	const userId = user && user.uid;
+	const userId = user?.uid;
 
 	const ownedByCurrentUser = isSuccess && userId !== undefined && userId === data.data.author.authorId;
 	const blueprintStringSha = isSuccess ? data.data.blueprintString.sha : undefined;
