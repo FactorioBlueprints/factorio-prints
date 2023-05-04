@@ -162,7 +162,7 @@ function EfficientEditBlueprint()
 			  isError  : blueprintStringIsError,
 			  data     : blueprintStringData
 		  }                  = useBlueprintStringSha(blueprintStringSha);
-	const newBlueprintString = blueprintStringIsError ? "" : blueprintStringData?.data;
+	const newBlueprintString = blueprintStringIsError ? "" : blueprintStringData?.data.blueprintString;
 	// TODO: USe onComplete instead?
 	React.useEffect(() =>
 	{

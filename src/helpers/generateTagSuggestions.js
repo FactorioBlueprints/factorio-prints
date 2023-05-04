@@ -1,21 +1,18 @@
 import concat      from 'lodash/concat';
+import countBy     from 'lodash/countBy';
 import every       from 'lodash/every';
 import flatMap     from 'lodash/flatMap';
 import forOwn      from 'lodash/forOwn';
-import countBy     from 'lodash/fp/countBy';
-import fpFlatMap   from 'lodash/fp/flatMap';
-import flow        from 'lodash/fp/flow';
-import fromPairs   from 'lodash/fp/fromPairs';
-import fpMap       from 'lodash/fp/map';
-import reject      from 'lodash/fp/reject';
-import reverse     from 'lodash/fp/reverse';
-import sortBy      from 'lodash/fp/sortBy';
-import toPairs     from 'lodash/fp/toPairs';
+import fromPairs   from 'lodash/fromPairs';
 import has         from 'lodash/has';
-import identity    from 'lodash/identity';
 import isEmpty     from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
+import map         from 'lodash/map';
+import reject      from 'lodash/reject';
+import reverse     from 'lodash/reverse';
 import some        from 'lodash/some';
+import sortBy      from 'lodash/sortBy';
+import toPairs     from 'lodash/toPairs';
 
 import entitiesWithIcons from '../data/entitiesWithIcons';
 
@@ -44,12 +41,13 @@ const allBeltTypes = [
 ];
 
 export const generateEntityHistogram = parsedBlueprint =>
-	flow(
-		countBy('name'),
-		toPairs,
-		sortBy(1),
-		reverse,
-	)(concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []));
+{
+	const items = concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []);
+	const counts = countBy(items, 'name');
+	const pairs = toPairs(counts);
+	const sortedPairs = sortBy(pairs, [each=> each[1]]);
+	return reverse(sortedPairs);
+};
 
 export const generateItemHistogram = (parsedBlueprint) =>
 {
@@ -67,11 +65,9 @@ export const generateItemHistogram = (parsedBlueprint) =>
 		}
 	});
 
-	return flow(
-		toPairs,
-		sortBy(1),
-		reverse,
-	)(result);
+	const pairs = toPairs(result)
+	const sortedPairs = sortBy(pairs, [each=> each[1]]);
+	return reverse(sortedPairs);
 };
 
 const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
@@ -393,23 +389,18 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 	{
 		if (parsedBlueprint.isBook())
 		{
-			const entityHistogram = flow(
-				fpFlatMap('blueprint.entities'),
-				countBy('name'),
-				toPairs,
-				sortBy(1),
-				reverse,
-			)(v15Decoded.blueprint_book.blueprints);
+			const blueprints = v15Decoded.blueprint_book.blueprints;
+			const entities = flatMap(blueprints, 'blueprint.entities');
 
-			const recipeHistogram = flow(
-				fpFlatMap('blueprint.entities'),
-				fpMap('recipe'),
-				reject(isUndefined),
-				countBy(identity),
-				toPairs,
-				sortBy(1),
-				reverse,
-			)(v15Decoded.blueprint_book.blueprints);
+			const entityCountBy = countBy(entities, 'name');
+			const entityPairs = toPairs(entityCountBy);
+			const entityHistogram = sortBy(entityPairs, 1).reverse();
+
+			const recipes = map(entities, 'recipe');
+			const nonUndefinedRecipes = reject(recipes, isUndefined);
+			const recipeCountBy = countBy(nonUndefinedRecipes);
+			const recipePairs = toPairs(recipeCountBy);
+			const recipeHistogram = sortBy(recipePairs, 1).reverse();
 
 			const entityCounts    = fromPairs(entityHistogram);
 			const allGameEntities = Object.keys(entityCounts);
@@ -419,14 +410,14 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		}
 		else if (parsedBlueprint.isBlueprint())
 		{
-			const recipeHistogram = flow(
-				fpMap('recipe'),
-				reject(isUndefined),
-				countBy(identity),
-				toPairs,
-				sortBy(1),
-				reverse,
-			)(v15Decoded.blueprint.entities);
+			const blueprints = v15Decoded.blueprint_book.blueprints;
+			const entities = flatMap(blueprints, 'blueprint.entities');
+
+			const recipes = map(entities, 'recipe');
+			const nonUndefinedRecipes = reject(recipes, isUndefined);
+			const recipeCountBy = countBy(nonUndefinedRecipes);
+			const recipePairs = toPairs(recipeCountBy);
+			const recipeHistogram = sortBy(recipePairs, 1).reverse();
 
 			const recipeCounts    = fromPairs(recipeHistogram);
 			const entityHistogram = generateEntityHistogram(v15Decoded.blueprint);

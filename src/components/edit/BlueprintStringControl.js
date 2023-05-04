@@ -5,26 +5,16 @@ import Col                from 'react-bootstrap/Col';
 import Form               from 'react-bootstrap/Form';
 import FormControl        from 'react-bootstrap/FormControl';
 import Row                from 'react-bootstrap/Row';
-import LoadingIcon        from "../LoadingIcon";
-
-import BlueprintStringSummaryProjection from "../../propTypes/BlueprintStringSummaryProjection";
-
-interface Props
-{
-	blueprintString: any | undefined,
-	setBlueprintString: any,
-	isLoading: boolean,
-	isError: boolean,
-}
+import LoadingIcon        from '../LoadingIcon';
 
 BlueprintStringControl.propTypes = forbidExtraProps({
-	blueprintString   : BlueprintStringSummaryProjection,
+	blueprintString   : PropTypes.string,
 	setBlueprintString: PropTypes.func.isRequired,
 	isLoading         : PropTypes.bool.isRequired,
 	isError           : PropTypes.bool.isRequired,
 });
 
-function getBody(blueprintString: any | undefined, setBlueprintString: any, isLoading: boolean)
+function getBody(blueprintString, setBlueprintString, isLoading)
 {
 	if (isLoading)
 	{
@@ -36,7 +26,7 @@ function getBody(blueprintString: any | undefined, setBlueprintString: any, isLo
 		);
 	}
 
-	function handleChange(event: React.ChangeEvent<HTMLInputElement>)
+	function handleChange(event)
 	{
 		setBlueprintString(event.target.value);
 	}
@@ -47,17 +37,17 @@ function getBody(blueprintString: any | undefined, setBlueprintString: any, isLo
 			as='textarea'
 			name='blueprintString'
 			placeholder='Blueprint String'
-			value={blueprintString?.blueprintString}
+			value={blueprintString}
 			onChange={handleChange}
 		/>
 	);
 }
 
-function BlueprintStringControl(props: Props): JSX.Element
+function BlueprintStringControl(props)
 {
 	const {blueprintString, setBlueprintString, isLoading} = props;
 
-	const body: JSX.Element = getBody(blueprintString, setBlueprintString, isLoading);
+	const body = getBody(blueprintString, setBlueprintString, isLoading);
 
 	return (
 		<Form.Group as={Row}>
