@@ -49,7 +49,7 @@ const SearchQuery = ({setSearchState}) =>
 		setVersionState(null);
 		setBlueprintTypeState('');
 		setModState('');
-		setSearchState(getSearchState());
+		setSearchState(undefined);
 	}
 
 	return <>
