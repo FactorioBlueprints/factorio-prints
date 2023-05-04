@@ -1,6 +1,5 @@
 import {useQuery}                    from '@tanstack/react-query';
 import axios                         from 'axios';
-import 'holderjs';
 import React, {useState}             from 'react';
 import Row                           from 'react-bootstrap/Row';
 import BlueprintThumbnail            from '../BlueprintThumbnail';

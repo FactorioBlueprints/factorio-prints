@@ -17,7 +17,7 @@ function BlueprintThumbnailPlaceholder()
 {
 	return (
 		<Card className='blueprint-thumbnail col-auto' style={{width: '11rem', backgroundColor: '#1c1e22'}}>
-			<Card.Img variant='top' src="holder.js/100px180?font=Tillium Web&text=Loading&bg=3a3f44&fg=aaaaaa" />
+			<Card.Img variant='top' src="/placeholder.jpeg" />
 			<Placeholder as={Card.Text} animation='glow' variant="light" className='truncate p-1'>
 				<span className='mr-1'>0 <span className='sr-only'>favorites</span></span>
 				<span className='text-default'>
