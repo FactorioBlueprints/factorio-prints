@@ -81,6 +81,7 @@
 		"web-vitals": "^2.1.4"
 	},
 	"scripts": {
+		"analyze": "npx source-map-explorer 'build/static/js/*.js'",
 		"start": "craco start",
 		"watch": "concurrently --names 'webpack, stylus' --prefix name 'npm run start' 'npm run styles:watch'",
 		"build": "sh -ac 'source ./.env.${REACT_APP_ENV:-production}; craco build'",
