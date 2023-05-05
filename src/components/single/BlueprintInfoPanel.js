@@ -2,7 +2,7 @@ import {faCalendar, faClock, faCodeBranch, faHeart, faUser} from '@fortawesome/f
 
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
-import moment             from 'moment';
+import dayjs              from 'dayjs';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import Card               from 'react-bootstrap/Card';
@@ -54,9 +54,9 @@ function BlueprintInfoPanel({blueprintKey, blueprintStringSha, ownedByCurrentUse
 						</td>
 						<td>
 							<span
-								title={moment(createdOn).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+								title={dayjs(createdOn).format('dddd, MMMM Do YYYY, h:mm:ss a')}
 							>
-								{moment(createdOn).fromNow()}
+								{dayjs(createdOn).fromNow()}
 							</span>
 						</td>
 					</tr>
@@ -67,9 +67,9 @@ function BlueprintInfoPanel({blueprintKey, blueprintStringSha, ownedByCurrentUse
 						</td>
 						<td>
 							<span
-								title={moment(systemFrom).format('dddd, MMMM Do YYYY, h:mm:ss a')}
+								title={dayjs(systemFrom).format('dddd, MMMM Do YYYY, h:mm:ss a')}
 							>
-								{moment(systemFrom).fromNow()}
+								{dayjs(systemFrom).fromNow()}
 							</span>
 						</td>
 					</tr>
