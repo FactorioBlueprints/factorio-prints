@@ -2,7 +2,8 @@ import {faCalendar, faClock, faCodeBranch, faHeart, faUser} from '@fortawesome/f
 
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
-import dayjs              from 'dayjs';
+import * as dayjs         from 'dayjs';
+import * as relativeTime  from 'dayjs/plugin/relativeTime';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import Card               from 'react-bootstrap/Card';
@@ -11,6 +12,8 @@ import {Link}             from 'react-router-dom';
 import useBlueprint       from '../../hooks/useBlueprint';
 
 import BlueprintVersion from './BlueprintVersion';
+
+dayjs.extend(relativeTime);
 
 BlueprintInfoPanel.propTypes = forbidExtraProps({
 	blueprintKey      : PropTypes.string.isRequired,
