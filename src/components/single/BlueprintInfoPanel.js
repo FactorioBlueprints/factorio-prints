@@ -2,8 +2,8 @@ import {faCalendar, faClock, faCodeBranch, faHeart, faUser} from '@fortawesome/f
 
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {forbidExtraProps} from 'airbnb-prop-types';
-import * as dayjs         from 'dayjs';
-import * as relativeTime  from 'dayjs/plugin/relativeTime';
+import dayjs              from 'dayjs';
+import relativeTime       from 'dayjs/plugin/relativeTime';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import Card               from 'react-bootstrap/Card';
