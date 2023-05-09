@@ -64,7 +64,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 			return <> </>;
 		}
 
-		const href = `https://fbe.teoxoy.com/?source=https://www.factorio.school/view/${blueprintKey}&index=${position.position - 1}`;
+		const href = `https://fbe.teoxoy.com/?source=https://www.factorio.school/api/blueprintData/${blueprintStringSha}/position/${position.position - 1}`;
 
 		return <Button
 			type='button'
