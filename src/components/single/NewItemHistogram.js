@@ -5,8 +5,7 @@ import PropTypes from 'prop-types';
 import React     from 'react';
 import Card      from 'react-bootstrap/Card';
 import Table     from 'react-bootstrap/Table';
-
-import entitiesWithIcons from '../../data/entitiesWithIcons';
+import NewIcon   from '../NewIcon';
 
 NewItemHistogram.propTypes = forbidExtraProps({
 	title: PropTypes.string.isRequired,
@@ -21,16 +20,9 @@ NewItemHistogram.propTypes = forbidExtraProps({
 function ItemHistogramRow(item)
 {
 	return <tr>
-		<td className={`icon icon-${entitiesWithIcons[item.name]}`}>
+		<td className={`icon icon-${item.name}`}>
 			{
-				entitiesWithIcons[item.name]
-					? <img
-						height={'32px'}
-						width={'32px'}
-						src={`/icons/${item.name}.png`}
-						alt={item.name}
-					/>
-					: ''
+				<NewIcon iconName={item.name} iconType={item.type} />
 			}
 		</td>
 		<td className='number'>
@@ -66,7 +58,7 @@ function NewItemHistogram(props)
 				</colgroup>
 
 				<tbody>
-					{props.items.map(item => <ItemHistogramRow {...item} key={item.name} />)}
+					{props.items.map(item => <ItemHistogramRow {...item} key={item.name} type={props.type} />)}
 				</tbody>
 			</Table>
 		</Card>

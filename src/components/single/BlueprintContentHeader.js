@@ -8,6 +8,7 @@ import Card      from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 
 import ItemIcon from '../ItemIcon';
+import NewIcon  from '../NewIcon';
 
 BlueprintContentHeader.propTypes = forbidExtraProps({
 	data              : PropTypes.object.isRequired,
@@ -94,7 +95,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 		}
 		return (
 			<>
-				<ItemIcon item={item} />
+				<NewIcon iconType={'item'} iconName={item} />
 				<span className='p-1' />
 				{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 				<span className='p-1' />
@@ -134,19 +135,29 @@ function transformLabelIcons(label)
 {
 	const labelParts = label && label.split(/(\[[^\]]+])/);
 
-	// Transform each labelPart. If it matches the form [item=transport-belt], then replace it with an icon pointing to a url of the form http://localhost:3000/icons/transport-belt.png. Otherwise return it as a string.
-	const transformedLabelParts = labelParts && labelParts.map(labelPart =>
+	// Transform each labelPart.
+	const transformedLabelParts = labelParts && labelParts.map((labelPart, index) =>
 	{
+		// If it matches the form [item=transport-belt], then replace it with an icon pointing to a url of the form http://localhost:3000/icons/item/transport-belt.png.
 		const match = labelPart && labelPart.match(/^\[(item|recipe|entity)=([^\]]+)]$/);
 		if (match)
 		{
-			const itemName = match[2];
-			return <ItemIcon key={itemName} item={itemName} />;
+			const iconType = match[1];
+			const iconName = match[2];
+			return <NewIcon key={index} iconType={iconType} iconName={iconName} />;
 		}
-		else
+
+		// If it matches the form [img=item/transport-belt], then replace it with an icon pointing to a url of the form http://localhost:3000/icons/item/transport-belt.png.
+		const match2 = labelPart && labelPart.match(/^\[img=([^/]+)\/([^\]]+)]$/);
+		if (match2)
 		{
-			return labelPart;
+			const iconType = match2[1];
+			const iconName = match2[2];
+			return <NewIcon key={index} iconType={iconType} iconName={iconName} />;
 		}
+
+		// Otherwise return it as a string.
+		return labelPart;
 	});
 	return transformedLabelParts;
 }
@@ -168,11 +179,20 @@ function getFirstRow(data)
 
 function getItemIconIfExists(icons, index)
 {
-	const iconName = index >= icons.length
-		? 'blank'
-		: icons[index].signal.name;
+	if (index >= icons.length)
+	{
+		return <ItemIcon key={index} item='blank' />;
+	}
 
-	return <ItemIcon key={index} item={iconName} />;
+	const signal                           = icons[index].signal;
+	const {name: iconName, type: iconType} = signal;
+
+	if (iconName === undefined)
+	{
+		return <ItemIcon key={index} item='blank' />;
+	}
+
+	return <NewIcon key={index} iconName={iconName} iconType={iconType} />;
 }
 
 export default BlueprintContentHeader;
