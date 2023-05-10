@@ -25,6 +25,7 @@ const SearchModForm = ({modState, setModState}) =>
 				<option value={'space-exploration'}>Space Exploration</option>
 				<option value={'bobs'}>Bob's Mods</option>
 				<option value={'creative-mod'}>Creative Mod</option>
+				<option value={'lighted-electric-poles'}>Lighted Electric Poles +</option>
 			</Form.Select>
 		</Form.Group>
 	);
