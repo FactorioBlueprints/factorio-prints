@@ -32,11 +32,11 @@ function NewRequirementsHistogram({blueprintStringSha})
 
 	if (isError)
 	{
-		const {message} = error.response.data;
+		console.log({result})
 		return (
 			<Card>
 				<Card.Header>{'Entities'}</Card.Header>
-				<Card.Body>{`Error loading data: ${message}`}</Card.Body>
+				<Card.Body>{`Error loading data: ${error}`}</Card.Body>
 			</Card>
 		);
 	}
