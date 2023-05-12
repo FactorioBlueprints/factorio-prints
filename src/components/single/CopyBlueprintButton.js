@@ -1,10 +1,10 @@
-import {faClipboard}      from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
-import {forbidExtraProps} from 'airbnb-prop-types';
-import PropTypes          from 'prop-types';
-import React              from 'react';
-import Button             from 'react-bootstrap/Button';
-import CopyToClipboard    from 'react-copy-to-clipboard';
+import {faCheck, faClipboard} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import copy                   from 'copy-to-clipboard';
+import PropTypes              from 'prop-types';
+import React, {useEffect}     from 'react';
+import Button                 from 'react-bootstrap/Button';
 
 import useBlueprintStringSha from '../../hooks/useBlueprintStringSha';
 import LoadingIcon           from '../LoadingIcon';
@@ -15,11 +15,46 @@ CopyBlueprintStringButton.propTypes = forbidExtraProps({
 
 function CopyBlueprintStringButton({blueprintStringSha})
 {
-	const result = useBlueprintStringSha(blueprintStringSha);
+	const [copyClicked, setCopyClicked] = React.useState(false);
+	const [copied, setCopied] = React.useState(false);
 
-	const {isLoading, isError, data} = result;
+	function handleCopy()
+	{
+		console.log('handleCopy()');
+		setCopyClicked(true);
+	}
 
-	if (isLoading)
+	const result = useBlueprintStringSha(copyClicked && !copied ? blueprintStringSha : undefined);
+
+	const {isLoading, isError, isSuccess, data} = result;
+
+	useEffect(
+		() =>
+		{
+			if (copyClicked && !copied && isSuccess)
+			{
+				const blueprintString = data.data.blueprintString;
+				console.log('Copying to clipboard', {blueprintString})
+				copy(blueprintString);
+				setCopied(true);
+				setTimeout(() =>
+				{
+					setCopyClicked(false);
+					setCopied(false);
+				}, 2000);
+			}
+		},
+		[blueprintStringSha, copyClicked, copied, result])
+
+	if (copied)
+	{
+		return <Button type='button' variant='warning' disabled>
+			<FontAwesomeIcon icon={faCheck} size='lg' fixedWidth />
+			{' Copied!'}
+		</Button>
+	}
+
+	if (isLoading && copyClicked && !copied)
 	{
 		return (
 			<Button type='button' variant='warning' disabled>
@@ -40,15 +75,11 @@ function CopyBlueprintStringButton({blueprintStringSha})
 		);
 	}
 
-	const blueprintString = data.data.blueprintString;
-
 	return (
-		<CopyToClipboard text={blueprintString}>
-			<Button type='button' variant='warning'>
-				<FontAwesomeIcon icon={faClipboard} size='lg' fixedWidth />
-				{' Copy to Clipboard'}
-			</Button>
-		</CopyToClipboard>
+		<Button type='button' variant='warning' onClick={() => handleCopy()}>
+			<FontAwesomeIcon icon={faClipboard} size='lg' fixedWidth />
+			{' Copy to Clipboard'}
+		</Button>
 	);
 }
 
