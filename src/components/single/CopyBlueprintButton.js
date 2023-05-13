@@ -20,7 +20,6 @@ function CopyBlueprintStringButton({blueprintStringSha})
 
 	function handleCopy()
 	{
-		console.log('handleCopy()');
 		setCopyClicked(true);
 	}
 
@@ -34,7 +33,6 @@ function CopyBlueprintStringButton({blueprintStringSha})
 			if (copyClicked && !copied && isSuccess)
 			{
 				const blueprintString = data.data.blueprintString;
-				console.log('Copying to clipboard', {blueprintString})
 				copy(blueprintString);
 				setCopied(true);
 				setTimeout(() =>
@@ -44,7 +42,7 @@ function CopyBlueprintStringButton({blueprintStringSha})
 				}, 2000);
 			}
 		},
-		[blueprintStringSha, copyClicked, copied, result])
+		[blueprintStringSha, copyClicked, copied, data, isSuccess])
 
 	if (copied)
 	{
