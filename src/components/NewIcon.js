@@ -19,17 +19,16 @@ function NewIcon({iconName, iconType})
 	}
 	const iconClass = `icon-${iconName}`;
 	const iconSrc   = `/icons/${iconType}/${iconName}.png`;
-	const alt       = `${iconType}/${iconName}`;
 
 	return (
 		<span className={`icon item-icon ${iconClass}`}>
-				<img
-					height='32px'
-					width='32px'
-					src={iconSrc}
-					alt={alt}
-				/>
-			</span>
+			{/* eslint-disable-next-line */}
+			<img
+				height='32px'
+				width='32px'
+				src={iconSrc}
+			/>
+		</span>
 	);
 }
 
