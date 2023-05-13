@@ -43,8 +43,7 @@ function BlueprintTitles({blueprintKey, blueprintStringSha})
 
 	if (isError)
 	{
-		const {message} = error.response.data;
-		return <Card>{`Error loading data: ${message}`}</Card>;
+		return <Card>{`Error loading data: ${error}`}</Card>;
 	}
 
 	if (isSuccess)
