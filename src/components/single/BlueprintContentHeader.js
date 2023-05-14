@@ -88,7 +88,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 
 	function getBlueprint(data)
 	{
-		const {icons, item, label} = data;
+		const {icons, item, labelHtml} = data;
 		if (position)
 		{
 			position.position++;
@@ -99,10 +99,8 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 				<span className='p-1' />
 				{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 				<span className='p-1' />
-				<span>{transformLabelIcons(label)}</span>
-
+				<span dangerouslySetInnerHTML={{__html: labelHtml}} />
 				<span className='p-1' />
-
 				{getFbeButton()}
 			</>
 		);
@@ -131,40 +129,9 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 	}
 }
 
-function transformLabelIcons(label)
-{
-	const labelParts = label && label.split(/(\[[^\]]+])/);
-
-	// Transform each labelPart.
-	const transformedLabelParts = labelParts && labelParts.map((labelPart, index) =>
-	{
-		// If it matches the form [item=transport-belt], then replace it with an icon pointing to a url of the form http://localhost:3000/icons/item/transport-belt.png.
-		const match = labelPart && labelPart.match(/^\[(item|recipe|entity)=([^\]]+)]$/);
-		if (match)
-		{
-			const iconType = match[1];
-			const iconName = match[2];
-			return <NewIcon key={index} iconType={iconType} iconName={iconName} />;
-		}
-
-		// If it matches the form [img=item/transport-belt], then replace it with an icon pointing to a url of the form http://localhost:3000/icons/item/transport-belt.png.
-		const match2 = labelPart && labelPart.match(/^\[img=([^/]+)\/([^\]]+)]$/);
-		if (match2)
-		{
-			const iconType = match2[1];
-			const iconName = match2[2];
-			return <NewIcon key={index} iconType={iconType} iconName={iconName} />;
-		}
-
-		// Otherwise return it as a string.
-		return labelPart;
-	});
-	return transformedLabelParts;
-}
-
 function getFirstRow(data)
 {
-	const {icons, item, label} = data;
+	const {icons, item, labelHtml} = data;
 
 	return (
 		<>
@@ -172,7 +139,7 @@ function getFirstRow(data)
 			<span className='p-1' />
 			{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 			<span className='p-1' />
-			<span>{transformLabelIcons(label)}</span>
+			<span dangerouslySetInnerHTML={{__html: labelHtml}} />
 		</>
 	);
 }
