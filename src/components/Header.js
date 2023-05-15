@@ -7,6 +7,7 @@ import {
 	faDonate,
 	faHeart,
 	faPlusSquare,
+	faSearch,
 	faSignInAlt,
 	faSignOutAlt,
 	faTrophy,
@@ -112,14 +113,20 @@ class Header extends PureComponent
 						<Dropdown.Item className='user-photo-container'>
 							{this.getDisplayName()}
 						</Dropdown.Item>
+						<Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
+							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
+							{' My Favorites'}
+						</Nav.Link>
+						<Nav.Link as={Link} href={`/user/${this.props.user.uid}`} to={`/user/${this.props.user.uid}`} className='text-light'>
+							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
+							{' My Blueprints'}
+						</Nav.Link>
+						<Nav.Link as={Link} href='/account' to='/account' className='text-light'>
+							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth style={{'color': 'var(--bs-orange)'}} />
+							{' My Display Name'}
+						</Nav.Link>
 						<Dropdown.Item>
-							<Button type='button' block variant='warning' size='lg' onClick={this.handleEdit}>
-								<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth />
-								{' Edit'}
-							</Button>
-						</Dropdown.Item>
-						<Dropdown.Item>
-							<Button type='button' block variant='warning' size='lg' onClick={this.handleLogout}>
+							<Button type='link' block variant='warning' size='lg' onClick={this.handleLogout}>
 								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
 								{' Log out'}
 							</Button>
@@ -165,6 +172,10 @@ class Header extends PureComponent
 				<Navbar.Collapse>
 					<Nav className='mr-auto'>
 						{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
+						<Nav.Link href='https://www.factorio.school/search' to='https://www.factorio.school/search' className='text-light'>
+							<FontAwesomeIcon icon={faSearch} size='lg' fixedWidth />
+							{' Search'}
+						</Nav.Link>
 						<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
 							<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
 							{' Most Recent'}
@@ -177,16 +188,6 @@ class Header extends PureComponent
 							<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
 							{' Create'}
 						</Nav.Link>
-						{this.props.user
-						&& <Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
-							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
-							{' My Favorites'}
-						</Nav.Link>}
-						{this.props.user
-						&& <Nav.Link as={Link} href={`/user/${this.props.user.uid}`} to={`/user/${this.props.user.uid}`} className='text-light'>
-							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
-							{' My Blueprints'}
-						</Nav.Link>}
 						<Nav.Link as={Link} href='/knownIssues' to='/knownIssues' className='text-light'>
 							<FontAwesomeIcon icon={faBug} size='lg' fixedWidth />
 							{' Known Issues'}
