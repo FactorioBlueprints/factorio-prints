@@ -59,16 +59,17 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 
 	function getFbeButton()
 	{
-		if (position === undefined)
-		{
-			return <> </>;
-		}
+		const href = position === undefined
+			? ``
+			: `/position/${position.position - 1}`;
 
-		const href = `https://fbe.teoxoy.com/?source=https://www.factorio.school/api/blueprintData/${blueprintStringSha}/position/${position.position - 1}`;
+		const caption = position === undefined
+			? ''
+			: position.position - 1;
 
 		return <Button
 			type='button'
-			href={href}
+			href={`https://fbe.teoxoy.com/?source=https://www.factorio.school/api/blueprintData/${blueprintStringSha}${href}`}
 			target='_blank'
 			className='float-end'
 			size='sm'
@@ -82,7 +83,7 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 			<span className='p-1' />
 			Render image
 			<span className='p-1' />
-			{position.position - 1}
+			{caption}
 		</Button>
 	}
 
