@@ -21,7 +21,6 @@ import BlueprintTitle            from './BlueprintTitle';
 import BlueprintTitles           from './BlueprintTitles';
 import CopyBlueprintStringButton from './CopyBlueprintButton';
 import FavoriteButton            from './FavoriteButton';
-import FbeLink                   from './FbeLink';
 import ImgurThumbnail            from './ImgurThumbnail';
 import NewRequirementsHistogram  from './NewRequirementsHistogram';
 import Spinner                   from './Spinner';
@@ -132,7 +131,6 @@ function EfficientSingleBlueprint()
 						<Card.Body>
 							<BlueprintMarkdown blueprintKey={blueprintKey} />
 							<CopyBlueprintStringButton blueprintStringSha={blueprintStringSha} />
-							<FbeLink blueprintKey={blueprintKey} />
 						</Card.Body>
 					</Card>
 					<Card>
