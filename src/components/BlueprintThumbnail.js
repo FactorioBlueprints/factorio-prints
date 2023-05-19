@@ -1,5 +1,7 @@
-import {faHeart}          from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
+import {faHeart}         from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+
+import {useQueryClient}   from '@tanstack/react-query';
 import {forbidExtraProps} from 'airbnb-prop-types';
 
 import React          from 'react';
@@ -19,10 +21,15 @@ BlueprintThumbnail.propTypes = forbidExtraProps({
 	blueprintSummary: BlueprintSummaryProjection,
 });
 
-function BlueprintThumbnail({
-  blueprintSummary: { key, title, imgurImage, voteSummary },
-}) {
-  const numberOfUpvotes = voteSummary?.numberOfUpvotes;
+function BlueprintThumbnail({blueprintSummary: {key, title, imgurImage, voteSummary}}) {
+	const numberOfUpvotes = voteSummary?.numberOfUpvotes;
+
+	const queryClient = useQueryClient()
+	if (voteSummary === undefined)
+	{
+		console.log('BlueprintThumbnail clearing the query cache')
+		queryClient.clear()
+	}
 
 	const {isSuccess, data} = useFavorites();
 	const authoredResult    = useAuthored();

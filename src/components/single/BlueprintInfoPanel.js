@@ -13,6 +13,8 @@ import useBlueprint       from '../../hooks/useBlueprint';
 
 import BlueprintVersion from './BlueprintVersion';
 
+import {useQueryClient}   from '@tanstack/react-query';
+
 dayjs.extend(relativeTime);
 
 BlueprintInfoPanel.propTypes = forbidExtraProps({
@@ -27,9 +29,17 @@ function BlueprintInfoPanel({blueprintKey, blueprintStringSha, ownedByCurrentUse
 
 	const {
 			  author     : {displayName},
-			  voteSummary: {numberOfUpvotes},
+			  voteSummary,
 			  version    : {createdOn, systemFrom, createdBy: {userId: authorId}},
 		  } = result.data.data;
+
+	const numberOfUpvotes = voteSummary?.numberOfUpvotes;
+	const queryClient = useQueryClient()
+	if (voteSummary === undefined)
+	{
+		console.log('BlueprintInfoPanel clearing the query cache')
+		queryClient.clear()
+	}
 
 	return (
 		<Card>

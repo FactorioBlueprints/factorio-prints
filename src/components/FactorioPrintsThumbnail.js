@@ -1,5 +1,7 @@
-import {faHeart}          from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
+import {faHeart}         from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+
+import {useQueryClient}   from '@tanstack/react-query';
 import {forbidExtraProps} from 'airbnb-prop-types';
 
 import React          from 'react';
@@ -21,7 +23,14 @@ FactorioPrintsThumbnail.propTypes = forbidExtraProps({
 
 function FactorioPrintsThumbnail({blueprintSummary})
 {
-	const {key, title, imgurImage, voteSummary: {numberOfUpvotes}} = blueprintSummary;
+	const {key, title, imgurImage, voteSummary} = blueprintSummary;
+	const numberOfUpvotes = voteSummary?.numberOfUpvotes;
+	const queryClient = useQueryClient()
+	if (voteSummary === undefined)
+	{
+		console.log('FactorioPrintsThumbnail clearing the query cache')
+		queryClient.clear()
+	}
 
 	const {isSuccess, data} = useFavorites();
 	const authoredResult    = useAuthored();
