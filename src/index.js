@@ -7,7 +7,9 @@ import './css/style.css';
 import reportWebVitals from './reportWebVitals';
 
 const strictRoot = (
+	<React.StrictMode>
 		<Root />
+	</React.StrictMode>
 );
 
 const container = document.getElementById('root');
