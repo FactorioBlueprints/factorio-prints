@@ -107,11 +107,11 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 	}
 	else if (data.deconstruction_planner)
 	{
-		return getBlueprint(data.deconstruction_planner, blueprintStringSha);
+		return getBlueprint(data.deconstruction_planner, positionArray, blueprintStringSha);
 	}
 	else if (data.upgrade_planner)
 	{
-		return getBlueprint(data.upgrade_planner, blueprintStringSha);
+		return getBlueprint(data.upgrade_planner, positionArray, blueprintStringSha);
 	}
 	else
 	{
