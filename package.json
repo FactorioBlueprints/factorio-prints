@@ -67,7 +67,7 @@
 		"react-bootstrap": "^2.7.4",
 		"react-dom": "^18.2.0",
 		"react-dropzone": "14.2.3",
-		"react-error-boundary": "^4.0.4",
+		"react-error-boundary": "^4.0.10",
 		"react-helmet": "^6.1.0",
 		"react-router": "^6.11.2",
 		"react-router-bootstrap": "^0.26.2",
