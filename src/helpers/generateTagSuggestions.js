@@ -410,8 +410,8 @@ const generateTagSuggestions = (title, parsedBlueprint, v15Decoded) =>
 		}
 		else if (parsedBlueprint.isBlueprint())
 		{
-			const blueprints = v15Decoded.blueprint_book.blueprints;
-			const entities = flatMap(blueprints, 'blueprint.entities');
+			const blueprint = v15Decoded.blueprint;
+			const entities = flatMap(blueprint, 'entities');
 
 			const recipes = map(entities, 'recipe');
 			const nonUndefinedRecipes = reject(recipes, isUndefined);
