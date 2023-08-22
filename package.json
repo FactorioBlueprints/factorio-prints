@@ -38,7 +38,7 @@
 		"axios": "^1.4.0",
 		"bootstrap": "^5.3.1",
 		"classnames": "^2.3.2",
-		"concurrently": "8.2.0",
+		"concurrently": "8.2.1",
 		"copy-to-clipboard": "^3.3.3",
 		"dayjs": "^1.11.9",
 		"disqus-react": "1.1.5",
