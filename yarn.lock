@@ -8174,10 +8174,10 @@ makeerror@1.0.12:
   dependencies:
     tmpl "1.0.5"
 
-marked@7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/marked/-/marked-7.0.0.tgz#5328f52c9197b93f1d3e3b49e0522afa5069c653"
-  integrity sha512-7Gv1Ry8tqR352ElQOQfxdGpIh8kNZh/yYjNCxAQCN1DDbY4bCTG3qDCSkZWlRElSseeEILDxkY/G9w7cgziBNw==
+marked@7.0.4:
+  version "7.0.4"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-7.0.4.tgz#e2558ee2d535b9df6a27c6e282dc603a18388a6d"
+  integrity sha512-t8eP0dXRJMtMvBojtkcsA7n48BkauktUKzfkPSCq85ZMTJ0v76Rke4DYz01omYpPTUh4p/f7HePgRo3ebG8+QQ==
 
 mdn-data@2.0.14:
   version "2.0.14"
