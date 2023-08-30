@@ -5,7 +5,7 @@ import Alert                  from 'react-bootstrap/Alert';
 
 import React from 'react';
 
-const contributors = ['Tomáš Hubka', 'wisefish', 'Clive Blackledge', 'ensoniq2k']
+const contributors = ['Howard F.', 'Tomáš Hubka', 'wisefish', 'Clive Blackledge', 'ensoniq2k']
 
 function Contributors()
 {
