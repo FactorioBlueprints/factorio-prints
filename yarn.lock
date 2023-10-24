@@ -2898,10 +2898,10 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.2.tgz#423c77877d0569db20e1fc80885ac4118314010e"
   integrity sha512-eZxlbI8GZscaGS7kkc/trHTT5xgrjH3/1n2JDwusC9iahPKWMRvRjJSAN5mCXviuTGQ/lHnhvv8Q1YTpnfz9gA==
 
-"@types/airbnb-prop-types@^2.13.3":
-  version "2.13.3"
-  resolved "https://registry.yarnpkg.com/@types/airbnb-prop-types/-/airbnb-prop-types-2.13.3.tgz#5b859151112331b368717ae0e49e5546f755250b"
-  integrity sha512-hwXMfTHBhQ1kIMNJkZFtdzeH/DgI/DDqhK1Oka/dLbwOUcks1wbjN2V/9crrAa7AcTdJGE/xFzDtmE8IenZGkw==
+"@types/airbnb-prop-types@^2.13.4":
+  version "2.13.4"
+  resolved "https://registry.yarnpkg.com/@types/airbnb-prop-types/-/airbnb-prop-types-2.13.4.tgz#3bb6aee4a479e414e234a1dfb29ead910d080cd8"
+  integrity sha512-cZlY3PRUemPqzcVU9w+JXImbUieR3oa7Jx8E9MRd+l1dBzQFKql8mzGA9UZsjgD/Jb8P9tdEHO/ePE3MlPCVSg==
   dependencies:
     "@types/prop-types" "*"
 
