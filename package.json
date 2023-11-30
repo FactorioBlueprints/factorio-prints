@@ -8,7 +8,7 @@
 		"@craco/craco": "^6.4.5",
 		"@fortawesome/fontawesome-svg-core": "6.4.2",
 		"@fortawesome/free-brands-svg-icons": "6.5.0",
-		"@fortawesome/free-regular-svg-icons": "6.4.2",
+		"@fortawesome/free-regular-svg-icons": "6.5.0",
 		"@fortawesome/free-solid-svg-icons": "6.5.0",
 		"@fortawesome/react-fontawesome": "0.2.0",
 		"@tanstack/query-sync-storage-persister": "^4.35.3",
