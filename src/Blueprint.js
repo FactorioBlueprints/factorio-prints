@@ -4,7 +4,6 @@ import sortBy  from 'lodash/sortBy';
 import toPairs from 'lodash/toPairs';
 
 import decodeV14Base64, {decodeV15Base64} from './parser/decodeFromBase64';
-import luaTableToJsonObject               from './parser/luaTableToJsonObject';
 
 class Blueprint
 {
@@ -30,7 +29,7 @@ class Blueprint
 	{
 		if (this.isV14())
 		{
-			return luaTableToJsonObject(decodeV14Base64(this.encodedText));
+			return undefined;
 		}
 		else if (this.isV15())
 		{
