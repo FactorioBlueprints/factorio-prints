@@ -1,25 +1,18 @@
 {
-  "ecmaFeatures": {
-    "jsx": true,
-    "modules": true
-  },
   "env": {
     "browser": true,
     "node": true,
     "es6": true
   },
-  "parser": "babel-eslint",
   "plugins": [
     "babel",
-    "react",
     "lodash",
     "import",
     "jsx-a11y",
     "promise"
   ],
   "extends": [
-    "eslint:all",
-    "plugin:react/all",
+    "plugin:react/recommended",
     "plugin:lodash/recommended",
     "plugin:import/errors",
     "plugin:import/warnings",
@@ -32,6 +25,10 @@
       "forbidExtraProps"
     ]
   },
+  "parserOptions": {
+      "sourceType": "module"
+  },
+  "parser": "@babel/eslint-parser",
   "rules": {
     "quotes": ["error", "single", {"avoidEscape": true}],
     "strict": ["error", "never"],
@@ -101,7 +98,7 @@
 
     // Prevent missing props validation in a React component definition
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/prop-types.md
-    "react/prop-types": ["error", { "ignore": [], "customValidators": [], "skipUndeclared": false }],
+    "react/prop-types": ["warn", { "ignore": [], "customValidators": [], "skipUndeclared": false }],
 
     "react/forbid-component-props": "off",
 
@@ -124,7 +121,7 @@
 
     // require a shouldComponentUpdate method, or PureRenderMixin
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/require-optimization.md
-    "react/require-optimization": ["error", { "allowDecorators": [] }],
+    "react/require-optimization": ["warn", { "allowDecorators": [] }],
 
     // Prevent usage of setState
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-set-state.md
@@ -159,7 +156,7 @@
 
     // Forbid certain propTypes (any, array, object)
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/forbid-prop-types.md
-    "react/forbid-prop-types"    : ["error", { "forbid": ["any", "array", "object"] }],
+    "react/forbid-prop-types"    : ["warn", { "forbid": ["any", "array", "object"] }],
 
     // Enforce boolean attributes notation in JSX
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-boolean-value.md
@@ -251,7 +248,7 @@
     // Enforce component methods order
     // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/sort-comp.md
     "react/sort-comp": [
-      "error",
+      "warn",
       {
         "order" : [
           "static-methods",
@@ -416,7 +413,7 @@
     "no-warning-comments"        : "warn",
     "id-length"                  : "warn",
 
-    "class-methods-use-this"     : ["error", {
+    "class-methods-use-this"     : ["warn", {
       "exceptMethods": [
         "render",
         "getInitialState",
@@ -435,8 +432,8 @@
     "arrow-parens"               : ["error", "as-needed", {"requireForBlockBody": true}],
     "dot-location"               : ["error", "property"],
     "new-cap"                    : ["error", {"capIsNew": false}],
-	"func-names": ["error", "as-needed"],
-	"no-constant-condition" : ["error", { "checkLoops": false }],
+    "func-names": ["error", "as-needed"],
+    "no-constant-condition" : ["error", { "checkLoops": false }],
 
     "sort-keys"                  : "off",
     "max-len"                    : "off",
@@ -457,6 +454,10 @@
     "wrap-regex": "off",
     "jsx-a11y/href-no-hash": "off",
     "no-undefined": "off",
-    "require-jsdoc": "off"
+    "require-jsdoc": "off",
+    "import/default": "warn",
+    "jsx-a11y/no-autofocus": "warn",
+    "promise/always-return": "warn",
+    "promise/catch-or-return": "warn"
   }
 }

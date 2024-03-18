@@ -5,8 +5,10 @@
   "homepage": "https://factorioprints.com/",
   "proxy": "http://localhost:8080",
   "devDependencies": {
+    "@babel/eslint-parser": "^7.23.10",
     "autoprefixer-stylus": "1.0.0",
     "babel-cli": "6.26.0",
+    "babel-eslint": "^10.1.0",
     "babel-plugin-lodash": "3.3.4",
     "babel-preset-env": "1.7.0",
     "concurrently": "4.1.0",
@@ -19,7 +21,6 @@
     "eslint-plugin-jsx-a11y": "6.7.1",
     "eslint-plugin-lodash": "7.1.0",
     "eslint-plugin-promise": "4.3.1",
-    "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "react-scripts": "^5.0.1",
     "stylus": "0.59.0"
