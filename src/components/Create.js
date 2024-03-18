@@ -394,6 +394,13 @@ class Create extends PureComponent
 
 			console.log(imgurResponse);
 
+			if (!imgurResponse.ok)
+			{
+				const errorText = await imgurResponse.text();
+				console.error('Error:', errorText);
+				return;
+			}
+
 			const imgurData = await imgurResponse.json();
 			console.log(imgurData);
 
