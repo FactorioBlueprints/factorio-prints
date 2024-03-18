@@ -21,8 +21,8 @@ import PageHeader                                  from './PageHeader';
 class Account extends PureComponent
 {
 	static propTypes = forbidExtraProps({
-		user             : userSchema,
-		match            : PropTypes.shape(forbidExtraProps({
+		user : userSchema,
+		match: PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
@@ -90,7 +90,7 @@ class Account extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<div className="p-5 rounded-lg jumbotron">
+				<div className='p-5 rounded-lg jumbotron'>
 					<h1 className='display-4'>
 						{'Account Settings'}
 					</h1>

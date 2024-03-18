@@ -35,7 +35,7 @@ class UserGrid extends PureComponent
 		history                  : PropTypes.object.isRequired,
 		staticContext            : PropTypes.shape(forbidExtraProps({})),
 		match                    : PropTypes.shape(forbidExtraProps({
-			params : PropTypes.shape(forbidExtraProps({
+			params: PropTypes.shape(forbidExtraProps({
 				userId: PropTypes.string.isRequired,
 			})).isRequired,
 			path   : PropTypes.string.isRequired,
@@ -61,7 +61,7 @@ class UserGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading && (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading))
 		{
 			return (
-				<div className="p-5 rounded-lg jumbotron">
+				<div className='p-5 rounded-lg jumbotron'>
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}

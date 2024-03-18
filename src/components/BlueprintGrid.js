@@ -93,7 +93,7 @@ class BlueprintGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<div className="p-5 rounded-lg jumbotron">
+				<div className='p-5 rounded-lg jumbotron'>
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}

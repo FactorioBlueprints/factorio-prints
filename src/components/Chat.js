@@ -5,7 +5,7 @@ import React                           from 'react';
 function Chat()
 {
 	return (
-		<div className="p-5 rounded-lg jumbotron">
+		<div className='p-5 rounded-lg jumbotron'>
 			<p className='lead'>
 				<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
 				{' Discord: '}

@@ -51,7 +51,7 @@ class MyFavoritesGrid extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<div className="p-5 rounded-lg jumbotron">
+				<div className='p-5 rounded-lg jumbotron'>
 					<h1 className='display-4'>
 						My Favorites
 					</h1>
@@ -65,7 +65,7 @@ class MyFavoritesGrid extends PureComponent
 		if (this.props.blueprintSummariesLoading)
 		{
 			return (
-				<div className="p-5 rounded-lg jumbotron">
+				<div className='p-5 rounded-lg jumbotron'>
 					<h1 className='display-4'>
 						<FontAwesomeIcon icon={faCog} spin />
 						{' Loading data'}

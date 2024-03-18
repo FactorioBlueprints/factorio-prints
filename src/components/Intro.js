@@ -19,7 +19,7 @@ const Intro = ({user}) =>
 	}
 
 	return (
-		<div className="p-5 rounded-lg jumbotron">
+		<div className='p-5 rounded-lg jumbotron'>
 			<h1 className='display-4'>
 				{'Factorio Prints'}
 			</h1>

@@ -5,10 +5,12 @@ import React     from 'react';
 
 const KnownIssues = () =>
 	(
-		<div className="p-5 rounded-lg jumbotron">
+		<div className='p-5 rounded-lg jumbotron'>
 			<h1 className='display-4'>
 				{'Check out '}
-				<a href='https://www.factorio.school/'>Factorio School</a>
+				<a href='https://www.factorio.school/'>
+					Factorio School
+				</a>
 			</h1>
 			<p className='lead'>
 				{'Factorio School is a rewrite of Factorio Prints where search works across all blueprints, not just the current page.'}

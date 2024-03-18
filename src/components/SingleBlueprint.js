@@ -319,7 +319,7 @@ class SingleBlueprint extends PureComponent
 			{
 				return (
 					<DocumentTitle title='Factorio Prints: Loading Data'>
-						<div className="p-5 rounded-lg jumbotron">
+						<div className='p-5 rounded-lg jumbotron'>
 							<h1 className='display-4'>
 								<FontAwesomeIcon icon={faCog} spin />
 								{' Loading data'}
@@ -334,7 +334,7 @@ class SingleBlueprint extends PureComponent
 
 		const {image, createdDate, lastUpdatedDate, author: {userId: authorId}, title, numberOfFavorites} = blueprint;
 		if (isEmpty(blueprint.tags)) blueprint.tags = [];
-		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null)
+		blueprint.tags = blueprint.tags.filter(tag => tag.tag !== null);
 
 		const disqusConfig = {
 			url       : `https://factorioprints.com${this.props.location.pathname}`,

@@ -74,15 +74,15 @@ class Create extends PureComponent
 			value: PropTypes.string.isRequired,
 			label: PropTypes.string.isRequired,
 		})).isRequired).isRequired,
-		match          : PropTypes.shape(forbidExtraProps({
+		match: PropTypes.shape(forbidExtraProps({
 			params : PropTypes.shape(forbidExtraProps({})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location       : propTypes.locationSchema,
-		history        : propTypes.historySchema,
-		staticContext  : PropTypes.shape(forbidExtraProps({})),
+		location     : propTypes.locationSchema,
+		history      : propTypes.historySchema,
+		staticContext: PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static emptyTags = [];
@@ -292,13 +292,13 @@ class Create extends PureComponent
 	{
 		return some(
 			blueprintBook.blueprints,
-			eachEntry =>
+			(eachEntry) =>
 			{
 				if (eachEntry.blueprint_book) return this.someHaveNoName(eachEntry.blueprint_book);
 				if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
 				return false;
 			});
-	}
+	};
 
 	validateWarnings = () =>
 	{
@@ -539,7 +539,7 @@ class Create extends PureComponent
 		if (!this.props.user)
 		{
 			return (
-				<div className="p-5 rounded-lg jumbotron">
+				<div className='p-5 rounded-lg jumbotron'>
 					<h1 className='display-4'>
 						{'Create a Blueprint'}
 					</h1>
@@ -774,7 +774,9 @@ class Create extends PureComponent
 												<input {...getInputProps()} />
 												{
 													isDragActive
-														? <p>Drop files here...</p>
+														? <p>
+															Drop files here...
+														</p>
 														: <p>
 															{'Drop an image file here, or click to open the file chooser.'}
 														</p>

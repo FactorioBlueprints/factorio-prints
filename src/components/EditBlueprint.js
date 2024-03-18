@@ -80,16 +80,16 @@ class EditBlueprint extends PureComponent
 		blueprint            : propTypes.blueprintSchema,
 		loading              : PropTypes.bool.isRequired,
 		match                : PropTypes.shape(forbidExtraProps({
-			params : PropTypes.shape(forbidExtraProps({
+			params: PropTypes.shape(forbidExtraProps({
 				blueprintId: PropTypes.string.isRequired,
 			})).isRequired,
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location             : propTypes.locationSchema,
-		history              : propTypes.historySchema,
-		staticContext        : PropTypes.shape(forbidExtraProps({})),
+		location     : propTypes.locationSchema,
+		history      : propTypes.historySchema,
+		staticContext: PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static emptyTags = [];
@@ -297,13 +297,13 @@ class EditBlueprint extends PureComponent
 	{
 		return some(
 			blueprintBook.blueprints,
-			eachEntry =>
+			(eachEntry) =>
 			{
 				if (eachEntry.blueprint_book) return this.someHaveNoName(eachEntry.blueprint_book);
 				if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
 				return false;
 			});
-	}
+	};
 
 	validateWarnings = () =>
 	{
@@ -704,7 +704,7 @@ class EditBlueprint extends PureComponent
 							{`Deleting: ${blueprint.title}`}
 						</p>
 						<p>
-This cannot be undone.
+							This cannot be undone.
 						</p>
 					</Modal.Body>
 					<Modal.Footer>
@@ -885,7 +885,9 @@ This cannot be undone.
 												<input {...getInputProps()} />
 												{
 													isDragActive
-														? <p>Drop files here...</p>
+														? <p>
+															Drop files here...
+														</p>
 														: <p>
 															{'Drop an image file here, or click to open the file chooser.'}
 														</p>

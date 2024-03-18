@@ -73,7 +73,7 @@ class Header extends PureComponent
 	handleEdit = () =>
 	{
 		this.props.history.push('/account');
-	}
+	};
 
 	handleLogout = () =>
 	{
@@ -122,7 +122,7 @@ class Header extends PureComponent
 							{' My Blueprints'}
 						</Nav.Link>
 						<Nav.Link as={Link} href='/account' to='/account' className='text-light'>
-							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth style={{'color': 'var(--bs-orange)'}} />
+							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth style={{color: 'var(--bs-orange)'}} />
 							{' My Display Name'}
 						</Nav.Link>
 						<Dropdown.Item>
@@ -200,7 +200,7 @@ class Header extends PureComponent
 							<FontAwesomeIcon icon={faPatreon} size='lg' fixedWidth />
 							{' Contributors'}
 						</Nav.Link>
-						<Nav.Link href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target="_blank" rel="noopener noreferrer">
+						<Nav.Link href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target='_blank' rel='noopener noreferrer'>
 							<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
 							{' Donate'}
 						</Nav.Link>
