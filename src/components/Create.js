@@ -374,87 +374,103 @@ class Create extends PureComponent
 		this.actuallyCreateBlueprint();
 	};
 
-	actuallyCreateBlueprint = () =>
+	actuallyCreateBlueprint = async () =>
 	{
 		const [file]   = this.state.files;
 		const fileName = file.name;
 
-		const fileNameRef = app.storage().ref().child(fileName);
-		fileNameRef.getDownloadURL().then(() =>
+		try
 		{
-			this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
-		})
-			.catch(() =>
-			{
-				this.setState({uploadProgressBarVisible: true});
-				const uploadTask = fileNameRef.put(file);
-				uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, (...args) =>
-				{
-					fetch('https://api.imgur.com/3/upload.json', {
-						method : 'POST',
-						headers: Create.imgurHeaders,
-						body   : file,
-					})
-						.then(this.processStatus)
-						.then(response => response.json())
-						.then(({data}) =>
-						{
-							const image = {
-								id        : data.id,
-								deletehash: data.deletehash,
-								type      : data.type,
-								height    : data.height,
-								width     : data.width,
-							};
-
-							const blueprint = {
-								...this.state.blueprint,
-								author: {
-									userId: this.props.user.uid,
-								},
-								authorId         : this.props.user.uid,
-								createdDate      : firebase.database.ServerValue.TIMESTAMP,
-								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-								favorites        : {},
-								numberOfFavorites: 0,
-								fileName,
-								image,
-							};
-
-							const blueprintSummary = {
-								imgurId          : blueprint.image.id,
-								imgurType        : blueprint.image.type,
-								title            : blueprint.title,
-								numberOfFavorites: blueprint.numberOfFavorites,
-								lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-							};
-							const {thumbnail}      = this.state;
-
-							const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
-							uploadTask.snapshot.ref.getDownloadURL().then((downloadUrl) =>
-							{
-								const updates         = {
-									[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
-									[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
-									[`/blueprintsPrivate/${newBlueprintRef.key}/thumbnail`]            : thumbnail,
-									[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : downloadUrl,
-								};
-								forEach(blueprint.tags, (tag) =>
-								{
-									updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
-								});
-
-								app.database().ref().update(updates)
-									.then(() =>
-									{
-										this.setState(Create.initialState);
-										this.props.history.push(`/view/${newBlueprintRef.key}`);
-									});
-							});
-						})
-						.catch(this.handleImgurError);
-				});
+			const imgurResponse = await fetch('https://api.imgur.com/3/image.json', {
+				method : 'POST',
+				headers: {
+					'Accept'       : 'application/json',
+					'Content-Type' : 'application/json',
+					'Authorization': 'Client-ID dd223816755d05b',
+				},
+				body: file,
+				type: 'file',
 			});
+
+			console.log(imgurResponse);
+
+			const imgurData = await imgurResponse.json();
+			console.log(imgurData);
+
+			const {data} = imgurData;
+
+			const image  = {
+				id        : data.id,
+				deletehash: data.deletehash,
+				type      : data.type,
+				height    : data.height,
+				width     : data.width,
+			};
+
+			const blueprint = {
+				...this.state.blueprint,
+				author: {
+					userId: this.props.user.uid,
+				},
+				authorId         : this.props.user.uid,
+				createdDate      : firebase.database.ServerValue.TIMESTAMP,
+				lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+				favorites        : {},
+				numberOfFavorites: 0,
+				fileName,
+				image,
+			};
+
+			const blueprintSummary = {
+				imgurId          : blueprint.image.id,
+				imgurType        : blueprint.image.type,
+				title            : blueprint.title,
+				numberOfFavorites: blueprint.numberOfFavorites,
+				lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+			};
+
+			const {thumbnail}      = this.state;
+
+			const fileNameRef = app.storage().ref().child(fileName);
+			fileNameRef.getDownloadURL().then(() =>
+			{
+				this.setState({submissionErrors: [`File with name ${fileName} already exists.`]});
+			})
+				.catch(() =>
+				{
+					this.setState({uploadProgressBarVisible: true});
+					const uploadTask = fileNameRef.put(file);
+					uploadTask.on('state_changed', this.handleUploadProgress, this.handleFirebaseStorageError, (...args) =>
+					{
+						const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
+						uploadTask.snapshot.ref.getDownloadURL().then((downloadUrl) =>
+						{
+							const updates = {
+								[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
+								[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
+								[`/blueprintsPrivate/${newBlueprintRef.key}/thumbnail`]            : thumbnail,
+								[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : downloadUrl,
+							};
+							forEach(blueprint.tags, (tag) =>
+							{
+								updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
+							});
+
+							app.database().ref().update(updates)
+								.then(() =>
+								{
+									this.setState(Create.initialState);
+									this.props.history.push(`/view/${newBlueprintRef.key}`);
+								});
+						});
+					});
+				});
+		}
+		catch (e)
+		{
+			console.log(e);
+			return;
+		}
 	};
 
 	handleCancel = () =>
