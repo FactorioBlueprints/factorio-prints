@@ -1,4 +1,0 @@
-{
-  "plugins": ["lodash"],
-  "presets": ["es2016"]
-}
