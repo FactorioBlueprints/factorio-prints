@@ -23,11 +23,8 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 		userId     : PropTypes.string.isRequired,
 	})).isRequired,
 	image: PropTypes.shape(forbidExtraProps({
-		id        : PropTypes.string.isRequired,
-		deletehash: PropTypes.string.isRequired,
-		height    : PropTypes.number.isRequired,
-		width     : PropTypes.number.isRequired,
-		type      : PropTypes.string.isRequired,
+		id  : PropTypes.string.isRequired,
+		type: PropTypes.string.isRequired,
 	})).isRequired,
 }));
 
