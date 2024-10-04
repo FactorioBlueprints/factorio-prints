@@ -61,7 +61,7 @@
 		"marked": "11.1.0",
 		"pako": "2.1.0",
 		"prop-types": "15.8.1",
-		"query-string": "^8.1.0",
+		"query-string": "^9.1.0",
 		"re-base": "4.0.0",
 		"react": "^18.2.0",
 		"react-bootstrap": "^2.9.1",
