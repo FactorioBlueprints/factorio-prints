@@ -471,7 +471,7 @@ class SingleBlueprint extends PureComponent
 														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
 															{
 																entitiesWithIcons[pair[0]]
-																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	? <img height='32px' width='32px' src={`/icons/${pair[0]}.png`} alt={pair[0]} />
 																	: ''
 															}
 														</td>
@@ -490,7 +490,7 @@ class SingleBlueprint extends PureComponent
 														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
 															{
 																entitiesWithIcons[pair[0]]
-																	? <img src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																	? <img height='32px' width='32px' src={`/icons/${pair[0]}.png`} alt={pair[0]} />
 																	: ''
 															}
 														</td>
@@ -537,7 +537,7 @@ class SingleBlueprint extends PureComponent
 																<td className={`icon icon-${iconName}`}>
 																	{
 																		entitiesWithIcons[iconName]
-																			? <img src={`/icons/${iconName}.png`} alt={iconName} />
+																			? <img height='32px' width='32px' src={`/icons/${iconName}.png`} alt={iconName} />
 																			: ''
 																	}
 																</td>
@@ -669,7 +669,7 @@ class SingleBlueprint extends PureComponent
 																		<td className={`icon icon-${iconName}`} key={iconIndex}>
 																			{
 																				entitiesWithIcons[iconName]
-																					? <img src={`/icons/${iconName}.png`} alt={iconName} />
+																					? <img height='32px' width='32px' src={`/icons/${iconName}.png`} alt={iconName} />
 																					: ''
 																			}
 																		</td>
@@ -708,14 +708,14 @@ class SingleBlueprint extends PureComponent
 														<td className={`icon icon-${from.name}`}>
 															{
 																entitiesWithIcons[from.name]
-																	? <img src={`/icons/${from.name}.png`} alt={from.name} />
+																	? <img height='32px' width='32px' src={`/icons/${from.name}.png`} alt={from.name} />
 																	: ''
 															}
 														</td>
 														<td className={`icon icon-${to.name}`}>
 															{
 																entitiesWithIcons[to.name]
-																	? <img src={`/icons/${to.name}.png`} alt={to.name} />
+																	? <img height='32px' width='32px' src={`/icons/${to.name}.png`} alt={to.name} />
 																	: ''
 															}
 														</td>
