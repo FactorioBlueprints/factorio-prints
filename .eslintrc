@@ -23,7 +23,10 @@
     // The names of any functions used to wrap the propTypes object, such as `forbidExtraProps`. If this isn't set, any propTypes wrapped in a function will be skipped.
     "propWrapperFunctions": [
       "forbidExtraProps"
-    ]
+    ],
+    "react": {
+      "version": "detect"
+    }
   },
   "parserOptions": {
       "sourceType": "module"
