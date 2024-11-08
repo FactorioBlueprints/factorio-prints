@@ -250,11 +250,11 @@ class Create extends PureComponent
 		}
 		else
 		{
-			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.png$/;
+			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.[a-zA-Z0-9]{3,4}$/;
 			const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
 			if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl))
 			{
-				submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.png');
+				submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}');
 			}
 		}
 
