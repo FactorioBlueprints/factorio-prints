@@ -250,7 +250,7 @@ class Create extends PureComponent
 		}
 		else
 		{
-			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+$/;
+			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.png$/;
 			const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
 			if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl))
 			{
