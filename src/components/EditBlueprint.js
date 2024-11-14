@@ -360,7 +360,7 @@ class EditBlueprint extends PureComponent {
 			}
 		}
 		else {
-			console.log('Create.actuallyCreateBlueprint error in imageUrl', { imageUrl });
+			console.log('EditBlueprint.actuallySaveBlueprintEdits error in imageUrl', {imageUrl});
 			return;
 		}
 	};
