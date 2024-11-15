@@ -1,45 +1,45 @@
-import { faArrowLeft, faBan, faCog, faSave, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}                            from '@fortawesome/react-fontawesome';
 
-import { forbidExtraProps } from 'airbnb-prop-types';
-import firebase from 'firebase/app';
-import update from 'immutability-helper';
-import difference from 'lodash/difference';
-import forEach from 'lodash/forEach';
-import isEmpty from 'lodash/isEmpty';
-import isEqual from 'lodash/isEqual';
-import some from 'lodash/some';
-import { marked } from 'marked';
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
-import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
-import Card from 'react-bootstrap/Card';
-import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
-import FormControl from 'react-bootstrap/FormControl';
-import Modal from 'react-bootstrap/Modal';
-import ProgressBar from 'react-bootstrap/ProgressBar';
-import Row from 'react-bootstrap/Row';
-import { connect } from 'react-redux';
-import Select from 'react-select';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import firebase               from 'firebase/app';
+import update                 from 'immutability-helper';
+import difference             from 'lodash/difference';
+import forEach                from 'lodash/forEach';
+import isEmpty                from 'lodash/isEmpty';
+import isEqual                from 'lodash/isEqual';
+import some                   from 'lodash/some';
+import {marked}               from 'marked';
+import PropTypes              from 'prop-types';
+import React, {PureComponent} from 'react';
+import Alert                  from 'react-bootstrap/Alert';
+import Button                 from 'react-bootstrap/Button';
+import ButtonToolbar          from 'react-bootstrap/ButtonToolbar';
+import Card                   from 'react-bootstrap/Card';
+import Col                    from 'react-bootstrap/Col';
+import Container              from 'react-bootstrap/Container';
+import Form                   from 'react-bootstrap/Form';
+import FormControl            from 'react-bootstrap/FormControl';
+import Modal                  from 'react-bootstrap/Modal';
+import ProgressBar            from 'react-bootstrap/ProgressBar';
+import Row                    from 'react-bootstrap/Row';
+import {connect}              from 'react-redux';
+import Select                 from 'react-select';
 import 'react-select/dist/react-select.css';
-import { bindActionCreators } from 'redux';
+import {bindActionCreators}   from 'redux';
 
-import { subscribeToBlueprint, subscribeToModerators, subscribeToTags } from '../actions/actionCreators';
+import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
 
-import { app } from '../base';
-import Blueprint from '../Blueprint';
-import noImageAvailable from '../gif/No_available_image.gif';
-import buildImageUrl from '../helpers/buildImageUrl';
+import {app}                  from '../base';
+import Blueprint              from '../Blueprint';
+import noImageAvailable       from '../gif/No_available_image.gif';
+import buildImageUrl          from '../helpers/buildImageUrl';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
-import * as propTypes from '../propTypes';
-import * as selectors from '../selectors';
+import * as propTypes         from '../propTypes';
+import * as selectors         from '../selectors';
 
-import NoMatch from './NoMatch';
-import PageHeader from './PageHeader';
+import NoMatch             from './NoMatch';
+import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
 
 const renderer = new marked.Renderer();
@@ -55,83 +55,90 @@ renderer.image = (href, title, text) =>
 
 marked.setOptions({
 	renderer,
-	gfm: true,
-	tables: true,
-	breaks: false,
-	pedantic: false,
-	sanitize: false,
-	smartLists: true,
+	gfm        : true,
+	tables     : true,
+	breaks     : false,
+	pedantic   : false,
+	sanitize   : false,
+	smartLists : true,
 	smartypants: false,
 });
 
-class EditBlueprint extends PureComponent {
+class EditBlueprint extends PureComponent
+{
 	static propTypes = forbidExtraProps({
-		id: PropTypes.string.isRequired,
-		user: propTypes.userSchema,
-		subscribeToBlueprint: PropTypes.func.isRequired,
+		id                   : PropTypes.string.isRequired,
+		user                 : propTypes.userSchema,
+		subscribeToBlueprint : PropTypes.func.isRequired,
 		subscribeToModerators: PropTypes.func.isRequired,
-		subscribeToTags: PropTypes.func.isRequired,
-		tags: PropTypes.arrayOf(PropTypes.string).isRequired,
-		isModerator: PropTypes.bool.isRequired,
-		blueprint: propTypes.blueprintSchema,
-		loading: PropTypes.bool.isRequired,
-		match: PropTypes.shape(forbidExtraProps({
+		subscribeToTags      : PropTypes.func.isRequired,
+		tags                 : PropTypes.arrayOf(PropTypes.string).isRequired,
+		isModerator          : PropTypes.bool.isRequired,
+		blueprint            : propTypes.blueprintSchema,
+		loading              : PropTypes.bool.isRequired,
+		match                : PropTypes.shape(forbidExtraProps({
 			params: PropTypes.shape(forbidExtraProps({
 				blueprintId: PropTypes.string.isRequired,
 			})).isRequired,
-			path: PropTypes.string.isRequired,
-			url: PropTypes.string.isRequired,
+			path   : PropTypes.string.isRequired,
+			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
 		})).isRequired,
-		location: propTypes.locationSchema,
-		history: propTypes.historySchema,
+		location     : propTypes.locationSchema,
+		history      : propTypes.historySchema,
 		staticContext: PropTypes.shape(forbidExtraProps({})),
 	});
 
 	static emptyTags = [];
 
 	static imgurHeaders = {
-		'Accept': 'application/json',
-		'Content-Type': 'application/json',
+		'Accept'       : 'application/json',
+		'Content-Type' : 'application/json',
 		'Authorization': 'Client-ID 46a3f144b6a0882',
 	};
 
 	state = {
-		renderedMarkdown: '',
-		submissionErrors: [],
-		submissionWarnings: [],
+		renderedMarkdown        : '',
+		submissionErrors        : [],
+		submissionWarnings      : [],
 		uploadProgressBarVisible: false,
-		uploadProgressPercent: 0,
-		deletionModalVisible: false,
+		uploadProgressPercent   : 0,
+		deletionModalVisible    : false,
 	};
 
-	UNSAFE_componentWillMount() {
+	UNSAFE_componentWillMount()
+	{
 		this.props.subscribeToBlueprint(this.props.id);
 		this.props.subscribeToTags();
-		if (!isEmpty(this.props.user)) {
+		if (!isEmpty(this.props.user))
+		{
 			this.props.subscribeToModerators();
 		}
 
 		this.cacheBlueprintState(this.props.blueprint);
 	}
 
-	UNSAFE_componentWillReceiveProps(nextProps) {
-		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user)) {
+	UNSAFE_componentWillReceiveProps(nextProps)
+	{
+		if (!isEqual(this.props.user, nextProps.user) && !isEmpty(nextProps.user))
+		{
 			nextProps.subscribeToModerators();
 		}
 		this.cacheBlueprintState(nextProps.blueprint);
 	}
 
-	cacheBlueprintState = (blueprint) => {
-		if (blueprint) {
+	cacheBlueprintState = (blueprint) =>
+	{
+		if (blueprint)
+		{
 			const newBlueprint = {
 				...blueprint,
 				tags: blueprint.tags || EditBlueprint.emptyTags,
 			};
 
 			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
-			const parsedBlueprint = this.parseBlueprint(blueprint.blueprintString);
-			const v15Decoded = parsedBlueprint.getV15Decoded();
+			const parsedBlueprint  = this.parseBlueprint(blueprint.blueprintString);
+			const v15Decoded       = parsedBlueprint.getV15Decoded();
 
 			this.setState({
 				blueprint: newBlueprint,
@@ -142,18 +149,21 @@ class EditBlueprint extends PureComponent {
 		}
 	};
 
-	handleDismissError = () => {
-		this.setState({ submissionErrors: [] });
+	handleDismissError = () =>
+	{
+		this.setState({submissionErrors: []});
 	};
 
-	handleDismissWarnings = () => {
-		this.setState({ submissionWarnings: [] });
+	handleDismissWarnings = () =>
+	{
+		this.setState({submissionWarnings: []});
 	};
 
-	handleDescriptionChanged = (event) => {
+	handleDescriptionChanged = (event) =>
+	{
 		const descriptionMarkdown = event.target.value;
-		console.log('descriptionMarkdown', { event });
-		const renderedMarkdown = marked(descriptionMarkdown);
+		console.log('descriptionMarkdown', {event});
+		const renderedMarkdown    = marked(descriptionMarkdown);
 		this.setState({
 			renderedMarkdown,
 			blueprint: {
@@ -163,8 +173,9 @@ class EditBlueprint extends PureComponent {
 		});
 	};
 
-	handleChange = (event) => {
-		const { name, value } = event.target;
+	handleChange = (event) =>
+	{
+		const {name, value} = event.target;
 
 		const newState = {
 			blueprint: {
@@ -173,70 +184,86 @@ class EditBlueprint extends PureComponent {
 			},
 		};
 
-		if (name === 'blueprintString') {
+		if (name === 'blueprintString')
+		{
 			newState.parsedBlueprint = this.parseBlueprint(value);
-			newState.v15Decoded = newState.parsedBlueprint && newState.parsedBlueprint.getV15Decoded();
+			newState.v15Decoded      = newState.parsedBlueprint && newState.parsedBlueprint.getV15Decoded();
 		}
 
 		this.setState(newState);
 	};
 
-	processStatus = (response) => {
-		if (response.status === 200 || response.status === 0) {
+	processStatus = (response) =>
+	{
+		if (response.status === 200 || response.status === 0)
+		{
 			return Promise.resolve(response);
 		}
 		return Promise.reject(new Error(response.statusText));
 	};
 
-	handleImgurError = (error) => {
+	handleImgurError = (error) =>
+	{
 		console.error(error.message ? error.message : error);
 	};
 
-	handleFirebaseStorageError = (error) => {
-		console.error('Image failed to upload.', { error });
+	handleFirebaseStorageError = (error) =>
+	{
+		console.error('Image failed to upload.', {error});
 		this.setState({
-			submissionErrors: ['Image failed to upload.'],
+			submissionErrors        : ['Image failed to upload.'],
 			uploadProgressBarVisible: false,
 		});
 	};
 
-	handleUploadProgress = (snapshot) => {
+	handleUploadProgress = (snapshot) =>
+	{
 		const uploadProgressPercent = Math.trunc(snapshot.bytesTransferred / snapshot.totalBytes * 100);
-		this.setState({ uploadProgressPercent });
+		this.setState({uploadProgressPercent});
 	};
 
-	validateInputs = () => {
+	validateInputs = () =>
+	{
 		const submissionErrors = [];
-		const { blueprint } = this.state;
-		if (!blueprint.title) {
+		const {blueprint}      = this.state;
+		if (!blueprint.title)
+		{
 			submissionErrors.push('Title may not be empty');
 		}
-		else if (blueprint.title.trim().length < 10) {
+		else if (blueprint.title.trim().length < 10)
+		{
 			submissionErrors.push('Title must be at least 10 characters');
 		}
 
-		if (!blueprint.descriptionMarkdown) {
+		if (!blueprint.descriptionMarkdown)
+		{
 			submissionErrors.push('Description Markdown may not be empty');
 		}
-		else if (blueprint.descriptionMarkdown.trim().length < 10) {
+		else if (blueprint.descriptionMarkdown.trim().length < 10)
+		{
 			submissionErrors.push('Description Markdown must be at least 10 characters');
 		}
 
-		if (!blueprint.blueprintString) {
+		if (!blueprint.blueprintString)
+		{
 			submissionErrors.push('Blueprint String may not be empty');
 		}
-		else if (blueprint.blueprintString.trim().length < 10) {
+		else if (blueprint.blueprintString.trim().length < 10)
+		{
 			submissionErrors.push('Blueprint String must be at least 10 characters');
 		}
 
 		const badRegex = /^https:\/\/imgur\.com\/(a|gallery)\/[a-zA-Z0-9]+$/;
-		if (badRegex.test(blueprint.imageUrl)) {
+		if (badRegex.test(blueprint.imageUrl))
+		{
 			submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id}. Click on the "Copy Link" button on the Imgur image page.');
 		}
-		else {
+		else
+		{
 			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.[a-zA-Z0-9]{3,4}$/;
 			const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
-			if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl)) {
+			if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl))
+			{
 				submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}');
 			}
 		}
@@ -244,165 +271,194 @@ class EditBlueprint extends PureComponent {
 		return submissionErrors;
 	};
 
-	someHaveNoName = (blueprintBook) => {
+	someHaveNoName = (blueprintBook) =>
+	{
 		return some(
 			blueprintBook.blueprints,
-			(eachEntry) => {
+			(eachEntry) =>
+			{
 				if (eachEntry.blueprint_book) return this.someHaveNoName(eachEntry.blueprint_book);
 				if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
 				return false;
 			});
 	};
 
-	validateWarnings = () => {
+	validateWarnings = () =>
+	{
 		const submissionWarnings = [];
 
-		if (isEmpty(this.state.blueprint.tags)) {
+		if (isEmpty(this.state.blueprint.tags))
+		{
 			submissionWarnings.push('The blueprint has no tags. Consider adding a few tags.');
 		}
 
 		const blueprint = new Blueprint(this.state.blueprint.blueprintString.trim());
-		if (isEmpty(blueprint.decodedObject)) {
+		if (isEmpty(blueprint.decodedObject))
+		{
 			submissionWarnings.push('Could not parse blueprint.');
 			return submissionWarnings;
 		}
 
-		if (blueprint.isV14()) {
+		if (blueprint.isV14())
+		{
 			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
 		}
 
-		if (blueprint.isBlueprint() && isEmpty(this.state.v15Decoded.blueprint.label)) {
+		if (blueprint.isBlueprint() && isEmpty(this.state.v15Decoded.blueprint.label))
+		{
 			submissionWarnings.push('Blueprint has no name. Consider adding a name.');
 		}
-		if (blueprint.isBlueprint() && isEmpty(this.state.v15Decoded.blueprint.icons)) {
+		if (blueprint.isBlueprint() && isEmpty(this.state.v15Decoded.blueprint.icons))
+		{
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
 
-		if (blueprint.isBook() && this.someHaveNoName(this.state.v15Decoded.blueprint_book)) {
+		if (blueprint.isBook() && this.someHaveNoName(this.state.v15Decoded.blueprint_book))
+		{
 			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 		}
 
 		return submissionWarnings;
 	};
 
-	handleSaveBlueprintEdits = (event) => {
+	handleSaveBlueprintEdits = (event) =>
+	{
 		event.preventDefault();
 
 		const submissionErrors = this.validateInputs();
 
-		if (submissionErrors.length > 0) {
-			this.setState({ submissionErrors });
+		if (submissionErrors.length > 0)
+		{
+			this.setState({submissionErrors});
 			return;
 		}
 
 		const submissionWarnings = this.validateWarnings();
-		if (submissionWarnings.length > 0) {
-			this.setState({ submissionWarnings });
+		if (submissionWarnings.length > 0)
+		{
+			this.setState({submissionWarnings});
 			return;
 		}
 
 		this.actuallySaveBlueprintEdits();
 	};
 
-	handleForceSaveBlueprintEdits = (event) => {
+	handleForceSaveBlueprintEdits = (event) =>
+	{
 		event.preventDefault();
 
 		const submissionErrors = this.validateInputs();
-		if (submissionErrors.length > 0) {
-			this.setState({ submissionErrors });
+		if (submissionErrors.length > 0)
+		{
+			this.setState({submissionErrors});
 			return;
 		}
 
 		this.actuallySaveBlueprintEdits();
 	};
 
-	actuallySaveBlueprintEdits = async () => {
+	actuallySaveBlueprintEdits = async () =>
+	{
 		const imageUrl = this.state.blueprint.imageUrl;
+
 		const regexPatterns = {
 			imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
 			imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
 		};
-		const matches = Object.values(regexPatterns).map(pattern => regexCheck(pattern)).filter(Boolean);
-		if (matches.length > 0) {
-			const imgurId = match[1];
-			const image = {
-				id: imgurId,
-				type: 'image/png',
-			};
-
-			const updates = {
-				[`/blueprints/${this.props.id}/title`]: this.state.blueprint.title,
-				[`/blueprints/${this.props.id}/blueprintString`]: this.state.blueprint.blueprintString,
-				[`/blueprints/${this.props.id}/descriptionMarkdown`]: this.state.blueprint.descriptionMarkdown,
-				[`/blueprints/${this.props.id}/tags`]: this.state.blueprint.tags,
-				[`/blueprints/${this.props.id}/lastUpdatedDate`]: firebase.database.ServerValue.TIMESTAMP,
-				[`/blueprints/${this.props.id}/image`]: image,
-				[`/blueprintSummaries/${this.props.id}/title/`]: this.state.blueprint.title,
-				[`/blueprintSummaries/${this.props.id}/imgurId/`]: image.id,
-				[`/blueprintSummaries/${this.props.id}/imgurType/`]: image.type,
-				[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: firebase.database.ServerValue.TIMESTAMP,
-			};
-
-			this.props.tags.forEach((tag) => {
-				updates[`/byTag/${tag}/${this.props.id}`] = null;
-			});
-			forEach(this.state.blueprint.tags, (tag) => {
-				updates[`/byTag/${tag}/${this.props.id}`] = true;
-			});
-
-			try {
-				await app.database().ref().update(updates);
-				this.props.history.push(`/view/${this.props.id}`);
-			}
-			catch (e) {
-				console.log(e);
-				return;
-			}
-		}
-		else {
+		const matches       = Object.values(regexPatterns).map(pattern => regexCheck(pattern)).filter(Boolean);
+		if (matches.length <= 0)
+		{
 			console.log('EditBlueprint.actuallySaveBlueprintEdits error in imageUrl', {imageUrl});
+			return;
+		}
+
+		const imgurId = match[1];
+		const image   = {
+			id  : imgurId,
+			type: 'image/png',
+		};
+
+		const updates = {
+			[`/blueprints/${this.props.id}/title`]                   : this.state.blueprint.title,
+			[`/blueprints/${this.props.id}/blueprintString`]         : this.state.blueprint.blueprintString,
+			[`/blueprints/${this.props.id}/descriptionMarkdown`]     : this.state.blueprint.descriptionMarkdown,
+			[`/blueprints/${this.props.id}/tags`]                    : this.state.blueprint.tags,
+			[`/blueprints/${this.props.id}/lastUpdatedDate`]         : firebase.database.ServerValue.TIMESTAMP,
+			[`/blueprints/${this.props.id}/image`]                   : image,
+			[`/blueprintSummaries/${this.props.id}/title/`]          : this.state.blueprint.title,
+			[`/blueprintSummaries/${this.props.id}/imgurId/`]        : image.id,
+			[`/blueprintSummaries/${this.props.id}/imgurType/`]      : image.type,
+			[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: firebase.database.ServerValue.TIMESTAMP,
+		};
+
+		this.props.tags.forEach((tag) =>
+		{
+			updates[`/byTag/${tag}/${this.props.id}`] = null;
+		});
+		forEach(this.state.blueprint.tags, (tag) =>
+		{
+			updates[`/byTag/${tag}/${this.props.id}`] = true;
+		});
+
+		try
+		{
+			await app.database().ref().update(updates);
+			this.props.history.push(`/view/${this.props.id}`);
+		}
+		catch (e)
+		{
+			console.log(e);
 			return;
 		}
 	};
 
-	handleCancel = () => {
+	handleCancel = () =>
+	{
 		this.props.history.push(`/view/${this.props.id}`);
 	};
 
-	handleShowConfirmDelete = (event) => {
+	handleShowConfirmDelete = (event) =>
+	{
 		event.preventDefault();
-		this.setState({ deletionModalVisible: true });
+		this.setState({deletionModalVisible: true});
 	};
 
-	handleHideConfirmDelete = () => {
-		this.setState({ deletionModalVisible: false });
+	handleHideConfirmDelete = () =>
+	{
+		this.setState({deletionModalVisible: false});
 	};
 
-	handleDeleteBlueprint = () => {
+	handleDeleteBlueprint = () =>
+	{
 		const authorId = this.state.blueprint.author.userId;
-		const updates = {
-			[`/blueprints/${this.props.id}`]: null,
+		const updates  = {
+			[`/blueprints/${this.props.id}`]                  : null,
 			[`/users/${authorId}/blueprints/${this.props.id}`]: null,
-			[`/blueprintSummaries/${this.props.id}`]: null,
+			[`/blueprintSummaries/${this.props.id}`]          : null,
 		};
-		this.props.tags.forEach((tag) => {
+		this.props.tags.forEach((tag) =>
+		{
 			updates[`/byTag/${tag}/${this.props.id}`] = null;
 		});
 		app.database().ref().update(updates)
 			.then(() => this.props.history.push(`/user/${authorId}`));
 	};
 
-	parseBlueprint = (blueprintString) => {
-		try {
+	parseBlueprint = (blueprintString) =>
+	{
+		try
+		{
 			return new Blueprint(blueprintString);
 		}
-		catch (ignored) {
-			console.log('EditBlueprint.parseBlueprint', { ignored });
+		catch (ignored)
+		{
+			console.log('EditBlueprint.parseBlueprint', {ignored});
 			return undefined;
 		}
 	};
 
-	handleTagSelection = (selectedTags) => {
+	handleTagSelection = (selectedTags) =>
+	{
 		const tags = selectedTags.map(each => each.value);
 		this.setState({
 			blueprint: {
@@ -412,15 +468,17 @@ class EditBlueprint extends PureComponent {
 		});
 	};
 
-	addTag = (tag) => {
+	addTag = (tag) =>
+	{
 		this.setState(update(this.state, {
-			blueprint: { tags: { $push: [tag] } },
+			blueprint: {tags: {$push: [tag]}},
 		}));
 	};
 
-	renderOldThumbnail = () => {
-		const { id, type } = this.state.blueprint.image;
-		const imageUrl = buildImageUrl(id, type, 'b');
+	renderOldThumbnail = () =>
+	{
+		const {id, type} = this.state.blueprint.image;
+		const imageUrl  = buildImageUrl(id, type, 'b');
 
 		return (
 			<Form.Group as={Row}>
@@ -428,7 +486,7 @@ class EditBlueprint extends PureComponent {
 					{'Old screenshot'}
 				</Form.Label>
 				<Col sm={10}>
-					<Card className='mb-2 mr-2' style={{ width: '14rem', backgroundColor: '#1c1e22' }}>
+					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
 						<Card.Img variant='top' src={imageUrl || noImageAvailable} />
 						<Card.Title className='truncate'>
 							{this.state.blueprint.title}
@@ -439,14 +497,17 @@ class EditBlueprint extends PureComponent {
 		);
 	};
 
-	renderPreview = () => {
-		if (!this.state.blueprint.imageUrl) {
+	renderPreview = () =>
+	{
+		if (!this.state.blueprint.imageUrl)
+		{
 			return;
 		}
 
 		const goodRegex1 = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
-		const match = this.state.blueprint.imageUrl.match(goodRegex1);
-		if (!match) {
+		const match      = this.state.blueprint.imageUrl.match(goodRegex1);
+		if (!match)
+		{
 			return (
 				<Form.Group as={Row}>
 					<Form.Label column sm='2'>
@@ -463,7 +524,7 @@ class EditBlueprint extends PureComponent {
 			);
 		}
 
-		const imgurId = match[1];
+		const imgurId  = match[1];
 		const imageUrl = buildImageUrl(imgurId, 'image/png', 'b');
 
 		return (
@@ -472,7 +533,7 @@ class EditBlueprint extends PureComponent {
 					{'Attached screenshot'}
 				</Form.Label>
 				<Col sm={10}>
-					<Card className='mb-2 mr-2' style={{ width: '14rem', backgroundColor: '#1c1e22' }}>
+					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
 						<Card.Img variant='top' src={imageUrl || noImageAvailable} />
 						<Card.Title className='truncate'>
 							{this.state.blueprint.title}
@@ -483,8 +544,10 @@ class EditBlueprint extends PureComponent {
 		);
 	};
 
-	render() {
-		if (!this.props.user) {
+	render()
+	{
+		if (!this.props.user)
+		{
 			return (
 				<>
 					<h1 className='display-4'>
@@ -497,7 +560,8 @@ class EditBlueprint extends PureComponent {
 			);
 		}
 
-		if (this.props.loading) {
+		if (this.props.loading)
+		{
 			return (
 				<h1>
 					<FontAwesomeIcon icon={faCog} spin />
@@ -506,13 +570,15 @@ class EditBlueprint extends PureComponent {
 			);
 		}
 
-		const { blueprint } = this.state;
-		if (!blueprint) {
+		const {blueprint} = this.state;
+		if (!blueprint)
+		{
 			return <NoMatch />;
 		}
 
 		const ownedByCurrentUser = this.props.user && this.props.user.uid === blueprint.author.userId;
-		if (!ownedByCurrentUser && !this.props.isModerator) {
+		if (!ownedByCurrentUser && !this.props.isModerator)
+		{
 			return (
 				<h1>
 					You are not the author of this blueprint.
@@ -520,7 +586,7 @@ class EditBlueprint extends PureComponent {
 			);
 		}
 
-		const allTagSuggestions = generateTagSuggestions(
+		const allTagSuggestions    = generateTagSuggestions(
 			this.state.blueprint.title,
 			this.state.parsedBlueprint,
 			this.state.v15Decoded
@@ -658,7 +724,7 @@ class EditBlueprint extends PureComponent {
 										placeholder='Description (plain text or *GitHub Flavored Markdown*)'
 										value={blueprint.descriptionMarkdown}
 										onChange={this.handleDescriptionChanged}
-										style={{ minHeight: 200 }}
+										style={{minHeight: 200}}
 									/>
 								</Col>
 							</Form.Group>
@@ -670,8 +736,8 @@ class EditBlueprint extends PureComponent {
 								<Col sm={10}>
 									<Card>
 										<div
-											style={{ minHeight: 200 }}
-											dangerouslySetInnerHTML={{ __html: this.state.renderedMarkdown }}
+											style={{minHeight: 200}}
+											dangerouslySetInnerHTML={{__html: this.state.renderedMarkdown}}
 										/>
 									</Card>
 								</Col>
@@ -722,7 +788,7 @@ class EditBlueprint extends PureComponent {
 								<Col sm={10}>
 									<Select
 										value={this.state.blueprint.tags}
-										options={this.props.tags.map(value => ({ value, label: value }))}
+										options={this.props.tags.map(value => ({value, label: value}))}
 										onChange={this.handleTagSelection}
 										multi
 										placeholder='Select at least one tag'
@@ -751,7 +817,7 @@ class EditBlueprint extends PureComponent {
 							{this.renderPreview()}
 
 							<Form.Group as={Row}>
-								<Col sm={{ span: 10, offset: 2 }}>
+								<Col sm={{span: 10, offset: 2}}>
 									<ButtonToolbar>
 										<Button
 											type='button'
@@ -791,20 +857,21 @@ class EditBlueprint extends PureComponent {
 	}
 }
 
-const mapStateToProps = (storeState, ownProps) => {
+const mapStateToProps = (storeState, ownProps) =>
+{
 	const id = ownProps.match.params.blueprintId;
 	return {
 		id,
-		user: selectors.getFilteredUser(storeState),
+		user       : selectors.getFilteredUser(storeState),
 		isModerator: selectors.getIsModerator(storeState),
-		blueprint: selectors.getBlueprintDataById(storeState, { id }),
-		loading: selectors.getBlueprintLoadingById(storeState, ownProps),
-		tags: selectors.getTags(storeState),
+		blueprint  : selectors.getBlueprintDataById(storeState, {id}),
+		loading    : selectors.getBlueprintLoadingById(storeState, ownProps),
+		tags       : selectors.getTags(storeState),
 	};
 };
 
 const mapDispatchToProps = dispatch =>
-	bindActionCreators({ subscribeToBlueprint, subscribeToModerators, subscribeToTags }, dispatch);
+	bindActionCreators({subscribeToBlueprint, subscribeToModerators, subscribeToTags}, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditBlueprint);
 

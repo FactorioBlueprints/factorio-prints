@@ -348,76 +348,74 @@ class Create extends PureComponent
 	};
 
 	actuallyCreateBlueprint = async () =>
-		{
-			const imageUrl = this.state.blueprint.imageUrl;
-			const regexCheck = pattern => imageUrl.match(pattern);
-			const regexPatterns = {
-				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-			};
-	
-			const matches = Object.values(regexPatterns).map(pattern => regexCheck(pattern)).filter(Boolean);
-			if (matches.length > 0) 
-			{
-				const match = matches[0];
-				const imgurId = match[1];
-				const image = {
-					id  : imgurId,
-					type: 'image/png',
-				};
-	
-				const blueprint = {
-					...this.state.blueprint,
-					author: {
-						userId: this.props.user.uid,
-					},
-					authorId         : this.props.user.uid,
-					createdDate      : firebase.database.ServerValue.TIMESTAMP,
-					lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-					favorites        : {},
-					numberOfFavorites: 0,
-					image,
-				};
-	
-				const blueprintSummary = {
-					imgurId          : blueprint.image.id,
-					imgurType        : blueprint.image.type,
-					title            : blueprint.title,
-					numberOfFavorites: blueprint.numberOfFavorites,
-					lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
-				};
-	
-				try
-				{
-					const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
-	
-					const updates = {
-						[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
-						[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
-						[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : imageUrl,
-					};
-					forEach(blueprint.tags, (tag) =>
-					{
-						updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
-					});
-	
-					await app.database().ref().update(updates);
-					this.setState(Create.initialState);
-					this.props.history.push(`/view/${newBlueprintRef.key}`);
-				}
-				catch (e)
-				{
-					console.log(e);
-					return;
-				}
-			}
-			else
-			{
-				console.log('Create.actuallyCreateBlueprint error in imageUrl', {imageUrl});
-				return;	
-			}
+	{
+		const imageUrl = this.state.blueprint.imageUrl;
+
+		const regexCheck    = pattern => imageUrl.match(pattern);
+		const regexPatterns = {
+			imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+			imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
 		};
-	
+
+		const matches = Object.values(regexPatterns).map(pattern => regexCheck(pattern)).filter(Boolean);
+		if (matches.length <= 0)
+		{
+			console.log('Create.actuallyCreateBlueprint error in imageUrl', {imageUrl});
+			return;
+		}
+
+		const match   = matches[0];
+		const imgurId = match[1];
+		const image   = {
+			id  : imgurId,
+			type: 'image/png',
+		};
+
+		const blueprint = {
+			...this.state.blueprint,
+			author: {
+				userId: this.props.user.uid,
+			},
+			authorId         : this.props.user.uid,
+			createdDate      : firebase.database.ServerValue.TIMESTAMP,
+			lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+			favorites        : {},
+			numberOfFavorites: 0,
+			image,
+		};
+
+		const blueprintSummary = {
+			imgurId          : blueprint.image.id,
+			imgurType        : blueprint.image.type,
+			title            : blueprint.title,
+			numberOfFavorites: blueprint.numberOfFavorites,
+			lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+		};
+
+		try
+		{
+			const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
+
+			const updates = {
+				[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
+				[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
+				[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : imageUrl,
+			};
+			forEach(blueprint.tags, (tag) =>
+			{
+				updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
+			});
+
+			await app.database().ref().update(updates);
+			this.setState(Create.initialState);
+			this.props.history.push(`/view/${newBlueprintRef.key}`);
+		}
+		catch (e)
+		{
+			console.log(e);
+			return;
+		}
+	};
 
 	handleCancel = () =>
 	{
