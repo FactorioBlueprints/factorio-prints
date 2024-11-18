@@ -1,4 +1,5 @@
 import {faEdit, faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import { DiscussionEmbed } from 'disqus-react';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
@@ -38,6 +39,10 @@ function renderEditButton(handleTransitionToEdit)
 	</Button>;
 }
 */
+
+function getFactorioprintsUrl(id) {
+	return `https://factorioprints.com/view/${id}`;
+}
 
 function EfficientSingleBlueprint()
 {
@@ -143,13 +148,19 @@ function EfficientSingleBlueprint()
 					</Card>
 				</Col>
 			</Row>
-			{/*<Row className='w-100'>*/}
-			{/*	<Disqus.DiscussionEmbed*/}
-			{/*		shortname='factorio-blueprints'*/}
-			{/*		config={disqusConfig}*/}
-			{/*		className='w-100'*/}
-			{/*	/>*/}
-			{/*</Row>*/}
+			<Row className='w-100'>
+				<DiscussionEmbed
+					shortname='factorio-blueprints'
+					config={
+						{
+							url: getFactorioprintsUrl(blueprintKey),
+							identifier: blueprintKey,
+							title: blueprintKey,
+						}
+					}
+					className='w-100'
+				/>
+			</Row>
 		</Container>
 	);
 }

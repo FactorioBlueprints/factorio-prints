@@ -170,3 +170,4 @@ root {
 #disqus_thread {
   width: 100%;
 }
+#disqus_thread { color-scheme: none; }
