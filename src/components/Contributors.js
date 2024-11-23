@@ -5,7 +5,23 @@ import Alert                  from 'react-bootstrap/Alert';
 
 import React from 'react';
 
-const contributors = ['Howard F.', 'Tomáš Hubka', 'wisefish', 'Clive Blackledge', 'ensoniq2k', 'faunris', 'Riley', 'Thomas', 'Roger Booth', 'MercenaryIII', 'Earthwalker']
+const contributors = [
+    'Earthwalker',
+    'wisefish',
+    // J***** *******
+    'Tomáš Hubka',
+    'Clive Blackledge',
+    'Howard F.',
+    'faunris',
+    // P****
+    'ensoniq2k',
+    'MercenaryIII', // C**** *****
+    // D*****
+    'Joel Beland',
+    'Riley',
+    'Roger Booth',
+    'Thomas',
+]
 
 function Contributors()
 {
@@ -14,16 +30,9 @@ function Contributors()
 			<h1 className='display-4'>
 				{'Thank you to our contributors!'}
 			</h1>
-			{
-				contributors.map(contributor => (
-					<p className='lead' key={contributor}>
-						• {contributor}
-					</p>
-				))
-			}
 			<Alert  variant='primary'>
 				<p>
-					{'Their contributions will go toward hosting costs, and to reducing and removing ads.'}
+					{'Their contributions go toward the significant hosting costs, and help keep this site running.'}
 				</p>
 				<p className='lead'>
 					<FontAwesomeIcon
@@ -34,6 +43,13 @@ function Contributors()
 					/> <a href='https://www.patreon.com/FactorioBlueprints'>patreon.com/FactorioBlueprints</a>
 				</p>
 			</Alert>
+			{
+				contributors.map(contributor => (
+					<p className='lead' key={contributor}>
+						• {contributor}
+					</p>
+				))
+			}
 		</div>
 	);
 }
