@@ -61,6 +61,7 @@ function EfficientSingleBlueprint()
 
 	const isModerator = useIsModerator();
 
+	const adBlocked = !(window.adsbygoogle && window.adsbygoogle.loaded);
 
 	/*
 	const navigate = useNavigate();
@@ -104,6 +105,18 @@ function EfficientSingleBlueprint()
 
 	return (
 		<Container>
+			{adBlocked && (
+				<Row>
+					<Col>
+						<Card className="mt-4">
+							<Card.Body>
+								<FontAwesomeIcon icon={faExclamationTriangle} size='lg' fixedWidth />
+								{' Ad revenue is used to support hosting the project. Please consider turning off your ad blocker.'}
+							</Card.Body>
+						</Card>
+					</Col>
+				</Row>
+			)}
 			<Row>
 				<Col md={9}>
 					<div className='d-flex mt-4'>
