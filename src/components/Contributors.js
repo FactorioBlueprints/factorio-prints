@@ -6,6 +6,7 @@ import Alert                  from 'react-bootstrap/Alert';
 import React from 'react';
 
 const contributors = [
+    'Pepzi',
     'Earthwalker',
     'wisefish',
     // J***** *******
