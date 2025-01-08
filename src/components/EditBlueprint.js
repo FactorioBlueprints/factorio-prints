@@ -372,6 +372,7 @@ class EditBlueprint extends PureComponent
 			return;
 		}
 
+const match = matches[0];
 		const match = matches[0];
 		const imgurId = match[1];
 		const image   = {
