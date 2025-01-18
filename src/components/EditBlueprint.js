@@ -365,7 +365,9 @@ class EditBlueprint extends PureComponent
 			imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
 			imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
 		};
-		const matches       = Object.values(regexPatterns).map(pattern => regexCheck(pattern)).filter(Boolean);
+		const matches = Object.values(regexPatterns)
+			.map(pattern => pattern.exec(imageUrl))
+			.filter(Boolean);
 		if (matches.length <= 0)
 		{
 			console.log('EditBlueprint.actuallySaveBlueprintEdits error in imageUrl', {imageUrl});
