@@ -6092,10 +6092,10 @@ eslint-config-react-app@^7.0.1:
     eslint-plugin-react-hooks "^4.3.0"
     eslint-plugin-testing-library "^5.0.1"
 
-eslint-find-rules@4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/eslint-find-rules/-/eslint-find-rules-4.2.0.tgz#207febb19851fc54da93e72172a99ee0f5d743d2"
-  integrity sha512-FR8mOEn8Kt2MR3VSxNuLoWmoA7zvgmIE2Fm2I3RrSjXSvu0uPHx4OHc/OmiXR1XNbsvxh3gge2UQrBhCV9APCw==
+eslint-find-rules@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-find-rules/-/eslint-find-rules-5.0.0.tgz#548a41c99ae3c91a11d1db4c5e3a6db428be6ce1"
+  integrity sha512-k35gAhqfOBVbvFdMahYuK/jaoa5tVRH8lYZyQbAuySUTXmLsNpOkLeUpZzbZD+LplspIBWeu/G847YeFP1a6Zw==
   dependencies:
     cliui "^7.0.4"
     eslint-rule-documentation "^1.0.23"
