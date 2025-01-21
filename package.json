@@ -17,7 +17,7 @@
 		"@tanstack/react-query-persist-client": "^4.26.1",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "^15.0.7",
-		"@testing-library/user-event": "^14.6.0",
+		"@testing-library/user-event": "^14.6.1",
 		"@types/airbnb-prop-types": "^2.13.7",
 		"@types/atob": "^2.1.4",
 		"@types/classnames": "^2.3.4",
