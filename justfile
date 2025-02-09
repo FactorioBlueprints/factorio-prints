@@ -1,0 +1,50 @@
+set shell := ["bash", "-O", "globstar", "-c"]
+set dotenv-filename := ".envrc"
+
+import ".just/console.just"
+import ".just/git.just"
+import ".just/git-rebase.just"
+import ".just/git-test.just"
+
+factorio_prints_dir := env('FACTORIO_PRINTS_DIR', '~/projects/factorio.school')
+ui_module := env('UI_MODULE', 'factorio-prints-dropwizard-application-ui-static')
+
+default:
+    @just --list --unsorted
+
+# Build and sync to {{FACTORIO_PRINTS_DIR}}
+build:
+    yarn install --ignore-optional --ignore-engines --ignore--platform --ignore-scripts
+    yarn build
+    yarn styles
+    rsync -av build/ {{factorio_prints_dir}}/{{ui_module}}/src/main/resources/ui
+    git -C {{factorio_prints_dir}} add {{ui_module}}/src/main/resources/ui
+    git -C {{factorio_prints_dir}} commit -m "Upgrade UI to $(git log -n1 --pretty='%H %s')" || true
+    cd {{factorio_prints_dir}}/{{ui_module}} && just spotless json || true
+    just absorb
+    # git -C {{factorio_prints_dir}} push open-source HEAD:factorio.school
+
+# `npm run start`
+run:
+    npm run start
+
+# `factorio --dump-icon-sprites`
+dump-icon-sprites:
+    ~/Library/Application\ Support/Steam/SteamApps/common/Factorio/factorio.app/Contents/MacOS/factorio --dump-icon-sprites
+
+# `rsync` icon sprites
+sync-icon-sprites:
+    rsync -av ~/Library/Application\ Support/factorio/script-output/entity/*.png         {{justfile_directory()}}/public/icons/entity/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/fluid/*.png          {{justfile_directory()}}/public/icons/fluid/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/item-group/*.png     {{justfile_directory()}}/public/icons/item-group/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/item/*.png           {{justfile_directory()}}/public/icons/item/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/quality/*.png        {{justfile_directory()}}/public/icons/quality/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/recipe/*.png         {{justfile_directory()}}/public/icons/recipe/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/space-location/*.png {{justfile_directory()}}/public/icons/space-location/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/technology/*.png     {{justfile_directory()}}/public/icons/technology/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/tile/*.png           {{justfile_directory()}}/public/icons/tile/
+    rsync -av ~/Library/Application\ Support/factorio/script-output/virtual-signal/*.png {{justfile_directory()}}/public/icons/virtual-signal/
+
+# Override this with a command called `woof` which notifies you in whatever ways you prefer.
+# My `woof` command uses `echo`, `say`, and sends a Pushover notification.
+echo_command := env('ECHO_COMMAND', "echo")
