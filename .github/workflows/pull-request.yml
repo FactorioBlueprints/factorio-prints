@@ -1,0 +1,20 @@
+# Jobs that run on pull_request, but not on merge_group. This is useful for jobs that post comments on Pull Requests, like a code coverage report or a preview of rendered docs.
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  automerge-dependabot:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable auto-merge for Dependabot PR
+        run: gh pr merge --rebase --auto "${{ github.event.pull_request.number }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
