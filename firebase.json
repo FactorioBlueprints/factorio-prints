@@ -6,6 +6,10 @@
 		"public"  : "build",
 		"rewrites": [
 			{
+				"source": "service-worker.js",
+				"destination": "/service-worker.js"
+			},
+			{
 				"source"     : "**",
 				"destination": "/index.html"
 			}
@@ -25,7 +29,20 @@
 				"headers": [
 					{
 						"key"  : "Cache-Control",
-						"value": "max-age=1800"
+						"value": "max-age=0, no-cache, no-store, must-revalidate"
+					}
+				]
+			},
+			{
+				"source" : "service-worker.js",
+				"headers": [
+					{
+						"key"  : "Content-Type",
+						"value": "application/javascript"
+					},
+					{
+						"key"  : "Cache-Control",
+						"value": "no-cache"
 					}
 				]
 			}

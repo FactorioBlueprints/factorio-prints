@@ -17,7 +17,7 @@ import './css/style.css';
 import {saveState} from './localStorage';
 
 import rootReducer           from './reducers/rootReducer';
-import registerServiceWorker from './registerServiceWorker';
+import {unregister} from './registerServiceWorker';
 import rootSaga              from './sagas/rootSaga';
 
 // Create the saga middleware
@@ -93,4 +93,4 @@ const provider = (
 	</Provider>
 );
 ReactDOM.render(provider, document.getElementById('root'));
-registerServiceWorker();
+unregister();
