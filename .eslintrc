@@ -405,6 +405,8 @@
 
     "lodash/prop-shorthand": "off",
 
+    "lodash/prefer-lodash-typecheck": "off",
+
     "jsx-a11y/anchor-is-valid": ["warn", { "aspects": ["invalidHref"] }],
 
     "indent"                     : [ "error", "tab",
