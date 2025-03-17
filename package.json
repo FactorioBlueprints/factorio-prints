@@ -6,6 +6,7 @@
   "proxy": "http://localhost:8080",
   "devDependencies": {
     "@babel/eslint-parser": "^7.23.10",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer-stylus": "1.0.0",
     "babel-cli": "6.26.0",
     "babel-eslint": "^10.1.0",
