@@ -47,7 +47,7 @@ class Header extends PureComponent
 			path   : PropTypes.string.isRequired,
 			url    : PropTypes.string.isRequired,
 			isExact: PropTypes.bool.isRequired,
-		})).isRequired,
+		})),
 		location     : locationSchema,
 		history      : historySchema,
 		staticContext: PropTypes.shape(forbidExtraProps({})),

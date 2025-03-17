@@ -88,21 +88,21 @@ class Root extends PureComponent
 			<DocumentTitle title='Factorio Prints'>
 				<BrowserRouter>
 					<div>
-						<Route path='/' component={Header} />
+						<Route path='/' render={() => <Header />} />
 						<Switch>
 							<Route path='/' exact render={this.renderIntro} />
-							<Route path='/blueprints' exact component={BlueprintGrid} />
-							<Route path='/top' exact component={MostFavoritedGrid} />
-							<Route path='/create' exact component={Create} />
-							<Route path='/favorites' exact component={FavoritesGrid} />
-							<Route path='/knownIssues' exact component={KnownIssues} />
-							<Route path='/chat' exact component={Chat} />
-							<Route path='/account' exact component={Account} />
-							<Route path='/view/:blueprintId' component={SingleBlueprint} />
-							<Route path='/edit/:blueprintId' component={EditBlueprint} />
-							<Route path='/user/:userId' component={UserGrid} />
+							<Route path='/blueprints' exact render={props => <BlueprintGrid {...props} />} />
+							<Route path='/top' exact render={props => <MostFavoritedGrid {...props} />} />
+							<Route path='/create' exact render={props => <Create {...props} />} />
+							<Route path='/favorites' exact render={props => <FavoritesGrid {...props} />} />
+							<Route path='/knownIssues' exact render={props => <KnownIssues {...props} />} />
+							<Route path='/chat' exact render={props => <Chat {...props} />} />
+							<Route path='/account' exact render={props => <Account {...props} />} />
+							<Route path='/view/:blueprintId' render={props => <SingleBlueprint {...props} />} />
+							<Route path='/edit/:blueprintId' render={props => <EditBlueprint {...props} />} />
+							<Route path='/user/:userId' render={props => <UserGrid {...props} />} />
 							<Route path='/tagged/:tag' render={this.renderTag} />
-							<Route component={NoMatch} />
+							<Route render={props => <NoMatch {...props} />} />
 						</Switch>
 					</div>
 				</BrowserRouter>
