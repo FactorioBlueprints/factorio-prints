@@ -234,13 +234,18 @@ class SingleBlueprint extends PureComponent
 		}
 	};
 
-	entityHistogram = parsedBlueprint =>
-		flow(
+	entityHistogram = (parsedBlueprint) =>
+	{
+		const validEntities = (parsedBlueprint.entities || []).concat(parsedBlueprint.tiles || [])
+			.filter(entity => typeof entity.name === 'string' || typeof entity.name === 'number');
+
+		return flow(
 			countBy('name'),
 			toPairs,
 			sortBy(1),
 			reverse,
-		)(concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []));
+		)(validEntities);
+	};
 
 	getAuthorName = () =>
 	{
@@ -259,16 +264,42 @@ class SingleBlueprint extends PureComponent
 	itemHistogram = (parsedBlueprint) =>
 	{
 		const result = {};
-		const items  = flatMap(parsedBlueprint.entities, entity => entity.items || []);
+		const items = flatMap(parsedBlueprint.entities, entity => entity.items || []);
+
 		items.forEach((item) =>
 		{
+			// Handle original format: {item: "copper-cable", count: 5}
 			if (has(item, 'item') && has(item, 'count'))
 			{
 				result[item.item] = (result[item.item] || 0) + item.count;
 			}
-			else
+			// Handle new format with id.name and items structure
+			else if (has(item, 'id') && has(item.id, 'name'))
 			{
-				forOwn(item, (value, key) => result[key] = (result[key] || 0) + value);
+				const itemName = item.id.name;
+				// Count the number of stacks if items.in_inventory exists
+				if (has(item, 'items') && has(item.items, 'in_inventory'))
+				{
+					const stackCount = item.items.in_inventory.length;
+					result[itemName] = (result[itemName] || 0) + stackCount;
+				}
+				// Just count it once if we can't determine the stack count
+				else
+				{
+					result[itemName] = (result[itemName] || 0) + 1;
+				}
+			}
+			// Handle old style direct key-value pairs: {"copper-cable": 5}
+			else if (typeof item === 'object')
+			{
+				forOwn(item, (value, key) =>
+				{
+					// Skip non-primitive values that might cause [object Object] rendering
+					if (typeof value !== 'object' || value === null)
+					{
+						result[key] = (result[key] || 0) + value;
+					}
+				});
 			}
 		});
 
@@ -466,42 +497,57 @@ class SingleBlueprint extends PureComponent
 
 										<tbody>
 											{
-												this.entityHistogram(this.state.v15Decoded.blueprint).map(pair => (
-													<tr key={pair[0]}>
-														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
-															{
-																entitiesWithIcons[pair[0]]
-																	? <img height='32px' width='32px' src={`/icons/${pair[0]}.png`} alt={pair[0]} />
-																	: ''
-															}
-														</td>
-														<td className='number'>
-															{pair[1]}
-														</td>
-														<td>
-															{pair[0]}
-														</td>
-													</tr>
-												))
+												this.entityHistogram(this.state.v15Decoded.blueprint).map((pair) =>
+												{
+													if (typeof pair[0] === 'object' || typeof pair[1] === 'object')
+													{
+														return null;
+													}
+													return (
+														<tr key={pair[0]}>
+															<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
+																{
+																	entitiesWithIcons[pair[0]]
+																		? <img height='32px' width='32px' src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																		: ''
+																}
+															</td>
+															<td className='number'>
+																{pair[1]}
+															</td>
+															<td>
+																{pair[0]}
+															</td>
+														</tr>
+													);
+												})
 											}
 											{
-												this.itemHistogram(this.state.v15Decoded.blueprint).map(pair => (
-													<tr key={pair[0]}>
-														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
-															{
-																entitiesWithIcons[pair[0]]
-																	? <img height='32px' width='32px' src={`/icons/${pair[0]}.png`} alt={pair[0]} />
-																	: ''
-															}
-														</td>
-														<td className='number'>
-															{pair[1]}
-														</td>
-														<td>
-															{pair[0]}
-														</td>
-													</tr>
-												))
+												this.itemHistogram(this.state.v15Decoded.blueprint).map((pair) =>
+												{
+													// Skip rendering if key or value is not a primitive to prevent [object Object]
+													if (typeof pair[0] === 'object' || typeof pair[1] === 'object')
+													{
+														return null;
+													}
+													return (
+														<tr key={pair[0]}>
+															<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
+																{
+																	entitiesWithIcons[pair[0]]
+																		? <img height='32px' width='32px' src={`/icons/${pair[0]}.png`} alt={pair[0]} />
+																		: ''
+																}
+															</td>
+															<td className='number'>
+																{pair[1]}
+															</td>
+															<td>
+																{pair[0]}
+															</td>
+														</tr>
+													);
+												})
 											}
 										</tbody>
 									</Table>
@@ -789,4 +835,3 @@ const mapDispatchToProps = (dispatch) =>
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SingleBlueprint);
-
