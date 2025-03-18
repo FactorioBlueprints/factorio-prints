@@ -1,6 +1,14 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes          from 'prop-types';
 
+export const imgurImageSchema = PropTypes.shape(forbidExtraProps({
+	id        : PropTypes.string.isRequired,
+	type      : PropTypes.string.isRequired,
+	deletehash: PropTypes.string,
+	height    : PropTypes.number,
+	width     : PropTypes.number,
+}));
+
 export const userSchema = PropTypes.shape(forbidExtraProps({
 	uid        : PropTypes.string.isRequired,
 	displayName: PropTypes.string,
@@ -22,10 +30,7 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 		displayName: PropTypes.string,
 		userId     : PropTypes.string.isRequired,
 	})).isRequired,
-	image: PropTypes.shape(forbidExtraProps({
-		id  : PropTypes.string.isRequired,
-		type: PropTypes.string.isRequired,
-	})).isRequired,
+	image: imgurImageSchema.isRequired,
 }));
 
 export const blueprintSummarySchema = PropTypes.shape(forbidExtraProps({
