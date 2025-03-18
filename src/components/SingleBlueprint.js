@@ -702,7 +702,6 @@ class SingleBlueprint extends PureComponent
 														{
 															range(4).map((iconIndex) =>
 															{
-																console.log({eachBlueprint});
 																const entry = this.getBookEntry(eachBlueprint);
 																if (entry.icons
 																	&& entry.icons.length > iconIndex
