@@ -131,9 +131,13 @@ class EditBlueprint extends PureComponent
 	{
 		if (blueprint)
 		{
+			const imgurId = blueprint.image && blueprint.image.id;
+			const imgurType = blueprint.image && blueprint.image.type;
+			
 			const newBlueprint = {
 				...blueprint,
-				tags: blueprint.tags || EditBlueprint.emptyTags,
+				tags    : blueprint.tags || EditBlueprint.emptyTags,
+				imageUrl: imgurId ? `https://imgur.com/${imgurId}` : '',
 			};
 
 			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
@@ -381,18 +385,26 @@ class EditBlueprint extends PureComponent
 			type: 'image/png',
 		};
 
+		const currentImageId = this.props.blueprint.image && this.props.blueprint.image.id;
+		const currentImageType = this.props.blueprint.image && this.props.blueprint.image.type;
+		const shouldUpdateImage = imgurId !== currentImageId || !this.state.blueprint.imageUrl.includes(currentImageId);
+		
 		const updates = {
 			[`/blueprints/${this.props.id}/title`]                   : this.state.blueprint.title,
 			[`/blueprints/${this.props.id}/blueprintString`]         : this.state.blueprint.blueprintString,
 			[`/blueprints/${this.props.id}/descriptionMarkdown`]     : this.state.blueprint.descriptionMarkdown,
 			[`/blueprints/${this.props.id}/tags`]                    : this.state.blueprint.tags,
 			[`/blueprints/${this.props.id}/lastUpdatedDate`]         : firebase.database.ServerValue.TIMESTAMP,
-			[`/blueprints/${this.props.id}/image`]                   : image,
 			[`/blueprintSummaries/${this.props.id}/title/`]          : this.state.blueprint.title,
-			[`/blueprintSummaries/${this.props.id}/imgurId/`]        : image.id,
-			[`/blueprintSummaries/${this.props.id}/imgurType/`]      : image.type,
 			[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: firebase.database.ServerValue.TIMESTAMP,
 		};
+		
+		if (shouldUpdateImage)
+		{
+			updates[`/blueprints/${this.props.id}/image`] = image;
+			updates[`/blueprintSummaries/${this.props.id}/imgurId/`] = image.id;
+			updates[`/blueprintSummaries/${this.props.id}/imgurType/`] = image.type;
+		}
 
 		this.props.tags.forEach((tag) =>
 		{
