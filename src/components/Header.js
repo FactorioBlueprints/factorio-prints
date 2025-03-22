@@ -113,15 +113,15 @@ class Header extends PureComponent
 						<Dropdown.Item className='user-photo-container'>
 							{this.getDisplayName()}
 						</Dropdown.Item>
-						<Nav.Link as={Link} href='/favorites' to='/favorites' className='text-light'>
+						<Nav.Link as={Link} to='/favorites' className='text-light'>
 							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
 							{' My Favorites'}
 						</Nav.Link>
-						<Nav.Link as={Link} href={`/user/${this.props.user.uid}`} to={`/user/${this.props.user.uid}`} className='text-light'>
+						<Nav.Link as={Link} to={`/user/${this.props.user.uid}`} className='text-light'>
 							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 							{' My Blueprints'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/account' to='/account' className='text-light'>
+						<Nav.Link as={Link} to='/account' className='text-light'>
 							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth style={{color: 'var(--bs-orange)'}} />
 							{' My Display Name'}
 						</Nav.Link>
@@ -172,35 +172,35 @@ class Header extends PureComponent
 				<Navbar.Collapse>
 					<Nav className='mr-auto'>
 						{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
-						<Nav.Link href='https://www.factorio.school/search' to='https://www.factorio.school/search' className='text-light'>
+						<Nav.Link href='https://www.factorio.school/search' className='text-light'>
 							<FontAwesomeIcon icon={faSearch} size='lg' fixedWidth />
 							{' Search'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/blueprints' to='/blueprints' className='text-light'>
+						<Nav.Link as={Link} to='/blueprints' className='text-light'>
 							<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
 							{' Most Recent'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/top' to='/top' className='text-light'>
+						<Nav.Link as={Link} to='/top' className='text-light'>
 							<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
 							{' Most Favorited'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/create' to='/create' className='text-light'>
+						<Nav.Link as={Link} to='/create' className='text-light'>
 							<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
 							{' Create'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/knownIssues' to='/knownIssues' className='text-light'>
+						<Nav.Link as={Link} to='/knownIssues' className='text-light'>
 							<FontAwesomeIcon icon={faBug} size='lg' fixedWidth />
 							{' Known Issues'}
 						</Nav.Link>
-						<Nav.Link as={Link} href='/chat' to='/chat' className='text-light'>
+						<Nav.Link as={Link} to='/chat' className='text-light'>
 							<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
 							{' Chat'}
 						</Nav.Link>
-						<Nav.Link href='https://www.factorio.school/contributors' to='https://www.factorio.school/contributors' className='text-light'>
+						<Nav.Link href='https://www.factorio.school/contributors' className='text-light'>
 							<FontAwesomeIcon icon={faPatreon} size='lg' fixedWidth />
 							{' Contributors'}
 						</Nav.Link>
-						<Nav.Link href='https://www.patreon.com/FactorioBlueprints' to='https://www.patreon.com/FactorioBlueprints' className='text-dark' target='_blank' rel='noopener noreferrer'>
+						<Nav.Link href='https://www.patreon.com/FactorioBlueprints' className='text-dark' target='_blank' rel='noopener noreferrer'>
 							<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
 							{' Donate'}
 						</Nav.Link>
