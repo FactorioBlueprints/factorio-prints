@@ -43,7 +43,7 @@ import Table                     from 'react-bootstrap/Table';
 import CopyToClipboard           from 'react-copy-to-clipboard';
 import DocumentTitle             from 'react-document-title';
 import {connect}                 from 'react-redux';
-import {Link}                    from 'react-router-dom';
+import {Link, useParams, useLocation, useNavigate} from 'react-router-dom';
 import {bindActionCreators}      from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators, subscribeToUserDisplayName} from '../actions/actionCreators';
@@ -833,4 +833,28 @@ const mapDispatchToProps = (dispatch) =>
 	return bindActionCreators(actionCreators, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SingleBlueprint);
+const ConnectedSingleBlueprint = connect(mapStateToProps, mapDispatchToProps)(SingleBlueprint);
+
+// Wrapper to provide router props to class component
+function SingleBlueprintWrapper()
+{
+	const params = useParams();
+	const location = useLocation();
+	const navigate = useNavigate();
+
+	return (
+		<ConnectedSingleBlueprint
+			id={params.blueprintId}
+			location={location}
+			history={{push: navigate}}
+			match={{
+				params : {blueprintId: params.blueprintId},
+				path   : '/view/:blueprintId',
+				url    : `/view/${params.blueprintId}`,
+				isExact: true,
+			}}
+		/>
+	);
+}
+
+export default SingleBlueprintWrapper;

@@ -24,6 +24,7 @@ import Modal                  from 'react-bootstrap/Modal';
 import ProgressBar            from 'react-bootstrap/ProgressBar';
 import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
+import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import Select                 from 'react-select';
 import 'react-select/dist/react-select.css';
 import {bindActionCreators}   from 'redux';
@@ -133,7 +134,7 @@ class EditBlueprint extends PureComponent
 		{
 			const imgurId = blueprint.image && blueprint.image.id;
 			const imgurType = blueprint.image && blueprint.image.type;
-			
+
 			const newBlueprint = {
 				...blueprint,
 				tags    : blueprint.tags || EditBlueprint.emptyTags,
@@ -388,7 +389,7 @@ class EditBlueprint extends PureComponent
 		const currentImageId = this.props.blueprint.image && this.props.blueprint.image.id;
 		const currentImageType = this.props.blueprint.image && this.props.blueprint.image.type;
 		const shouldUpdateImage = imgurId !== currentImageId || !this.state.blueprint.imageUrl.includes(currentImageId);
-		
+
 		const updates = {
 			[`/blueprints/${this.props.id}/title`]                   : this.state.blueprint.title,
 			[`/blueprints/${this.props.id}/blueprintString`]         : this.state.blueprint.blueprintString,
@@ -398,7 +399,7 @@ class EditBlueprint extends PureComponent
 			[`/blueprintSummaries/${this.props.id}/title/`]          : this.state.blueprint.title,
 			[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: firebase.database.ServerValue.TIMESTAMP,
 		};
-		
+
 		if (shouldUpdateImage)
 		{
 			updates[`/blueprints/${this.props.id}/image`] = image;
@@ -888,5 +889,28 @@ const mapStateToProps = (storeState, ownProps) =>
 const mapDispatchToProps = dispatch =>
 	bindActionCreators({subscribeToBlueprint, subscribeToModerators, subscribeToTags}, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(EditBlueprint);
+const ConnectedEditBlueprint = connect(mapStateToProps, mapDispatchToProps)(EditBlueprint);
 
+// Wrapper to provide router props to class component
+function EditBlueprintWrapper()
+{
+	const params = useParams();
+	const location = useLocation();
+	const navigate = useNavigate();
+
+	return (
+		<ConnectedEditBlueprint
+			id={params.blueprintId}
+			location={location}
+			history={{push: navigate}}
+			match={{
+				params : {blueprintId: params.blueprintId},
+				path   : '/edit/:blueprintId',
+				url    : `/edit/${params.blueprintId}`,
+				isExact: true,
+			}}
+		/>
+	);
+}
+
+export default EditBlueprintWrapper;

@@ -1,10 +1,10 @@
-import {forbidExtraProps}             from 'airbnb-prop-types';
-import PropTypes                      from 'prop-types';
-import React, {PureComponent}         from 'react';
-import DocumentTitle                  from 'react-document-title';
-import {connect}                      from 'react-redux';
-import {BrowserRouter, Route, Switch} from 'react-router-dom';
-import {bindActionCreators}           from 'redux';
+import {forbidExtraProps}          from 'airbnb-prop-types';
+import PropTypes                   from 'prop-types';
+import React, {PureComponent}      from 'react';
+import DocumentTitle               from 'react-document-title';
+import {connect}                   from 'react-redux';
+import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import {bindActionCreators}        from 'redux';
 
 import {authStateChanged} from '../actions/actionCreators';
 import {app}              from '../base';
@@ -74,11 +74,10 @@ class Root extends PureComponent
 		</div>
 	);
 
-	renderTag   = (props) =>
+	renderTag = () =>
 	{
-		const {pathname} = props.location;
-		const tagId      = pathname.replace(/^\/tagged/, '');
-
+		let pathname = window.location.pathname;
+		let tagId    = pathname.replace(/^\/tagged/, '');
 		return <BlueprintGrid initialTag={tagId} />;
 	};
 
@@ -88,22 +87,22 @@ class Root extends PureComponent
 			<DocumentTitle title='Factorio Prints'>
 				<BrowserRouter>
 					<div>
-						<Route path='/' render={() => <Header />} />
-						<Switch>
-							<Route path='/' exact render={this.renderIntro} />
-							<Route path='/blueprints' exact render={props => <BlueprintGrid {...props} />} />
-							<Route path='/top' exact render={props => <MostFavoritedGrid {...props} />} />
-							<Route path='/create' exact render={props => <Create {...props} />} />
-							<Route path='/favorites' exact render={props => <FavoritesGrid {...props} />} />
-							<Route path='/knownIssues' exact render={props => <KnownIssues {...props} />} />
-							<Route path='/chat' exact render={props => <Chat {...props} />} />
-							<Route path='/account' exact render={props => <Account {...props} />} />
-							<Route path='/view/:blueprintId' render={props => <SingleBlueprint {...props} />} />
-							<Route path='/edit/:blueprintId' render={props => <EditBlueprint {...props} />} />
-							<Route path='/user/:userId' render={props => <UserGrid {...props} />} />
-							<Route path='/tagged/:tag' render={this.renderTag} />
-							<Route render={props => <NoMatch {...props} />} />
-						</Switch>
+						<Header />
+						<Routes>
+							<Route path='/' element={this.renderIntro()} />
+							<Route path='/blueprints' element={<BlueprintGrid />} />
+							<Route path='/top' element={<MostFavoritedGrid />} />
+							<Route path='/create' element={<Create />} />
+							<Route path='/favorites' element={<FavoritesGrid />} />
+							<Route path='/knownIssues' element={<KnownIssues />} />
+							<Route path='/chat' element={<Chat />} />
+							<Route path='/account' element={<Account />} />
+							<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
+							<Route path='/edit/:blueprintId' element={<EditBlueprint />} />
+							<Route path='/user/:userId' element={<UserGrid />} />
+							<Route path='/tagged/:tag' element={this.renderTag()} />
+							<Route path='*' element={<NoMatch />} />
+						</Routes>
 					</div>
 				</BrowserRouter>
 			</DocumentTitle>

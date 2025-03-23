@@ -55,7 +55,7 @@ export const locationSchema = PropTypes.shape(forbidExtraProps({
 	pathname: PropTypes.string.isRequired,
 	search  : PropTypes.string.isRequired,
 	hash    : PropTypes.string.isRequired,
-	state   : PropTypes.string,
+	state   : PropTypes.any,
 	key     : PropTypes.string,
 }));
 

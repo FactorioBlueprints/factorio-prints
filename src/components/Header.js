@@ -72,7 +72,7 @@ class Header extends PureComponent
 
 	handleEdit = () =>
 	{
-		this.props.history.push('/account');
+		window.location.href = '/account';
 	};
 
 	handleLogout = () =>

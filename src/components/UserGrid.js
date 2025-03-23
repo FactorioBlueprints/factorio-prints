@@ -6,6 +6,7 @@ import React, {PureComponent} from 'react';
 import Container              from 'react-bootstrap/Container';
 import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
+import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import {bindActionCreators}   from 'redux';
 
 import {filterOnTags, subscribeToUser} from '../actions/actionCreators';
@@ -122,4 +123,28 @@ const mapDispatchToProps = (dispatch) =>
 	return bindActionCreators(actionCreators, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(UserGrid);
+const ConnectedUserGrid = connect(mapStateToProps, mapDispatchToProps)(UserGrid);
+
+// Wrapper to provide router props to class component
+function UserGridWrapper()
+{
+	const params = useParams();
+	const location = useLocation();
+	const navigate = useNavigate();
+
+	return (
+		<ConnectedUserGrid
+			id={params.userId}
+			location={location}
+			history={{push: navigate}}
+			match={{
+				params : {userId: params.userId},
+				path   : '/user/:userId',
+				url    : `/user/${params.userId}`,
+				isExact: true,
+			}}
+		/>
+	);
+}
+
+export default UserGridWrapper;
