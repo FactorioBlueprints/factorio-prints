@@ -126,7 +126,7 @@ class Header extends PureComponent
 							{' My Display Name'}
 						</Nav.Link>
 						<Dropdown.Item>
-							<Button type='link' block variant='warning' size='lg' onClick={this.handleLogout}>
+							<Button type='link' className='w-100' variant='warning' size='lg' onClick={this.handleLogout}>
 								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
 								{' Log out'}
 							</Button>
@@ -145,11 +145,11 @@ class Header extends PureComponent
 
 		return (
 			<NavDropdown title={title} style={{minWidth: '210px'}}>
-				<Button type='button' block className='google' onClick={() => this.authenticate(this.googleProvider)}>
+				<Button type='button' className='google w-100' onClick={() => this.authenticate(this.googleProvider)}>
 					<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
 					{' Log in with Google'}
 				</Button>
-				<Button type='button' block className='github' onClick={() => this.authenticate(this.githubProvider)}>
+				<Button type='button' className='github w-100' onClick={() => this.authenticate(this.githubProvider)}>
 					<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
 					{' Log in with GitHub'}
 				</Button>

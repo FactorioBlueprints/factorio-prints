@@ -496,7 +496,7 @@ class EditBlueprint extends PureComponent
 		const imageUrl  = buildImageUrl(id, type, 'b');
 
 		return (
-			<Form.Group as={Row}>
+			<Form.Group as={Row} className='mb-3'>
 				<Form.Label column sm='2'>
 					{'Old screenshot'}
 				</Form.Label>
@@ -524,7 +524,7 @@ class EditBlueprint extends PureComponent
 		if (!match)
 		{
 			return (
-				<Form.Group as={Row}>
+				<Form.Group as={Row} className='mb-3'>
 					<Form.Label column sm='2'>
 						{'Attached screenshot'}
 					</Form.Label>
@@ -543,7 +543,7 @@ class EditBlueprint extends PureComponent
 		const imageUrl = buildImageUrl(imgurId, 'image/png', 'b');
 
 		return (
-			<Form.Group as={Row}>
+			<Form.Group as={Row} className='mb-3'>
 				<Form.Label column sm='2'>
 					{'Attached screenshot'}
 				</Form.Label>
@@ -710,7 +710,7 @@ class EditBlueprint extends PureComponent
 					<PageHeader title={`Editing: ${blueprint.title}`} />
 					<Row>
 						<Form className='w-100'>
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Title'}
 								</Form.Label>
@@ -726,7 +726,7 @@ class EditBlueprint extends PureComponent
 								</Col>
 							</Form.Group>
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Description '}
 									<a href='https://guides.github.com/features/mastering-markdown/'>
@@ -744,7 +744,7 @@ class EditBlueprint extends PureComponent
 								</Col>
 							</Form.Group>
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Description (Preview)'}
 								</Form.Label>
@@ -758,7 +758,7 @@ class EditBlueprint extends PureComponent
 								</Col>
 							</Form.Group>
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Blueprint String'}
 								</Form.Label>
@@ -776,7 +776,7 @@ class EditBlueprint extends PureComponent
 
 							{
 								unusedTagSuggestions.length > 0
-								&& <Form.Group as={Row}>
+								&& <Form.Group as={Row} className='mb-3'>
 									<Form.Label column sm='2'>
 										{'Tag Suggestions'}
 									</Form.Label>
@@ -796,7 +796,7 @@ class EditBlueprint extends PureComponent
 								</Form.Group>
 							}
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Tags'}
 								</Form.Label>
@@ -813,7 +813,7 @@ class EditBlueprint extends PureComponent
 
 							{this.renderOldThumbnail()}
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Imgur URL'}
 								</Form.Label>
@@ -831,7 +831,7 @@ class EditBlueprint extends PureComponent
 
 							{this.renderPreview()}
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Col sm={{span: 10, offset: 2}}>
 									<ButtonToolbar>
 										<Button

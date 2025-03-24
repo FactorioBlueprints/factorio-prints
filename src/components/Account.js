@@ -108,7 +108,7 @@ class Account extends PureComponent
 				<PageHeader title='Edit account settings' />
 				<Row>
 					<Form className='w-100'>
-						<Form.Group as={Row}>
+						<Form.Group as={Row} className='mb-3'>
 							<Form.Label column sm='2'>
 								{'Display Name'}
 							</Form.Label>
@@ -124,7 +124,7 @@ class Account extends PureComponent
 							</Col>
 						</Form.Group>
 
-						<Form.Group as={Row}>
+						<Form.Group as={Row} className='mb-3'>
 							<Col sm={{span: 10, offset: 2}}>
 								<Button
 									type='button'

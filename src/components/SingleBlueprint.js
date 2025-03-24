@@ -409,7 +409,7 @@ class SingleBlueprint extends PureComponent
 											{
 												flatMap(blueprint.tags, tag => (
 													<Link key={tag} to={`/tagged${tag}`} className='m-1'>
-														<Badge variant='warning'>
+														<Badge bg='warning' text='light'>
 															{tag}
 														</Badge>
 													</Link>

@@ -461,7 +461,7 @@ class Create extends PureComponent
 		}
 
 		return (
-			<Form.Group as={Row}>
+			<Form.Group as={Row} className='mb-3'>
 				<Form.Label column sm='2'>
 					{'Attached screenshot'}
 				</Form.Label>
@@ -579,7 +579,7 @@ class Create extends PureComponent
 					<PageHeader title='Create a new Blueprint' />
 					<Row>
 						<Form className='w-100'>
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Title'}
 								</Form.Label>
@@ -595,7 +595,7 @@ class Create extends PureComponent
 								</Col>
 							</Form.Group>
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Description '}
 									<a href='https://guides.github.com/features/mastering-markdown/'>
@@ -613,7 +613,7 @@ class Create extends PureComponent
 								</Col>
 							</Form.Group>
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Description (Preview)'}
 								</Form.Label>
@@ -627,7 +627,7 @@ class Create extends PureComponent
 								</Col>
 							</Form.Group>
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Blueprint String'}
 								</Form.Label>
@@ -645,7 +645,7 @@ class Create extends PureComponent
 
 							{
 								unusedTagSuggestions.length > 0
-								&& <Form.Group as={Row}>
+								&& <Form.Group as={Row} className='mb-3'>
 									<Form.Label column sm='2'>
 										{'Tag Suggestions'}
 									</Form.Label>
@@ -665,7 +665,7 @@ class Create extends PureComponent
 								</Form.Group>
 							}
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Tags'}
 								</Form.Label>
@@ -680,7 +680,7 @@ class Create extends PureComponent
 								</Col>
 							</Form.Group>
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Form.Label column sm='2'>
 									{'Imgur URL'}
 								</Form.Label>
@@ -698,7 +698,7 @@ class Create extends PureComponent
 
 							{this.renderPreview()}
 
-							<Form.Group as={Row}>
+							<Form.Group as={Row} className='mb-3'>
 								<Col sm={{span: 10, offset: 2}}>
 									<ButtonToolbar>
 										<Button

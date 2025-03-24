@@ -46,11 +46,9 @@ class SearchForm extends PureComponent
 						onChange={this.handleSearchString}
 						onKeyDown={this.handleKeyDown}
 					/>
-					<InputGroup.Append>
-						<InputGroup.Text>
-							<FontAwesomeIcon icon={faSearch} />
-						</InputGroup.Text>
-					</InputGroup.Append>
+					<InputGroup.Text className='py-0 px-2'>
+						<FontAwesomeIcon icon={faSearch} size='sm' />
+					</InputGroup.Text>
 				</InputGroup>
 			</Col>
 		);
