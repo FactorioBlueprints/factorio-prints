@@ -6,7 +6,6 @@ import Col       from 'react-bootstrap/Col';
 import {connect} from 'react-redux';
 
 import Select               from 'react-select';
-import 'react-select/dist/react-select.css';
 import {bindActionCreators} from 'redux';
 
 import {filterOnTags, subscribeToTag, subscribeToTags} from '../actions/actionCreators';
@@ -38,10 +37,10 @@ class TagForm extends PureComponent
 		return (
 			<Col md={6}>
 				<Select
-					value={this.props.filteredTags}
+					value={this.props.filteredTags.map(value => ({value, label: value}))}
 					options={this.props.tags.map(value => ({value, label: value}))}
 					onChange={this.handleTagSelection}
-					multi
+					isMulti
 					placeholder='search tags'
 					className='tag-form'
 				/>

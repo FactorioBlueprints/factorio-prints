@@ -26,7 +26,6 @@ import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
 import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import Select                 from 'react-select';
-import 'react-select/dist/react-select.css';
 import {bindActionCreators}   from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
@@ -803,10 +802,10 @@ class EditBlueprint extends PureComponent
 								</Form.Label>
 								<Col sm={10}>
 									<Select
-										value={this.state.blueprint.tags}
+										value={this.state.blueprint.tags.map(value => ({value, label: value}))}
 										options={this.props.tags.map(value => ({value, label: value}))}
 										onChange={this.handleTagSelection}
-										multi
+										isMulti
 										placeholder='Select at least one tag'
 									/>
 								</Col>

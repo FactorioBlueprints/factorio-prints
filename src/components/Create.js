@@ -25,7 +25,6 @@ import Row                    from 'react-bootstrap/Row';
 
 import {connect}            from 'react-redux';
 import Select               from 'react-select';
-import 'react-select/dist/react-select.css';
 import {bindActionCreators} from 'redux';
 
 import {subscribeToTags}      from '../actions/actionCreators';
@@ -672,10 +671,10 @@ class Create extends PureComponent
 								</Form.Label>
 								<Col sm={10}>
 									<Select
-										value={this.state.blueprint.tags}
+										value={this.state.blueprint.tags.map(value => ({value, label: value}))}
 										options={this.props.tags.map(value => ({value, label: value}))}
 										onChange={this.handleTagSelection}
-										multi
+										isMulti
 										placeholder='Select at least one tag'
 									/>
 								</Col>
