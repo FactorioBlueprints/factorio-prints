@@ -13,7 +13,8 @@ import {connect}              from 'react-redux';
 import {bindActionCreators}   from 'redux';
 
 import {editedDisplayName}                         from '../actions/actionCreators';
-import {app}                                       from '../base';
+import {database}                                  from '../base';
+import {ref, set}                                  from 'firebase/database';
 import {historySchema, locationSchema, userSchema} from '../propTypes';
 import * as selectors                              from '../selectors';
 import PageHeader                                  from './PageHeader';
@@ -71,9 +72,10 @@ class Account extends PureComponent
 	handleSaveAccount = (event) =>
 	{
 		event.preventDefault();
-		app.database()
-			.ref(`/users/${this.props.user.uid}/displayName/`)
-			.set(this.state.displayName)
+
+		const userRef = ref(database, `/users/${this.props.user.uid}/displayName/`);
+
+		set(userRef, this.state.displayName)
 			.then(() => this.props.editedDisplayName(this.state.displayName))
 			.then(() => this.props.history.push(`/user/${this.props.user.uid}`))
 			.catch((...args) => console.log('Account.handleSaveAccount', args));

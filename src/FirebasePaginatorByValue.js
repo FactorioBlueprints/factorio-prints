@@ -3,6 +3,7 @@ import isUndefined from 'lodash/isUndefined';
 import map         from 'lodash/map';
 import orderBy     from 'lodash/orderBy';
 import toPairs     from 'lodash/toPairs';
+import {query, orderByChild, limitToLast, limitToFirst, endAt, startAt, get} from 'firebase/database';
 
 class FirebasePaginatorByValue
 {
@@ -52,26 +53,58 @@ class FirebasePaginatorByValue
 		this.data        = [];
 		this.pageRef     = getRef();
 		this.isStarted   = true;
-		return this.pageRef.once('value')
+		return get(this.pageRef)
 			.then(this.onfulfilled)
 			.catch(this.onrejected);
 	};
 
 	getNextRef = () =>
 	{
-		const orderedRef   = this.ref.orderByChild(this.childPropertyName);
-		const truncatedRef = isUndefined(this.nextCursorValue) ? orderedRef : orderedRef.endAt(this.nextCursorValue, this.nextCursorKey);
-		return truncatedRef.limitToLast(this.pageSize + 1);
+		if (isUndefined(this.nextCursorValue))
+		{
+			return query(
+				this.ref,
+				orderByChild(this.childPropertyName),
+				limitToLast(this.pageSize + 1)
+			);
+		}
+		else
+		{
+			return query(
+				this.ref,
+				orderByChild(this.childPropertyName),
+				endAt(this.nextCursorValue, this.nextCursorKey),
+				limitToLast(this.pageSize + 1)
+			);
+		}
 	};
 
 	getPreviousRef = () =>
 	{
-		const orderedRef   = this.ref.orderByChild(this.childPropertyName);
-		const truncatedRef = isUndefined(this.previousCursorValue) ? orderedRef : orderedRef.startAt(this.previousCursorValue, this.previousCursorKey);
-		return truncatedRef.limitToFirst(this.pageSize + 1);
+		if (isUndefined(this.previousCursorValue))
+		{
+			return query(
+				this.ref,
+				orderByChild(this.childPropertyName),
+				limitToFirst(this.pageSize + 1)
+			);
+		}
+		else
+		{
+			return query(
+				this.ref,
+				orderByChild(this.childPropertyName),
+				startAt(this.previousCursorValue, this.previousCursorKey),
+				limitToFirst(this.pageSize + 1)
+			);
+		}
 	};
 
-	getFirstRef = () => this.ref.orderByChild(this.childPropertyName).limitToLast(this.pageSize + 1);
+	getFirstRef = () => query(
+		this.ref,
+		orderByChild(this.childPropertyName),
+		limitToLast(this.pageSize + 1)
+	);
 
 	onfulfilled = (firebaseDataSnapshot) =>
 	{

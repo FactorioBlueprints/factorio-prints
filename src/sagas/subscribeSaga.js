@@ -7,7 +7,8 @@ import {END, eventChannel}       from 'redux-saga';
 import {call, put, select, take} from 'redux-saga/effects';
 import * as actionTypes          from '../actions/actionTypes';
 
-import {app} from '../base';
+import {database} from '../base';
+import {ref, onValue, off} from 'firebase/database';
 
 import FirebasePaginatorByValue from '../FirebasePaginatorByValue';
 
@@ -16,20 +17,23 @@ const PAGE_SIZE = 60;
 const blueprintData = blueprintId =>
 	eventChannel((emit) =>
 	{
-		const blueprintRef  = app.database().ref(`/blueprints/${blueprintId}/`);
-		const onValueChange = (dataSnapshot) =>
+		const blueprintRef = ref(database, `/blueprints/${blueprintId}/`);
+		const onValueChange = (snapshot) =>
 		{
-			const blueprint = dataSnapshot.val();
+			const blueprint = snapshot.val();
 			emit({blueprint, blueprintRef});
 		};
 
 		// TODO: Why do I get here twice?
-		blueprintRef.off();
-		blueprintRef.on('value', onValueChange, () => emit(END));
+		const unsubscribe = onValue(blueprintRef, onValueChange, (error) =>
+		{
+			console.error('Blueprint data error:', error);
+			emit(END);
+		});
 
 		return () =>
 		{
-			blueprintRef.off('value', onValueChange);
+			unsubscribe();
 		};
 	});
 
@@ -64,8 +68,8 @@ export const subscribeToSummariesSaga = function*()
 	const blueprintSummariesState = yield select(getSummaries);
 	if (!blueprintSummariesState.paginator)
 	{
-		const ref       = app.database().ref('/blueprintSummaries/');
-		const paginator = new FirebasePaginatorByValue(ref, PAGE_SIZE, 'lastUpdatedDate');
+		const summariesRef = ref(database, '/blueprintSummaries/');
+		const paginator = new FirebasePaginatorByValue(summariesRef, PAGE_SIZE, 'lastUpdatedDate');
 		yield put({type: actionTypes.SUBSCRIBED_TO_SUMMARIES, paginator});
 		yield call(paginator.start);
 		yield put({type: actionTypes.RECEIVED_SUMMARIES, paginator});
@@ -79,8 +83,8 @@ export const subscribeToAllFavoritesSaga = function*()
 	const blueprintAllFavoritesState = yield select(getAllFavorites);
 	if (!blueprintAllFavoritesState.paginator)
 	{
-		const ref       = app.database().ref('/blueprintSummaries/');
-		const paginator = new FirebasePaginatorByValue(ref, PAGE_SIZE, 'numberOfFavorites');
+		const summariesRef = ref(database, '/blueprintSummaries/');
+		const paginator = new FirebasePaginatorByValue(summariesRef, PAGE_SIZE, 'numberOfFavorites');
 		yield put({type: actionTypes.SUBSCRIBED_TO_ALL_FAVORITES, paginator});
 		yield call(paginator.start);
 		yield put({type: actionTypes.RECEIVED_ALL_FAVORITES, paginator});
@@ -138,20 +142,23 @@ export const goToFirstAllFavoritesSaga = function*()
 const tagsData = () =>
 	eventChannel((emit) =>
 	{
-		const tagsRef       = app.database().ref('/tags/');
-		const onValueChange = (dataSnapshot) =>
+		const tagsRef = ref(database, '/tags/');
+		const onValueChange = (snapshot) =>
 		{
-			const tagHierarchy = dataSnapshot.val();
+			const tagHierarchy = snapshot.val();
 			emit({tagHierarchy, tagsRef});
 		};
 
 		// TODO: Why do I get here twice?
-		tagsRef.off();
-		tagsRef.on('value', onValueChange, () => emit(END));
+		const unsubscribe = onValue(tagsRef, onValueChange, (error) =>
+		{
+			console.error('Tags data error:', error);
+			emit(END);
+		});
 
 		return () =>
 		{
-			tagsRef.off('value', onValueChange);
+			unsubscribe();
 		};
 	});
 
@@ -209,20 +216,23 @@ export const subscribeToTagsSaga = function*()
 const tagData = tagId =>
 	eventChannel((emit) =>
 	{
-		const byTagRef      = app.database().ref(`/byTag${tagId}`);
-		const onValueChange = (dataSnapshot) =>
+		const byTagRef = ref(database, `/byTag${tagId}`);
+		const onValueChange = (snapshot) =>
 		{
-			const byTag = dataSnapshot.val();
+			const byTag = snapshot.val();
 			emit({byTag, byTagRef});
 		};
 
 		// TODO: Why do I get here twice?
-		byTagRef.off();
-		byTagRef.on('value', onValueChange, () => emit(END));
+		const unsubscribe = onValue(byTagRef, onValueChange, (error) =>
+		{
+			console.error('Tag data error:', error);
+			emit(END);
+		});
 
 		return () =>
 		{
-			byTagRef.off('value', onValueChange);
+			unsubscribe();
 		};
 	});
 
@@ -253,20 +263,23 @@ export const subscribeToTagSaga = function*({tagId})
 const moderatorsData = () =>
 	eventChannel((emit) =>
 	{
-		const moderatorsRef = app.database().ref('/moderators/');
-		const onValueChange = (dataSnapshot) =>
+		const moderatorsRef = ref(database, '/moderators/');
+		const onValueChange = (snapshot) =>
 		{
-			const moderators = dataSnapshot.val();
+			const moderators = snapshot.val();
 			emit({moderators, moderatorsRef});
 		};
 
 		// TODO: Why do I get here twice?
-		moderatorsRef.off();
-		moderatorsRef.on('value', onValueChange, () => emit(END));
+		const unsubscribe = onValue(moderatorsRef, onValueChange, (error) =>
+		{
+			console.error('Moderators data error:', error);
+			emit(END);
+		});
 
 		return () =>
 		{
-			moderatorsRef.off('value', onValueChange);
+			unsubscribe();
 		};
 	});
 
@@ -293,4 +306,3 @@ export const subscribeToModeratorsSaga = function*()
 		}
 	}
 };
-

@@ -17,8 +17,9 @@ import {
 
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import firebase               from 'firebase/app';
-import 'firebase/auth';
+import {getAuth, signInWithPopup, signOut,
+	GoogleAuthProvider, FacebookAuthProvider,
+	TwitterAuthProvider, GithubAuthProvider} from 'firebase/auth';
 import PropTypes              from 'prop-types';
 import React, {PureComponent} from 'react';
 import Button                 from 'react-bootstrap/Button';
@@ -29,7 +30,6 @@ import NavDropdown            from 'react-bootstrap/NavDropdown';
 import {connect}              from 'react-redux';
 import {Link}                 from 'react-router-dom';
 import {bindActionCreators}   from 'redux';
-import {app}                  from '../base';
 
 import {historySchema, locationSchema} from '../propTypes';
 import * as selectors                  from '../selectors';
@@ -57,10 +57,10 @@ class Header extends PureComponent
 	{
 		super();
 
-		this.googleProvider   = new firebase.auth.GoogleAuthProvider();
-		this.facebookProvider = new firebase.auth.FacebookAuthProvider();
-		this.twitterProvider  = new firebase.auth.TwitterAuthProvider();
-		this.githubProvider   = new firebase.auth.GithubAuthProvider();
+		this.googleProvider   = new GoogleAuthProvider();
+		this.facebookProvider = new FacebookAuthProvider();
+		this.twitterProvider  = new TwitterAuthProvider();
+		this.githubProvider   = new GithubAuthProvider();
 
 		/*
 		 * Choose between multiple google accounts
@@ -77,7 +77,8 @@ class Header extends PureComponent
 
 	handleLogout = () =>
 	{
-		app.auth().signOut();
+		const auth = getAuth();
+		signOut(auth);
 	};
 
 	getDisplayName = () =>
@@ -97,7 +98,8 @@ class Header extends PureComponent
 
 	authenticate = (provider) =>
 	{
-		app.auth().signInWithPopup(provider).catch(error => console.error({error}));
+		const auth = getAuth();
+		signInWithPopup(auth, provider).catch(error => console.error({error}));
 	};
 
 	renderAuthentication = () =>

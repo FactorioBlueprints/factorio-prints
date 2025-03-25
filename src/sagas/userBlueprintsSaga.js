@@ -5,25 +5,29 @@ import sortBy                         from 'lodash/sortBy';
 import {END, eventChannel}            from 'redux-saga';
 import {all, call, put, select, take} from 'redux-saga/effects';
 import * as actionTypes               from '../actions/actionTypes';
-import {app}                          from '../base';
+import {database}                     from '../base';
+import {ref, onValue, get}            from 'firebase/database';
 
 const displayNameData = userId =>
 	eventChannel((emit) =>
 	{
-		const displayNameRef = app.database().ref(`/users/${userId}/displayName/`);
-		const onValueChange  = (dataSnapshot) =>
+		const displayNameRef = ref(database, `/users/${userId}/displayName/`);
+		const onValueChange  = (snapshot) =>
 		{
-			const displayName = dataSnapshot.val();
+			const displayName = snapshot.val();
 			emit({displayName, displayNameRef});
 		};
 
 		// TODO: Why do I get here twice?
-		displayNameRef.off();
-		displayNameRef.on('value', onValueChange, () => emit(END));
+		const unsubscribe = onValue(displayNameRef, onValueChange, (error) =>
+		{
+			console.error('Display name data error:', error);
+			emit(END);
+		});
 
 		return () =>
 		{
-			displayNameRef.off('value', onValueChange);
+			unsubscribe();
 		};
 	});
 
@@ -55,19 +59,23 @@ export const subscribeToDisplayNameSaga = function*({userId})
 const userBlueprintsData = userId =>
 	eventChannel((emit) =>
 	{
-		const userBlueprintsRef = app.database().ref(`/users/${userId}/blueprints/`);
-		const onValueChange     = (dataSnapshot) =>
+		const userBlueprintsRef = ref(database, `/users/${userId}/blueprints/`);
+		const onValueChange     = (snapshot) =>
 		{
-			const userBlueprintsSnapshot = dataSnapshot.val();
-			const exists                 = dataSnapshot.exists();
+			const userBlueprintsSnapshot = snapshot.val();
+			const exists                 = snapshot.exists();
 			emit({userBlueprintsSnapshot, userBlueprintsRef, exists});
 		};
 
-		userBlueprintsRef.on('value', onValueChange, () => emit(END));
+		const unsubscribe = onValue(userBlueprintsRef, onValueChange, (error) =>
+		{
+			console.error('User blueprints data error:', error);
+			emit(END);
+		});
 
 		return () =>
 		{
-			userBlueprintsRef.off('value', onValueChange);
+			unsubscribe();
 		};
 	});
 
@@ -102,8 +110,8 @@ const subscribeToUserBlueprintsSaga = function*({userId})
 
 				const calls = keys(userBlueprintsKeys)
 					.map(key => `/blueprintSummaries/${key}`)
-					.map(url => app.database().ref(url))
-					.map(ref => call(() => ref.once('value')));
+					.map(url => ref(database, url))
+					.map(dbRef => call(() => get(dbRef)));
 				const blueprintSummarySnapshots = yield all(calls);
 				const blueprintSummaries = blueprintSummarySnapshots.map(each => ({key: each.key, ...each.val()}));
 				const userBlueprints = sortBy(blueprintSummaries, each => each.key);

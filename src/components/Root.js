@@ -5,9 +5,12 @@ import DocumentTitle               from 'react-document-title';
 import {connect}                   from 'react-redux';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {bindActionCreators}        from 'redux';
+import {useAuthState} from 'react-firebase-hooks/auth';
 
 import {authStateChanged} from '../actions/actionCreators';
-import {app}              from '../base';
+import {auth, database}   from '../base';
+import {onAuthStateChanged} from 'firebase/auth';
+import {ref, runTransaction} from 'firebase/database';
 import Account            from './Account';
 
 import BlueprintGrid from './BlueprintGrid';
@@ -31,7 +34,8 @@ class Root extends PureComponent
 
 	componentDidMount()
 	{
-		app.auth().onAuthStateChanged(
+		const unsubscribe = onAuthStateChanged(
+			auth,
 			(user) =>
 			{
 				if (user)
@@ -56,14 +60,23 @@ class Root extends PureComponent
 						};
 					};
 
-					app.database()
-						.ref(`/users/${uid}/`)
-						.transaction(buildUserInformation);
+					const userRef = ref(database, `/users/${uid}/`);
+					runTransaction(userRef, buildUserInformation);
 				}
 				this.props.authStateChanged(user);
 			},
-			(...args) => console.log('Root.componentDidMount', args)
+			error => console.log('Root.componentDidMount authentication error:', error)
 		);
+
+		this.authUnsubscribe = unsubscribe;
+	}
+
+	componentWillUnmount()
+	{
+		if (this.authUnsubscribe)
+		{
+			this.authUnsubscribe();
+		}
 	}
 
 	renderIntro = () => (

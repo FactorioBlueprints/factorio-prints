@@ -48,7 +48,8 @@ import {bindActionCreators}      from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators, subscribeToUserDisplayName} from '../actions/actionCreators';
 
-import {app}               from '../base';
+import {database}        from '../base';
+import {ref, update as dbUpdate} from 'firebase/database';
 import Blueprint           from '../Blueprint';
 import entitiesWithIcons   from '../data/entitiesWithIcons';
 import buildImageUrl       from '../helpers/buildImageUrl';
@@ -198,7 +199,8 @@ class SingleBlueprint extends PureComponent
 			[`/blueprintSummaries/${this.props.id}/numberOfFavorites`]: newNumberOfFavorites,
 			[`/users/${uid}/favorites/${this.props.id}`]              : wasFavorite ? null : true,
 		};
-		app.database().ref().update(updates);
+
+		dbUpdate(ref(database), updates);
 	};
 
 	handleShowHideBase64 = (event) =>

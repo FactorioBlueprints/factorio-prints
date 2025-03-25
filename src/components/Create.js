@@ -2,7 +2,7 @@ import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import firebase               from 'firebase/app';
+import {serverTimestamp}    from 'firebase/database';
 import update                 from 'immutability-helper';
 import difference             from 'lodash/difference';
 import forEach                from 'lodash/forEach';
@@ -28,12 +28,13 @@ import Select               from 'react-select';
 import {bindActionCreators} from 'redux';
 
 import {subscribeToTags}      from '../actions/actionCreators';
-import {app}                  from '../base';
+import {app, database}        from '../base';
 import Blueprint              from '../Blueprint';
 import noImageAvailable       from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import * as propTypes         from '../propTypes';
 import * as selectors         from '../selectors';
+import {ref, push, update as dbUpdate, set} from 'firebase/database';
 
 import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
@@ -376,8 +377,8 @@ class Create extends PureComponent
 				userId: this.props.user.uid,
 			},
 			authorId         : this.props.user.uid,
-			createdDate      : firebase.database.ServerValue.TIMESTAMP,
-			lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+			createdDate      : serverTimestamp(),
+			lastUpdatedDate  : serverTimestamp(),
 			favorites        : {},
 			numberOfFavorites: 0,
 			image,
@@ -388,26 +389,30 @@ class Create extends PureComponent
 			imgurType        : blueprint.image.type,
 			title            : blueprint.title,
 			numberOfFavorites: blueprint.numberOfFavorites,
-			lastUpdatedDate  : firebase.database.ServerValue.TIMESTAMP,
+			lastUpdatedDate  : serverTimestamp(),
 		};
 
 		try
 		{
-			const newBlueprintRef = app.database().ref('/blueprints').push(blueprint);
+			const blueprintsRef = ref(database, '/blueprints');
+			const newBlueprintRef = push(blueprintsRef, blueprint);
+			const newBlueprintKey = newBlueprintRef.key;
 
-			const updates = {
-				[`/users/${this.props.user.uid}/blueprints/${newBlueprintRef.key}`]: true,
-				[`/blueprintSummaries/${newBlueprintRef.key}`]                     : blueprintSummary,
-				[`/blueprintsPrivate/${newBlueprintRef.key}/imageUrl`]             : imageUrl,
-			};
+			const updates = {};
+
+			updates[`/users/${this.props.user.uid}/blueprints/${newBlueprintKey}`] = true;
+			updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
+			updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageUrl;
+
 			forEach(blueprint.tags, (tag) =>
 			{
-				updates[`/byTag/${tag}/${newBlueprintRef.key}`] = true;
+				updates[`/byTag/${tag}/${newBlueprintKey}`] = true;
 			});
 
-			await app.database().ref().update(updates);
+			await dbUpdate(ref(database), updates);
+
 			this.setState(Create.initialState);
-			this.props.history.push(`/view/${newBlueprintRef.key}`);
+			this.props.history.push(`/view/${newBlueprintKey}`);
 		}
 		catch (e)
 		{

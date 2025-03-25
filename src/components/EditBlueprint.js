@@ -2,7 +2,7 @@ import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-soli
 import {FontAwesomeIcon}                            from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import firebase               from 'firebase/app';
+import {serverTimestamp}    from 'firebase/database';
 import update                 from 'immutability-helper';
 import difference             from 'lodash/difference';
 import forEach                from 'lodash/forEach';
@@ -30,7 +30,8 @@ import {bindActionCreators}   from 'redux';
 
 import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
 
-import {app}                  from '../base';
+import {database}           from '../base';
+import {ref, update as dbUpdate} from 'firebase/database';
 import Blueprint              from '../Blueprint';
 import noImageAvailable       from '../gif/No_available_image.gif';
 import buildImageUrl          from '../helpers/buildImageUrl';
@@ -394,9 +395,9 @@ class EditBlueprint extends PureComponent
 			[`/blueprints/${this.props.id}/blueprintString`]         : this.state.blueprint.blueprintString,
 			[`/blueprints/${this.props.id}/descriptionMarkdown`]     : this.state.blueprint.descriptionMarkdown,
 			[`/blueprints/${this.props.id}/tags`]                    : this.state.blueprint.tags,
-			[`/blueprints/${this.props.id}/lastUpdatedDate`]         : firebase.database.ServerValue.TIMESTAMP,
+			[`/blueprints/${this.props.id}/lastUpdatedDate`]         : serverTimestamp(),
 			[`/blueprintSummaries/${this.props.id}/title/`]          : this.state.blueprint.title,
-			[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: firebase.database.ServerValue.TIMESTAMP,
+			[`/blueprintSummaries/${this.props.id}/lastUpdatedDate/`]: serverTimestamp(),
 		};
 
 		if (shouldUpdateImage)
@@ -417,7 +418,7 @@ class EditBlueprint extends PureComponent
 
 		try
 		{
-			await app.database().ref().update(updates);
+			await dbUpdate(ref(database), updates);
 			this.props.history.push(`/view/${this.props.id}`);
 		}
 		catch (e)
@@ -455,7 +456,8 @@ class EditBlueprint extends PureComponent
 		{
 			updates[`/byTag/${tag}/${this.props.id}`] = null;
 		});
-		app.database().ref().update(updates)
+
+		dbUpdate(ref(database), updates)
 			.then(() => this.props.history.push(`/user/${authorId}`));
 	};
 

@@ -7,23 +7,28 @@ import {all, call, put, take} from 'redux-saga/effects';
 
 import {RECEIVED_MY_FAVORITES_SUMMARIES, RECEIVED_MY_FAVORITES_KEYS} from '../actions/actionTypes';
 
-import {app} from '../base';
+import {database} from '../base';
+import {ref, onValue, get} from 'firebase/database';
 
 const myFavoritesData = userId =>
 	eventChannel((emit) =>
 	{
-		const myFavoritesRef = app.database().ref(`/users/${userId}/favorites`);
-		const onValueChange  = (dataSnapshot) =>
+		const myFavoritesRef = ref(database, `/users/${userId}/favorites`);
+		const onValueChange  = (snapshot) =>
 		{
-			const myFavorites = dataSnapshot.val();
+			const myFavorites = snapshot.val();
 			emit({myFavorites, myFavoritesRef});
 		};
 
-		myFavoritesRef.on('value', onValueChange, () => emit(END));
+		const unsubscribe = onValue(myFavoritesRef, onValueChange, (error) =>
+		{
+			console.error('My favorites data error:', error);
+			emit(END);
+		});
 
 		return () =>
 		{
-			myFavoritesRef.off('value', onValueChange);
+			unsubscribe();
 		};
 	});
 
@@ -41,10 +46,10 @@ const myFavoritesSaga = function*({user})
 				const myFavoritesKeys               = pickBy(myFavorites);
 				yield put({type: RECEIVED_MY_FAVORITES_KEYS, myFavoritesKeys, myFavoritesRef});
 
-				const calls                     = keys(myFavoritesKeys)
+				const calls = keys(myFavoritesKeys)
 					.map(key => `/blueprintSummaries/${key}`)
-					.map(url => app.database().ref(url))
-					.map(ref => call(() => ref.once('value')));
+					.map(url => ref(database, url))
+					.map(dbRef => call(() => get(dbRef)));
 				const blueprintSummarySnapshots = yield all(calls);
 				const blueprintSummaries        = blueprintSummarySnapshots.map(each => ({key: each.key, ...each.val()}));
 				const myFavoritesSummaries      = sortBy(blueprintSummaries, each => each.key);
