@@ -2,7 +2,7 @@ import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import {serverTimestamp}    from 'firebase/database';
+import {serverTimestamp,ref, push, update as dbUpdate, set}    from 'firebase/database';
 import update                 from 'immutability-helper';
 import difference             from 'lodash/difference';
 import forEach                from 'lodash/forEach';
@@ -34,7 +34,6 @@ import noImageAvailable       from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import * as propTypes         from '../propTypes';
 import * as selectors         from '../selectors';
-import {ref, push, update as dbUpdate, set} from 'firebase/database';
 
 import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
@@ -50,15 +49,16 @@ ${body}</tbody>
 renderer.image = (href, title, text) =>
 	`<img src="${href}" alt="${text}" class="img-responsive">`;
 
-marked.setOptions({
+marked.use({
 	renderer,
-	gfm        : true,
-	tables     : true,
-	breaks     : false,
-	pedantic   : false,
-	sanitize   : false,
-	smartLists : true,
-	smartypants: false,
+	gfm       : true,
+	tables    : true,
+	breaks    : false,
+	pedantic  : false,
+	sanitize  : false,
+	smartLists: true,
+	mangle    : false,
+	headerIds : false,
 });
 
 class Create extends PureComponent

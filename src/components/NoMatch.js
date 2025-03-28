@@ -4,7 +4,9 @@ import {Helmet} from 'react-helmet';
 const NoMatch = () => (
 	<>
 		<Helmet>
-			<title>Factorio Prints: 404</title>
+			<title>
+				Factorio Prints: 404
+			</title>
 		</Helmet>
 		<div className='p-5 rounded-lg jumbotron'>
 			<h1 className='display-4'>

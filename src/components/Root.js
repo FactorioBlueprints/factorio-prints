@@ -99,7 +99,9 @@ class Root extends PureComponent
 		return (
 			<>
 				<Helmet>
-					<title>Factorio Prints</title>
+					<title>
+						Factorio Prints
+					</title>
 				</Helmet>
 				<BrowserRouter>
 					<div>

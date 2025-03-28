@@ -72,15 +72,16 @@ ${body}</tbody>
 renderer.image = (href, title, text) =>
 	`<img src="${href}" alt="${text}" class="img-responsive">`;
 
-marked.setOptions({
+marked.use({
 	renderer,
-	gfm        : true,
-	tables     : true,
-	breaks     : false,
-	pedantic   : false,
-	sanitize   : false,
-	smartLists : true,
-	smartypants: false,
+	gfm       : true,
+	tables    : true,
+	breaks    : false,
+	pedantic  : false,
+	sanitize  : false,
+	smartLists: true,
+	mangle    : false,
+	headerIds : false,
 });
 
 class SingleBlueprint extends PureComponent

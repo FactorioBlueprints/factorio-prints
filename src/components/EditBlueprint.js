@@ -2,7 +2,7 @@ import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-soli
 import {FontAwesomeIcon}                            from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps}     from 'airbnb-prop-types';
-import {serverTimestamp}    from 'firebase/database';
+import {serverTimestamp,ref, update as dbUpdate}    from 'firebase/database';
 import update                 from 'immutability-helper';
 import difference             from 'lodash/difference';
 import forEach                from 'lodash/forEach';
@@ -31,7 +31,6 @@ import {bindActionCreators}   from 'redux';
 import {subscribeToBlueprint, subscribeToModerators, subscribeToTags} from '../actions/actionCreators';
 
 import {database}           from '../base';
-import {ref, update as dbUpdate} from 'firebase/database';
 import Blueprint              from '../Blueprint';
 import noImageAvailable       from '../gif/No_available_image.gif';
 import buildImageUrl          from '../helpers/buildImageUrl';
@@ -54,15 +53,16 @@ ${body}</tbody>
 renderer.image = (href, title, text) =>
 	`<img src="${href}" alt="${text}" class="img-responsive">`;
 
-marked.setOptions({
+marked.use({
 	renderer,
-	gfm        : true,
-	tables     : true,
-	breaks     : false,
-	pedantic   : false,
-	sanitize   : false,
-	smartLists : true,
-	smartypants: false,
+	gfm       : true,
+	tables    : true,
+	breaks    : false,
+	pedantic  : false,
+	sanitize  : false,
+	smartLists: true,
+	mangle    : false,
+	headerIds : false,
 });
 
 class EditBlueprint extends PureComponent
