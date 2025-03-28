@@ -1,8 +1,11 @@
 import React from 'react';
-import DocumentTitle from 'react-document-title';
+import {Helmet} from 'react-helmet';
 
 const NoMatch = () => (
-	<DocumentTitle title='Factorio Prints: 404'>
+	<>
+		<Helmet>
+			<title>Factorio Prints: 404</title>
+		</Helmet>
 		<div className='p-5 rounded-lg jumbotron'>
 			<h1 className='display-4'>
 				404
@@ -11,7 +14,7 @@ const NoMatch = () => (
 				This is not the webpage you are looking for.
 			</p>
 		</div>
-	</DocumentTitle>
+	</>
 );
 
 export default NoMatch;

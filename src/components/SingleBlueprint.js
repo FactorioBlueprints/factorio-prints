@@ -41,7 +41,7 @@ import Image                     from 'react-bootstrap/Image';
 import Row                       from 'react-bootstrap/Row';
 import Table                     from 'react-bootstrap/Table';
 import CopyToClipboard           from 'react-copy-to-clipboard';
-import DocumentTitle             from 'react-document-title';
+import {Helmet}                  from 'react-helmet';
 import {connect}                 from 'react-redux';
 import {Link, useParams, useLocation, useNavigate} from 'react-router-dom';
 import {bindActionCreators}      from 'redux';
@@ -351,14 +351,19 @@ class SingleBlueprint extends PureComponent
 			if (this.props.loading === true || this.props.loading === undefined)
 			{
 				return (
-					<DocumentTitle title='Factorio Prints: Loading Data'>
+					<>
+						<Helmet>
+							<title>
+								Factorio Prints: Loading Data
+							</title>
+						</Helmet>
 						<div className='p-5 rounded-lg jumbotron'>
 							<h1 className='display-4'>
 								<FontAwesomeIcon icon={faCog} spin />
 								{' Loading data'}
 							</h1>
 						</div>
-					</DocumentTitle>
+					</>
 				);
 			}
 
@@ -376,7 +381,12 @@ class SingleBlueprint extends PureComponent
 		};
 
 		return (
-			<DocumentTitle title={`Factorio Prints: ${title}`}>
+			<>
+				<Helmet>
+					<title>
+						{`Factorio Prints: ${title}`}
+					</title>
+				</Helmet>
 				<Container>
 					<Row>
 						<Col md={9}>
@@ -783,7 +793,7 @@ class SingleBlueprint extends PureComponent
 						/>
 					</Row>
 				</Container>
-			</DocumentTitle>
+			</>
 		);
 	}
 

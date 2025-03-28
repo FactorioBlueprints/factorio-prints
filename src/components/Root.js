@@ -1,7 +1,7 @@
 import {forbidExtraProps}          from 'airbnb-prop-types';
 import PropTypes                   from 'prop-types';
 import React, {PureComponent}      from 'react';
-import DocumentTitle               from 'react-document-title';
+import {Helmet}                    from 'react-helmet';
 import {connect}                   from 'react-redux';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {bindActionCreators}        from 'redux';
@@ -97,7 +97,10 @@ class Root extends PureComponent
 	render()
 	{
 		return (
-			<DocumentTitle title='Factorio Prints'>
+			<>
+				<Helmet>
+					<title>Factorio Prints</title>
+				</Helmet>
 				<BrowserRouter>
 					<div>
 						<Header />
@@ -118,7 +121,7 @@ class Root extends PureComponent
 						</Routes>
 					</div>
 				</BrowserRouter>
-			</DocumentTitle>
+			</>
 		);
 	}
 }
