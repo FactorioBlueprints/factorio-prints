@@ -13,7 +13,7 @@
     "babel-eslint": "10.1.0",
     "babel-plugin-lodash": "3.3.4",
     "babel-preset-env": "1.7.0",
-    "concurrently": "8.2.2",
+    "concurrently": "9.1.2",
     "eslint-config-airbnb": "19.0.4",
     "eslint-find-rules": "4.1.0",
     "eslint-plugin-babel": "5.3.1",
