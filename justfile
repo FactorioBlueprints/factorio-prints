@@ -5,3 +5,9 @@ default:
 # `yarn install`
 install:
     yarn install --ignore-optional --ignore-engines --ignore-platform --ignore-scripts
+
+# Run build, test, and lint in sequence
+all:
+    yarn run build
+    yarn run test
+    yarn run lint
