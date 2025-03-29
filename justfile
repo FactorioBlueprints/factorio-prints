@@ -9,5 +9,5 @@ install:
 # Run build, test, and lint in sequence
 all:
     yarn run build
-    yarn run test
+    yarn run test --watchAll=false
     yarn run lint
