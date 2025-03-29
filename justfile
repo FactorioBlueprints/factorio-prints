@@ -10,8 +10,8 @@ install:
 dev:
     yarn run watch
 
-# Run build, test, and lint in sequence
-all:
+# Run install, build, test, and lint in sequence
+all: install
     yarn run build
     yarn run test --watchAll=false
     yarn run lint
