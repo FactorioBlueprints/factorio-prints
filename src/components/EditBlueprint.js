@@ -606,7 +606,7 @@ class EditBlueprint extends PureComponent
 		const allTagSuggestions    = generateTagSuggestions(
 			this.state.blueprint.title,
 			this.state.parsedBlueprint,
-			this.state.v15Decoded
+			this.state.v15Decoded,
 		);
 		const unusedTagSuggestions = difference(allTagSuggestions, this.state.blueprint.tags);
 

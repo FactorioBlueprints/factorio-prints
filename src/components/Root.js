@@ -65,7 +65,7 @@ class Root extends PureComponent
 				}
 				this.props.authStateChanged(user);
 			},
-			error => console.log('Root.componentDidMount authentication error:', error)
+			error => console.log('Root.componentDidMount authentication error:', error),
 		);
 
 		this.authUnsubscribe = unsubscribe;

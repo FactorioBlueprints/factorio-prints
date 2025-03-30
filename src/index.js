@@ -31,7 +31,7 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
 	rootReducer,
 	// PreloadedState,
-	composeEnhancers(applyMiddleware(sagaMiddleware))
+	composeEnhancers(applyMiddleware(sagaMiddleware)),
 );
 
 store.subscribe(throttle(() =>
@@ -90,7 +90,7 @@ sagaMiddleware.run(rootSaga);
 const provider = (
 	<Provider store={store}>
 		<Root />
-	</Provider>
+	</Provider>,
 );
 ReactDOM.render(provider, document.getElementById('root'));
 unregister();

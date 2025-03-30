@@ -65,7 +65,7 @@ class FirebasePaginatorByValue
 			return query(
 				this.ref,
 				orderByChild(this.childPropertyName),
-				limitToLast(this.pageSize + 1)
+				limitToLast(this.pageSize + 1),
 			);
 		}
 		else
@@ -74,7 +74,7 @@ class FirebasePaginatorByValue
 				this.ref,
 				orderByChild(this.childPropertyName),
 				endAt(this.nextCursorValue, this.nextCursorKey),
-				limitToLast(this.pageSize + 1)
+				limitToLast(this.pageSize + 1),
 			);
 		}
 	};
@@ -86,7 +86,7 @@ class FirebasePaginatorByValue
 			return query(
 				this.ref,
 				orderByChild(this.childPropertyName),
-				limitToFirst(this.pageSize + 1)
+				limitToFirst(this.pageSize + 1),
 			);
 		}
 		else
@@ -95,7 +95,7 @@ class FirebasePaginatorByValue
 				this.ref,
 				orderByChild(this.childPropertyName),
 				startAt(this.previousCursorValue, this.previousCursorKey),
-				limitToFirst(this.pageSize + 1)
+				limitToFirst(this.pageSize + 1),
 			);
 		}
 	};
@@ -103,7 +103,7 @@ class FirebasePaginatorByValue
 	getFirstRef = () => query(
 		this.ref,
 		orderByChild(this.childPropertyName),
-		limitToLast(this.pageSize + 1)
+		limitToLast(this.pageSize + 1),
 	);
 
 	onfulfilled = (firebaseDataSnapshot) =>
