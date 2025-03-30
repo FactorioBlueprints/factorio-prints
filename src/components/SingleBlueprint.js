@@ -1,5 +1,3 @@
-/* eslint-disable react/no-array-index-key */
-
 import {faHeart as regularHeart} from '@fortawesome/free-regular-svg-icons';
 import {
 	faCalendar,

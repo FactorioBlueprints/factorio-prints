@@ -143,7 +143,6 @@ td.number {
   margin-bottom: 4px;
 }
 root {
-  width: -webkit-fit-content;
   width: fit-content;
 }
 .navbar {
@@ -155,8 +154,4 @@ root {
 }
 #disqus_thread {
   width: 100%;
-}
-
-.form-group {
-  margin-bottom: 1rem;
 }

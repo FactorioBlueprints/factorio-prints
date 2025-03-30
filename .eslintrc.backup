@@ -9,10 +9,14 @@
     "lodash",
     "import",
     "jsx-a11y",
-    "promise"
+    "promise",
+    "react",
+    "react-hooks"
   ],
   "extends": [
     "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "plugin:react-hooks/recommended",
     "plugin:lodash/recommended",
     "plugin:import/errors",
     "plugin:import/warnings",
