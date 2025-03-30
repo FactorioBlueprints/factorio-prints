@@ -4,7 +4,7 @@ import pickBy    from 'lodash/pickBy';
 
 import throttle from 'lodash/throttle';
 import React    from 'react';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 
 import {Provider} from 'react-redux';
 
@@ -87,10 +87,11 @@ store.subscribe(throttle(() =>
 
 sagaMiddleware.run(rootSaga);
 
-const provider = (
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(
 	<Provider store={store}>
 		<Root />
 	</Provider>,
 );
-ReactDOM.render(provider, document.getElementById('root'));
 unregister();
