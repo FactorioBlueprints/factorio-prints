@@ -28,11 +28,11 @@
     "stylus": "0.59.0"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "6.3.0",
-    "@fortawesome/free-brands-svg-icons": "6.3.0",
-    "@fortawesome/free-regular-svg-icons": "6.3.0",
-    "@fortawesome/free-solid-svg-icons": "6.3.0",
-    "@fortawesome/react-fontawesome": "0.2.0",
+    "@fortawesome/fontawesome-svg-core": "6.7.2",
+    "@fortawesome/free-brands-svg-icons": "6.7.2",
+    "@fortawesome/free-regular-svg-icons": "6.7.2",
+    "@fortawesome/free-solid-svg-icons": "6.7.2",
+    "@fortawesome/react-fontawesome": "0.2.2",
     "@popperjs/core": "2.11.8",
     "airbnb-prop-types": "2.16.0",
     "atob": "2.1.2",
