@@ -61,8 +61,13 @@ class BlueprintGrid extends PureComponent
 		this.props.subscribeToBlueprintSummaries();
 		if (this.props.initialTag)
 		{
-			this.props.filterOnTags([this.props.initialTag]);
-			this.props.subscribeToTag(this.props.initialTag);
+			const formattedTagPath = this.props.initialTag.endsWith('/')
+				? this.props.initialTag
+				: this.props.initialTag + '/';
+
+			const tagPath = [formattedTagPath];
+			this.props.filterOnTags(tagPath);
+			this.props.subscribeToTag(formattedTagPath);
 		}
 		if (this.props.user)
 		{

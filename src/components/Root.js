@@ -3,7 +3,7 @@ import PropTypes                   from 'prop-types';
 import React, {PureComponent}      from 'react';
 import {Helmet}                    from 'react-helmet';
 import {connect}                   from 'react-redux';
-import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, Route, Routes, useParams, useLocation} from 'react-router-dom';
 import {bindActionCreators}        from 'redux';
 import {useAuthState} from 'react-firebase-hooks/auth';
 
@@ -25,6 +25,14 @@ import FavoritesGrid     from './MyFavoritesGrid';
 import NoMatch           from './NoMatch';
 import SingleBlueprint   from './SingleBlueprint';
 import UserGrid          from './UserGrid';
+
+const TaggedRoute = () =>
+{
+	const location = useLocation();
+	const tagPath = '/' + decodeURIComponent(location.pathname.replace(/^\/tagged\//, ''));
+
+	return <BlueprintGrid initialTag={tagPath} />;
+};
 
 class Root extends PureComponent
 {
@@ -87,12 +95,6 @@ class Root extends PureComponent
 		</div>
 	);
 
-	renderTag = () =>
-	{
-		let pathname = window.location.pathname;
-		let tagId    = pathname.replace(/^\/tagged/, '');
-		return <BlueprintGrid initialTag={tagId} />;
-	};
 
 	render()
 	{
@@ -118,7 +120,7 @@ class Root extends PureComponent
 							<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
 							<Route path='/edit/:blueprintId' element={<EditBlueprint />} />
 							<Route path='/user/:userId' element={<UserGrid />} />
-							<Route path='/tagged/:tag' element={this.renderTag()} />
+							<Route path='/tagged/*' element={<TaggedRoute />} />
 							<Route path='*' element={<NoMatch />} />
 						</Routes>
 					</div>

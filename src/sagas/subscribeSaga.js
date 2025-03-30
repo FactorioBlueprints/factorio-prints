@@ -216,7 +216,7 @@ export const subscribeToTagsSaga = function*()
 const tagData = tagId =>
 	eventChannel((emit) =>
 	{
-		const byTagRef = ref(database, `/byTag${tagId}`);
+		const byTagRef = ref(database, `/byTag/${tagId}`);
 		const onValueChange = (snapshot) =>
 		{
 			const byTag = snapshot.val();
