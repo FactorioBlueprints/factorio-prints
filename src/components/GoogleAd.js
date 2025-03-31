@@ -1,25 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-export default class GoogleAd extends React.Component
+const GoogleAd = () =>
 {
-	componentDidMount ()
+	useEffect(() =>
 	{
 		(window.adsbygoogle = window.adsbygoogle || []).push({});
-	}
+	}, []);
 
-	render ()
-	{
-		return (
-			<div className='googleAd'>
-				<ins
-					className='adsbygoogle'
-					style={{display: 'block'}}
-					data-ad-client='ca-pub-3146575260211386'
-					// Data-ad-slot='xxxxxxxxxx'
-					data-ad-format='auto'
-				/>
-			</div>
-		);
-	}
-}
+	return (
+		<div className='googleAd'>
+			<ins
+				className='adsbygoogle'
+				style={{display: 'block'}}
+				data-ad-client='ca-pub-3146575260211386'
+				// Data-ad-slot='xxxxxxxxxx'
+				data-ad-format='auto'
+			/>
+		</div>
+	);
+};
 
+export default GoogleAd;
