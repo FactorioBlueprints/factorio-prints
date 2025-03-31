@@ -15,80 +15,71 @@ import {
 	faWrench,
 } from '@fortawesome/free-solid-svg-icons';
 
-import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
-import {forbidExtraProps}     from 'airbnb-prop-types';
+import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
+import {forbidExtraProps} from 'airbnb-prop-types';
 import {getAuth, signInWithPopup, signOut,
 	GoogleAuthProvider, FacebookAuthProvider,
 	TwitterAuthProvider, GithubAuthProvider} from 'firebase/auth';
-import PropTypes              from 'prop-types';
-import React, {PureComponent} from 'react';
-import Button                 from 'react-bootstrap/Button';
-import Dropdown               from 'react-bootstrap/Dropdown';
-import Nav                    from 'react-bootstrap/Nav';
-import Navbar                 from 'react-bootstrap/Navbar';
-import NavDropdown            from 'react-bootstrap/NavDropdown';
-import {connect}              from 'react-redux';
-import {Link}                 from 'react-router-dom';
-import {bindActionCreators}   from 'redux';
+import PropTypes          from 'prop-types';
+import React, {useMemo}   from 'react';
+import Button             from 'react-bootstrap/Button';
+import Dropdown           from 'react-bootstrap/Dropdown';
+import Nav                from 'react-bootstrap/Nav';
+import Navbar             from 'react-bootstrap/Navbar';
+import NavDropdown        from 'react-bootstrap/NavDropdown';
+import {connect}          from 'react-redux';
+import {Link}             from 'react-router-dom';
+import {bindActionCreators} from 'redux';
 
 import {historySchema, locationSchema} from '../propTypes';
 import * as selectors                  from '../selectors';
 
-class Header extends PureComponent
+const Header = ({
+	user,
+	match,
+	location,
+	history,
+	staticContext,
+}) =>
 {
-	static propTypes = forbidExtraProps({
-		user: PropTypes.shape(forbidExtraProps({
-			uid        : PropTypes.string.isRequired,
-			displayName: PropTypes.string,
-			photoURL   : PropTypes.string,
-		})),
-		match: PropTypes.shape(forbidExtraProps({
-			params : PropTypes.shape(forbidExtraProps({})).isRequired,
-			path   : PropTypes.string.isRequired,
-			url    : PropTypes.string.isRequired,
-			isExact: PropTypes.bool.isRequired,
-		})),
-		location     : locationSchema,
-		history      : historySchema,
-		staticContext: PropTypes.shape(forbidExtraProps({})),
-	});
-
-	constructor()
+	const googleProvider = useMemo(() =>
 	{
-		super();
+		const provider = new GoogleAuthProvider();
+		// Choose between multiple google accounts
+		// http://stackoverflow.com/a/40551683/23572
+		provider.setCustomParameters({prompt: 'consent select_account'});
+		return provider;
+	}, []);
 
-		this.googleProvider   = new GoogleAuthProvider();
-		this.facebookProvider = new FacebookAuthProvider();
-		this.twitterProvider  = new TwitterAuthProvider();
-		this.githubProvider   = new GithubAuthProvider();
+	const githubProvider = useMemo(() =>
+	{
+		const provider = new GithubAuthProvider();
+		provider.setCustomParameters({allow_signup: true});
+		return provider;
+	}, []);
 
-		/*
-		 * Choose between multiple google accounts
-		 * http://stackoverflow.com/a/40551683/23572
-		 */
-		this.googleProvider.setCustomParameters({prompt: 'consent select_account'});
-		this.githubProvider.setCustomParameters({allow_signup: true});
-	}
+	const facebookProvider = useMemo(() => new FacebookAuthProvider(), []);
+	const twitterProvider = useMemo(() => new TwitterAuthProvider(), []);
 
-	handleEdit = () =>
+	const handleEdit = () =>
 	{
 		window.location.href = '/account';
 	};
 
-	handleLogout = () =>
+	const handleLogout = () =>
 	{
 		const auth = getAuth();
 		signOut(auth);
 	};
 
-	getDisplayName = () =>
+	const getDisplayName = () =>
 	{
-		if (this.props.user.displayName)
+		if (user && user.displayName)
 		{
 			return (
 				<h2>
 					<b>
-						{this.props.user.displayName}
+						{user.displayName}
 					</b>
 				</h2>
 			);
@@ -96,15 +87,15 @@ class Header extends PureComponent
 		return false;
 	};
 
-	authenticate = (provider) =>
+	const authenticate = (provider) =>
 	{
 		const auth = getAuth();
 		signInWithPopup(auth, provider).catch(error => console.error({error}));
 	};
 
-	renderAuthentication = () =>
+	const renderAuthentication = () =>
 	{
-		if (this.props.user)
+		if (user)
 		{
 			return (
 				<Dropdown className='text-light'>
@@ -113,13 +104,13 @@ class Header extends PureComponent
 					</Dropdown.Toggle>
 					<Dropdown.Menu className='dropdown-menu-right'>
 						<Dropdown.Item className='user-photo-container'>
-							{this.getDisplayName()}
+							{getDisplayName()}
 						</Dropdown.Item>
 						<Nav.Link as={Link} to='/favorites' className='text-light'>
 							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
 							{' My Favorites'}
 						</Nav.Link>
-						<Nav.Link as={Link} to={`/user/${this.props.user.uid}`} className='text-light'>
+						<Nav.Link as={Link} to={`/user/${user.uid}`} className='text-light'>
 							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 							{' My Blueprints'}
 						</Nav.Link>
@@ -128,7 +119,7 @@ class Header extends PureComponent
 							{' My Display Name'}
 						</Nav.Link>
 						<Dropdown.Item>
-							<Button type='link' className='w-100' variant='warning' size='lg' onClick={this.handleLogout}>
+							<Button type='link' className='w-100' variant='warning' size='lg' onClick={handleLogout}>
 								<FontAwesomeIcon icon={faSignOutAlt} size='lg' fixedWidth />
 								{' Log out'}
 							</Button>
@@ -147,11 +138,11 @@ class Header extends PureComponent
 
 		return (
 			<NavDropdown title={title} style={{minWidth: '210px'}}>
-				<Button type='button' className='google w-100' onClick={() => this.authenticate(this.googleProvider)}>
+				<Button type='button' className='google w-100' onClick={() => authenticate(googleProvider)}>
 					<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
 					{' Log in with Google'}
 				</Button>
-				<Button type='button' className='github w-100' onClick={() => this.authenticate(this.githubProvider)}>
+				<Button type='button' className='github w-100' onClick={() => authenticate(githubProvider)}>
 					<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
 					{' Log in with GitHub'}
 				</Button>
@@ -159,62 +150,76 @@ class Header extends PureComponent
 		);
 	};
 
-	render()
-	{
-		return (
-			<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
-				<Navbar.Brand>
-					<Link to='/'>
-						<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
-						{' Factorio Prints'}
-					</Link>
-				</Navbar.Brand>
-				<Navbar.Toggle />
+	return (
+		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
+			<Navbar.Brand>
+				<Link to='/'>
+					<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
+					{' Factorio Prints'}
+				</Link>
+			</Navbar.Brand>
+			<Navbar.Toggle />
 
-				<Navbar.Collapse>
-					<Nav className='mr-auto'>
-						{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
-						<Nav.Link href='https://www.factorio.school/search' className='text-light'>
-							<FontAwesomeIcon icon={faSearch} size='lg' fixedWidth />
-							{' Search'}
-						</Nav.Link>
-						<Nav.Link as={Link} to='/blueprints' className='text-light'>
-							<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
-							{' Most Recent'}
-						</Nav.Link>
-						<Nav.Link as={Link} to='/top' className='text-light'>
-							<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
-							{' Most Favorited'}
-						</Nav.Link>
-						<Nav.Link as={Link} to='/create' className='text-light'>
-							<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
-							{' Create'}
-						</Nav.Link>
-						<Nav.Link as={Link} to='/knownIssues' className='text-light'>
-							<FontAwesomeIcon icon={faBug} size='lg' fixedWidth />
-							{' Known Issues'}
-						</Nav.Link>
-						<Nav.Link as={Link} to='/chat' className='text-light'>
-							<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
-							{' Chat'}
-						</Nav.Link>
-						<Nav.Link href='https://www.factorio.school/contributors' className='text-light'>
-							<FontAwesomeIcon icon={faPatreon} size='lg' fixedWidth />
-							{' Contributors'}
-						</Nav.Link>
-						<Nav.Link href='https://www.patreon.com/FactorioBlueprints' className='text-dark' target='_blank' rel='noopener noreferrer'>
-							<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
-							{' Donate'}
-						</Nav.Link>
-					</Nav>
-					<Nav className='mr-sm-2' justify>
-						{this.renderAuthentication()}
-					</Nav>
-				</Navbar.Collapse>
-			</Navbar>
-		);
-	}
-}
+			<Navbar.Collapse>
+				<Nav className='mr-auto'>
+					{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
+					<Nav.Link href='https://www.factorio.school/search' className='text-light'>
+						<FontAwesomeIcon icon={faSearch} size='lg' fixedWidth />
+						{' Search'}
+					</Nav.Link>
+					<Nav.Link as={Link} to='/blueprints' className='text-light'>
+						<FontAwesomeIcon icon={faClock} size='lg' fixedWidth />
+						{' Most Recent'}
+					</Nav.Link>
+					<Nav.Link as={Link} to='/top' className='text-light'>
+						<FontAwesomeIcon icon={faTrophy} size='lg' fixedWidth />
+						{' Most Favorited'}
+					</Nav.Link>
+					<Nav.Link as={Link} to='/create' className='text-light'>
+						<FontAwesomeIcon icon={faPlusSquare} size='lg' fixedWidth />
+						{' Create'}
+					</Nav.Link>
+					<Nav.Link as={Link} to='/knownIssues' className='text-light'>
+						<FontAwesomeIcon icon={faBug} size='lg' fixedWidth />
+						{' Known Issues'}
+					</Nav.Link>
+					<Nav.Link as={Link} to='/chat' className='text-light'>
+						<FontAwesomeIcon icon={faDiscord} size='lg' fixedWidth />
+						{' Chat'}
+					</Nav.Link>
+					<Nav.Link href='https://www.factorio.school/contributors' className='text-light'>
+						<FontAwesomeIcon icon={faPatreon} size='lg' fixedWidth />
+						{' Contributors'}
+					</Nav.Link>
+					<Nav.Link href='https://www.patreon.com/FactorioBlueprints' className='text-dark' target='_blank' rel='noopener noreferrer'>
+						<FontAwesomeIcon icon={faDonate} size='lg' fixedWidth />
+						{' Donate'}
+					</Nav.Link>
+				</Nav>
+				<Nav className='mr-sm-2' justify>
+					{renderAuthentication()}
+				</Nav>
+			</Navbar.Collapse>
+		</Navbar>
+	);
+};
+
+Header.propTypes = forbidExtraProps({
+	user: PropTypes.shape(forbidExtraProps({
+		uid        : PropTypes.string.isRequired,
+		displayName: PropTypes.string,
+		photoURL   : PropTypes.string,
+	})),
+	match: PropTypes.shape(forbidExtraProps({
+		params : PropTypes.shape(forbidExtraProps({})).isRequired,
+		path   : PropTypes.string.isRequired,
+		url    : PropTypes.string.isRequired,
+		isExact: PropTypes.bool.isRequired,
+	})),
+	location     : locationSchema,
+	history      : historySchema,
+	staticContext: PropTypes.shape(forbidExtraProps({})),
+});
 
 const mapStateToProps = storeState => ({
 	user: selectors.getUser(storeState),
