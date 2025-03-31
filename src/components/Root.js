@@ -1,30 +1,30 @@
-import {forbidExtraProps}          from 'airbnb-prop-types';
-import PropTypes                   from 'prop-types';
-import React, {PureComponent}      from 'react';
-import {Helmet}                    from 'react-helmet';
-import {connect}                   from 'react-redux';
+import {forbidExtraProps}     from 'airbnb-prop-types';
+import PropTypes              from 'prop-types';
+import React, {useEffect, useRef} from 'react';
+import {Helmet}               from 'react-helmet';
+import {connect}              from 'react-redux';
 import {BrowserRouter, Route, Routes, useParams, useLocation} from 'react-router-dom';
-import {bindActionCreators}        from 'redux';
-import {useAuthState} from 'react-firebase-hooks/auth';
+import {bindActionCreators}   from 'redux';
+import {useAuthState}         from 'react-firebase-hooks/auth';
 
-import {authStateChanged} from '../actions/actionCreators';
-import {auth, database}   from '../base';
-import {onAuthStateChanged} from 'firebase/auth';
-import {ref, runTransaction} from 'firebase/database';
-import Account            from './Account';
+import {authStateChanged}     from '../actions/actionCreators';
+import {auth, database}       from '../base';
+import {onAuthStateChanged}   from 'firebase/auth';
+import {ref, runTransaction}  from 'firebase/database';
+import Account                from './Account';
 
-import BlueprintGrid from './BlueprintGrid';
-import Chat          from './Chat';
-import Create        from './Create';
-import EditBlueprint from './EditBlueprint';
-import Header        from './Header';
-import Intro         from './Intro';
-import KnownIssues   from './KnownIssues';
-import MostFavoritedGrid from './MostFavoritedGrid';
-import FavoritesGrid     from './MyFavoritesGrid';
-import NoMatch           from './NoMatch';
-import SingleBlueprint   from './SingleBlueprint';
-import UserGrid          from './UserGrid';
+import BlueprintGrid      from './BlueprintGrid';
+import Chat               from './Chat';
+import Create             from './Create';
+import EditBlueprint      from './EditBlueprint';
+import Header             from './Header';
+import Intro              from './Intro';
+import KnownIssues        from './KnownIssues';
+import MostFavoritedGrid  from './MostFavoritedGrid';
+import FavoritesGrid      from './MyFavoritesGrid';
+import NoMatch            from './NoMatch';
+import SingleBlueprint    from './SingleBlueprint';
+import UserGrid           from './UserGrid';
 
 const TaggedRoute = () =>
 {
@@ -34,13 +34,11 @@ const TaggedRoute = () =>
 	return <BlueprintGrid initialTag={tagPath} />;
 };
 
-class Root extends PureComponent
+const Root = ({authStateChanged}) =>
 {
-	static propTypes = forbidExtraProps({
-		authStateChanged: PropTypes.func.isRequired,
-	});
+	const authUnsubscribeRef = useRef(null);
 
-	componentDidMount()
+	useEffect(() =>
 	{
 		const unsubscribe = onAuthStateChanged(
 			auth,
@@ -71,23 +69,23 @@ class Root extends PureComponent
 					const userRef = ref(database, `/users/${uid}/`);
 					runTransaction(userRef, buildUserInformation);
 				}
-				this.props.authStateChanged(user);
+				authStateChanged(user);
 			},
-			error => console.log('Root.componentDidMount authentication error:', error),
+			error => console.log('Root authentication error:', error),
 		);
 
-		this.authUnsubscribe = unsubscribe;
-	}
+		authUnsubscribeRef.current = unsubscribe;
 
-	componentWillUnmount()
-	{
-		if (this.authUnsubscribe)
+		return () =>
 		{
-			this.authUnsubscribe();
-		}
-	}
+			if (authUnsubscribeRef.current)
+			{
+				authUnsubscribeRef.current();
+			}
+		};
+	}, [authStateChanged]);
 
-	renderIntro = () => (
+	const renderIntro = () => (
 		<div>
 			<KnownIssues />
 			<Intro />
@@ -95,40 +93,40 @@ class Root extends PureComponent
 		</div>
 	);
 
+	return (
+		<>
+			<Helmet>
+				<title>
+					Factorio Prints
+				</title>
+			</Helmet>
+			<BrowserRouter>
+				<div>
+					<Header />
+					<Routes>
+						<Route path='/' element={renderIntro()} />
+						<Route path='/blueprints' element={<BlueprintGrid />} />
+						<Route path='/top' element={<MostFavoritedGrid />} />
+						<Route path='/create' element={<Create />} />
+						<Route path='/favorites' element={<FavoritesGrid />} />
+						<Route path='/knownIssues' element={<KnownIssues />} />
+						<Route path='/chat' element={<Chat />} />
+						<Route path='/account' element={<Account />} />
+						<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
+						<Route path='/edit/:blueprintId' element={<EditBlueprint />} />
+						<Route path='/user/:userId' element={<UserGrid />} />
+						<Route path='/tagged/*' element={<TaggedRoute />} />
+						<Route path='*' element={<NoMatch />} />
+					</Routes>
+				</div>
+			</BrowserRouter>
+		</>
+	);
+};
 
-	render()
-	{
-		return (
-			<>
-				<Helmet>
-					<title>
-						Factorio Prints
-					</title>
-				</Helmet>
-				<BrowserRouter>
-					<div>
-						<Header />
-						<Routes>
-							<Route path='/' element={this.renderIntro()} />
-							<Route path='/blueprints' element={<BlueprintGrid />} />
-							<Route path='/top' element={<MostFavoritedGrid />} />
-							<Route path='/create' element={<Create />} />
-							<Route path='/favorites' element={<FavoritesGrid />} />
-							<Route path='/knownIssues' element={<KnownIssues />} />
-							<Route path='/chat' element={<Chat />} />
-							<Route path='/account' element={<Account />} />
-							<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
-							<Route path='/edit/:blueprintId' element={<EditBlueprint />} />
-							<Route path='/user/:userId' element={<UserGrid />} />
-							<Route path='/tagged/*' element={<TaggedRoute />} />
-							<Route path='*' element={<NoMatch />} />
-						</Routes>
-					</div>
-				</BrowserRouter>
-			</>
-		);
-	}
-}
+Root.propTypes = forbidExtraProps({
+	authStateChanged: PropTypes.func.isRequired,
+});
 
 const mapStateToProps = () => ({});
 
