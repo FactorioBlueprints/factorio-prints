@@ -1,24 +1,19 @@
-import {faSearch}             from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
-import {forbidExtraProps}     from 'airbnb-prop-types';
-import PropTypes              from 'prop-types';
-import React, {PureComponent} from 'react';
-import Col                    from 'react-bootstrap/Col';
-import Form                   from 'react-bootstrap/Form';
-import InputGroup             from 'react-bootstrap/InputGroup';
-import {connect}              from 'react-redux';
-import {bindActionCreators}   from 'redux';
+import {faSearch}         from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
+import {forbidExtraProps} from 'airbnb-prop-types';
+import PropTypes          from 'prop-types';
+import React              from 'react';
+import Col                from 'react-bootstrap/Col';
+import Form               from 'react-bootstrap/Form';
+import InputGroup         from 'react-bootstrap/InputGroup';
+import {connect}          from 'react-redux';
+import {bindActionCreators} from 'redux';
 
 import {filterOnTitle} from '../actions/actionCreators';
 
-class SearchForm extends PureComponent
+const SearchForm = ({titleFilter, filterOnTitle}) =>
 {
-	static propTypes = forbidExtraProps({
-		titleFilter  : PropTypes.string.isRequired,
-		filterOnTitle: PropTypes.func.isRequired,
-	});
-
-	handleKeyDown = (event) =>
+	const handleKeyDown = (event) =>
 	{
 		if (event.key === 'Escape')
 		{
@@ -26,34 +21,36 @@ class SearchForm extends PureComponent
 		}
 	};
 
-	handleSearchString = (event) =>
+	const handleSearchString = (event) =>
 	{
 		event.preventDefault();
 
 		const searchString = event.target.value;
-		this.props.filterOnTitle(searchString);
+		filterOnTitle(searchString);
 	};
 
-	render()
-	{
-		return (
-			<Col md={6}>
-				<InputGroup size='sm' className='search-form'>
-					<Form.Control
-						type='text'
-						placeholder='search titles'
-						value={this.props.titleFilter}
-						onChange={this.handleSearchString}
-						onKeyDown={this.handleKeyDown}
-					/>
-					<InputGroup.Text className='py-0 px-2'>
-						<FontAwesomeIcon icon={faSearch} size='sm' />
-					</InputGroup.Text>
-				</InputGroup>
-			</Col>
-		);
-	}
-}
+	return (
+		<Col md={6}>
+			<InputGroup size='sm' className='search-form'>
+				<Form.Control
+					type='text'
+					placeholder='search titles'
+					value={titleFilter}
+					onChange={handleSearchString}
+					onKeyDown={handleKeyDown}
+				/>
+				<InputGroup.Text className='py-0 px-2'>
+					<FontAwesomeIcon icon={faSearch} size='sm' />
+				</InputGroup.Text>
+			</InputGroup>
+		</Col>
+	);
+};
+
+SearchForm.propTypes = forbidExtraProps({
+	titleFilter  : PropTypes.string.isRequired,
+	filterOnTitle: PropTypes.func.isRequired,
+});
 
 const mapStateToProps = (state) =>
 {
