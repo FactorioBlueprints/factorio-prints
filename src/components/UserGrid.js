@@ -2,7 +2,7 @@ import {faCog}                from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}      from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}     from 'airbnb-prop-types';
 import PropTypes              from 'prop-types';
-import React, {PureComponent} from 'react';
+import React, {useEffect}     from 'react';
 import Container              from 'react-bootstrap/Container';
 import Row                    from 'react-bootstrap/Row';
 import {connect}              from 'react-redux';
@@ -20,82 +20,89 @@ import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
-class UserGrid extends PureComponent
+const UserGrid = ({
+	id,
+	exists,
+	displayName,
+	displayNameLoading,
+	subscribeToUser,
+	filterOnTags,
+	user,
+	blueprintSummaries,
+	blueprintSummariesLoading,
+	userBlueprintsLoading,
+}) =>
 {
-	static propTypes = forbidExtraProps({
-		id                       : PropTypes.string.isRequired,
-		exists                   : PropTypes.bool,
-		displayName              : PropTypes.string,
-		displayNameLoading       : PropTypes.bool.isRequired,
-		subscribeToUser          : PropTypes.func.isRequired,
-		filterOnTags             : PropTypes.func.isRequired,
-		user                     : propTypes.userSchema,
-		blueprintSummaries       : propTypes.blueprintSummariesSchema,
-		blueprintSummariesLoading: PropTypes.bool,
-		location                 : propTypes.locationSchema,
-		history                  : PropTypes.object.isRequired,
-		staticContext            : PropTypes.shape(forbidExtraProps({})),
-		match                    : PropTypes.shape(forbidExtraProps({
-			params: PropTypes.shape(forbidExtraProps({
-				userId: PropTypes.string.isRequired,
-			})).isRequired,
-			path   : PropTypes.string.isRequired,
-			url    : PropTypes.string.isRequired,
-			isExact: PropTypes.bool.isRequired,
-		})).isRequired,
-
-	});
-
-	UNSAFE_componentWillMount()
+	useEffect(() =>
 	{
 		// Logged in user
-		if (this.props.user)
+		if (user)
 		{
-			this.props.subscribeToUser(this.props.user.uid);
+			subscribeToUser(user.uid);
 		}
 		// Blueprint author
-		this.props.subscribeToUser(this.props.id);
-	}
+		subscribeToUser(id);
+	}, [user, id, subscribeToUser]);
 
-	render()
+	if (blueprintSummariesLoading && (userBlueprintsLoading || displayNameLoading || blueprintSummariesLoading))
 	{
-		if (this.props.blueprintSummariesLoading && (this.props.userBlueprintsLoading || this.props.displayNameLoading || this.props.blueprintSummariesLoading))
-		{
-			return (
-				<div className='p-5 rounded-lg jumbotron'>
-					<h1 className='display-4'>
-						<FontAwesomeIcon icon={faCog} spin />
-						{' Loading data'}
-					</h1>
-				</div>
-			);
-		}
-
-		if (this.props.exists === false)
-		{
-			return <NoMatch />;
-		}
-
-		const ownedByCurrentUser = this.props.user && this.props.user.uid === this.props.id;
-		const you = ownedByCurrentUser ? ' (You)' : '';
-
 		return (
-			<Container fluid>
-				<PageHeader title={`Blueprints by ${this.props.displayName || '(Anonymous)'}${you}`} />
-				<Row>
-					<SearchForm />
-					<TagForm />
-				</Row>
-				<Row>
-					{
-						this.props.blueprintSummaries.map(blueprintSummary =>
-							<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
-					}
-				</Row>
-			</Container>
+			<div className='p-5 rounded-lg jumbotron'>
+				<h1 className='display-4'>
+					<FontAwesomeIcon icon={faCog} spin />
+					{' Loading data'}
+				</h1>
+			</div>
 		);
 	}
-}
+
+	if (exists === false)
+	{
+		return <NoMatch />;
+	}
+
+	const ownedByCurrentUser = user && user.uid === id;
+	const you = ownedByCurrentUser ? ' (You)' : '';
+
+	return (
+		<Container fluid>
+			<PageHeader title={`Blueprints by ${displayName || '(Anonymous)'}${you}`} />
+			<Row>
+				<SearchForm />
+				<TagForm />
+			</Row>
+			<Row>
+				{
+					blueprintSummaries.map(blueprintSummary =>
+						<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
+				}
+			</Row>
+		</Container>
+	);
+};
+
+UserGrid.propTypes = forbidExtraProps({
+	id                       : PropTypes.string.isRequired,
+	exists                   : PropTypes.bool,
+	displayName              : PropTypes.string,
+	displayNameLoading       : PropTypes.bool.isRequired,
+	subscribeToUser          : PropTypes.func.isRequired,
+	filterOnTags             : PropTypes.func.isRequired,
+	user                     : propTypes.userSchema,
+	blueprintSummaries       : propTypes.blueprintSummariesSchema,
+	blueprintSummariesLoading: PropTypes.bool,
+	location                 : propTypes.locationSchema,
+	history                  : PropTypes.object.isRequired,
+	staticContext            : PropTypes.shape(forbidExtraProps({})),
+	match                    : PropTypes.shape(forbidExtraProps({
+		params: PropTypes.shape(forbidExtraProps({
+			userId: PropTypes.string.isRequired,
+		})).isRequired,
+		path   : PropTypes.string.isRequired,
+		url    : PropTypes.string.isRequired,
+		isExact: PropTypes.bool.isRequired,
+	})).isRequired,
+});
 
 const mapStateToProps = (storeState, ownProps) =>
 {
