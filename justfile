@@ -2,16 +2,16 @@
 default:
     @just --list --unsorted
 
-# `yarn install`
+# `npm install`
 install:
-    yarn install --ignore-optional --ignore-engines --ignore-platform --ignore-scripts
+    npm install --no-optional --ignore-engines --ignore-platform --ignore-scripts
 
 # Start the development server
 dev:
-    yarn run watch
+    npm run watch
 
 # Run install, build, test, and lint in sequence
 all: install
-    yarn run build
-    yarn run test --watchAll=false
-    yarn run lint
+    npm run build
+    npm test -- --watchAll=false
+    npm run lint

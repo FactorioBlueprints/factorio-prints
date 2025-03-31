@@ -4,14 +4,10 @@
 
 https://nodejs.org/en/
 
-#### Install yarn package manager
-
-https://yarnpkg.com/en/docs/install
-
-#### Install some command line tools that are node packages
+#### Install global packages
 
 ```bash
-yarn global add \
+npm install -g \
 	firebase-tools@latest \
 	create-react-app@latest \
 	react-scripts@latest \
@@ -26,7 +22,7 @@ yarn global add \
 Run the dev build:
 
 ```bash
-yarn run start
+npm start
 ```
 
 This will build the app, run it on localhost:3000, and open a browser. The app will be connecting to the production database.
@@ -36,13 +32,13 @@ This will build the app, run it on localhost:3000, and open a browser. The app w
 Run the commands:
 
 ```bash
-yarn run build
+npm run build
 firebase deploy
 ```
 
 ### To see the firebase data
 
-Install the [Firebase CLI](https://firebase.google.com/docs/cli/). 
+Install the [Firebase CLI](https://firebase.google.com/docs/cli/).
 
 ```bash
 npm install -g firebase-tools
