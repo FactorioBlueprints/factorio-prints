@@ -13,5 +13,5 @@ dev:
 # Run install, build, test, and lint in sequence
 all: install
     npm run build
-    npm test -- --watchAll=false
+    npm run test:run
     npm run lint
