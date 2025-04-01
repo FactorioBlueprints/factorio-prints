@@ -1,21 +1,20 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
-import PropTypes          from 'prop-types';
+import PropTypes from 'prop-types';
 
-export const imgurImageSchema = PropTypes.shape(forbidExtraProps({
+export const imgurImageSchema = PropTypes.shape({
 	id        : PropTypes.string.isRequired,
 	type      : PropTypes.string.isRequired,
 	deletehash: PropTypes.string,
 	height    : PropTypes.number,
 	width     : PropTypes.number,
-}));
+});
 
-export const userSchema = PropTypes.shape(forbidExtraProps({
+export const userSchema = PropTypes.shape({
 	uid        : PropTypes.string.isRequired,
 	displayName: PropTypes.string,
 	photoURL   : PropTypes.string,
-}));
+});
 
-export const blueprintSchema = PropTypes.shape(forbidExtraProps({
+export const blueprintSchema = PropTypes.shape({
 	title              : PropTypes.string.isRequired,
 	blueprintString    : PropTypes.string.isRequired,
 	createdDate        : PropTypes.number.isRequired,
@@ -26,14 +25,14 @@ export const blueprintSchema = PropTypes.shape(forbidExtraProps({
 	numberOfFavorites  : PropTypes.number.isRequired,
 	tags               : PropTypes.arrayOf(PropTypes.string.isRequired),
 	authorId           : PropTypes.string,
-	author             : PropTypes.shape(forbidExtraProps({
+	author             : PropTypes.shape({
 		displayName: PropTypes.string,
 		userId     : PropTypes.string.isRequired,
-	})).isRequired,
+	}).isRequired,
 	image: imgurImageSchema.isRequired,
-}));
+});
 
-export const blueprintSummarySchema = PropTypes.shape(forbidExtraProps({
+export const blueprintSummarySchema = PropTypes.shape({
 	key              : PropTypes.string.isRequired,
 	title            : PropTypes.string.isRequired,
 	imgurId          : PropTypes.string.isRequired,
@@ -42,22 +41,15 @@ export const blueprintSummarySchema = PropTypes.shape(forbidExtraProps({
 	lastUpdatedDate  : PropTypes.number,
 	height           : PropTypes.number,
 	width            : PropTypes.number,
-})).isRequired;
+}).isRequired;
 
-export const blueprintSummariesSchema = PropTypes.arrayOf(blueprintSummarySchema).isRequired;
-
-export const byTagSchema = PropTypes.objectOf(PropTypes.shape(forbidExtraProps({
-	loading: PropTypes.bool.isRequired,
-	data   : PropTypes.objectOf(PropTypes.bool.isRequired).isRequired,
-})).isRequired).isRequired;
-
-export const locationSchema = PropTypes.shape(forbidExtraProps({
+export const locationSchema = PropTypes.shape({
 	pathname: PropTypes.string.isRequired,
 	search  : PropTypes.string.isRequired,
 	hash    : PropTypes.string.isRequired,
 	state   : PropTypes.any,
 	key     : PropTypes.string,
-}));
+});
 
 export const historySchema = PropTypes.shape({
 	push: PropTypes.func.isRequired,

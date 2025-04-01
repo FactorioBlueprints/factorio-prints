@@ -155,3 +155,12 @@ root {
 #disqus_thread {
   width: 100%;
 }
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+.opacity-50 {
+  opacity: 0.5;
+}

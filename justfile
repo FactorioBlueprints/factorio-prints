@@ -8,14 +8,7 @@ install:
 
 # `npm run dev`
 dev:
-    npm run start
-
-# Run install, build, test, lint, and pre-commit hooks in sequence
-all: install
-    npm run build
-    npm run test:run
-    npm run lint:fix
-    just hooks
+    npm run dev
 
 # `npm run lint:fix`
 lint-fix:
@@ -23,15 +16,15 @@ lint-fix:
 
 # `uv tool run pre-commit run`
 hooks:
-    uv tool run pre-commit run
+    uv tool run pre-commit run --all-files
 
 # `npm run build`
 build:
     npm run build
 
-# Run all checks, continuing even if some fail
-precommit:
-    @echo "🔍 Running pre-commit checks..."
-    @just lint-fix || (echo "❌ Lint-fix failed but continuing...")
-    @just hooks || (echo "❌ Precommit hooks failed but continuing...")
-    @echo "✅ Pre-commit checks completed. Review any errors above."
+# Run install, build, test, lint, and pre-commit hooks in sequence
+precommit: install
+    npm run build
+    npm run test
+    npm run lint:fix
+    just hooks

@@ -1,0 +1,60 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "08:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 25
+    groups:
+      # Group all TypeScript-related updates together
+      typescript-ecosystem:
+        patterns:
+          - "typescript"
+          - "@types/*"
+          - "@typescript-eslint/*"
+      # Group React-related updates
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "@types/react*"
+          - "react-*"
+      # Group Vite-related updates
+      vite-ecosystem:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+      # Group testing-related updates
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+      # Group Firebase-related updates
+      firebase:
+        patterns:
+          - "firebase"
+          - "firebase-*"
+          - "react-firebase-*"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "08:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 25
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      # Group all GitHub Actions updates together
+      actions:
+        patterns:
+          - "*"

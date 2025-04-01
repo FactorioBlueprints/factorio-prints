@@ -1,51 +1,34 @@
 {
-	"database": {
-		"rules": "database.rules.json"
-	},
-	"hosting" : {
-		"public"  : "build",
-		"rewrites": [
-			{
-				"source": "service-worker.js",
-				"destination": "/service-worker.js"
-			},
-			{
-				"source"     : "**",
-				"destination": "/index.html"
-			}
-		],
-		"headers" : [
-			{
-				"source" : "**/*.@(jpg|jpeg|gif|png|svg|ico)",
-				"headers": [
-					{
-						"key" : "Cache-Control",
-						"value" : "max-age=2419200"
-					}
-				]
-			},
-			{
-				"source" : "**/*.@(js|css|html|json)",
-				"headers": [
-					{
-						"key"  : "Cache-Control",
-						"value": "max-age=0, no-cache, no-store, must-revalidate"
-					}
-				]
-			},
-			{
-				"source" : "service-worker.js",
-				"headers": [
-					{
-						"key"  : "Content-Type",
-						"value": "application/javascript"
-					},
-					{
-						"key"  : "Cache-Control",
-						"value": "no-cache"
-					}
-				]
-			}
-		]
-	}
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "hosting": {
+    "public": "dist",
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|ico)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=2419200"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css|html|json)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=0, no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ]
+  }
 }
