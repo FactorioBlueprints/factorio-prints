@@ -1,5 +1,4 @@
 import {useStore}                    from '@tanstack/react-store';
-// No PropTypes needed
 import React                         from 'react';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
@@ -7,7 +6,6 @@ import {useParams}                   from '@tanstack/react-router';
 import useEnrichedBlueprintSummaries from '../hooks/useEnrichedBlueprintSummaries';
 import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import {useUserBlueprints}           from '../hooks/useUser';
-// No PropTypes needed
 import {searchParamsStore}           from '../store/searchParamsStore';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
@@ -82,7 +80,5 @@ function UserGrid()
 		</Container>
 	);
 }
-
-// No longer need propTypes since we use TanStack Router's useParams
 
 export default UserGrid;
