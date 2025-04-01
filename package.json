@@ -73,6 +73,7 @@
     "watch": "concurrently --names 'webpack, stylus' --prefix name 'npm run start' 'npm run styles:watch'",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
+    "test:run": "react-scripts test --env=jsdom --watchAll=false",
     "eject": "react-scripts eject",
     "styles": "stylus -u autoprefixer-stylus ./src/css/style.styl -o ./src/css/style.css",
     "styles:watch": "stylus -u autoprefixer-stylus -w ./src/css/style.styl -o ./src/css/style.css",
