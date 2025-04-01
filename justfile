@@ -4,7 +4,7 @@ default:
 
 # `npm install`
 install:
-    npm install --omit=optional --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
+    npm install --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
 
 # Start the development server
 dev:
