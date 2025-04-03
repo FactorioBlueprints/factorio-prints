@@ -36,7 +36,7 @@
 		"atob": "2.1.2",
 		"autoprefixer-stylus": "1.0.0",
 		"axios": "^1.8.4",
-		"bootstrap": "^5.3.3",
+		"bootstrap": "^5.3.4",
 		"classnames": "^2.5.1",
 		"concurrently": "9.1.2",
 		"copy-to-clipboard": "^3.3.3",
