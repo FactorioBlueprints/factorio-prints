@@ -76,7 +76,7 @@
 		"react-select": "^5.10.1",
 		"serialize-query-params": "^2.0.2",
 		"stylus": "0.64.0",
-		"typescript": "^5.8.2",
+		"typescript": "^5.8.3",
 		"use-query-params": "^2.2.1",
 		"web-vitals": "^4.2.4"
 	},
