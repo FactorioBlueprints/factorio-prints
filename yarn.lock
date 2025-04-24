@@ -9012,10 +9012,10 @@ makeerror@1.0.12:
   dependencies:
     tmpl "1.0.5"
 
-marked@*, marked@15.0.9:
-  version "15.0.9"
-  resolved "https://registry.yarnpkg.com/marked/-/marked-15.0.9.tgz#0ac0b42834a04f8c971a2fee36106694b29c0aad"
-  integrity sha512-9AW/bn9DxQeZVjR52l5jsc0W2pwuhP04QaQewPvylil12Cfr2GBfWmgp6mu8i9Jy8UlBjqDZ9uMTDuJ8QOGZJA==
+marked@*, marked@15.0.10:
+  version "15.0.10"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-15.0.10.tgz#466f718a312ef83c7560ae05e4f8092b21e3c48b"
+  integrity sha512-BXzsfFiR2UqXFKRwpugWuCYi9mWd1aX/Yns/X52xWfvfen9lnGEDbJw9ZEjjvLZVqntqT2gX45eYvqb2dIokDw==
 
 math-intrinsics@^1.0.0, math-intrinsics@^1.1.0:
   version "1.1.0"
