@@ -69,7 +69,7 @@
 		"react-dropzone": "14.3.8",
 		"react-error-boundary": "^5.0.0",
 		"react-helmet": "^6.1.0",
-		"react-router": "^7.5.2",
+		"react-router": "^7.5.3",
 		"react-router-bootstrap": "^0.26.3",
 		"react-router-dom": "^7.5.2",
 		"react-scripts": "^5.0.1",
