@@ -37,7 +37,7 @@ const BlueprintThumbnail = ({blueprintSummary, myFavoritesKeys, myBlueprints}) =
 			</Link>
 			<p className='truncate p-1'>
 				<span className='mr-1'>
-					{`${numberOfFavorites}`} 
+					{`${numberOfFavorites}`}
 					{' '}
 					<span className='sr-only'>
 						favorites

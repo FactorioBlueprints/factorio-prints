@@ -57,4 +57,3 @@ export const RECEIVED_MODERATORS      = 'RECEIVED_MODERATORS';
 
 export const FILTER_ON_TAGS  = 'FILTER_ON_TAGS';
 export const FILTER_ON_TITLE = 'FILTER_ON_TITLE';
-

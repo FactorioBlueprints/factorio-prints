@@ -8,7 +8,8 @@ import difference                                 from 'lodash/difference';
 import forEach                                    from 'lodash/forEach';
 import isEmpty                                    from 'lodash/isEmpty';
 import some                                       from 'lodash/some';
-import {marked}                                   from 'marked';
+import MarkdownIt                                 from 'markdown-it';
+import DOMPurify                                  from 'dompurify';
 import PropTypes                                  from 'prop-types';
 import React, {useCallback, useEffect, useState}  from 'react';
 import Alert                                      from 'react-bootstrap/Alert';
@@ -41,28 +42,23 @@ import NoMatch             from './NoMatch';
 import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
 
-const renderer = new marked.Renderer();
-renderer.table = (header, body) => `<table class="table table-striped table-bordered">
-<thead>
-${header}</thead>
-<tbody>
-${body}</tbody>
-</table>
-`;
-renderer.image = (href, title, text) =>
-	`<img src="${href}" alt="${text}" class="img-responsive">`;
-
-marked.use({
-	renderer,
-	gfm       : true,
-	tables    : true,
-	breaks    : false,
-	pedantic  : false,
-	sanitize  : false,
-	smartLists: true,
-	mangle    : false,
-	headerIds : false,
+const md = new MarkdownIt({
+	html       : true,
+	linkify    : true,
+	typographer: true,
+	breaks     : false,
 });
+
+const defaultTableRenderer = md.renderer.rules.table_open || function(tokens, idx, options, env, self)
+{
+	return self.renderToken(tokens, idx, options);
+};
+
+md.renderer.rules.table_open = function(tokens, idx, options, env, self)
+{
+	tokens[idx].attrSet('class', 'table table-striped table-bordered');
+	return defaultTableRenderer(tokens, idx, options, env, self);
+};
 
 const emptyTags = [];
 
@@ -126,7 +122,7 @@ const EditBlueprint = ({
 				imageUrl: imgurId ? `https://imgur.com/${imgurId}` : '',
 			};
 
-			const renderedMarkdown = marked(blueprint.descriptionMarkdown);
+			const renderedMarkdown = DOMPurify.sanitize(md.render(blueprint.descriptionMarkdown || ''));
 			const parsedBlueprint = parseBlueprint(blueprint.blueprintString);
 			const v15Decoded = parsedBlueprint && parsedBlueprint.getV15Decoded();
 
@@ -179,7 +175,7 @@ const EditBlueprint = ({
 	const handleDescriptionChanged = useCallback((event) =>
 	{
 		const descriptionMarkdown = event.target.value;
-		const renderedMarkdown = marked(descriptionMarkdown);
+		const renderedMarkdown = DOMPurify.sanitize(md.render(descriptionMarkdown || ''));
 		setState(prevState => ({
 			...prevState,
 			renderedMarkdown,

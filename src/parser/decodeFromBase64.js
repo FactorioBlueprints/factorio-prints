@@ -37,4 +37,3 @@ export const encodeV15ToBase64 = (jsonCode) =>
 	const string = btoa(String.fromCharCode.apply(null, arrayBuffer));
 	return `0${string}`;
 };
-

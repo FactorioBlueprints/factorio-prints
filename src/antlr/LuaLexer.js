@@ -262,4 +262,3 @@ LuaLexer.prototype.grammarFileName = "Lua.g4";
 
 
 exports.LuaLexer = LuaLexer;
-

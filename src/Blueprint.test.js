@@ -51,4 +51,3 @@ it('converts v1.0 objects', () =>
 	const stringify       = JSON.stringify(convertedObject, null, '  ');
 	console.log(stringify);
 });
-

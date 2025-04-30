@@ -208,4 +208,3 @@ export const getTagsOptions = createSelector(
 	[getTags],
 	tags => tags.map(value => ({value, label: value})),
 );
-

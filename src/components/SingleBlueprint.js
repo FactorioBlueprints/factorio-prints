@@ -13,7 +13,6 @@ import {
 import {FontAwesomeIcon}         from '@fortawesome/react-fontawesome';
 import {forbidExtraProps}        from 'airbnb-prop-types';
 import Disqus                    from 'disqus-react';
-import concat                    from 'lodash/concat';
 import flatMap                   from 'lodash/flatMap';
 import forOwn                    from 'lodash/forOwn';
 import countBy                   from 'lodash/fp/countBy';
@@ -24,9 +23,9 @@ import toPairs                   from 'lodash/fp/toPairs';
 import get                       from 'lodash/get';
 import has                       from 'lodash/has';
 import isEmpty                   from 'lodash/isEmpty';
-import isEqual                   from 'lodash/isEqual';
 import range                     from 'lodash/range';
-import {marked}                  from 'marked';
+import MarkdownIt                from 'markdown-it';
+import DOMPurify                 from 'dompurify';
 import moment                    from 'moment';
 import PropTypes                 from 'prop-types';
 import React, {useState, useEffect, useCallback} from 'react';
@@ -59,28 +58,23 @@ import * as selectors from '../selectors';
 import GoogleAd from './GoogleAd';
 import NoMatch  from './NoMatch';
 
-const renderer = new marked.Renderer();
-renderer.table = (header, body) => `<table class="table table-striped table-bordered">
-<thead>
-${header}</thead>
-<tbody>
-${body}</tbody>
-</table>
-`;
-renderer.image = (href, title, text) =>
-	`<img src="${href}" alt="${text}" class="img-responsive">`;
-
-marked.use({
-	renderer,
-	gfm       : true,
-	tables    : true,
-	breaks    : false,
-	pedantic  : false,
-	sanitize  : false,
-	smartLists: true,
-	mangle    : false,
-	headerIds : false,
+const md = new MarkdownIt({
+	html       : true,
+	linkify    : true,
+	typographer: true,
+	breaks     : false,
 });
+
+const defaultTableRenderer = md.renderer.rules.table_open || function(tokens, idx, options, env, self)
+{
+	return self.renderToken(tokens, idx, options);
+};
+
+md.renderer.rules.table_open = function(tokens, idx, options, env, self)
+{
+	tokens[idx].attrSet('class', 'table table-striped table-bordered');
+	return defaultTableRenderer(tokens, idx, options, env, self);
+};
 
 const SingleBlueprint = ({
 	id,
@@ -144,7 +138,7 @@ const SingleBlueprint = ({
 		subscribeToUserDisplayName(authorId);
 
 		const thumbnail = buildImageUrl(image.id, image.type, 'l');
-		const renderedMarkdown = marked(descriptionMarkdown);
+		const renderedMarkdown = DOMPurify.sanitize(md.render(descriptionMarkdown || ''));
 		const ownedByCurrentUser = props.user && props.user.uid === authorId;
 		const parsedBlueprint = parseBlueprint(blueprintString);
 		const v15Decoded = parsedBlueprint && parsedBlueprint.getV15Decoded();

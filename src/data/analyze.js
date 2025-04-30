@@ -5,7 +5,7 @@ const file1Content = fs.readFileSync('entitiesWithIcons-old.js', 'utf8');
 const file2Content = fs.readFileSync('entitiesWithIcons-new.js', 'utf8');
 
 // Function to extract keys from the content
-function extractKeys(content) 
+function extractKeys(content)
 {
 	// Match all lines that have a key followed by : true
 	const keyPattern = /'([^']+)'\s*:\s*true/g;
