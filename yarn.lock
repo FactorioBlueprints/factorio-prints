@@ -1687,12 +1687,12 @@
     "@firebase/util" "1.11.1"
     tslib "^2.1.0"
 
-"@firebase/app-check-compat@0.3.21":
-  version "0.3.21"
-  resolved "https://registry.yarnpkg.com/@firebase/app-check-compat/-/app-check-compat-0.3.21.tgz#56d9ad00c61418a8cae15fd0afe0c484b657fdec"
-  integrity sha512-Hyx2FqiyoC6beKqNNhF5oCmObwPQsSMqvYFq2DJpRkTONSvEVYOxVyYXkgIPYrX+jPv3qmLo1TrEsoe7ewYnIA==
+"@firebase/app-check-compat@0.3.22":
+  version "0.3.22"
+  resolved "https://registry.yarnpkg.com/@firebase/app-check-compat/-/app-check-compat-0.3.22.tgz#083d1bff90eb8be2a84b6dceb77c574fd7c1a192"
+  integrity sha512-Tag7kI0vnzlsKrpnnhUgbTTTv2NNGR+Sf2pHiy3QApOaOG5tx6W5OQyvKv3+KaGbjEU19mvgOzOe1q5XHDoRvQ==
   dependencies:
-    "@firebase/app-check" "0.9.0"
+    "@firebase/app-check" "0.9.1"
     "@firebase/app-check-types" "0.5.3"
     "@firebase/component" "0.6.14"
     "@firebase/logger" "0.4.4"
@@ -1709,22 +1709,22 @@
   resolved "https://registry.yarnpkg.com/@firebase/app-check-types/-/app-check-types-0.5.3.tgz#38ba954acf4bffe451581a32fffa20337f11d8e5"
   integrity sha512-hyl5rKSj0QmwPdsAxrI5x1otDlByQ7bvNvVt8G/XPO2CSwE++rmSVf3VEhaeOR4J8ZFaF0Z0NDSmLejPweZ3ng==
 
-"@firebase/app-check@0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@firebase/app-check/-/app-check-0.9.0.tgz#28ff9c022244977c66f0b34fd182ba81d4740da8"
-  integrity sha512-AVDIKiEcnOEhvPx6KKetaOjAV/jAtme1ACBzrlWqLb+FnI1cMDNH5kqNraAh3/rXRsEG/Df3TJkFpD7vq6WQpg==
+"@firebase/app-check@0.9.1":
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/@firebase/app-check/-/app-check-0.9.1.tgz#c5e130d5609c40fe530fde284e696910d34347f4"
+  integrity sha512-3gt4yt7oFXalJ2pLpawxKZI9lLLv2Jo2H3AoVKv9Fqy6zQmAC0nSItt9JUl2iDNd11V/bj4OC5rfoAjtyK22dQ==
   dependencies:
     "@firebase/component" "0.6.14"
     "@firebase/logger" "0.4.4"
     "@firebase/util" "1.11.1"
     tslib "^2.1.0"
 
-"@firebase/app-compat@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@firebase/app-compat/-/app-compat-0.3.0.tgz#7596707ff0b4f581a006be267ac4dcb949700365"
-  integrity sha512-9i0a4yxfkSTxs1Y9LWJ1C/EA2WyJGJU5aSwDcNXZImhcaHFQsEd3X3BDXg5A/kwh8xnfmAkZGXqpkVr5whCkNg==
+"@firebase/app-compat@0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@firebase/app-compat/-/app-compat-0.3.1.tgz#0fd9c7bac9a4473f8879240b0be2800ec74c0923"
+  integrity sha512-NCW2H/FawF0cBs3ciRx7NLt0H/VKn71H/q1RfTfctFez7maZ3KJi8QudpmIwoEqEW1N5HiXWxKAHY18Uo6o2Bg==
   dependencies:
-    "@firebase/app" "0.12.0"
+    "@firebase/app" "0.12.1"
     "@firebase/component" "0.6.14"
     "@firebase/logger" "0.4.4"
     "@firebase/util" "1.11.1"
@@ -1735,10 +1735,10 @@
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.9.3.tgz#8408219eae9b1fb74f86c24e7150a148460414ad"
   integrity sha512-kRVpIl4vVGJ4baogMDINbyrIOtOxqhkZQg4jTq3l8Lw6WSk0xfpEYzezFu+Kl4ve4fbPl79dvwRtaFqAC/ucCw==
 
-"@firebase/app@0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.12.0.tgz#91a83bd64a63ad40f10ef37a0229a3ea1e442464"
-  integrity sha512-fM0chKK70hqoGluko05RJKeAxXCoximggD5SDrHVgNrRKpLoj1w0v7vNRhulDbxIfVZ3F/8V2OOYf+V96srxug==
+"@firebase/app@0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@firebase/app/-/app-0.12.1.tgz#562173e5afdbab74af23ac185687949b4b1345ba"
+  integrity sha512-ASExOlmmjRMdwOQ65Oj6R9JBqa7iiT1/LgZjtbU7FqxoJZNWHrt39NJ/z2bjyYDdAHX8jkY7muFqzahScCXgfA==
   dependencies:
     "@firebase/component" "0.6.14"
     "@firebase/logger" "0.4.4"
@@ -6676,17 +6676,17 @@ find-up@^5.0.0:
     locate-path "^6.0.0"
     path-exists "^4.0.0"
 
-firebase@11.7.0:
-  version "11.7.0"
-  resolved "https://registry.yarnpkg.com/firebase/-/firebase-11.7.0.tgz#f9489acc4f66195420763083571d81dd27e1193c"
-  integrity sha512-w0OwpZUIOyfR+f6dgj91SteTsUCmb52OkgUs7bzuOlSE6DtDDut2n8y6oIS9+nmsgp9vFESQMx4/BOHT4yyS2w==
+firebase@11.7.1:
+  version "11.7.1"
+  resolved "https://registry.yarnpkg.com/firebase/-/firebase-11.7.1.tgz#258d5824e5b2081e7abcdf2467fd3d4e88479b8d"
+  integrity sha512-Jr0uKRwHAtnlyHis9+48mo3aXeChekaxhy6kSaqBC44qdogwAlTWiY3OTqmRomGA8B62rqS3LwpNyAEZsrhf7w==
   dependencies:
     "@firebase/analytics" "0.10.13"
     "@firebase/analytics-compat" "0.2.19"
-    "@firebase/app" "0.12.0"
-    "@firebase/app-check" "0.9.0"
-    "@firebase/app-check-compat" "0.3.21"
-    "@firebase/app-compat" "0.3.0"
+    "@firebase/app" "0.12.1"
+    "@firebase/app-check" "0.9.1"
+    "@firebase/app-check-compat" "0.3.22"
+    "@firebase/app-compat" "0.3.1"
     "@firebase/app-types" "0.9.3"
     "@firebase/auth" "1.10.2"
     "@firebase/auth-compat" "0.5.22"
