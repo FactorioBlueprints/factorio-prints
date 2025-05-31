@@ -15,7 +15,6 @@ import UserContext    from '../../context/userContext';
 import useBlueprint   from '../../hooks/useBlueprint';
 import useIsModerator from '../../hooks/useIsModerator';
 
-import GoogleAd                  from '../GoogleAd';
 import BlueprintInfoPanel        from './BlueprintInfoPanel';
 import BlueprintMarkdown         from './BlueprintMarkdown';
 import BlueprintTitle            from './BlueprintTitle';
@@ -61,8 +60,6 @@ function EfficientSingleBlueprint()
 
 	const isModerator = useIsModerator();
 
-	const adBlocked = !(window.adsbygoogle && window.adsbygoogle.loaded);
-	console.log('Ad blocked:', adBlocked);
 
 	/*
 	const navigate = useNavigate();
@@ -128,7 +125,6 @@ function EfficientSingleBlueprint()
 						ownedByCurrentUser={ownedByCurrentUser}
 					/>
 					<NewRequirementsHistogram blueprintStringSha={blueprintStringSha} />
-					<GoogleAd />
 				</Col>
 				<Col md={8}>
 					<Card>
