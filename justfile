@@ -15,11 +15,11 @@ default:
 # Build and sync to {{FACTORIO_PRINTS_DIR}}
 build:
     yarn install --ignore-optional --ignore-engines --ignore--platform --ignore-scripts
-    yarn build
+    op run --env-file=".envrc" -- yarn build
     yarn styles
     rsync -av build/ {{factorio_prints_dir}}/{{ui_module}}/src/main/resources/ui
     git -C {{factorio_prints_dir}} add {{ui_module}}/src/main/resources/ui
-    git -C {{factorio_prints_dir}} commit -m "Upgrade UI to $(git log -n1 --pretty='%H %s')" || true
+    git -C {{factorio_prints_dir}} commit --no-verify --message "Upgrade UI to $(git log -n1 --pretty='%H %s')" || true
     cd {{factorio_prints_dir}}/{{ui_module}} && just spotless json || true
     just absorb
     # git -C {{factorio_prints_dir}} push open-source HEAD:factorio.school
