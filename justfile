@@ -48,3 +48,22 @@ sync-icon-sprites:
 # Override this with a command called `woof` which notifies you in whatever ways you prefer.
 # My `woof` command uses `echo`, `say`, and sends a Pushover notification.
 echo_command := env('ECHO_COMMAND', "echo")
+
+# Run lint check
+lint:
+    yarn run eslint src/**/*.{js,ts,tsx}
+
+# Run type check
+typecheck:
+    yarn run tsc --noEmit
+
+# Compile styles
+styles:
+    yarn styles
+
+# Run tests
+test:
+    yarn test --watchAll=false
+
+# Run all validation checks before committing
+precommit: lint typecheck styles test
