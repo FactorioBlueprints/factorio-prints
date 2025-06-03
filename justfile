@@ -1,11 +1,6 @@
 set shell := ["bash", "-O", "globstar", "-c"]
 set dotenv-filename := ".envrc"
 
-import ".just/console.just"
-import ".just/git.just"
-import ".just/git-rebase.just"
-import ".just/git-test.just"
-
 factorio_prints_dir := env('FACTORIO_PRINTS_DIR', '~/projects/factorio.school')
 ui_module := env('UI_MODULE', 'factorio-prints-dropwizard-application-ui-static')
 
@@ -21,7 +16,7 @@ build:
     git -C {{factorio_prints_dir}} add {{ui_module}}/src/main/resources/ui
     git -C {{factorio_prints_dir}} commit --no-verify --message "Upgrade UI to $(git log -n1 --pretty='%H %s')" || true
     cd {{factorio_prints_dir}}/{{ui_module}} && just spotless json || true
-    just absorb
+    j absorb
     # git -C {{factorio_prints_dir}} push open-source HEAD:factorio.school
 
 # `npm run start`
