@@ -10,8 +10,9 @@ default:
 # Build and sync to {{FACTORIO_PRINTS_DIR}}
 build:
     yarn install --ignore-optional --ignore-engines --ignore--platform --ignore-scripts
-    op run --env-file=".envrc" -- yarn build
+    GENERATE_SOURCEMAP=true op run --env-file=".envrc" -- yarn build
     yarn styles
+    # Source maps are uploaded to Sentry during build, then deleted by the Sentry webpack plugin
     rsync -av build/ {{factorio_prints_dir}}/{{ui_module}}/src/main/resources/ui
     git -C {{factorio_prints_dir}} add {{ui_module}}/src/main/resources/ui
     git -C {{factorio_prints_dir}} commit --no-verify --message "Upgrade UI to $(git log -n1 --pretty='%H %s')" || true
