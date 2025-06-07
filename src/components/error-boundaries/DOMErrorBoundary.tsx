@@ -10,22 +10,6 @@ interface DOMErrorFallbackProps {
 }
 
 function DOMErrorFallback({error, resetErrorBoundary}: DOMErrorFallbackProps) {
-	const isDOMError =
-		error.message.includes('insertBefore') ||
-		error.message.includes('removeChild') ||
-		error.message.includes('appendChild');
-
-	Sentry.captureException(error, {
-		tags: {
-			component: 'DOMErrorBoundary',
-			errorType: 'DOMManipulation',
-		},
-		extra: {
-			isDOMError,
-			errorMessage: error.message,
-		},
-	});
-
 	return (
 		<Alert
 			variant="warning"
@@ -56,24 +40,15 @@ export default function DOMErrorBoundary({children, fallback}: DOMErrorBoundaryP
 		<ErrorBoundary
 			FallbackComponent={fallback || DOMErrorFallback}
 			onError={(error, errorInfo) => {
-				console.log('DOM Error Boundary caught error:', {error, errorInfo});
-
-				// Only handle DOM-related errors
-				if (
-					error.message.includes('insertBefore') ||
-					error.message.includes('removeChild') ||
-					error.message.includes('appendChild')
-				) {
-					Sentry.captureException(error, {
-						tags: {
-							component: 'DOMErrorBoundary',
-							errorType: 'DOMManipulation',
-						},
-						extra: {
-							componentStack: errorInfo.componentStack,
-						},
-					});
-				}
+				Sentry.captureException(error, {
+					tags: {
+						component: 'DOMErrorBoundary',
+						errorType: 'DOMManipulation',
+					},
+					extra: {
+						componentStack: errorInfo.componentStack,
+					},
+				});
 			}}
 		>
 			{children}

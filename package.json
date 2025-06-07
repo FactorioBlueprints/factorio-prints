@@ -78,6 +78,11 @@
 		"lint": "npx biome check .",
 		"lint:fix": "npx biome check --write ."
 	},
+	"jest": {
+		"transformIgnorePatterns": [
+			"[/\\\\]node_modules[/\\\\](?!react-error-boundary[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$"
+		]
+	},
 	"browserslist": {
 		"production": [
 			">0.2%",

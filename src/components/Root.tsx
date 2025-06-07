@@ -8,6 +8,7 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {QueryParamProvider} from 'use-query-params';
 import {ReactRouter6Adapter} from 'use-query-params/adapters/react-router-6';
 import ChunkErrorBoundary from './ChunkErrorBoundary';
+import {AppErrorBoundary, AsyncErrorBoundary} from './error-boundaries';
 import Header from './Header';
 import ScrollToTop from './ScrollToTop';
 import UserState from './user/UserState';
@@ -48,84 +49,88 @@ const localStoragePersister = createSyncStoragePersister({
 
 function Root() {
 	return (
-		<PersistQueryClientProvider
-			client={queryClient}
-			persistOptions={{persister: localStoragePersister}}
-		>
-			<Helmet>
-				<title>Factorio Prints</title>
-			</Helmet>
-			<UserState>
-				<BrowserRouter>
-					<QueryParamProvider adapter={ReactRouter6Adapter}>
-						<ScrollToTop />
-						<Header />
-						<ChunkErrorBoundary>
-							<Suspense fallback={<div>Loading...</div>}>
-								<Routes>
-									<Route
-										path="/"
-										element={
-											<div>
-												<Intro />
-												<BlueprintGrid />
-											</div>
-										}
-									/>
-									<Route
-										path="/blueprints"
-										element={<BlueprintGrid />}
-									/>
-									<Route
-										path="/duplicates"
-										element={<DuplicateBlueprintGrid />}
-									/>
-									<Route
-										path="/top"
-										element={<MostFavoritedGrid />}
-									/>
-									{/* <Route path='/create' element={<Create />} /> */}
-									<Route
-										path="/favorites"
-										element={<MyFavoritesGrid />}
-									/>
-									<Route
-										path="/chat"
-										element={<Chat />}
-									/>
-									<Route
-										path="/account"
-										element={<Account />}
-									/>
-									<Route
-										path="/view/:blueprintId"
-										element={<SingleBlueprint />}
-									/>
-									<Route
-										path="/edit/:blueprintId"
-										element={<EfficientEditBlueprint />}
-									/>
-									<Route
-										path="/user/:userId"
-										element={<UserGrid />}
-									/>
-									<Route
-										path="/contributors"
-										element={<Contributors />}
-									/>
-									<Route
-										path="/search"
-										element={<Search />}
-									/>
-									<Route element={<NoMatch />} />
-								</Routes>
-							</Suspense>
-						</ChunkErrorBoundary>
-					</QueryParamProvider>
-				</BrowserRouter>
-			</UserState>
-			<ReactQueryDevtools initialIsOpen />
-		</PersistQueryClientProvider>
+		<AppErrorBoundary>
+			<PersistQueryClientProvider
+				client={queryClient}
+				persistOptions={{persister: localStoragePersister}}
+			>
+				<Helmet>
+					<title>Factorio Prints</title>
+				</Helmet>
+				<UserState>
+					<BrowserRouter>
+						<QueryParamProvider adapter={ReactRouter6Adapter}>
+							<ScrollToTop />
+							<Header />
+							<AsyncErrorBoundary>
+								<ChunkErrorBoundary>
+									<Suspense fallback={<div>Loading...</div>}>
+										<Routes>
+											<Route
+												path="/"
+												element={
+													<div>
+														<Intro />
+														<BlueprintGrid />
+													</div>
+												}
+											/>
+											<Route
+												path="/blueprints"
+												element={<BlueprintGrid />}
+											/>
+											<Route
+												path="/duplicates"
+												element={<DuplicateBlueprintGrid />}
+											/>
+											<Route
+												path="/top"
+												element={<MostFavoritedGrid />}
+											/>
+											{/* <Route path='/create' element={<Create />} /> */}
+											<Route
+												path="/favorites"
+												element={<MyFavoritesGrid />}
+											/>
+											<Route
+												path="/chat"
+												element={<Chat />}
+											/>
+											<Route
+												path="/account"
+												element={<Account />}
+											/>
+											<Route
+												path="/view/:blueprintId"
+												element={<SingleBlueprint />}
+											/>
+											<Route
+												path="/edit/:blueprintId"
+												element={<EfficientEditBlueprint />}
+											/>
+											<Route
+												path="/user/:userId"
+												element={<UserGrid />}
+											/>
+											<Route
+												path="/contributors"
+												element={<Contributors />}
+											/>
+											<Route
+												path="/search"
+												element={<Search />}
+											/>
+											<Route element={<NoMatch />} />
+										</Routes>
+									</Suspense>
+								</ChunkErrorBoundary>
+							</AsyncErrorBoundary>
+						</QueryParamProvider>
+					</BrowserRouter>
+				</UserState>
+				<ReactQueryDevtools initialIsOpen />
+			</PersistQueryClientProvider>
+		</AppErrorBoundary>
 	);
 }
 
