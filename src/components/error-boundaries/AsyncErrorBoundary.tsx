@@ -10,23 +10,6 @@ interface AsyncErrorFallbackProps {
 }
 
 function AsyncErrorFallback({error, resetErrorBoundary}: AsyncErrorFallbackProps) {
-	const isAsyncError =
-		error.message.includes('UnhandledRejection') ||
-		error.message.includes('Cannot read properties of null') ||
-		error.message.includes('Method not found') ||
-		error.message.includes('Connection to Indexed Database');
-
-	Sentry.captureException(error, {
-		tags: {
-			component: 'AsyncErrorBoundary',
-			errorType: 'AsyncOperation',
-		},
-		extra: {
-			isAsyncError,
-			errorMessage: error.message,
-		},
-	});
-
 	return (
 		<Alert
 			variant="info"
@@ -57,25 +40,15 @@ export default function AsyncErrorBoundary({children, fallback}: AsyncErrorBound
 		<ErrorBoundary
 			FallbackComponent={fallback || AsyncErrorFallback}
 			onError={(error, errorInfo) => {
-				console.log('Async Error Boundary caught error:', {error, errorInfo});
-
-				// Handle async operation errors
-				if (
-					error.message.includes('UnhandledRejection') ||
-					error.message.includes('Cannot read properties of null') ||
-					error.message.includes('Method not found') ||
-					error.message.includes('Connection to Indexed Database')
-				) {
-					Sentry.captureException(error, {
-						tags: {
-							component: 'AsyncErrorBoundary',
-							errorType: 'AsyncOperation',
-						},
-						extra: {
-							componentStack: errorInfo.componentStack,
-						},
-					});
-				}
+				Sentry.captureException(error, {
+					tags: {
+						component: 'AsyncErrorBoundary',
+						errorType: 'AsyncOperation',
+					},
+					extra: {
+						componentStack: errorInfo.componentStack,
+					},
+				});
 			}}
 		>
 			{children}

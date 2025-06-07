@@ -14,6 +14,7 @@ import useAuthored from '../hooks/useAuthored';
 import useFavorites from '../hooks/useFavorites';
 import type {BlueprintSummary} from '../propTypes/BlueprintSummaryProjection';
 import RichText from './core/RichText';
+import {DOMErrorBoundary} from './error-boundaries';
 
 interface BlueprintThumbnailProps {
 	blueprintSummary: BlueprintSummary;
@@ -41,45 +42,47 @@ function BlueprintThumbnail({blueprintSummary: {key, title, imgurImage, voteSumm
 	const favoriteStyle = favorite ? 'text-warning' : 'text-default';
 
 	return (
-		<Card
-			className="blueprint-thumbnail col-auto"
-			style={{width: '11rem', backgroundColor: '#1c1e22'}}
-		>
-			<Link to={`/view/${key}`}>
-				<Card.Img
-					variant="top"
-					src={imageUrl}
-					referrerPolicy="no-referrer"
-				/>
-			</Link>
-			<p className="truncate p-1">
-				<span className="mr-1">
-					{`${numberOfUpvotes}`} <span className="sr-only">favorites</span>
-				</span>
-				<span className={favoriteStyle}>
-					{/* TODO: This heart should be a toggle button */}
-					<FontAwesomeIcon
-						icon={faHeart}
-						className="text-error"
+		<DOMErrorBoundary>
+			<Card
+				className="blueprint-thumbnail col-auto"
+				style={{width: '11rem', backgroundColor: '#1c1e22'}}
+			>
+				<Link to={`/view/${key}`}>
+					<Card.Img
+						variant="top"
+						src={imageUrl}
+						referrerPolicy="no-referrer"
 					/>
-				</span>
-				{'  '}
-				<OverlayTrigger
-					placement="bottom"
-					overlay={tooltip}
-				>
-					<Link to={`/view/${key}`}>
-						<span className={mineStyle}>
-							<RichText
-								text={title}
-								className=""
-								inline
-							/>
-						</span>
-					</Link>
-				</OverlayTrigger>
-			</p>
-		</Card>
+				</Link>
+				<p className="truncate p-1">
+					<span className="mr-1">
+						{`${numberOfUpvotes}`} <span className="sr-only">favorites</span>
+					</span>
+					<span className={favoriteStyle}>
+						{/* TODO: This heart should be a toggle button */}
+						<FontAwesomeIcon
+							icon={faHeart}
+							className="text-error"
+						/>
+					</span>
+					{'  '}
+					<OverlayTrigger
+						placement="bottom"
+						overlay={tooltip}
+					>
+						<Link to={`/view/${key}`}>
+							<span className={mineStyle}>
+								<RichText
+									text={title}
+									className=""
+									inline
+								/>
+							</span>
+						</Link>
+					</OverlayTrigger>
+				</p>
+			</Card>
+		</DOMErrorBoundary>
 	);
 }
 

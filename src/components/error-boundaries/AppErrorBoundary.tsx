@@ -11,17 +11,6 @@ interface AppErrorFallbackProps {
 }
 
 function AppErrorFallback({error, resetErrorBoundary}: AppErrorFallbackProps) {
-	Sentry.captureException(error, {
-		tags: {
-			component: 'AppErrorBoundary',
-			errorType: 'ApplicationCrash',
-		},
-		extra: {
-			errorMessage: error.message,
-			errorStack: error.stack,
-		},
-	});
-
 	return (
 		<Container className="mt-5">
 			<Alert variant="danger">
@@ -56,8 +45,6 @@ export default function AppErrorBoundary({children}: AppErrorBoundaryProps) {
 		<ErrorBoundary
 			FallbackComponent={AppErrorFallback}
 			onError={(error, errorInfo) => {
-				console.error('Application Error Boundary caught error:', {error, errorInfo});
-
 				Sentry.captureException(error, {
 					tags: {
 						component: 'AppErrorBoundary',
@@ -65,8 +52,6 @@ export default function AppErrorBoundary({children}: AppErrorBoundaryProps) {
 					},
 					extra: {
 						componentStack: errorInfo.componentStack,
-						url: window.location.href,
-						userAgent: navigator.userAgent,
 					},
 				});
 			}}

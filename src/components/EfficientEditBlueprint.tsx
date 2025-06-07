@@ -45,7 +45,7 @@ import useIsModerator from '../hooks/useIsModerator';
 import useTagOptions, {type TagOption} from '../hooks/useTagOptions';
 import type {BlueprintDetailsTag} from '../propTypes/BlueprintDetailsProjection';
 import type {ImgurImage} from '../propTypes/ImgurImageProjection';
-import ErrorFallback from './ErrorFallback';
+import ErrorFallback, {reportErrorToSentry} from './ErrorFallback';
 import BlueprintStringControl from './edit/BlueprintStringControl';
 
 import LoadingIcon from './LoadingIcon';
@@ -627,14 +627,10 @@ function EfficientEditBlueprint() {
 		navigate(`/view/${blueprintId}`);
 	}
 
-	const myErrorHandler = (error: Error, info: React.ErrorInfo): void => {
-		console.log({error, info});
-	};
-
 	return (
 		<ErrorBoundary
 			FallbackComponent={ErrorFallback}
-			onError={myErrorHandler}
+			onError={reportErrorToSentry}
 			onReset={() => {
 				console.log('Reset');
 			}}
