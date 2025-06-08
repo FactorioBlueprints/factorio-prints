@@ -7,7 +7,7 @@ install:
     npm install --ignore-scripts --legacy-peer-deps
 
 # `npm run dev`
-dev:
+dev: install
     npm run dev
 
 # `npm run lint:fix`
@@ -19,7 +19,7 @@ hooks:
     uv tool run pre-commit run --all-files
 
 # `npm run build`
-build:
+build: install
     npm run build
 
 # Run install, build, test, lint, and pre-commit hooks in sequence
