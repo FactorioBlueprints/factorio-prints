@@ -2,7 +2,7 @@ import isArray from 'lodash/isArray';
 import isNull from 'lodash/isNull';
 import sortBy from 'lodash/sortBy';
 import toPairs from 'lodash/toPairs';
-import { deserializeBlueprint } from './parsing/blueprintParser.js';
+import { deserializeBlueprint } from './parsing/blueprintParser';
 
 // Blueprint data structure interfaces
 interface BlueprintIcon {

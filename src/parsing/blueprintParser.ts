@@ -1,12 +1,19 @@
 import atob from 'atob';
 import {unzlibSync, zlibSync} from 'fflate';
 
-import {DEFAULT_COMPRESSION_SETTINGS} from './compressionSettings';
-import {getErrorMessage}              from './errors';
+import {DEFAULT_COMPRESSION_SETTINGS, type CompressionSettings} from './compressionSettings';
+import {getErrorMessage} from './errors';
+import {
+	type RawBlueprintData,
+	type BlueprintBook,
+	validateRawBlueprintData,
+} from '../schemas';
 
 export class BlueprintError extends Error
 {
-	constructor(message, options)
+	public cause?: Error;
+
+	constructor(message: string, options?: { cause?: Error })
 	{
 		super(message);
 		this.name = 'BlueprintError';
@@ -17,7 +24,7 @@ export class BlueprintError extends Error
 	}
 }
 
-export function deserializeBlueprint(blueprintData)
+export function deserializeBlueprint(blueprintData: string): RawBlueprintData
 {
 	try
 	{
@@ -29,12 +36,15 @@ export function deserializeBlueprint(blueprintData)
 		}
 
 		const base64String = blueprintData.slice(1);
-		const bytes = Uint8Array.from(atob(base64String), (c) => c.charCodeAt(0));
+		const bytes = Uint8Array.from(atob(base64String), (c: string) => c.charCodeAt(0));
 
 		const decompressedBytes = unzlibSync(bytes);
 		const decompressedStr = new TextDecoder().decode(decompressedBytes);
 
-		const result = JSON.parse(decompressedStr.trim());
+		const parsedData = JSON.parse(decompressedStr.trim());
+
+		// Validate the parsed data using Zod schema
+		const result = validateRawBlueprintData(parsedData);
 
 		return result;
 	}
@@ -45,7 +55,7 @@ export function deserializeBlueprint(blueprintData)
 	}
 }
 
-export function deserializeBlueprintNoThrow(data)
+export function deserializeBlueprintNoThrow(data: string): RawBlueprintData | null
 {
 	try
 	{
@@ -58,17 +68,17 @@ export function deserializeBlueprintNoThrow(data)
 	}
 }
 
-export function serializeBlueprint(data, settings = DEFAULT_COMPRESSION_SETTINGS)
+export function serializeBlueprint(data: RawBlueprintData, settings: CompressionSettings = DEFAULT_COMPRESSION_SETTINGS): string
 {
 	const jsonStr = JSON.stringify(data).trim();
 	const bytes = new TextEncoder().encode(jsonStr);
 
 	const compressed = zlibSync(bytes, settings);
 
-	return '0' + btoa(compressed.reduce((data, byte) => data + String.fromCharCode(byte), ''));
+	return '0' + btoa(compressed.reduce((acc, byte) => acc + String.fromCharCode(byte), ''));
 }
 
-export function extractBlueprint(blueprint, path)
+export function extractBlueprint(blueprint: RawBlueprintData, path?: string): RawBlueprintData
 {
 	if (!path)
 	{
@@ -78,7 +88,7 @@ export function extractBlueprint(blueprint, path)
 	try
 	{
 		const parts = path.split('.');
-		let current = blueprint;
+		let current: RawBlueprintData = blueprint;
 		let traversedPath = '';
 
 		for (const part of parts)
@@ -109,7 +119,15 @@ export function extractBlueprint(blueprint, path)
 				);
 			}
 
-			current = current.blueprint_book.blueprints[index];
+			const blueprintEntry = current.blueprint_book.blueprints[index];
+			if (blueprintEntry.blueprint)
+			{
+				current = { blueprint: blueprintEntry.blueprint };
+			}
+			else
+			{
+				throw new BlueprintError(`Invalid path ${path}: no blueprint at index ${part} at ${traversedPath}`);
+			}
 		}
 
 		return current;
@@ -128,10 +146,10 @@ export function extractBlueprint(blueprint, path)
 	}
 }
 
-export function parseVersion4(versionNumber)
+export function parseVersion4(versionNumber: number | string | bigint): string
 {
 	const version = BigInt(versionNumber);
-	const parts = [];
+	const parts: number[] = [];
 	for (let i = 0; i < 4; i++)
 	{
 		const part = Number((version >> BigInt(48 - i * 16)) & BigInt(0xffff));
@@ -141,7 +159,7 @@ export function parseVersion4(versionNumber)
 	return parts.join('.');
 }
 
-export function parseVersion3(number)
+export function parseVersion3(number: number | string | bigint): string
 {
 	try
 	{

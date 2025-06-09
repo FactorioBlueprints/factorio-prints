@@ -230,3 +230,90 @@ export const validateRawUserFavorites = (data: unknown): RawUserFavorites => {
 export const validateEnrichedUserFavorites = (data: unknown): EnrichedUserFavorites => {
 	return validate(data, enrichedUserFavoritesSchema, 'enriched user favorites');
 };
+
+// Raw blueprint parsing schemas - for parsed blueprint data from game files
+export const blueprintIconSchema = z.object({
+	signal: z.object({
+		name: z.string(),
+		type: z.string().optional(),
+	}).strict(),
+	index: z.number(),
+}).strict();
+
+export const blueprintEntitySchema = z.object({
+	entity_number: z.number(),
+	name: z.string(),
+	position: z.object({
+		x: z.number(),
+		y: z.number(),
+	}).strict(),
+}).passthrough(); // Allow additional properties
+
+export const blueprintTileSchema = z.object({
+	name: z.string(),
+	position: z.object({
+		x: z.number(),
+		y: z.number(),
+	}).strict(),
+}).passthrough(); // Allow additional properties
+
+export const blueprintContentSchema = z.object({
+	label: z.string().optional(),
+	description: z.string().optional(),
+	version: z.number().optional(),
+	icons: z.array(blueprintIconSchema).optional(),
+	entities: z.array(blueprintEntitySchema).optional(),
+	tiles: z.array(blueprintTileSchema).optional(),
+	item: z.string().optional(),
+}).passthrough(); // Allow additional properties
+
+export const blueprintBookEntrySchema: z.ZodSchema<any> = z.lazy(() => z.object({
+	blueprint: blueprintContentSchema.optional(),
+	blueprint_book: blueprintBookSchema.optional(),
+	upgrade_planner: upgradePlannerSchema.optional(),
+	deconstruction_planner: deconstructionPlannerSchema.optional(),
+	index: z.number(),
+}).strict());
+
+export const blueprintBookSchema = z.object({
+	blueprints: z.array(blueprintBookEntrySchema),
+	item: z.string().optional(),
+	label: z.string().optional(),
+	active_index: z.number().optional(),
+	version: z.number().optional(),
+}).passthrough(); // Allow additional properties
+
+export const upgradePlannerSchema = z.object({
+	settings: z.unknown().optional(),
+	item: z.string().optional(),
+	label: z.string().optional(),
+	version: z.number().optional(),
+}).passthrough();
+
+export const deconstructionPlannerSchema = z.object({
+	settings: z.unknown().optional(),
+	item: z.string().optional(),
+	label: z.string().optional(),
+	version: z.number().optional(),
+}).passthrough();
+
+export const rawBlueprintDataSchema = z.object({
+	blueprint: blueprintContentSchema.optional(),
+	blueprint_book: blueprintBookSchema.optional(),
+	upgrade_planner: upgradePlannerSchema.optional(),
+	deconstruction_planner: deconstructionPlannerSchema.optional(),
+}).passthrough(); // Allow additional properties
+
+export type BlueprintIcon = z.infer<typeof blueprintIconSchema>;
+export type BlueprintEntity = z.infer<typeof blueprintEntitySchema>;
+export type BlueprintTile = z.infer<typeof blueprintTileSchema>;
+export type BlueprintContent = z.infer<typeof blueprintContentSchema>;
+export type BlueprintBookEntry = z.infer<typeof blueprintBookEntrySchema>;
+export type BlueprintBook = z.infer<typeof blueprintBookSchema>;
+export type UpgradePlanner = z.infer<typeof upgradePlannerSchema>;
+export type DeconstructionPlanner = z.infer<typeof deconstructionPlannerSchema>;
+export type RawBlueprintData = z.infer<typeof rawBlueprintDataSchema>;
+
+export const validateRawBlueprintData = (data: unknown): RawBlueprintData => {
+	return validate(data, rawBlueprintDataSchema, 'raw blueprint data');
+};
