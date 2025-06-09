@@ -1,22 +1,46 @@
 import {useMutation, useQueryClient}                                 from '@tanstack/react-query';
 import {useNavigate}                                                 from '@tanstack/react-router';
 import {getDatabase, push, ref, serverTimestamp, update as dbUpdate} from 'firebase/database';
+import {User}                                                        from 'firebase/auth';
 import {app}                                                         from '../base';
 import flatMap                                                       from 'lodash/flatMap';
 import {validateRawBlueprintSummary, validateRawPaginatedBlueprintSummaries} from '../schemas';
+
+interface CreateBlueprintFormData {
+	title: string;
+	blueprintString: string;
+	descriptionMarkdown: string;
+	tags?: string[];
+	imageUrl: string;
+}
+
+interface CreateBlueprintMutationParams {
+	formData: CreateBlueprintFormData;
+	user: User;
+}
+
+interface CreateBlueprintResult {
+	blueprintId: string;
+	authorId: string;
+}
+
+interface ImgurRegexPatterns {
+	imgurUrl1: RegExp;
+	imgurUrl2: RegExp;
+}
 
 export const useCreateBlueprint = () =>
 {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	return useMutation({
+	return useMutation<CreateBlueprintResult, Error, CreateBlueprintMutationParams>({
 		mutationFn: async ({ formData, user }) =>
 		{
 			// Process image URL to extract imgur ID
 			const imageUrl = formData.imageUrl;
 
-			const regexPatterns = {
+			const regexPatterns: ImgurRegexPatterns = {
 				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
 				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
 			};
@@ -30,8 +54,8 @@ export const useCreateBlueprint = () =>
 				throw new Error('Invalid image URL format');
 			}
 
-			const match = matches[0];
-			const imgurId = match[1];
+			const match = matches[0]!;
+			const imgurId = match[1]!;
 			const image = {
 				id  : imgurId,
 				type: 'image/png',
@@ -67,7 +91,11 @@ export const useCreateBlueprint = () =>
 			const newBlueprintRef = push(blueprintsRef, blueprintData);
 			const newBlueprintKey = newBlueprintRef.key;
 
-			const updates = {};
+			if (!newBlueprintKey) {
+				throw new Error('Failed to generate blueprint key');
+			}
+
+			const updates: Record<string, unknown> = {};
 
 			updates[`/users/${user.uid}/blueprints/${newBlueprintKey}`] = true;
 			updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
@@ -91,7 +119,7 @@ export const useCreateBlueprint = () =>
 			const unixTimestamp = now.getTime();
 
 			// Extract imgur ID from the image URL for the summary
-			const regexPatterns = {
+			const regexPatterns: ImgurRegexPatterns = {
 				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
 				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
 			};
@@ -100,12 +128,12 @@ export const useCreateBlueprint = () =>
 				.map(pattern => formData.imageUrl.match(pattern))
 				.filter(Boolean);
 
-			const imgurId = matches.length > 0 ? matches[0][1] : '';
+			const imgurId = matches.length > 0 ? matches[0]![1]! : '';
 
 			const lastUpdatedDateKey  = ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'];
 			const lastUpdatedDateData = queryClient.getQueryData(lastUpdatedDateKey);
 
-			if (lastUpdatedDateData?.pages && Array.isArray(lastUpdatedDateData.pages))
+			if (lastUpdatedDateData && typeof lastUpdatedDateData === 'object' && 'pages' in lastUpdatedDateData && Array.isArray(lastUpdatedDateData.pages))
 			{
 				try
 				{
@@ -121,12 +149,18 @@ export const useCreateBlueprint = () =>
 
 					const newSummary = validateRawBlueprintSummary(summaryData);
 					const allBlueprints = flatMap(lastUpdatedDateData.pages, page =>
-						page?.data ? Object.entries(page.data).map(([key, summary]) => ({ ...summary, key })) : [],
+						page?.data ? Object.entries(page.data).map(([key, summary]) => ({
+							...(summary as Record<string, unknown>),
+							key
+						})) : [],
 					);
 
+					type BlueprintWithKey = Record<string, unknown> & { key: string };
 					const updatedBlueprints = [
-						newSummary,
-						...allBlueprints.filter(item => item.key !== blueprintId),
+						newSummary as BlueprintWithKey,
+						...allBlueprints.filter((item): item is BlueprintWithKey =>
+							typeof item === 'object' && item !== null && 'key' in item && item.key !== blueprintId
+						),
 					];
 
 					const updatedPages = lastUpdatedDateData.pages.map((page, index) =>
@@ -137,7 +171,7 @@ export const useCreateBlueprint = () =>
 							const pageData = updatedBlueprints.slice(0, pageSize);
 							const lastItem = pageData[pageData.length - 1];
 
-							const pageDataRecord = {};
+							const pageDataRecord: Record<string, unknown> = {};
 							for (const item of pageData)
 							{
 								const { key, ...summaryData } = item;
@@ -148,7 +182,7 @@ export const useCreateBlueprint = () =>
 								...page,
 								data     : pageDataRecord,
 								lastKey  : lastItem?.key || page.lastKey,
-								lastValue: lastItem?.lastUpdatedDate || page.lastValue,
+								lastValue: (lastItem && 'lastUpdatedDate' in lastItem) ? lastItem.lastUpdatedDate : page.lastValue,
 							};
 						}
 						return page;
@@ -202,29 +236,31 @@ export const useCreateBlueprint = () =>
 			const availableTagsKey = ['tags'];
 			const availableTags = queryClient.getQueryData(availableTagsKey) || [];
 
-			availableTags.forEach(tag =>
-			{
-				const tagKey = ['byTag', tag];
-				const tagData = queryClient.getQueryData(tagKey);
-
-				if (tagData)
+			if (Array.isArray(availableTags)) {
+				availableTags.forEach(tag =>
 				{
-					const hasTag = (formData.tags || []).includes(tag);
+					const tagKey = ['byTag', tag];
+					const tagData = queryClient.getQueryData(tagKey);
 
-					if (hasTag)
+					if (tagData && typeof tagData === 'object')
 					{
-						queryClient.setQueryData(tagKey, {
-							...tagData,
-							[blueprintId]: true,
-						});
+						const hasTag = (formData.tags || []).includes(tag);
+
+						if (hasTag)
+						{
+							queryClient.setQueryData(tagKey, {
+								...tagData,
+								[blueprintId]: true,
+							});
+						}
+						else if (blueprintId in tagData)
+						{
+							const { [blueprintId]: _, ...rest } = tagData as Record<string, unknown>;
+							queryClient.setQueryData(tagKey, rest);
+						}
 					}
-					else if (tagData[blueprintId])
-					{
-						const { [blueprintId]: _, ...rest } = tagData;
-						queryClient.setQueryData(tagKey, rest);
-					}
-				}
-			});
+				});
+			}
 
 			navigate({to: `/view/${blueprintId}`});
 		},
