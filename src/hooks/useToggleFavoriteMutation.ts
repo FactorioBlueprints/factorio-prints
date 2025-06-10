@@ -2,12 +2,26 @@ import {useMutation, useQueryClient}          from '@tanstack/react-query';
 import {getDatabase, ref, update as dbUpdate} from 'firebase/database';
 import {app}                                  from '../base';
 
+interface ToggleFavoriteMutationParams {
+	blueprintId: string;
+	userId: string;
+	isFavorite: boolean;
+	numberOfFavorites?: number | null;
+}
+
+interface ToggleFavoriteMutationResult {
+	blueprintId: string;
+	userId: string;
+	newIsFavorite: boolean;
+	newFavoriteCount: number;
+}
+
 export const useToggleFavoriteMutation = () =>
 {
 	const queryClient = useQueryClient();
 
-	return useMutation({
-		mutationFn: async ({ blueprintId, userId, isFavorite, numberOfFavorites }) =>
+	return useMutation<ToggleFavoriteMutationResult, Error, ToggleFavoriteMutationParams>({
+		mutationFn: async ({ blueprintId, userId, isFavorite, numberOfFavorites }): Promise<ToggleFavoriteMutationResult> =>
 		{
 			// Use the provided numberOfFavorites from raw data
 			const currentFavoriteCount = numberOfFavorites || 0;
@@ -15,7 +29,7 @@ export const useToggleFavoriteMutation = () =>
 			const newIsFavorite = !isFavorite;
 			const newFavoriteCount = Math.max(0, currentFavoriteCount + (newIsFavorite ? 1 : -1));
 
-			const updates = {
+			const updates: Record<string, number | boolean | null> = {
 				[`/blueprints/${blueprintId}/numberOfFavorites`]        : newFavoriteCount,
 				[`/blueprints/${blueprintId}/favorites/${userId}`]      : newIsFavorite ? true : null,
 				[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: newFavoriteCount,
@@ -31,19 +45,22 @@ export const useToggleFavoriteMutation = () =>
 				newFavoriteCount,
 			};
 		},
-		onSuccess: ({ blueprintId, userId, newIsFavorite, newFavoriteCount }) =>
+		onSuccess: ({ blueprintId, userId, newIsFavorite, newFavoriteCount }: ToggleFavoriteMutationResult) =>
 		{
 			queryClient.setQueryData(
 				['blueprints', 'blueprintId', blueprintId],
-				(oldData) =>
+				(oldData: unknown) =>
 				{
 					if (!oldData) return oldData;
 
+					const blueprint = oldData as Record<string, unknown>;
+					const existingFavorites = (blueprint.favorites as Record<string, boolean>) || {};
+
 					return {
-						...oldData,
+						...blueprint,
 						numberOfFavorites: newFavoriteCount,
 						favorites        : {
-							...oldData.favorites,
+							...existingFavorites,
 							[userId]: newIsFavorite ? true : undefined,
 						},
 					};
@@ -52,12 +69,14 @@ export const useToggleFavoriteMutation = () =>
 
 			queryClient.setQueryData(
 				['blueprintSummaries', 'blueprintId', blueprintId],
-				(oldData) =>
+				(oldData: unknown) =>
 				{
 					if (!oldData) return oldData;
 
+					const summary = oldData as Record<string, unknown>;
+
 					return {
-						...oldData,
+						...summary,
 						numberOfFavorites: newFavoriteCount,
 					};
 				},
@@ -65,12 +84,14 @@ export const useToggleFavoriteMutation = () =>
 
 			queryClient.setQueryData(
 				['users', 'userId', userId, 'favorites'],
-				(oldData) =>
+				(oldData: unknown) =>
 				{
 					if (!oldData) return oldData;
 
+					const favorites = oldData as Record<string, boolean>;
+
 					return {
-						...oldData,
+						...favorites,
 						[blueprintId]: newIsFavorite ? true : undefined,
 					};
 				},
