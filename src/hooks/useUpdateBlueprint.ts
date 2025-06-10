@@ -10,20 +10,47 @@ import {
 }                                                                  from 'firebase/database';
 import {app}                                                       from '../base';
 import {validateRawBlueprint, validateRawBlueprintSummary}         from '../schemas';
+import type {RawBlueprint, ImgurImage}                             from '../schemas';
+
+interface UpdateBlueprintFormData {
+	title: string;
+	blueprintString: string;
+	descriptionMarkdown: string;
+	tags: string[];
+	imageUrl: string;
+}
+
+interface UpdateBlueprintMutationParams {
+	id: string;
+	rawBlueprint: RawBlueprint;
+	formData: UpdateBlueprintFormData;
+	availableTags: string[];
+}
+
+interface DeleteBlueprintMutationParams {
+	id: string;
+	authorId: string;
+	tags: string[];
+}
+
+interface ImgurRegexPatterns {
+	imgurUrl1: RegExp;
+	imgurUrl2: RegExp;
+}
 
 export const useUpdateBlueprint = () =>
 {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	return useMutation({
+	return useMutation<string, Error, UpdateBlueprintMutationParams>({
 		mutationFn: async ({ id, rawBlueprint, formData, availableTags }) =>
 		{
 			// Process image URL if provided
-			let image = null;
+			let image: ImgurImage | null = null;
 			if (formData.imageUrl)
 			{
-				const regexPatterns = {
+				const regexPatterns: ImgurRegexPatterns = {
 					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
 					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
 				};
@@ -37,8 +64,8 @@ export const useUpdateBlueprint = () =>
 					throw new Error('Invalid image URL format');
 				}
 
-				const match = matches[0];
-				const imgurId = match[1];
+				const match = matches[0]!;
+				const imgurId = match[1]!;
 				image = {
 					id  : imgurId,
 					type: 'image/png',
@@ -48,7 +75,7 @@ export const useUpdateBlueprint = () =>
 			const currentImageId = rawBlueprint?.image?.id;
 			const shouldUpdateImage = image && (image.id !== currentImageId);
 
-			const updates = {
+			const updates: Record<string, unknown> = {
 				[`/blueprints/${id}/title`]                   : formData.title,
 				[`/blueprints/${id}/blueprintString`]         : formData.blueprintString,
 				[`/blueprints/${id}/descriptionMarkdown`]     : formData.descriptionMarkdown,
@@ -88,8 +115,8 @@ export const useUpdateBlueprint = () =>
 			const existingBlueprint = queryClient.getQueryData(blueprintKey);
 
 			// Build the updated raw blueprint
-			const updatedBlueprint = {
-				...existingBlueprint,
+			const updatedBlueprint: Record<string, unknown> = {
+				...(existingBlueprint as Record<string, unknown>),
 				title              : variables.formData.title,
 				blueprintString    : variables.formData.blueprintString,
 				descriptionMarkdown: variables.formData.descriptionMarkdown,
@@ -100,7 +127,7 @@ export const useUpdateBlueprint = () =>
 			// Update image if a new one was provided
 			if (variables.formData.imageUrl)
 			{
-				const regexPatterns = {
+				const regexPatterns: ImgurRegexPatterns = {
 					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
 					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
 				};
@@ -111,8 +138,8 @@ export const useUpdateBlueprint = () =>
 
 				if (matches.length > 0)
 				{
-					const match = matches[0];
-					const imgurId = match[1];
+					const match = matches[0]!;
+					const imgurId = match[1]!;
 					updatedBlueprint.image = {
 						id  : imgurId,
 						type: 'image/png',
@@ -135,16 +162,17 @@ export const useUpdateBlueprint = () =>
 
 			if (existingSummary)
 			{
-				const updatedSummary = {
-					...existingSummary,
+				const updatedSummary: Record<string, unknown> = {
+					...(existingSummary as Record<string, unknown>),
 					title          : variables.formData.title,
 					lastUpdatedDate: unixTimestamp,
 				};
 
-				if (updatedBlueprint.image)
+				const blueprintImage = updatedBlueprint.image as ImgurImage | undefined;
+				if (blueprintImage)
 				{
-					updatedSummary.imgurId = updatedBlueprint.image.id;
-					updatedSummary.imgurType = updatedBlueprint.image.type;
+					updatedSummary.imgurId = blueprintImage.id;
+					updatedSummary.imgurType = blueprintImage.type;
 				}
 
 				try
@@ -166,7 +194,7 @@ export const useUpdateBlueprint = () =>
 			variables.availableTags.forEach(tag =>
 			{
 				const tagKey = ['byTag', tag];
-				const tagData = queryClient.getQueryData(tagKey);
+				const tagData = queryClient.getQueryData(tagKey) as Record<string, boolean> | undefined;
 
 				if (tagData && tagData[blueprintId])
 				{
@@ -178,7 +206,7 @@ export const useUpdateBlueprint = () =>
 			variables.formData.tags.forEach(tag =>
 			{
 				const tagKey = ['byTag', tag];
-				const tagData = queryClient.getQueryData(tagKey);
+				const tagData = queryClient.getQueryData(tagKey) as Record<string, boolean> | undefined;
 
 				if (tagData)
 				{
@@ -199,10 +227,10 @@ export const useDeleteBlueprint = () =>
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
-	return useMutation({
+	return useMutation<string, Error, DeleteBlueprintMutationParams>({
 		mutationFn: async ({ id, authorId, tags }) =>
 		{
-			const updates = {
+			const updates: Record<string, null> = {
 				[`/blueprints/${id}`]                  : null,
 				[`/users/${authorId}/blueprints/${id}`]: null,
 				[`/blueprintSummaries/${id}`]          : null,
@@ -220,10 +248,10 @@ export const useDeleteBlueprint = () =>
 		onSuccess: (authorId, { id, tags }) =>
 		{
 			const lastUpdatedDateKey = ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'];
-			queryClient.invalidateQueries(lastUpdatedDateKey);
+			queryClient.invalidateQueries({ queryKey: lastUpdatedDateKey });
 
 			const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
-			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey);
+			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey) as string[] | undefined;
 
 			if (userBlueprintsData)
 			{
@@ -236,7 +264,7 @@ export const useDeleteBlueprint = () =>
 			tags.forEach(tag =>
 			{
 				const tagKey = ['byTag', tag];
-				const tagData = queryClient.getQueryData(tagKey);
+				const tagData = queryClient.getQueryData(tagKey) as Record<string, boolean> | undefined;
 
 				if (tagData && tagData[id])
 				{
@@ -246,8 +274,8 @@ export const useDeleteBlueprint = () =>
 			});
 
 			// Remove the deleted blueprint from cache to prevent errors
-			queryClient.removeQueries(['blueprints', 'blueprintId', id]);
-			queryClient.removeQueries(['blueprintSummaries', 'blueprintId', id]);
+			queryClient.removeQueries({ queryKey: ['blueprints', 'blueprintId', id] });
+			queryClient.removeQueries({ queryKey: ['blueprintSummaries', 'blueprintId', id] });
 
 			navigate({ to: `/user/${authorId}` });
 		},

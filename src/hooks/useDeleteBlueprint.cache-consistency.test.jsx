@@ -100,7 +100,9 @@ describe('useDeleteBlueprint cache consistency', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify cache operations were performed correctly
-		expect(invalidateQueriesSpy).toHaveBeenCalledWith(['blueprintSummaries', 'orderByField', 'lastUpdatedDate']);
+		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+			queryKey: ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'],
+		});
 
 		// Verify user blueprints cache was updated
 		expect(setQueryDataSpy).toHaveBeenCalledWith(
@@ -119,8 +121,8 @@ describe('useDeleteBlueprint cache consistency', () =>
 		expect(setQueryDataSpy).toHaveBeenCalledWith(tag3Key, {});
 
 		// Verify blueprint queries were removed from cache
-		expect(removeQueriesSpy).toHaveBeenCalledWith(['blueprints', 'blueprintId', blueprintId]);
-		expect(removeQueriesSpy).toHaveBeenCalledWith(['blueprintSummaries', 'blueprintId', blueprintId]);
+		expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey: ['blueprints', 'blueprintId', blueprintId] });
+		expect(removeQueriesSpy).toHaveBeenCalledWith({ queryKey: ['blueprintSummaries', 'blueprintId', blueprintId] });
 	});
 
 	it('should handle partial cache state gracefully', async () =>

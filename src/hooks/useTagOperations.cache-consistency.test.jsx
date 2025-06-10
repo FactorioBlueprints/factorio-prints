@@ -469,8 +469,12 @@ describe('Tag Operations Cache Consistency', () =>
 			expect(setQueryDataSpy).toHaveBeenCalledWith(['byTag', 'production'], {});
 
 			// Verify removeQueries was called for blueprint data
-			expect(removeQueriesSpy).toHaveBeenCalledWith(['blueprints', 'blueprintId', blueprintId]);
-			expect(removeQueriesSpy).toHaveBeenCalledWith(['blueprintSummaries', 'blueprintId', blueprintId]);
+			expect(removeQueriesSpy).toHaveBeenCalledWith({
+				queryKey: ['blueprints', 'blueprintId', blueprintId],
+			});
+			expect(removeQueriesSpy).toHaveBeenCalledWith({
+				queryKey: ['blueprintSummaries', 'blueprintId', blueprintId],
+			});
 		});
 
 		it('should handle deleting blueprint that is not in some tag caches', async () =>

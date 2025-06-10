@@ -116,9 +116,9 @@ describe('useDeleteBlueprint', () =>
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-		expect(invalidateQueriesSpy).toHaveBeenCalledWith(
-			['blueprintSummaries', 'orderByField', 'lastUpdatedDate'],
-		);
+		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+			queryKey: ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'],
+		});
 	});
 
 	it('should update user blueprints cache on success', async () =>
@@ -196,8 +196,12 @@ describe('useDeleteBlueprint', () =>
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-		expect(removeQueriesSpy).toHaveBeenCalledWith(['blueprints', 'blueprintId', 'test-id']);
-		expect(removeQueriesSpy).toHaveBeenCalledWith(['blueprintSummaries', 'blueprintId', 'test-id']);
+		expect(removeQueriesSpy).toHaveBeenCalledWith({
+			queryKey: ['blueprints', 'blueprintId', 'test-id'],
+		});
+		expect(removeQueriesSpy).toHaveBeenCalledWith({
+			queryKey: ['blueprintSummaries', 'blueprintId', 'test-id'],
+		});
 	});
 
 	it('should navigate to user profile on success', async () =>
