@@ -1,16 +1,23 @@
 import React from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type UseQueryResult, type UseMutationResult } from '@tanstack/react-query';
 import { getDatabase, get, ref, update as dbUpdate } from 'firebase/database';
 import { app } from '../base';
 
+interface ReconcileResult {
+	userId: string;
+	blueprintId: string;
+	isFavorite: boolean;
+}
+
 /**
  * Reconciles favorites between user and blueprint
- * @param {string} userId - The user ID
- * @param {string} blueprintId - The blueprint ID
- * @param {boolean} userHasFavorite - Whether the user has the blueprint as favorite
- * @param {boolean} blueprintHasFavorite - Whether the blueprint has the user as favorite
  */
-const reconcileFavorites = async (userId, blueprintId, userHasFavorite, blueprintHasFavorite) =>
+const reconcileFavorites = async (
+	userId: string,
+	blueprintId: string,
+	userHasFavorite: boolean,
+	blueprintHasFavorite: boolean
+): Promise<void> =>
 {
 	if (!userId || !blueprintId) return;
 
@@ -18,7 +25,7 @@ const reconcileFavorites = async (userId, blueprintId, userHasFavorite, blueprin
 
 	const shouldBeFavorite = userHasFavorite || blueprintHasFavorite;
 
-	const updates = {};
+	const updates: Record<string, boolean | null> = {};
 
 	if (userHasFavorite !== shouldBeFavorite)
 	{
@@ -37,7 +44,10 @@ const reconcileFavorites = async (userId, blueprintId, userHasFavorite, blueprin
 	}
 };
 
-export const useIsUserFavorite = (userId, blueprintId) =>
+export const useIsUserFavorite = (
+	userId: string | null | undefined,
+	blueprintId: string | null | undefined
+): UseQueryResult<boolean> =>
 {
 	return useQuery({
 		queryKey: ['users', 'userId', userId, 'favorites', 'blueprintId', blueprintId],
@@ -51,7 +61,10 @@ export const useIsUserFavorite = (userId, blueprintId) =>
 	});
 };
 
-export const useIsBlueprintFavorite = (blueprintId, userId) =>
+export const useIsBlueprintFavorite = (
+	blueprintId: string | null | undefined,
+	userId: string | null | undefined
+): UseQueryResult<boolean> =>
 {
 	return useQuery({
 		queryKey: ['blueprints', 'blueprintId', blueprintId, 'favorites', 'userId', userId],
@@ -65,7 +78,10 @@ export const useIsBlueprintFavorite = (blueprintId, userId) =>
 	});
 };
 
-export const useIsFavorite = (userId, blueprintId) =>
+export const useIsFavorite = (
+	userId: string | null | undefined,
+	blueprintId: string | null | undefined
+): UseQueryResult<boolean> =>
 {
 	const queryClient = useQueryClient();
 	const userFavoriteQuery = useIsUserFavorite(userId, blueprintId);
@@ -76,7 +92,7 @@ export const useIsFavorite = (userId, blueprintId) =>
 
 	const isSuccess = userFavoriteQuery.isSuccess && blueprintFavoriteQuery.isSuccess;
 
-	const reconcileMutation = useMutation({
+	const reconcileMutation: UseMutationResult<ReconcileResult | null, Error, void> = useMutation({
 		mutationFn: async () =>
 		{
 			if (!userId || !blueprintId) return null;
@@ -85,8 +101,8 @@ export const useIsFavorite = (userId, blueprintId) =>
 			await reconcileFavorites(
 				userId,
 				blueprintId,
-				userFavoriteQuery.data,
-				blueprintFavoriteQuery.data,
+				userFavoriteQuery.data ?? false,
+				blueprintFavoriteQuery.data ?? false,
 			);
 
 			return {
@@ -118,8 +134,8 @@ export const useIsFavorite = (userId, blueprintId) =>
 	{
 		if (isSuccess && !isPending)
 		{
-			const userHasFavorite = userFavoriteQuery.data;
-			const blueprintHasFavorite = blueprintFavoriteQuery.data;
+			const userHasFavorite = userFavoriteQuery.data ?? false;
+			const blueprintHasFavorite = blueprintFavoriteQuery.data ?? false;
 
 			if (userHasFavorite !== blueprintHasFavorite)
 			{
