@@ -1,5 +1,5 @@
 import {faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
-import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
+import {faArrowLeft, faBan, faSave, faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useNavigate} from '@tanstack/react-router';
 import DOMPurify from 'dompurify';
@@ -42,6 +42,8 @@ import {loadFromStorage, removeFromStorage, STORAGE_KEYS, saveToStorage} from '.
 import {parseVersion3} from '../parsing/blueprintParser';
 import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 import {RichText} from './core/text/RichText';
+import {parseImgurUrl} from '../helpers/parseImgurUrl';
+import {resolveImgurUrl, ResolvedImgurImage} from '../services/imgurResolver';
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
 
@@ -59,6 +61,8 @@ interface CreateState {
 	submissionWarnings: string[];
 	uploadProgressBarVisible: boolean;
 	uploadProgressPercent: number;
+	imageUrlValidating: boolean;
+	resolvedImageData: ResolvedImgurImage | null;
 	blueprint: BlueprintFormData;
 	blueprintPasted: boolean;
 	blueprintValidationError: string | null;
@@ -104,6 +108,8 @@ const initialState: CreateState = {
 	submissionWarnings: [],
 	uploadProgressBarVisible: false,
 	uploadProgressPercent: 0,
+	imageUrlValidating: false,
+	resolvedImageData: null,
 	blueprint: {
 		title: '',
 		descriptionMarkdown: '',
@@ -225,6 +231,70 @@ const Create: React.FC = () => {
 		}));
 	}, []);
 
+	const validateImageUrl = useCallback(async (url: string) => {
+		if (!url || url.trim() === '') {
+			setState((prevState) => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData: null,
+			}));
+			return;
+		}
+
+		setState((prevState) => ({
+			...prevState,
+			imageUrlValidating: true,
+			submissionErrors: prevState.submissionErrors.filter(
+				(error) => !error.includes('image') && !error.includes('Imgur') && !error.includes('URL'),
+			),
+		}));
+
+		try {
+			const parsedUrl = parseImgurUrl(url);
+
+			if (!parsedUrl.success) {
+				setState((prevState) => ({
+					...prevState,
+					imageUrlValidating: false,
+					resolvedImageData: null,
+					submissionErrors: [
+						...prevState.submissionErrors.filter(
+							(error) => !error.includes('image') && !error.includes('Imgur') && !error.includes('URL'),
+						),
+						parsedUrl.error ||
+							'Please enter a valid Imgur URL. Supported formats: https://imgur.com/{id}, https://i.imgur.com/{id}.{ext}, https://imgur.com/a/{id}, or https://imgur.com/gallery/{id}',
+					],
+				}));
+				return;
+			}
+
+			if (parsedUrl.data && parsedUrl.data.warnings.length > 0) {
+				console.warn('Imgur URL warnings:', parsedUrl.data.warnings);
+			}
+
+			const resolvedImage = await resolveImgurUrl(url);
+
+			setState((prevState) => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData: resolvedImage,
+			}));
+		} catch (error) {
+			console.error('Error resolving Imgur URL:', error);
+			setState((prevState) => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData: null,
+				submissionErrors: [
+					...prevState.submissionErrors.filter(
+						(error) => !error.includes('image') && !error.includes('Imgur') && !error.includes('URL'),
+					),
+					`Unable to resolve Imgur URL: ${error.message || 'Unknown error'}. Please check the URL and try again.`,
+				],
+			}));
+		}
+	}, []);
+
 	const handleChange = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 			const {name, value} = event.target;
@@ -332,6 +402,15 @@ const Create: React.FC = () => {
 		[parseBlueprint],
 	);
 
+	// Debounced effect for image URL validation
+	useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			validateImageUrl(state.blueprint.imageUrl);
+		}, 500);
+
+		return () => clearTimeout(timeoutId);
+	}, [state.blueprint.imageUrl, validateImageUrl]);
+
 	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean => {
 		return some(blueprintBook.blueprints, (eachEntry: BlueprintBookEntry) => {
 			if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
@@ -361,19 +440,13 @@ const Create: React.FC = () => {
 			submissionErrors.push('Blueprint String must be at least 10 characters');
 		}
 
-		const badRegex = /^https:\/\/imgur\.com\/(a|gallery)\/[a-zA-Z0-9]+$/;
-		if (badRegex.test(blueprint.imageUrl)) {
-			submissionErrors.push(
-				'Please use a direct link to an image like https://imgur.com/{id}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.',
-			);
-		} else {
-			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.[a-zA-Z0-9]{3,4}$/;
-			const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
-			if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl)) {
-				submissionErrors.push(
-					'Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.',
-				);
-			}
+		// Validate image URL using the new resolution system
+		if (!blueprint.imageUrl || blueprint.imageUrl.trim() === '') {
+			submissionErrors.push('Image URL is required');
+		} else if (state.imageUrlValidating) {
+			submissionErrors.push('Please wait while we validate your image URL');
+		} else if (!state.resolvedImageData) {
+			submissionErrors.push("Unable to resolve image URL. Please check that it's a valid Imgur link.");
 		}
 
 		return submissionErrors;
@@ -467,7 +540,6 @@ const Create: React.FC = () => {
 				}));
 				return;
 			}
-
 			const submissionWarnings = validateWarnings();
 			if (submissionWarnings.length > 0) {
 				setState((prevState) => ({
@@ -477,9 +549,19 @@ const Create: React.FC = () => {
 				return;
 			}
 
+			const formDataWithResolvedImage = {
+				...state.blueprint,
+				resolvedImageData: state.resolvedImageData
+					? {
+							...state.resolvedImageData,
+							link: state.blueprint.imageUrl,
+						}
+					: undefined,
+			};
+
 			createBlueprintMutation.mutate(
 				{
-					formData: state.blueprint,
+					formData: formDataWithResolvedImage,
 					user: user!,
 				},
 				{
@@ -490,7 +572,7 @@ const Create: React.FC = () => {
 				},
 			);
 		},
-		[createBlueprintMutation, state.blueprint, user, validateInputs, validateWarnings],
+		[createBlueprintMutation, state.blueprint, state.resolvedImageData, user, validateInputs, validateWarnings],
 	);
 
 	const handleForceCreateBlueprint = useCallback(
@@ -512,9 +594,19 @@ const Create: React.FC = () => {
 				return;
 			}
 
+			const formDataWithResolvedImage = {
+				...state.blueprint,
+				resolvedImageData: state.resolvedImageData
+					? {
+							...state.resolvedImageData,
+							link: state.blueprint.imageUrl,
+						}
+					: undefined,
+			};
+
 			createBlueprintMutation.mutate(
 				{
-					formData: state.blueprint,
+					formData: formDataWithResolvedImage,
 					user: user!,
 				},
 				{
@@ -525,7 +617,7 @@ const Create: React.FC = () => {
 				},
 			);
 		},
-		[createBlueprintMutation, state.blueprint, user, validateInputs],
+		[createBlueprintMutation, state.blueprint, state.resolvedImageData, user, validateInputs],
 	);
 
 	const handleCancel = useCallback(() => {
@@ -965,6 +1057,110 @@ const Create: React.FC = () => {
 								</Col>
 							</Form.Group>
 						)}
+
+						<Form.Group
+							as={Row}
+							className="mb-3"
+						>
+							<Form.Label
+								column
+								sm="2"
+							>
+								{'Tags'}
+							</Form.Label>
+							<Col sm={10}>
+								<Select
+									value={(state.blueprint.tags || []).map((value) => ({value, label: value}))}
+									options={tags.map((value) => ({value, label: value}))}
+									onChange={handleTagSelection}
+									isMulti
+									placeholder="Select at least one tag"
+									isLoading={tagsLoading}
+								/>
+							</Col>
+						</Form.Group>
+
+						<Form.Group
+							as={Row}
+							className="mb-3"
+						>
+							<Form.Label
+								column
+								sm="2"
+							>
+								{'Imgur URL'}
+							</Form.Label>
+							<Col sm={10}>
+								<FormControl
+									type="text"
+									name="imageUrl"
+									placeholder="https://imgur.com/kRua41d"
+									value={blueprint.imageUrl}
+									onChange={handleChange}
+									className={
+										state.imageUrlValidating
+											? 'is-validating'
+											: state.resolvedImageData
+												? 'is-valid'
+												: ''
+									}
+								/>
+								{state.imageUrlValidating && (
+									<Form.Text className="text-muted">
+										<FontAwesomeIcon
+											icon={faSpinner}
+											spin
+										/>{' '}
+										Validating Imgur URL...
+									</Form.Text>
+								)}
+								{state.resolvedImageData && !state.imageUrlValidating && (
+									<Form.Text className="text-success">
+										✓ Image resolved: {state.resolvedImageData.type}
+										{state.resolvedImageData.width &&
+											state.resolvedImageData.height &&
+											` (${state.resolvedImageData.width}×${state.resolvedImageData.height})`}
+									</Form.Text>
+								)}
+							</Col>
+						</Form.Group>
+
+						{renderPreview()}
+
+						<Form.Group
+							as={Row}
+							className="mb-3"
+						>
+							<Col sm={{span: 10, offset: 2}}>
+								<ButtonToolbar>
+									<Button
+										type="button"
+										variant="warning"
+										size="lg"
+										onClick={handleCreateBlueprint}
+										disabled={createBlueprintMutation.isPending}
+									>
+										<FontAwesomeIcon
+											icon={faSave}
+											size="lg"
+										/>
+										{createBlueprintMutation.isPending ? ' Saving...' : ' Save'}
+									</Button>
+									<Button
+										type="button"
+										size="lg"
+										onClick={handleCancel}
+										disabled={createBlueprintMutation.isPending}
+									>
+										<FontAwesomeIcon
+											icon={faBan}
+											size="lg"
+										/>
+										{' Cancel'}
+									</Button>
+								</ButtonToolbar>
+							</Col>
+						</Form.Group>
 					</Form>
 				</Row>
 			</Container>

@@ -1,4 +1,4 @@
-import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {faArrowLeft, faBan, faCog, faSave, faSpinner, faTrash} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useForm} from '@tanstack/react-form';
 import {useNavigate, useParams} from '@tanstack/react-router';
@@ -37,6 +37,8 @@ import {useDeleteBlueprint, useUpdateBlueprint} from '../hooks/useUpdateBlueprin
 import type {BlueprintBook} from '../schemas';
 import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 import {RichText} from './core/text/RichText';
+import {parseImgurUrl} from '../helpers/parseImgurUrl';
+import {resolveImgurUrl} from '../services/imgurResolver';
 import NoMatch from './NoMatch';
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
@@ -63,23 +65,7 @@ const blueprintFormSchema = z.object({
 	title: z.string().min(10, 'Title must be at least 10 characters'),
 	descriptionMarkdown: z.string().min(10, 'Description must be at least 10 characters'),
 	blueprintString: z.string().min(10, 'Blueprint String must be at least 10 characters'),
-	imageUrl: z.string().refine(
-		(url) => {
-			if (!url) return true;
-			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.[a-zA-Z0-9]{3,4}$/;
-			const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
-			const badRegex = /^https:\/\/imgur\.com\/(a|gallery)\/[a-zA-Z0-9]+$/;
-
-			if (badRegex.test(url)) {
-				return false;
-			}
-			return !url || goodRegex1.test(url) || goodRegex2.test(url);
-		},
-		{
-			message:
-				'Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.',
-		},
-	),
+	imageUrl: z.string().optional(),
 	tags: z.array(z.string()),
 });
 
@@ -93,6 +79,8 @@ interface UiState {
 	parsedBlueprint: Blueprint | null;
 	v15Decoded: V15DecodedObject | null;
 	submissionWarnings: string[];
+	imageUrlValidating: boolean;
+	resolvedImageData: any | null;
 }
 
 interface SelectOption {
@@ -157,6 +145,8 @@ function EditBlueprintWrapper() {
 		parsedBlueprint: null,
 		v15Decoded: null,
 		submissionWarnings: [],
+		imageUrlValidating: false,
+		resolvedImageData: null,
 	});
 
 	// Store current tags separately from form state. This is needed because form state updates don't reliably trigger re-renders for dependent calculations like our tag suggestions filtering.
@@ -197,11 +187,16 @@ function EditBlueprintWrapper() {
 				return;
 			}
 
+			const formDataWithResolvedImage = {
+				...value,
+				resolvedImageData: uiState.resolvedImageData,
+			};
+
 			if (rawBlueprintData) {
 				updateBlueprintMutation.mutate({
 					id: blueprintId,
 					rawBlueprint: rawBlueprintData,
-					formData: value,
+					formData: formDataWithResolvedImage,
 					availableTags: tags,
 				});
 			}
@@ -266,6 +261,62 @@ function EditBlueprintWrapper() {
 			}));
 		}
 	}, [form.state.values.descriptionMarkdown]);
+
+	const validateImageUrl = useCallback(async (url: string) => {
+		if (!url || url.trim() === '') {
+			setUiState((prevState) => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData: null,
+			}));
+			return;
+		}
+
+		setUiState((prevState) => ({
+			...prevState,
+			imageUrlValidating: true,
+		}));
+
+		try {
+			const parsedUrl = parseImgurUrl(url);
+
+			if (!parsedUrl.success) {
+				setUiState((prevState) => ({
+					...prevState,
+					imageUrlValidating: false,
+					resolvedImageData: null,
+				}));
+				return;
+			}
+
+			if (parsedUrl.data && parsedUrl.data.warnings.length > 0) {
+				console.warn('Imgur URL warnings:', parsedUrl.data.warnings);
+			}
+
+			const resolvedImage = await resolveImgurUrl(url);
+
+			setUiState((prevState) => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData: resolvedImage,
+			}));
+		} catch (error) {
+			console.error('Error resolving Imgur URL:', error);
+			setUiState((prevState) => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData: null,
+			}));
+		}
+	}, []);
+
+	useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			validateImageUrl(form.state.values.imageUrl);
+		}, 500);
+
+		return () => clearTimeout(timeoutId);
+	}, [form.state.values.imageUrl, validateImageUrl]);
 
 	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean => {
 		return some(blueprintBook.blueprints, (eachEntry) => {
@@ -336,16 +387,22 @@ function EditBlueprintWrapper() {
 		(event: React.MouseEvent<HTMLButtonElement>) => {
 			event.preventDefault();
 
+			// Add resolved image data to form data if available (force save)
+			const formDataWithResolvedImage = {
+				...form.state.values,
+				resolvedImageData: uiState.resolvedImageData,
+			};
+
 			if (rawBlueprintData) {
 				updateBlueprintMutation.mutate({
 					id: blueprintId,
 					rawBlueprint: rawBlueprintData,
-					formData: form.state.values,
+					formData: formDataWithResolvedImage,
 					availableTags: tags,
 				});
 			}
 		},
-		[updateBlueprintMutation, blueprintId, form.state.values, rawBlueprintData, tags],
+		[updateBlueprintMutation, blueprintId, form.state.values, rawBlueprintData, tags, uiState.resolvedImageData],
 	);
 
 	const handleCancel = useCallback(() => {
@@ -902,7 +959,31 @@ function EditBlueprintWrapper() {
 												value={field.state.value}
 												onBlur={field.handleBlur}
 												onChange={(e) => field.handleChange(e.target.value)}
+												className={
+													uiState.imageUrlValidating
+														? 'is-validating'
+														: uiState.resolvedImageData
+															? 'is-valid'
+															: ''
+												}
 											/>
+											{uiState.imageUrlValidating && (
+												<Form.Text className="text-muted">
+													<FontAwesomeIcon
+														icon={faSpinner}
+														spin
+													/>{' '}
+													Validating Imgur URL...
+												</Form.Text>
+											)}
+											{uiState.resolvedImageData && !uiState.imageUrlValidating && (
+												<Form.Text className="text-success">
+													✓ Image resolved: {uiState.resolvedImageData.type}
+													{uiState.resolvedImageData.width &&
+														uiState.resolvedImageData.height &&
+														` (${uiState.resolvedImageData.width}×${uiState.resolvedImageData.height})`}
+												</Form.Text>
+											)}
 											{field.state.meta.errors?.length > 0 && (
 												<div className="text-danger mt-1">
 													{field.state.meta.errors
@@ -916,51 +997,6 @@ function EditBlueprintWrapper() {
 											)}
 										</Col>
 									</Form.Group>
-
-									{field.state.value &&
-										(() => {
-											// Convert imgur URLs to direct image URLs for preview
-											let previewUrl = field.state.value;
-											const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
-											const match = previewUrl.match(imgurPageRegex);
-											if (match) {
-												// Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
-												previewUrl = `https://i.imgur.com/${match[1]}.png`;
-											}
-
-											return (
-												<Form.Group
-													as={Row}
-													className="mb-3"
-												>
-													<Form.Label
-														column
-														sm="2"
-													>
-														{'Attached screenshot'}
-													</Form.Label>
-													<Col sm={10}>
-														<Card
-															className="mb-2 mr-2"
-															style={{width: '14rem', backgroundColor: '#1c1e22'}}
-														>
-															<Card.Img
-																variant="top"
-																src={previewUrl || noImageAvailable}
-																key={field.state.value}
-																onError={(e) => {
-																	const target = e.target as HTMLImageElement;
-																	target.src = noImageAvailable;
-																}}
-															/>
-															<Card.Title className="truncate">
-																<RichText text={form.state.values.title} />
-															</Card.Title>
-														</Card>
-													</Col>
-												</Form.Group>
-											);
-										})()}
 								</>
 							)}
 						/>

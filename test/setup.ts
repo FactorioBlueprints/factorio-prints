@@ -1,9 +1,11 @@
 import '@testing-library/jest-dom';
 import {cleanup} from '@testing-library/react';
-import {afterEach} from 'vitest';
+import {afterEach, vi} from 'vitest';
 import 'fake-indexeddb/auto';
 
-// Cleanup after each test
+global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+global.URL.revokeObjectURL = vi.fn();
+
 afterEach(() => {
 	cleanup();
 });

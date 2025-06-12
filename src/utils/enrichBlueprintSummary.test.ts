@@ -12,7 +12,11 @@ describe('enrichBlueprintSummary', () => {
 
 	beforeEach(() => {
 		// Set up mock implementations
-		mockedBuildImageUrl.mockImplementation((imgurId, imgurType, suffix) => {
+		mockedBuildImageUrl.mockImplementation((imgurId, optionsOrLegacyType, suffix) => {
+			const imgurType =
+				typeof optionsOrLegacyType === 'string'
+					? optionsOrLegacyType
+					: optionsOrLegacyType?.imgurType || 'image/png';
 			return `https://i.imgur.com/${imgurId}${suffix}.${imgurType.split('/')[1] || 'png'}`;
 		});
 	});
