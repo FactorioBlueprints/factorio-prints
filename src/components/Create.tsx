@@ -1,4 +1,4 @@
-import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
+import {faArrowLeft, faBan, faSave, faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
 import {getAuth, User}                           from 'firebase/auth';
@@ -31,6 +31,8 @@ import noImageAvailable       from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import {useCreateBlueprint}   from '../hooks/useCreateBlueprint';
 import {useTags}              from '../hooks/useTags';
+import {parseImgurUrl}        from '../helpers/parseImgurUrl';
+import {resolveImgurUrl, ResolvedImgurImage}      from '../services/imgurResolver';
 
 import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
@@ -49,6 +51,8 @@ interface CreateState {
 	submissionWarnings: string[];
 	uploadProgressBarVisible: boolean;
 	uploadProgressPercent: number;
+	imageUrlValidating: boolean;
+	resolvedImageData: ResolvedImgurImage | null;
 	blueprint: BlueprintFormData;
 }
 
@@ -94,6 +98,8 @@ const initialState: CreateState = {
 	submissionWarnings      : [],
 	uploadProgressBarVisible: false,
 	uploadProgressPercent   : 0,
+	imageUrlValidating      : false,
+	resolvedImageData       : null,
 	blueprint               : {
 		title              : '',
 		descriptionMarkdown: '',
@@ -198,6 +204,71 @@ const Create: React.FC = () =>
 		}));
 	}, []);
 
+	const validateImageUrl = useCallback(async (url) =>
+	{
+		if (!url || url.trim() === '')
+		{
+			setState(prevState => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData : null,
+			}));
+			return;
+		}
+
+		setState(prevState => ({
+			...prevState,
+			imageUrlValidating: true,
+			submissionErrors  : prevState.submissionErrors.filter(error =>
+				!error.includes('image') && !error.includes('Imgur') && !error.includes('URL'),
+			),
+		}));
+
+		try
+		{
+			const parsedUrl = parseImgurUrl(url);
+
+			if (!parsedUrl.success)
+			{
+				setState(prevState => ({
+					...prevState,
+					imageUrlValidating: false,
+					resolvedImageData : null,
+					submissionErrors  : [...prevState.submissionErrors.filter(error =>
+						!error.includes('image') && !error.includes('Imgur') && !error.includes('URL'),
+					), parsedUrl.error || 'Please enter a valid Imgur URL. Supported formats: https://imgur.com/{id}, https://i.imgur.com/{id}.{ext}, https://imgur.com/a/{id}, or https://imgur.com/gallery/{id}'],
+				}));
+				return;
+			}
+
+			// Show warnings for parsed URL if any
+			if (parsedUrl.data && parsedUrl.data.warnings.length > 0)
+			{
+				console.warn('Imgur URL warnings:', parsedUrl.data.warnings);
+			}
+
+			const resolvedImage = await resolveImgurUrl(url);
+
+			setState(prevState => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData : resolvedImage,
+			}));
+		}
+		catch (error)
+		{
+			console.error('Error resolving Imgur URL:', error);
+			setState(prevState => ({
+				...prevState,
+				imageUrlValidating: false,
+				resolvedImageData : null,
+				submissionErrors  : [...prevState.submissionErrors.filter(error =>
+					!error.includes('image') && !error.includes('Imgur') && !error.includes('URL'),
+				), `Unable to resolve Imgur URL: ${error.message || 'Unknown error'}. Please check the URL and try again.`],
+			}));
+		}
+	}, []);
+
 	const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
 	{
 		const {name, value} = event.target;
@@ -219,6 +290,17 @@ const Create: React.FC = () =>
 			},
 		}));
 	}, [parseBlueprint]);
+
+	// Debounced effect for image URL validation
+	useEffect(() =>
+	{
+		const timeoutId = setTimeout(() =>
+		{
+			validateImageUrl(state.blueprint.imageUrl);
+		}, 500);
+
+		return () => clearTimeout(timeoutId);
+	}, [state.blueprint.imageUrl, validateImageUrl]);
 
 	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean =>
 	{
@@ -263,19 +345,18 @@ const Create: React.FC = () =>
 			submissionErrors.push('Blueprint String must be at least 10 characters');
 		}
 
-		const badRegex = /^https:\/\/imgur\.com\/(a|gallery)\/[a-zA-Z0-9]+$/;
-		if (badRegex.test(blueprint.imageUrl))
+		// Validate image URL using the new resolution system
+		if (!blueprint.imageUrl || blueprint.imageUrl.trim() === '')
 		{
-			submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id}. Click on the "Copy Link" button on the Imgur image page.');
+			submissionErrors.push('Image URL is required');
 		}
-		else
+		else if (state.imageUrlValidating)
 		{
-			const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.[a-zA-Z0-9]{3,4}$/;
-			const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
-			if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl))
-			{
-				submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}');
-			}
+			submissionErrors.push('Please wait while we validate your image URL');
+		}
+		else if (!state.resolvedImageData)
+		{
+			submissionErrors.push('Unable to resolve image URL. Please check that it\'s a valid Imgur link.');
 		}
 
 		return submissionErrors;
@@ -344,9 +425,17 @@ const Create: React.FC = () =>
 			return;
 		}
 
-		// Use mutation hook with raw data
+		// Use mutation hook with raw data and resolved image metadata
+		const formDataWithResolvedImage = {
+			...state.blueprint,
+			resolvedImageData: state.resolvedImageData ? {
+				...state.resolvedImageData,
+				link: state.blueprint.imageUrl, // Add the link property using the original URL
+			} : undefined,
+		};
+
 		createBlueprintMutation.mutate({
-			formData: state.blueprint,
+			formData: formDataWithResolvedImage,
 			user: user!,
 		}, {
 			onSuccess: () =>
@@ -355,7 +444,7 @@ const Create: React.FC = () =>
 				removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 			},
 		});
-	}, [validateInputs, validateWarnings, createBlueprintMutation, state.blueprint, user]);
+	}, [validateInputs, validateWarnings, createBlueprintMutation, state.blueprint, state.resolvedImageData, user]);
 
 	const handleForceCreateBlueprint = useCallback((event: React.MouseEvent) =>
 	{
@@ -371,9 +460,17 @@ const Create: React.FC = () =>
 			return;
 		}
 
-		// Use mutation hook with raw data (force)
+		// Use mutation hook with raw data and resolved image metadata (force)
+		const formDataWithResolvedImage = {
+			...state.blueprint,
+			resolvedImageData: state.resolvedImageData ? {
+				...state.resolvedImageData,
+				link: state.blueprint.imageUrl, // Add the link property using the original URL
+			} : undefined,
+		};
+
 		createBlueprintMutation.mutate({
-			formData: state.blueprint,
+			formData: formDataWithResolvedImage,
 			user: user!,
 		}, {
 			onSuccess: () =>
@@ -382,7 +479,7 @@ const Create: React.FC = () =>
 				removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 			},
 		});
-	}, [validateInputs, createBlueprintMutation, state.blueprint, user]);
+	}, [validateInputs, createBlueprintMutation, state.blueprint, state.resolvedImageData, user]);
 
 	const handleCancel = useCallback(() =>
 	{
@@ -687,7 +784,21 @@ const Create: React.FC = () =>
 									placeholder='https://imgur.com/kRua41d'
 									value={blueprint.imageUrl}
 									onChange={handleChange}
+									className={state.imageUrlValidating ? 'is-validating' : state.resolvedImageData ? 'is-valid' : ''}
 								/>
+								{state.imageUrlValidating && (
+									<Form.Text className='text-muted'>
+										<FontAwesomeIcon icon={faSpinner} spin /> Validating Imgur URL...
+									</Form.Text>
+								)}
+								{state.resolvedImageData && !state.imageUrlValidating && (
+									<Form.Text className='text-success'>
+										✓ Image resolved: {state.resolvedImageData.type}
+										{state.resolvedImageData.width && state.resolvedImageData.height
+											&& ` (${state.resolvedImageData.width}×${state.resolvedImageData.height})`
+										}
+									</Form.Text>
+								)}
 							</Col>
 						</Form.Group>
 

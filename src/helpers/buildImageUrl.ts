@@ -1,25 +1,59 @@
-/**
- * Builds an image URL for Imgur images
- */
-const buildImageUrl = (imgurId: string, imgurType: string, suffix: string): string =>
+interface ResolvedImageData {
+	id: string;
+	type: string;
+	extension: string;
+	width?: number;
+	height?: number;
+	title?: string;
+	isFromAlbum: boolean;
+	warnings: string[];
+}
+
+interface BuildImageUrlOptions {
+	resolvedData?: ResolvedImageData;
+	imgurType?: string;
+}
+
+const buildImageUrl = (
+	imgurId: string,
+	optionsOrLegacyType: BuildImageUrlOptions | string,
+	suffix: string
+): string =>
 {
-	// Validate inputs
 	if (!imgurId)
 	{
 		console.error('Missing imgurId in buildImageUrl');
 		return '/icons/entity-unknown.png';
 	}
 
-	if (!imgurType)
+	let options: BuildImageUrlOptions;
+	if (typeof optionsOrLegacyType === 'string')
 	{
-		console.error('Missing imgurType in buildImageUrl, using default png extension');
-		return `https://i.imgur.com/${imgurId}${suffix}.png`;
+		options = { imgurType: optionsOrLegacyType };
+	}
+	else
+	{
+		options = optionsOrLegacyType || {};
 	}
 
 	try
 	{
-		const typeParts = imgurType.split('/');
-		const extension = typeParts.length > 1 ? typeParts[1] : 'png';
+		let extension = 'png';
+
+		if (options.resolvedData?.extension)
+		{
+			extension = options.resolvedData.extension;
+		}
+		else if (options.imgurType)
+		{
+			const typeParts = options.imgurType.split('/');
+			extension = typeParts.length > 1 ? typeParts[1] : 'png';
+		}
+		else
+		{
+			console.warn('No image type information provided to buildImageUrl, using default png extension');
+		}
+
 		return `https://i.imgur.com/${imgurId}${suffix}.${extension}`;
 	}
 	catch (error)

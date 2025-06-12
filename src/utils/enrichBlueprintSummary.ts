@@ -14,8 +14,25 @@ export const enrichBlueprintSummary = (rawBlueprintSummary: RawBlueprintSummary 
 	if (rawBlueprintSummary.imgurId)
 	{
 		const imgurId = rawBlueprintSummary.imgurId;
-		const imgurType = rawBlueprintSummary.imgurType || 'image/png';
-		thumbnail = buildImageUrl(imgurId, imgurType, 'b');
+		if (rawBlueprintSummary.imgurExtension)
+		{
+			thumbnail = buildImageUrl(imgurId, {
+				resolvedData: {
+					id        : rawBlueprintSummary.imgurId,
+					type      : rawBlueprintSummary.imgurType || 'image/png',
+					extension : rawBlueprintSummary.imgurExtension,
+					width     : rawBlueprintSummary.width,
+					height    : rawBlueprintSummary.height,
+					isFromAlbum: rawBlueprintSummary.imgurIsFromAlbum || false,
+					warnings  : [],
+				}
+			}, 'b');
+		}
+		else
+		{
+			const imgurType = rawBlueprintSummary.imgurType || 'image/png';
+			thumbnail = buildImageUrl(imgurId, imgurType, 'b');
+		}
 	}
 
 	const enrichedBlueprintSummary = {

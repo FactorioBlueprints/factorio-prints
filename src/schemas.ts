@@ -6,6 +6,10 @@ export const imgurImageSchema = z.object({
 	deletehash: z.string().optional(),
 	height    : z.number().optional(),
 	width     : z.number().optional(),
+	extension : z.string().optional(),
+	title     : z.string().optional(),
+	isFromAlbum: z.boolean().optional(),
+	warnings  : z.array(z.string()).optional(),
 }).strict();
 
 export const blueprintAuthorSchema = z.object({
@@ -21,6 +25,9 @@ export const rawBlueprintSummarySchema = z.object({
 	lastUpdatedDate  : z.number().optional(),
 	height           : z.number().optional(),
 	width            : z.number().optional(),
+	imgurExtension   : z.string().optional(),
+	imgurTitle       : z.string().optional(),
+	imgurIsFromAlbum : z.boolean().optional(),
 }).strict();
 
 export const rawBlueprintSchema = z.object({

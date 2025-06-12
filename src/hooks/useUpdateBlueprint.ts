@@ -11,6 +11,7 @@ import {
 import {app}                                                       from '../base';
 import {validateRawBlueprint, validateRawBlueprintSummary}         from '../schemas';
 import type {RawBlueprint, ImgurImage}                             from '../schemas';
+import type {ResolvedImgurImage}                                   from '../services/imgurResolver';
 
 interface UpdateBlueprintFormData {
 	title: string;
@@ -18,6 +19,7 @@ interface UpdateBlueprintFormData {
 	descriptionMarkdown: string;
 	tags: string[];
 	imageUrl: string;
+	resolvedImageData?: ResolvedImgurImage | null;
 }
 
 interface UpdateBlueprintMutationParams {
@@ -50,26 +52,42 @@ export const useUpdateBlueprint = () =>
 			let image: ImgurImage | null = null;
 			if (formData.imageUrl)
 			{
-				const regexPatterns: ImgurRegexPatterns = {
-					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-				};
-
-				const matches = Object.values(regexPatterns)
-					.map(pattern => formData.imageUrl.match(pattern))
-					.filter(Boolean);
-
-				if (matches.length <= 0)
+				if (formData.resolvedImageData)
 				{
-					throw new Error('Invalid image URL format');
+					image = {
+						id         : formData.resolvedImageData.id,
+						type       : formData.resolvedImageData.extension,
+						width      : formData.resolvedImageData.width,
+						height     : formData.resolvedImageData.height,
+						extension  : formData.resolvedImageData.extension,
+						title      : formData.resolvedImageData.title,
+						isFromAlbum: formData.resolvedImageData.isFromAlbum,
+						warnings   : formData.resolvedImageData.warnings,
+					};
 				}
+				else
+				{
+					const regexPatterns: ImgurRegexPatterns = {
+						imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+						imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+					};
 
-				const match = matches[0]!;
-				const imgurId = match[1]!;
-				image = {
-					id  : imgurId,
-					type: 'image/png',
-				};
+					const matches = Object.values(regexPatterns)
+						.map(pattern => formData.imageUrl.match(pattern))
+						.filter(Boolean);
+
+					if (matches.length <= 0)
+					{
+						throw new Error('Invalid image URL format and no resolved image data available');
+					}
+
+					const match = matches[0]!;
+					const imgurId = match[1]!;
+					image = {
+						id  : imgurId,
+						type: 'image/png',
+					};
+				}
 			}
 
 			const currentImageId = rawBlueprint?.image?.id;
@@ -90,6 +108,19 @@ export const useUpdateBlueprint = () =>
 				updates[`/blueprints/${id}/image`] = image;
 				updates[`/blueprintSummaries/${id}/imgurId/`] = image.id;
 				updates[`/blueprintSummaries/${id}/imgurType/`] = image.type;
+				// Store enhanced metadata in summary if available
+				if (image.extension)
+				{
+					updates[`/blueprintSummaries/${id}/imgurExtension/`] = image.extension;
+				}
+				if (image.title)
+				{
+					updates[`/blueprintSummaries/${id}/imgurTitle/`] = image.title;
+				}
+				if (image.isFromAlbum !== undefined)
+				{
+					updates[`/blueprintSummaries/${id}/imgurIsFromAlbum/`] = image.isFromAlbum;
+				}
 			}
 
 			availableTags.forEach((tag) =>
@@ -124,26 +155,41 @@ export const useUpdateBlueprint = () =>
 				lastUpdatedDate    : unixTimestamp,
 			};
 
-			// Update image if a new one was provided
 			if (variables.formData.imageUrl)
 			{
-				const regexPatterns: ImgurRegexPatterns = {
-					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-				};
-
-				const matches = Object.values(regexPatterns)
-					.map(pattern => variables.formData.imageUrl.match(pattern))
-					.filter(Boolean);
-
-				if (matches.length > 0)
+				if (variables.formData.resolvedImageData)
 				{
-					const match = matches[0]!;
-					const imgurId = match[1]!;
 					updatedBlueprint.image = {
-						id  : imgurId,
-						type: 'image/png',
+						id         : variables.formData.resolvedImageData.id,
+						type       : variables.formData.resolvedImageData.extension,
+						width      : variables.formData.resolvedImageData.width,
+						height     : variables.formData.resolvedImageData.height,
+						extension  : variables.formData.resolvedImageData.extension,
+						title      : variables.formData.resolvedImageData.title,
+						isFromAlbum: variables.formData.resolvedImageData.isFromAlbum,
+						warnings   : variables.formData.resolvedImageData.warnings,
 					};
+				}
+				else
+				{
+					const regexPatterns: ImgurRegexPatterns = {
+						imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+						imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+					};
+
+					const matches = Object.values(regexPatterns)
+						.map(pattern => variables.formData.imageUrl.match(pattern))
+						.filter(Boolean);
+
+					if (matches.length > 0)
+					{
+						const match = matches[0]!;
+						const imgurId = match[1]!;
+						updatedBlueprint.image = {
+							id  : imgurId,
+							type: 'image/png',
+						};
+					}
 				}
 			}
 
@@ -173,6 +219,18 @@ export const useUpdateBlueprint = () =>
 				{
 					updatedSummary.imgurId = blueprintImage.id;
 					updatedSummary.imgurType = blueprintImage.type;
+					if (blueprintImage.extension)
+					{
+						updatedSummary.imgurExtension = blueprintImage.extension;
+					}
+					if (blueprintImage.title)
+					{
+						updatedSummary.imgurTitle = blueprintImage.title;
+					}
+					if (blueprintImage.isFromAlbum !== undefined)
+					{
+						updatedSummary.imgurIsFromAlbum = blueprintImage.isFromAlbum;
+					}
 				}
 
 				try

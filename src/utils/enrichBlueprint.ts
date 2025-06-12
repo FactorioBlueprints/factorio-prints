@@ -32,8 +32,25 @@ export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: 
 	if (rawBlueprint.image?.id)
 	{
 		const imgurId = rawBlueprint.image.id;
-		const imgurType = rawBlueprint.image.type || 'image/png';
-		thumbnail = buildImageUrl(imgurId, imgurType, 'l');
+		if (rawBlueprint.image.extension)
+		{
+			thumbnail = buildImageUrl(imgurId, {
+				resolvedData: {
+					id        : rawBlueprint.image.id,
+					type      : rawBlueprint.image.type || 'image/png',
+					extension : rawBlueprint.image.extension,
+					width     : rawBlueprint.image.width,
+					height    : rawBlueprint.image.height,
+					isFromAlbum: rawBlueprint.image.isFromAlbum || false,
+					warnings  : rawBlueprint.image.warnings || [],
+				}
+			}, 'l');
+		}
+		else
+		{
+			const imgurType = rawBlueprint.image.type || 'image/png';
+			thumbnail = buildImageUrl(imgurId, imgurType, 'l');
+		}
 	}
 
 	const processedTags: Record<string, boolean> = {};

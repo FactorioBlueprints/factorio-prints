@@ -12,6 +12,16 @@ interface CreateBlueprintFormData {
 	descriptionMarkdown: string;
 	tags?: string[];
 	imageUrl: string;
+	resolvedImageData?: {
+		id: string;
+		type: string;
+		extension: string;
+		width?: number;
+		height?: number;
+		title?: string;
+		isFromAlbum: boolean;
+		warnings: string[];
+	};
 }
 
 interface CreateBlueprintMutationParams {
@@ -37,29 +47,45 @@ export const useCreateBlueprint = () =>
 	return useMutation<CreateBlueprintResult, Error, CreateBlueprintMutationParams>({
 		mutationFn: async ({ formData, user }) =>
 		{
-			// Process image URL to extract imgur ID
-			const imageUrl = formData.imageUrl;
+			let image;
 
-			const regexPatterns: ImgurRegexPatterns = {
-				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-			};
-
-			const matches = Object.values(regexPatterns)
-				.map(pattern => imageUrl.match(pattern))
-				.filter(Boolean);
-
-			if (matches.length <= 0)
+			if (formData.resolvedImageData)
 			{
-				throw new Error('Invalid image URL format');
+				image = {
+					id        : formData.resolvedImageData.id,
+					type      : formData.resolvedImageData.type,
+					width     : formData.resolvedImageData.width,
+					height    : formData.resolvedImageData.height,
+					extension : formData.resolvedImageData.extension,
+					title     : formData.resolvedImageData.title,
+					isFromAlbum: formData.resolvedImageData.isFromAlbum,
+					warnings  : formData.resolvedImageData.warnings,
+				};
 			}
+			else
+			{
+				const imageUrl = formData.imageUrl;
+				const regexPatterns: ImgurRegexPatterns = {
+					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+				};
 
-			const match = matches[0]!;
-			const imgurId = match[1]!;
-			const image = {
-				id  : imgurId,
-				type: 'image/png',
-			};
+				const matches = Object.values(regexPatterns)
+					.map(pattern => imageUrl.match(pattern))
+					.filter(Boolean);
+
+				if (matches.length <= 0)
+				{
+					throw new Error('Invalid image URL format and no resolved image data available');
+				}
+
+				const match = matches[0]!;
+				const imgurId = match[1]!;
+				image = {
+					id  : imgurId,
+					type: 'image/png',
+				};
+			}
 
 			// Build raw blueprint data matching Firebase structure
 			const blueprintData = {
@@ -79,13 +105,26 @@ export const useCreateBlueprint = () =>
 				image,
 			};
 
-			const blueprintSummary = {
+			const blueprintSummary: Record<string, unknown> = {
 				imgurId          : image.id,
 				imgurType        : image.type,
 				title            : formData.title,
 				numberOfFavorites: 0,
 				lastUpdatedDate  : serverTimestamp(),
 			};
+
+			if (image.extension)
+			{
+				blueprintSummary.imgurExtension = image.extension;
+			}
+			if (image.title)
+			{
+				blueprintSummary.imgurTitle = image.title;
+			}
+			if (image.isFromAlbum !== undefined)
+			{
+				blueprintSummary.imgurIsFromAlbum = image.isFromAlbum;
+			}
 
 			const blueprintsRef = ref(getDatabase(app), '/blueprints');
 			const newBlueprintRef = push(blueprintsRef, blueprintData);
@@ -99,7 +138,7 @@ export const useCreateBlueprint = () =>
 
 			updates[`/users/${user.uid}/blueprints/${newBlueprintKey}`] = true;
 			updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
-			updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageUrl;
+			updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = formData.imageUrl;
 
 			(formData.tags || []).forEach((tag) =>
 			{
@@ -118,17 +157,27 @@ export const useCreateBlueprint = () =>
 			const now = new Date();
 			const unixTimestamp = now.getTime();
 
-			// Extract imgur ID from the image URL for the summary
-			const regexPatterns: ImgurRegexPatterns = {
-				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-			};
+			let imgurId = '';
+			let imgurType = 'image/png';
 
-			const matches = Object.values(regexPatterns)
-				.map(pattern => formData.imageUrl.match(pattern))
-				.filter(Boolean);
+			if (formData.resolvedImageData)
+			{
+				imgurId = formData.resolvedImageData.id;
+				imgurType = formData.resolvedImageData.type;
+			}
+			else
+			{
+				const regexPatterns: ImgurRegexPatterns = {
+					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+				};
 
-			const imgurId = matches.length > 0 ? matches[0]![1]! : '';
+				const matches = Object.values(regexPatterns)
+					.map(pattern => formData.imageUrl.match(pattern))
+					.filter(Boolean);
+
+				imgurId = matches.length > 0 ? matches[0]![1]! : '';
+			}
 
 			const lastUpdatedDateKey  = ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'];
 			const lastUpdatedDateData = queryClient.getQueryData(lastUpdatedDateKey);
@@ -140,7 +189,7 @@ export const useCreateBlueprint = () =>
 					const summaryData = {
 						title            : formData.title,
 						imgurId          : imgurId,
-						imgurType        : 'image/png',
+						imgurType        : imgurType,
 						numberOfFavorites: 0,
 						lastUpdatedDate  : unixTimestamp,
 					};
@@ -206,13 +255,29 @@ export const useCreateBlueprint = () =>
 
 			const summaryKey = ['blueprintSummaries', 'blueprintId', blueprintId];
 
-			const summaryData = {
+			const summaryData: Record<string, unknown> = {
 				title            : formData.title,
 				imgurId          : imgurId,
-				imgurType        : 'image/png',
+				imgurType        : imgurType,
 				numberOfFavorites: 0,
 				lastUpdatedDate  : unixTimestamp,
 			};
+
+			if (formData.resolvedImageData)
+			{
+				if (formData.resolvedImageData.extension)
+				{
+					summaryData.imgurExtension = formData.resolvedImageData.extension;
+				}
+				if (formData.resolvedImageData.title)
+				{
+					summaryData.imgurTitle = formData.resolvedImageData.title;
+				}
+				if (formData.resolvedImageData.isFromAlbum !== undefined)
+				{
+					summaryData.imgurIsFromAlbum = formData.resolvedImageData.isFromAlbum;
+				}
+			}
 
 			const blueprintSummary = validateRawBlueprintSummary(summaryData);
 			queryClient.setQueryData(summaryKey, blueprintSummary);
