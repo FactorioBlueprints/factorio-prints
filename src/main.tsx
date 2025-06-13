@@ -61,14 +61,15 @@ window.addEventListener('vite:preloadError', (event) =>
 });
 
 // Add global error handler for images
-window.addEventListener('error', function(e)
+window.addEventListener('error', function(e: ErrorEvent)
 {
-	if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'IFRAME'))
+	const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
+	if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME'))
 	{
 		// In development, log the error for debugging
 		if (import.meta.env.DEV)
 		{
-			console.log('Image/iframe load error:', e.target.src);
+			console.log('Image/iframe load error:', target.src);
 		}
 		// Prevent the error from bubbling up
 		e.preventDefault();
@@ -77,6 +78,10 @@ window.addEventListener('error', function(e)
 }, true);
 
 const container = document.getElementById('root');
+if (!container) {
+	throw new Error('Root element not found');
+}
+
 const root = createRoot(container);
 
 root.render(
