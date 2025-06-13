@@ -4,12 +4,12 @@ import PropTypes         from 'prop-types';
 import React             from 'react';
 
 LoadingIcon.propTypes = {
-	isLoading: PropTypes.bool.isRequired,
+	isPending: PropTypes.bool.isRequired,
 };
 
 function LoadingIcon(props)
 {
-	return props.isLoading
+	return props.isPending
 		? <FontAwesomeIcon icon={faCog} size='lg' fixedWidth spin />
 		: <></>;
 }

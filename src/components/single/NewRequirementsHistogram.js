@@ -15,19 +15,17 @@ function NewRequirementsHistogram({blueprintStringSha})
 {
 	const queryKey = ['blueprintTable', blueprintStringSha];
 
-	const result                            = useQuery(
+	const result                            = useQuery({
 		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintTableBySha/${blueprintStringSha}`),
-		{
-			enabled             : blueprintStringSha !== undefined,
-			retry               : false,
-			cacheTime           : 'Infinity',
-			staleTime           : 'Infinity',
-			refetchOnMount      : false,
-			refetchOnWindowFocus: false,
-			refetchOnReconnect  : false,
-		},
-	);
+		queryFn: () => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintTableBySha/${blueprintStringSha}`),
+		enabled             : blueprintStringSha !== undefined,
+		retry               : false,
+		gcTime              : 'Infinity',
+		staleTime           : 'Infinity',
+		refetchOnMount      : false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect  : false,
+	});
 	const {isError, isSuccess, data, error} = result;
 
 	if (isError)

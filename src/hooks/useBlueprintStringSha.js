@@ -7,13 +7,13 @@ function useBlueprintStringSha(blueprintStringSha)
 	const url      = `${process.env.REACT_APP_REST_URL}/api/blueprintStringBySha/${blueprintStringSha}`;
 	const options  = {
 		enabled  : blueprintStringSha !== undefined,
-		cacheTime: 'Infinity',
+		gcTime: 'Infinity',
 		staleTime: 'Infinity',
 		refetchOnMount: false,
 		refetchOnWindowFocus: false,
 		refetchOnReconnect: false,
 	};
-	return useQuery(queryKey, () => axios.get(url), options);
+	return useQuery({queryKey, queryFn: () => axios.get(url), ...options});
 }
 
 export default useBlueprintStringSha;

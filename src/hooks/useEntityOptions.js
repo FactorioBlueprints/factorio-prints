@@ -8,7 +8,7 @@ const useEntityOptions = () =>
 		return axios.get(`${process.env.REACT_APP_REST_URL}/api/entities/`);
 	}
 
-	return useQuery(['entities'], fetchEntityValues);
+	return useQuery({queryKey: ['entities'], queryFn: fetchEntityValues});
 };
 
 export default useEntityOptions;

@@ -1,4 +1,4 @@
-import {useQuery}                    from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import axios                         from 'axios';
 import React, {useState}             from 'react';
 import Row                           from 'react-bootstrap/Row';
@@ -65,12 +65,12 @@ const SearchResults = ({searchState}) =>
 	};
 
 	const options = {
-		keepPreviousData: true,
+		placeholderData: (previousData) => previousData,
 		enabled         : searchState !== undefined,
 	};
 
-	const result = useQuery(
-		['blueprintSearch', {
+	const result = useQuery({
+		queryKey: ['blueprintSearch', {
 			textState,
 			recipeState,
 			entityState,
@@ -81,9 +81,9 @@ const SearchResults = ({searchState}) =>
 			modState,
 			page,
 		}],
-		() => fetchBlueprintSummaries(),
-		options,
-	);
+		queryFn: () => fetchBlueprintSummaries(),
+		...options,
+	});
 
 	const {data, isSuccess, isFetching} = result;
 

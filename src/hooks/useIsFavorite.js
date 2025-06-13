@@ -12,14 +12,12 @@ function useIsFavorite(blueprintKey)
 	const uid          = queryEnabled ? user.uid : undefined;
 	const queryKey     = ['api/my/favorite/', blueprintKey, uid];
 
-	return useQuery(
+	return useQuery({
 		queryKey,
-		() => getIsFavorite(blueprintKey, user),
-		{
-			enabled  : queryEnabled,
-			staleTime: 1000 * 60 * 60, // 60 minutes
-		},
-	);
+		queryFn: () => getIsFavorite(blueprintKey, user),
+		enabled  : queryEnabled,
+		staleTime: 1000 * 60 * 60, // 60 minutes
+	});
 }
 
 async function getIsFavorite(blueprintKey, user)

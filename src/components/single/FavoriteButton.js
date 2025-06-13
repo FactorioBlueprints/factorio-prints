@@ -58,18 +58,17 @@ function FavoriteButton({blueprintKey})
 	// TODO: Switch to the other favorites hook
 	const {isSuccess, data: isFavorite} = useIsFavorite(blueprintKey);
 
-	const toggleFavoriteMutation = useMutation(
-		() => postIsFavorite(blueprintKey, !isFavorite, user),
+	const toggleFavoriteMutation = useMutation({
+		mutationFn: () => postIsFavorite(blueprintKey, !isFavorite, user),
+		enabled  : queryEnabled,
+		onSuccess: () =>
 		{
-			enabled  : queryEnabled,
-			onSuccess: () =>
-			{
-				queryClient.invalidateQueries(['api/my/favorites/', user.uid]);
-				queryClient.invalidateQueries(['api/my/favorite/', blueprintKey, user.uid]);
-				queryClient.invalidateQueries(['/api/my/favoriteBlueprints/page', user.email]);
-				queryClient.invalidateQueries(['blueprintDetails', blueprintKey]);
-			},
-		});
+			queryClient.invalidateQueries(['api/my/favorites/', user.uid]);
+			queryClient.invalidateQueries(['api/my/favorite/', blueprintKey, user.uid]);
+			queryClient.invalidateQueries(['/api/my/favoriteBlueprints/page', user.email]);
+			queryClient.invalidateQueries(['blueprintDetails', blueprintKey]);
+		},
+	});
 
 	const buttonEnabled = queryEnabled && isSuccess;
 

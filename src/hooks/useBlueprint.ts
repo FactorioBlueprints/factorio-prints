@@ -8,9 +8,7 @@ function useBlueprint(blueprintKey: string | undefined)
 	const options     = {
 		enabled: blueprintKey !== undefined,
 	};
-	return useQuery({
-		queryKey,
-		queryFn: () => axios.get(url),
+	return useQuery({queryKey, queryFn: () => axios.get(url),
 		...options
 	});
 }

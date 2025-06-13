@@ -12,14 +12,12 @@ function useFavorites()
 	const uid        = queryEnabled ? user.uid : undefined;
 	const queryKey     = ['api/my/favorites/', uid];
 
-	return useQuery(
+	return useQuery({
 		queryKey,
-		() => getFavorites(user),
-		{
-			enabled  : queryEnabled,
-			staleTime: 1000 * 60 * 60, // 60 minutes
-		},
-	);
+		queryFn: () => getFavorites(user),
+		enabled  : queryEnabled,
+		staleTime: 1000 * 60 * 60, // 60 minutes
+	});
 }
 
 async function getFavorites(user)

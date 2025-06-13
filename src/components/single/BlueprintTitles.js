@@ -16,26 +16,24 @@ function BlueprintTitles({blueprintKey, blueprintStringSha})
 {
 	const queryKey = ['blueprintTitles', blueprintStringSha];
 
-	const {isLoading, isError, isSuccess, data, error} = useQuery(
+	const {isPending, isError, isSuccess, data, error} = useQuery({
 		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
-		{
-			enabled             : blueprintStringSha !== undefined,
-			retry               : false,
-			cacheTime           : 'Infinity',
-			staleTime           : 'Infinity',
-			refetchOnMount      : false,
-			refetchOnWindowFocus: false,
-			refetchOnReconnect  : false,
-		},
-	);
+		queryFn: () => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
+		enabled             : blueprintStringSha !== undefined,
+		retry               : false,
+		gcTime              : Infinity,
+		staleTime           : Infinity,
+		refetchOnMount      : false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect  : false,
+	});
 
-	if (isLoading)
+	if (isPending)
 	{
 		// TODO 2023-03-08: implement placeholder
 		return (
 			<Card>
-				<LoadingIcon isLoading={isLoading} />
+				<LoadingIcon isPending={isPending} />
 				{' Loading blueprint titles'}
 			</Card>
 		);

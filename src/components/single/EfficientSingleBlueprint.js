@@ -50,7 +50,7 @@ function EfficientSingleBlueprint()
 
 	const result = useBlueprint(blueprintKey);
 
-	const {isSuccess, data, isLoading, isError} = result;
+	const {isSuccess, data, isPending, isError} = result;
 
 	const {user}   = useContext(UserContext);
 	const userId = user?.uid;
@@ -83,7 +83,7 @@ function EfficientSingleBlueprint()
 
 	}
 
-	if (isLoading)
+	if (isPending)
 	{
 		return <Spinner />
 	}
