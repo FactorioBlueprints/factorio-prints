@@ -4,7 +4,7 @@ import axios                         from 'axios';
 import React, {useContext, useState} from 'react';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
-import {useQuery}                    from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import {useParams}                   from 'react-router-dom';
 
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
@@ -45,19 +45,22 @@ function UserGrid()
 	};
 
 	const options = {
-		keepPreviousData: true,
-		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
+		placeholderData: (previousData) => previousData,
 	};
-	const result  = useQuery(['user', userId, page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags, userId), options);
+	const result  = useQuery({
+		queryKey: ['user', userId, page, titleFilter, selectedTags],
+		queryFn: () => fetchBlueprintSummaries(page, titleFilter, selectedTags, userId),
+		...options,
+	});
 
 	const displayNameResult = useDisplayName(userId);
 
 	// TODO: Refactor out grid commonality
 
-	const {isLoading, isError, data, isPreviousData}               = result;
-	const {isLoading: isDisplayNameLoading, data: displayNameData} = displayNameResult;
+	const {isPending, isError, data, isPlaceholderData}               = result;
+	const {isPending: isDisplayNameLoading, data: displayNameData} = displayNameResult;
 
-	if (isLoading)
+	if (isPending)
 	{
 		return <Spinner />
 	}
@@ -87,7 +90,7 @@ function UserGrid()
 			return (
 				<span>
 					{'Blueprints by '}
-					<LoadingIcon isLoading={isDisplayNameLoading} />
+					<LoadingIcon isPending={isDisplayNameLoading} />
 				</span>
 			);
 		}
@@ -122,7 +125,7 @@ function UserGrid()
 				setPage={setPage}
 				pageNumber={pageNumber}
 				numberOfPages={numberOfPages}
-				isPreviousData={isPreviousData}
+				isPlaceholderData={isPlaceholderData}
 			/>
 		</Container>
 	);

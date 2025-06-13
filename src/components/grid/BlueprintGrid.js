@@ -4,7 +4,7 @@ import axios                   from 'axios';
 import React, {useState}       from 'react';
 import Container               from 'react-bootstrap/Container';
 import Row                     from 'react-bootstrap/Row';
-import {useQuery}              from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
 
@@ -43,21 +43,20 @@ function BlueprintGrid()
 	};
 
 	const options = {
-		keepPreviousData: true,
-		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
+		placeholderData: (previousData) => previousData,
 	};
 
-	const result = useQuery(
-		['blueprintSummaries', page, titleFilter, selectedTagValues],
-		() => fetchBlueprintSummaries(page, titleFilter, selectedTagValues),
-		options,
-	);
+	const result = useQuery({
+		queryKey: ['blueprintSummaries', page, titleFilter, selectedTagValues],
+		queryFn: () => fetchBlueprintSummaries(page, titleFilter, selectedTagValues),
+		...options,
+	});
 
 	// TODO: Refactor out grid commonality
 
-	const {isLoading, isError, data, isPreviousData} = result;
+	const {isPending, isError, data, isPlaceholderData} = result;
 
-	if (isLoading)
+	if (isPending)
 	{
 		return <Spinner />
 	}
@@ -99,7 +98,7 @@ function BlueprintGrid()
 				setPage={setPage}
 				pageNumber={pageNumber}
 				numberOfPages={numberOfPages}
-				isPreviousData={isPreviousData}
+				isPlaceholderData={isPlaceholderData}
 			/>
 		</Container>
 	);

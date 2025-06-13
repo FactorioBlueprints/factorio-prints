@@ -15,15 +15,15 @@ PaginationControls.propTypes = forbidExtraProps({
 	page          : PropTypes.number.isRequired,
 	setPage       : PropTypes.func.isRequired,
 	pageNumber    : PropTypes.number.isRequired,
-	isPreviousData: PropTypes.bool.isRequired,
+	isPlaceholderData: PropTypes.bool.isRequired,
 	numberOfPages : PropTypes.number.isRequired,
 });
 
-function PaginationControls({page, setPage, pageNumber, isPreviousData, numberOfPages})
+function PaginationControls({page, setPage, pageNumber, isPlaceholderData, numberOfPages})
 {
 	function onClick()
 	{
-		if (!isPreviousData && numberOfPages > page)
+		if (!isPlaceholderData && numberOfPages > page)
 		{
 			setPage(old => old + 1);
 		}
@@ -31,7 +31,7 @@ function PaginationControls({page, setPage, pageNumber, isPreviousData, numberOf
 
 	return (
 		<Row className='justify-content-center'>
-			<LoadingIcon isLoading={page !== pageNumber} />
+			<LoadingIcon isPending={page !== pageNumber} />
 			<Col md={{span: 6, offset: 3}}>
 				<Button type='button' onClick={() => setPage(1)} disabled={page === 1}>
 					<FontAwesomeIcon icon={faAngleDoubleLeft} size='lg' fixedWidth />
@@ -45,7 +45,7 @@ function PaginationControls({page, setPage, pageNumber, isPreviousData, numberOf
 					{`Page: ${page}`}
 				</Button>
 				<Button
-					type='button' onClick={onClick} disabled={isPreviousData || numberOfPages <= page}
+					type='button' onClick={onClick} disabled={isPlaceholderData || numberOfPages <= page}
 				>
 					{'Next Page'}
 					<FontAwesomeIcon icon={faAngleRight} size='lg' fixedWidth />

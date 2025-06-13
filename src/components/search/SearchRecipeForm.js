@@ -18,7 +18,7 @@ const SearchRecipeForm = ({recipeState, setRecipeState}) =>
 	};
 
 	const result                       = useRecipeOptions();
-	const {data, isSuccess, isLoading} = result;
+	const {data, isSuccess, isPending} = result;
 
 	const options = isSuccess
 		? data.data.map((value) => ({value: value, label: value}))
@@ -32,7 +32,7 @@ const SearchRecipeForm = ({recipeState, setRecipeState}) =>
 
 			<Select
 				options={options}
-				isLoading={isLoading}
+				isLoading={isPending}
 				isClearable={true}
 				placeholder={'Any recipe'}
 				value={recipeState === null ? null : {value: recipeState, label: recipeState}}

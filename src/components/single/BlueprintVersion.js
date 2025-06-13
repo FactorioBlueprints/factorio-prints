@@ -14,19 +14,17 @@ function BlueprintVersion({blueprintStringSha})
 {
 	const queryKey = ['blueprintTitles', blueprintStringSha];
 
-	const result = useQuery(
+	const result = useQuery({
 		queryKey,
-		() => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
-		{
-			enabled             : blueprintStringSha !== undefined,
-			retry               : false,
-			cacheTime           : 'Infinity',
-			staleTime           : 'Infinity',
-			refetchOnMount      : false,
-			refetchOnWindowFocus: false,
-			refetchOnReconnect  : false,
-		},
-	);
+		queryFn: () => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
+		enabled             : blueprintStringSha !== undefined,
+		retry               : false,
+		gcTime              : 'Infinity',
+		staleTime           : 'Infinity',
+		refetchOnMount      : false,
+		refetchOnWindowFocus: false,
+		refetchOnReconnect  : false,
+	});
 
 	const {data, isSuccess} = result;
 

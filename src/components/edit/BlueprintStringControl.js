@@ -10,17 +10,17 @@ import LoadingIcon        from '../LoadingIcon';
 BlueprintStringControl.propTypes = forbidExtraProps({
 	blueprintString   : PropTypes.string,
 	setBlueprintString: PropTypes.func.isRequired,
-	isLoading         : PropTypes.bool.isRequired,
+	isPending         : PropTypes.bool.isRequired,
 	isError           : PropTypes.bool.isRequired,
 });
 
-function getBody(blueprintString, setBlueprintString, isLoading)
+function getBody(blueprintString, setBlueprintString, isPending)
 {
-	if (isLoading)
+	if (isPending)
 	{
 		return (
 			<>
-				<LoadingIcon isLoading={isLoading} />
+				<LoadingIcon isPending={isPending} />
 				{' Loading...'}
 			</>
 		);
@@ -45,9 +45,9 @@ function getBody(blueprintString, setBlueprintString, isLoading)
 
 function BlueprintStringControl(props)
 {
-	const {blueprintString, setBlueprintString, isLoading} = props;
+	const {blueprintString, setBlueprintString, isPending} = props;
 
-	const body = getBody(blueprintString, setBlueprintString, isLoading);
+	const body = getBody(blueprintString, setBlueprintString, isPending);
 
 	return (
 		<Form.Group as={Row}>

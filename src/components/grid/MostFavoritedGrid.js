@@ -4,7 +4,7 @@ import axios                   from 'axios';
 import React, {useState}       from 'react';
 import Container               from 'react-bootstrap/Container';
 import Row                     from 'react-bootstrap/Row';
-import {useQuery}              from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
 
@@ -36,16 +36,19 @@ function MostFavoritedGrid()
 	};
 
 	const options = {
-		keepPreviousData: true,
-		placeholderData : {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}},
+		placeholderData: (previousData) => previousData,
 	};
-	const result  = useQuery(['top', page, titleFilter, selectedTags], () => fetchBlueprintSummaries(page, titleFilter, selectedTags), options);
+	const result = useQuery({
+		queryKey: ['top', page, titleFilter, selectedTags],
+		queryFn: () => fetchBlueprintSummaries(page, titleFilter, selectedTags),
+		...options,
+	});
 
 	// TODO: Refactor out grid commonality
 
-	const {isLoading, isError, data, isPreviousData} = result;
+	const {isPending, isError, data, isPlaceholderData} = result;
 
-	if (isLoading)
+	if (isPending)
 	{
 		return <Spinner />
 	}
@@ -88,7 +91,7 @@ function MostFavoritedGrid()
 				setPage={setPage}
 				pageNumber={pageNumber}
 				numberOfPages={numberOfPages}
-				isPreviousData={isPreviousData}
+				isPlaceholderData={isPlaceholderData}
 			/>
 		</Container>
 	);

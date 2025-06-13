@@ -6,7 +6,7 @@ const ReactQueryStatus = (props) =>
 {
 	const {fetchStatus, status} = props;
 
-	if (status === 'loading' && fetchStatus === 'idle')
+	if (status === 'pending' && fetchStatus === 'idle')
 	{
 		return <>
 			<FontAwesomeIcon icon={faPause} size='lg' fixedWidth style={{'color': 'var(--bs-orange)'}} />

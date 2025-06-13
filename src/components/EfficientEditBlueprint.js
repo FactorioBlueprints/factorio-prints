@@ -87,7 +87,8 @@ function EfficientEditBlueprint()
 	const isModerator = useIsModerator();
 
 	const navigate = useNavigate();
-	const mutation = useMutation(editBlueprint, {
+	const mutation = useMutation({
+		mutationFn: editBlueprint,
 		onSuccess: data => {
 			queryClient.setQueryData(queryKey, data)
 			navigate(`/view/${blueprintKey}`);
@@ -132,7 +133,7 @@ function EfficientEditBlueprint()
 
 	const result = useBlueprint(blueprintKey);
 	const {
-			  isLoading,
+			  isPending,
 			  isError,
 			  data,
 			  error,
@@ -142,7 +143,6 @@ function EfficientEditBlueprint()
 			  isIdle,
 			  isLoadingError,
 			  isPlaceholderData,
-			  isPreviousData,
 			  isRefetchError,
 			  isRefetching,
 			  isStale,
@@ -158,7 +158,7 @@ function EfficientEditBlueprint()
 
 	const blueprintStringSha = blueprint?.blueprintString?.sha;
 	const {
-			  isLoading: blueprintStringIsLoading,
+			  isPending: blueprintStringIsLoading,
 			  isError  : blueprintStringIsError,
 			  data     : blueprintStringData
 		  }                  = useBlueprintStringSha(blueprintStringSha);
@@ -189,11 +189,11 @@ function EfficientEditBlueprint()
 		);
 	}
 
-	if (isLoading)
+	if (isPending)
 	{
 		return (
 			<h1>
-				<LoadingIcon isLoading={isLoading} />
+				<LoadingIcon isPending={isPending} />
 				{' Loading data'}
 			</h1>
 		);
@@ -203,7 +203,7 @@ function EfficientEditBlueprint()
 	{
 		console.log('EfficientEditBlueprint isError=true', {
 			result,
-			isLoading,
+			isPending,
 			isError,
 			data,
 			error,
@@ -213,7 +213,6 @@ function EfficientEditBlueprint()
 			isIdle,
 			isLoadingError,
 			isPlaceholderData,
-			isPreviousData,
 			isRefetchError,
 			isRefetching,
 			isStale,
@@ -806,7 +805,7 @@ function EfficientEditBlueprint()
 						<BlueprintStringControl
 							blueprintString={blueprintString}
 							setBlueprintString={setBlueprintString}
-							isLoading={blueprintStringIsLoading}
+							isPending={blueprintStringIsLoading}
 							isError={blueprintStringIsError}
 						/>
 

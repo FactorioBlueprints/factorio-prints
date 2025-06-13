@@ -12,14 +12,12 @@ function useAuthored()
 	const uid          = user?.uid;
 	const queryKey     = ['api/my/blueprints/', uid];
 
-	return useQuery(
+	return useQuery({
 		queryKey,
-		() => getAuthored(user),
-		{
-			enabled  : queryEnabled,
-			staleTime: 1000 * 60 * 60, // 60 minutes
-		},
-	);
+		queryFn: () => getAuthored(user),
+		enabled  : queryEnabled,
+		staleTime: 1000 * 60 * 60, // 60 minutes
+	});
 }
 
 async function getAuthored(user)

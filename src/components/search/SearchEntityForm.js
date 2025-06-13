@@ -18,7 +18,7 @@ const SearchEntityForm = ({entityState, setEntityState}) =>
 	};
 
 	const result                       = useEntityOptions();
-	const {data, isSuccess, isLoading} = result;
+	const {data, isSuccess, isPending} = result;
 
 	const options = isSuccess
 		? data.data.map((value) => ({value: value, label: value}))
@@ -32,7 +32,7 @@ const SearchEntityForm = ({entityState, setEntityState}) =>
 
 			<Select
 				options={options}
-				isLoading={isLoading}
+				isLoading={isPending}
 				isClearable={true}
 				placeholder={'Any entity'}
 				value={entityState === null ? null : {value: entityState, label: entityState}}

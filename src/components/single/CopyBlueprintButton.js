@@ -25,7 +25,7 @@ function CopyBlueprintStringButton({blueprintStringSha})
 
 	const result = useBlueprintStringSha(copyClicked && !copied ? blueprintStringSha : undefined);
 
-	const {isLoading, isError, isSuccess, data} = result;
+	const {isPending, isError, isSuccess, data} = result;
 
 	useEffect(
 		() =>
@@ -52,11 +52,11 @@ function CopyBlueprintStringButton({blueprintStringSha})
 		</Button>
 	}
 
-	if (isLoading && copyClicked && !copied)
+	if (isPending && copyClicked && !copied)
 	{
 		return (
 			<Button type='button' variant='warning' disabled>
-				<LoadingIcon isLoading={isLoading} />
+				<LoadingIcon isPending={isPending} />
 				{' Copy to Clipboard'}
 			</Button>
 		);

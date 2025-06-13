@@ -18,7 +18,7 @@ const SearchTagForm = ({tagState, setTagState}) =>
 	};
 
 	const result                       = useSimpleTagOptions();
-	const {data, isSuccess, isLoading} = result;
+	const {data, isSuccess, isPending} = result;
 
 	const options = isSuccess
 		? data.map((value) => ({value: value, label: value}))
@@ -32,7 +32,7 @@ const SearchTagForm = ({tagState, setTagState}) =>
 
 			<Select
 				options={options}
-				isLoading={isLoading}
+				isLoading={isPending}
 				isClearable={true}
 				placeholder={'Any tag'}
 				value={tagState === null ? null : {value: tagState, label: tagState}}

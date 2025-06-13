@@ -4,7 +4,7 @@ import axios                   from 'axios';
 import React                   from 'react';
 import Container               from 'react-bootstrap/Container';
 import Row                     from 'react-bootstrap/Row';
-import {useQuery}              from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 
 import FactorioPrintsThumbnail from '../FactorioPrintsThumbnail';
 import PageHeader              from '../PageHeader';
@@ -23,21 +23,20 @@ function DuplicateBlueprintGrid()
 	};
 
 	const options = {
-		keepPreviousData: true,
-		placeholderData : {_data: []},
+		placeholderData: (previousData) => previousData,
 	};
 
-	const result = useQuery(
-		['duplicateBlueprints'],
-		() => fetchDuplicateBlueprintSummaries(),
-		options,
-	);
+	const result = useQuery({
+		queryKey: ['duplicateBlueprints'],
+		queryFn: () => fetchDuplicateBlueprintSummaries(),
+		...options,
+	});
 
 	// TODO: Refactor out grid commonality
 
-	const {isLoading, isError, data} = result;
+	const {isPending, isError, data} = result;
 
-	if (isLoading)
+	if (isPending)
 	{
 		return <Spinner />
 	}

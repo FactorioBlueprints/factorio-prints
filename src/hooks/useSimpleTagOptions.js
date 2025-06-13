@@ -9,7 +9,7 @@ const useSimpleTagOptions = () =>
 		return data.map((tag) => `${tag.category}/${tag.name}`);
 	}
 
-	return useQuery(['tags'], fetchTagValues);
+	return useQuery({queryKey: ['tags'], queryFn: fetchTagValues});
 };
 
 export default useSimpleTagOptions;

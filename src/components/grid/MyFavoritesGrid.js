@@ -4,7 +4,7 @@ import axios                         from 'axios';
 import React, {useContext, useState} from 'react';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
-import {useQuery}                    from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
 
@@ -52,19 +52,21 @@ function MyFavoritesGrid()
 	const email        = user === undefined ? undefined : user.email;
 	const queryKey     = ['/api/my/favoriteBlueprints/page', email, page, titleFilter, selectedTags];
 
-	const placeholderData = {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}};
-	const options         = {
-		keepPreviousData: true,
-		placeholderData,
+	const options = {
+		placeholderData: (previousData) => previousData,
 		enabled         : queryEnabled,
 	};
-	const result          = useQuery(queryKey, () => fetchBlueprintSummaries(page, titleFilter, selectedTags, user), options);
+	const result = useQuery({
+		queryKey,
+		queryFn: () => fetchBlueprintSummaries(page, titleFilter, selectedTags, user),
+		...options,
+	});
 
 	// TODO: Refactor out grid commonality
 
-	const {isLoading, isError, data, isPreviousData} = result;
+	const {isPending, isError, data, isPlaceholderData} = result;
 
-	if (isLoading)
+	if (isPending)
 	{
 		return <Spinner />
 	}
@@ -84,8 +86,8 @@ function MyFavoritesGrid()
 
 	const {
 			  _data    : blueprintSummaries = [],
-			  _metadata: {pagination: {numberOfPages = 0, pageNumber = 0}},
-		  } = data || placeholderData;
+			  _metadata: {pagination: {numberOfPages = 0, pageNumber = 0}} = {pagination: {numberOfPages: 0, pageNumber: 0}},
+		  } = data || {_data: [], _metadata: {pagination: {numberOfPages: 0, pageNumber: 0}}};
 
 	return (
 		<Container fluid>
@@ -110,7 +112,7 @@ function MyFavoritesGrid()
 				setPage={setPage}
 				pageNumber={pageNumber}
 				numberOfPages={numberOfPages}
-				isPreviousData={isPreviousData}
+				isPlaceholderData={isPlaceholderData}
 			/>
 		</Container>
 	);
