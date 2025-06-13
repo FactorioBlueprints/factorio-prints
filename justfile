@@ -20,11 +20,11 @@ hooks:
 
 # `npm run build`
 build: install
-    npm run build
+    op run -- npm run build
 
 # Run install, build, test, lint, and pre-commit hooks in sequence
 precommit: install
-    npm run build
+    op run -- npm run build
     npm run test
     npm run lint:fix
     just hooks
