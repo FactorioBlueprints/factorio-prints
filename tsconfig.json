@@ -38,5 +38,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["src/**/*.gen.ts"],
   "references": []
 }
