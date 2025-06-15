@@ -1,4 +1,4 @@
-name: Run yarn build
+name: Run npm build
 
 on:
   pull_request:
@@ -16,10 +16,6 @@ jobs:
         with:
           node-version: 18
 
-      - uses: borales/actions-yarn@v4
-        with:
-          cmd: install --ignore-engines
+      - run: npm install --legacy-peer-deps
 
-      - uses: borales/actions-yarn@v4
-        with:
-          cmd: build:production
+      - run: npm run build:production

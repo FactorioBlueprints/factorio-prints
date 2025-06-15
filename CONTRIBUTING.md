@@ -4,14 +4,14 @@
 
 https://nodejs.org/en/
 
-#### Install yarn package manager
+#### npm is included with Node.js
 
-https://yarnpkg.com/en/docs/install
+npm comes bundled with Node.js, so no separate installation is needed.
 
 #### Install some command line tools that are node packages
 
 ```bash
-yarn global add \
+npm install -g \
 	firebase-tools@latest \
 	create-react-app@latest \
 	react-scripts@latest \
@@ -26,7 +26,7 @@ yarn global add \
 Run the dev build:
 
 ```bash
-yarn run start
+npm run start
 ```
 
 This will build the app, run it on localhost:3000, and open a browser. The app will be connecting to the production database.

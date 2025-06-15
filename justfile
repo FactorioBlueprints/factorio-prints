@@ -9,9 +9,9 @@ default:
 
 # Build and sync to {{FACTORIO_PRINTS_DIR}}
 build:
-    yarn install --ignore-optional --ignore-engines --ignore--platform --ignore-scripts
-    GENERATE_SOURCEMAP=true op run --env-file=".envrc" -- yarn build
-    yarn styles
+    npm install --legacy-peer-deps
+    GENERATE_SOURCEMAP=true op run --env-file=".envrc" -- npm run build
+    npm run styles
     # Source maps are uploaded to Sentry during build, then deleted by the Sentry webpack plugin
     rsync -av build/ {{factorio_prints_dir}}/{{ui_module}}/src/main/resources/ui
     git -C {{factorio_prints_dir}} add {{ui_module}}/src/main/resources/ui
@@ -47,19 +47,19 @@ echo_command := env('ECHO_COMMAND', "echo")
 
 # Run lint check
 lint:
-    yarn run eslint src/**/*.{js,ts,tsx}
+    npx eslint src/**/*.{js,ts,tsx}
 
 # Run type check
 typecheck:
-    yarn run tsc --noEmit
+    npx tsc --noEmit
 
 # Compile styles
 styles:
-    yarn styles
+    npm run styles
 
 # Run tests
 test:
-    yarn test --watchAll=false
+    npm test -- --watchAll=false
 
 # Run all validation checks before committing
 precommit: lint typecheck styles test
