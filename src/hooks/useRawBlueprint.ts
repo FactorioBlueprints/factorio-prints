@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchBlueprint } from '../api/firebase';
 import type { RawBlueprint, EnrichedBlueprintSummary } from '../schemas';
 
-export const useRawBlueprint = (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary) =>
+export const useRawBlueprint = (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary | null) =>
 {
 	return useQuery<RawBlueprint>({
 		queryKey : ['blueprints', 'blueprintId', blueprintId],

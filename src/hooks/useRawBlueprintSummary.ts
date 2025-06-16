@@ -7,7 +7,7 @@ import type { RawBlueprintSummary } from '../schemas';
  */
 export const useRawBlueprintSummary = (blueprintId: string | undefined) =>
 {
-	return useQuery<RawBlueprintSummary>({
+	return useQuery<RawBlueprintSummary | null>({
 		queryKey : ['blueprintSummaries', 'blueprintId', blueprintId],
 		queryFn  : () => fetchBlueprintSummary(blueprintId!),
 		enabled  : Boolean(blueprintId),

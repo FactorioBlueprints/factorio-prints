@@ -12,6 +12,7 @@ import {
 } from '../schemas';
 import { formatDistance } from 'date-fns';
 
+
 /**
  * Transforms a blueprint key to its CDN URL format.
  *
@@ -42,7 +43,10 @@ export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintS
 		const response = await fetch(cdnUrl);
 
 		if (!response.ok) {
-			console.warn(`CDN fetch failed for blueprint ${blueprintKey}: ${response.status} ${response.statusText}`);
+			// Only log non-404 errors, as 404s are expected for new/recently updated blueprints
+			if (response.status !== 404) {
+				console.warn(`CDN fetch failed for blueprint ${blueprintKey}: ${response.status} ${response.statusText}`);
+			}
 			return null;
 		}
 
@@ -83,7 +87,7 @@ interface UserReconcileResult {
 	reconciled: boolean;
 }
 
-export const fetchBlueprint = async (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary): Promise<RawBlueprint> =>
+export const fetchBlueprint = async (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary): Promise<RawBlueprint | null> =>
 {
 	try
 	{
@@ -116,7 +120,8 @@ export const fetchBlueprint = async (blueprintId: string, blueprintSummary: Enri
 
 		if (!snapshot.exists())
 		{
-			throw new Error(`Blueprint with ID ${blueprintId} not found`);
+			console.log(`Blueprint ${blueprintId} not found in Firebase`);
+			return null;
 		}
 
 		console.log(`Blueprint ${blueprintId} fetched from Firebase`);
@@ -443,7 +448,7 @@ export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: st
 	}
 };
 
-export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlueprintSummary> =>
+export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlueprintSummary | null> =>
 {
 	try
 	{
@@ -452,7 +457,7 @@ export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlu
 
 		if (!snapshot.exists())
 		{
-			throw new Error(`Blueprint summary with ID ${blueprintId} not found`);
+			return null;
 		}
 
 		return validateRawBlueprintSummary(snapshot.val());
