@@ -36,7 +36,7 @@
 		"antlr4": "4.13.2",
 		"atob": "2.1.2",
 		"autoprefixer-stylus": "1.0.0",
-		"axios": "^1.9.0",
+		"axios": "^1.10.0",
 		"bootstrap": "^5.3.6",
 		"classnames": "^2.5.1",
 		"concurrently": "9.1.2",
