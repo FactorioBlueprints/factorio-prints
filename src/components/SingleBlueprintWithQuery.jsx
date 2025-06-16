@@ -346,6 +346,27 @@ function SingleBlueprintWithQuery()
 		[blueprintData?.parsedData, itemHistogram],
 	);
 
+	// Clean up Disqus on unmount to prevent DOM manipulation errors
+	useEffect(() =>
+	{
+		return () =>
+		{
+			if (window.DISQUS)
+			{
+				try
+				{
+					window.DISQUS.reset({
+						reload: false,
+					});
+				}
+				catch
+				{
+					// Silently ignore Disqus cleanup errors
+				}
+			}
+		};
+	}, []);
+
 	const error = summaryError || blueprintError;
 
 	if (error)
