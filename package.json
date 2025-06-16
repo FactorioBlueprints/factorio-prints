@@ -22,7 +22,7 @@
 		"@types/airbnb-prop-types": "^2.13.7",
 		"@types/atob": "^2.1.4",
 		"@types/classnames": "^2.3.4",
-		"@types/jest": "^29.5.14",
+		"@types/jest": "^30.0.0",
 		"@types/lodash": "^4.17.17",
 		"@types/marked": "^6.0.0",
 		"@types/node": "^24.0.1",
