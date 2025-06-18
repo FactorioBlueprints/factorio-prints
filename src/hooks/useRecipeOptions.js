@@ -1,10 +1,8 @@
-import axios      from 'axios';
 import {useQuery} from '@tanstack/react-query';
+import axios from 'axios';
 
-const useRecipeOptions = () =>
-{
-	function fetchRecipeValues()
-	{
+const useRecipeOptions = () => {
+	function fetchRecipeValues() {
 		return axios.get(`${process.env.REACT_APP_REST_URL}/api/recipes/`);
 	}
 

@@ -127,15 +127,15 @@ td.number {
 .card table {
   margin-bottom: 0;
 }
+.card {
+  margin: 2px;
+}
 [class^="col-"] .card,
 [class^="col-"] .img-thumbnail {
   margin-bottom: 4px;
 }
 .btn + .btn {
   margin-left: 4px;
-}
-.card {
-  margin: 2px;
 }
 .blueprint-thumbnail.col-auto {
   padding: 2px;
@@ -156,7 +156,7 @@ td.number {
   margin-right: 0px;
   margin-bottom: 4px;
 }
-root {
+:root {
   width: -webkit-fit-content;
   width: fit-content;
 }

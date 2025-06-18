@@ -50,7 +50,7 @@ install:
 
 # Run lint check
 lint:
-    npx eslint src/**/*.{js,ts,tsx}
+    npm run lint:fix
 
 # Run type check
 typecheck:

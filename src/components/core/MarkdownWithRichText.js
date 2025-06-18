@@ -1,8 +1,8 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import {marked}           from 'marked';
-import PropTypes          from 'prop-types';
-import React, {useMemo}   from 'react';
-import RichText           from './RichText';
+import {marked} from 'marked';
+import PropTypes from 'prop-types';
+import React, {useMemo} from 'react';
+import RichText from './RichText';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -12,16 +12,15 @@ ${header}</thead>
 ${body}</tbody>
 </table>
 `;
-renderer.image = (href, title, text) =>
-	`<img src="${href}" alt="${text}" class="img-responsive">`;
+renderer.image = (href, title, text) => `<img src="${href}" alt="${text}" class="img-responsive">`;
 
 marked.setOptions({
 	renderer,
-	gfm        : true,
-	tables     : true,
-	breaks     : false,
-	pedantic   : false,
-	smartLists : true,
+	gfm: true,
+	tables: true,
+	breaks: false,
+	pedantic: false,
+	smartLists: true,
 	smartypants: false,
 });
 
@@ -35,7 +34,10 @@ function processTextContent(content) {
 
 		return (
 			<React.Fragment key={lineIndex}>
-				<RichText text={line} inline />
+				<RichText
+					text={line}
+					inline
+				/>
 				{lineIndex < lines.length - 1 && '\n'}
 			</React.Fragment>
 		);
@@ -84,61 +86,245 @@ function processHtmlWithRichText(html) {
 
 			switch (tagName) {
 				case 'p':
-					return <p key={nodeIndex} {...props}>{children}</p>;
+					return (
+						<p
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</p>
+					);
 				case 'h1':
-					return <h1 key={nodeIndex} {...props}>{children}</h1>;
+					return (
+						<h1
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</h1>
+					);
 				case 'h2':
-					return <h2 key={nodeIndex} {...props}>{children}</h2>;
+					return (
+						<h2
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</h2>
+					);
 				case 'h3':
-					return <h3 key={nodeIndex} {...props}>{children}</h3>;
+					return (
+						<h3
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</h3>
+					);
 				case 'h4':
-					return <h4 key={nodeIndex} {...props}>{children}</h4>;
+					return (
+						<h4
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</h4>
+					);
 				case 'h5':
-					return <h5 key={nodeIndex} {...props}>{children}</h5>;
+					return (
+						<h5
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</h5>
+					);
 				case 'h6':
-					return <h6 key={nodeIndex} {...props}>{children}</h6>;
+					return (
+						<h6
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</h6>
+					);
 				case 'strong':
 				case 'b':
-					return <strong key={nodeIndex} {...props}>{children}</strong>;
+					return (
+						<strong
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</strong>
+					);
 				case 'em':
 				case 'i':
-					return <em key={nodeIndex} {...props}>{children}</em>;
+					return (
+						<em
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</em>
+					);
 				case 'code':
-					return <code key={nodeIndex} {...props}>{children}</code>;
+					return (
+						<code
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</code>
+					);
 				case 'pre':
-					return <pre key={nodeIndex} {...props}>{children}</pre>;
+					return (
+						<pre
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</pre>
+					);
 				case 'blockquote':
-					return <blockquote key={nodeIndex} {...props}>{children}</blockquote>;
+					return (
+						<blockquote
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</blockquote>
+					);
 				case 'ul':
-					return <ul key={nodeIndex} {...props}>{children}</ul>;
+					return (
+						<ul
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</ul>
+					);
 				case 'ol':
-					return <ol key={nodeIndex} {...props}>{children}</ol>;
+					return (
+						<ol
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</ol>
+					);
 				case 'li':
-					return <li key={nodeIndex} {...props}>{children}</li>;
+					return (
+						<li
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</li>
+					);
 				case 'a':
-					return <a key={nodeIndex} {...props}>{children}</a>;
+					return (
+						<a
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</a>
+					);
 				case 'br':
-					return <br key={nodeIndex} {...props} />;
+					return (
+						<br
+							key={nodeIndex}
+							{...props}
+						/>
+					);
 				case 'hr':
-					return <hr key={nodeIndex} {...props} />;
+					return (
+						<hr
+							key={nodeIndex}
+							{...props}
+						/>
+					);
 				case 'table':
-					return <table key={nodeIndex} {...props}>{children}</table>;
+					return (
+						<table
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</table>
+					);
 				case 'thead':
-					return <thead key={nodeIndex} {...props}>{children}</thead>;
+					return (
+						<thead
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</thead>
+					);
 				case 'tbody':
-					return <tbody key={nodeIndex} {...props}>{children}</tbody>;
+					return (
+						<tbody
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</tbody>
+					);
 				case 'tr':
-					return <tr key={nodeIndex} {...props}>{children}</tr>;
+					return (
+						<tr
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</tr>
+					);
 				case 'th':
-					return <th key={nodeIndex} {...props}>{children}</th>;
+					return (
+						<th
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</th>
+					);
 				case 'td':
-					return <td key={nodeIndex} {...props}>{children}</td>;
+					return (
+						<td
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</td>
+					);
 				case 'span':
-					return <span key={nodeIndex} {...props}>{children}</span>;
+					return (
+						<span
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</span>
+					);
 				case 'div':
-					return <div key={nodeIndex} {...props}>{children}</div>;
+					return (
+						<div
+							key={nodeIndex}
+							{...props}
+						>
+							{children}
+						</div>
+					);
 				case 'img':
-					return <img key={nodeIndex} alt="" {...props} />;
+					return (
+						<img
+							key={nodeIndex}
+							alt=""
+							{...props}
+						/>
+					);
 				default:
 					return <React.Fragment key={nodeIndex}>{children}</React.Fragment>;
 			}
@@ -157,7 +343,7 @@ function processHtmlWithRichText(html) {
 }
 
 MarkdownWithRichText.propTypes = forbidExtraProps({
-	markdown : PropTypes.string,
+	markdown: PropTypes.string,
 	className: PropTypes.string,
 });
 
