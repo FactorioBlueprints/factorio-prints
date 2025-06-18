@@ -83,6 +83,7 @@ function SingleBlueprintWithQuery()
 	const {
 		data: blueprintSummary,
 		error: summaryError,
+		isSuccess: summaryIsSuccess,
 	} = useEnrichedBlueprintSummary(blueprintId);
 
 	// Then fetch the full blueprint, passing the summary
@@ -368,8 +369,9 @@ function SingleBlueprintWithQuery()
 	}, []);
 
 	const error = summaryError || blueprintError;
+	const isDeleted = summaryIsSuccess && !blueprintSummary;
 
-	if (error)
+	if (error || isDeleted)
 	{
 		return (
 			<>
@@ -386,6 +388,11 @@ function SingleBlueprintWithQuery()
 					{error && (
 						<div className='alert alert-danger'>
 							<strong>Error:</strong> {error.message || 'An unknown error occurred'}
+						</div>
+					)}
+					{isDeleted && (
+						<div className='alert alert-info'>
+							This blueprint has been deleted or is no longer available.
 						</div>
 					)}
 					<Link to='/' className='btn btn-primary'>
