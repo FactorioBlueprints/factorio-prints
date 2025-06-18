@@ -157,6 +157,7 @@ td.number {
   margin-bottom: 4px;
 }
 root {
+  width: -webkit-fit-content;
   width: fit-content;
 }
 .navbar {
