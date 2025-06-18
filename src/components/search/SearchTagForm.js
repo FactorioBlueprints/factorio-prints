@@ -1,33 +1,29 @@
-import React  from 'react';
-import Form   from 'react-bootstrap/Form';
+import React from 'react';
+import Form from 'react-bootstrap/Form';
 import Select from 'react-select';
 
 import useSimpleTagOptions from '../../hooks/useSimpleTagOptions';
-import ReactQueryStatus    from './ReactQueryStatus';
+import ReactQueryStatus from './ReactQueryStatus';
 
-const SearchTagForm = ({tagState, setTagState}) =>
-{
-	const handleTag = selected =>
-	{
-		if (selected === null)
-		{
+const SearchTagForm = ({tagState, setTagState}) => {
+	const handleTag = (selected) => {
+		if (selected === null) {
 			setTagState(null);
 			return;
 		}
 		setTagState(selected.value);
 	};
 
-	const result                       = useSimpleTagOptions();
+	const result = useSimpleTagOptions();
 	const {data, isSuccess, isPending} = result;
 
-	const options = isSuccess
-		? data.map((value) => ({value: value, label: value}))
-		: [];
+	const options = isSuccess ? data.map((value) => ({value: value, label: value})) : [];
 
 	return (
-		<Form.Group className='mb-3'>
+		<Form.Group className="mb-3">
 			<Form.Label>
-				{'Tags '}<ReactQueryStatus {...result} />
+				{'Tags '}
+				<ReactQueryStatus {...result} />
 			</Form.Label>
 
 			<Select
@@ -42,7 +38,7 @@ const SearchTagForm = ({tagState, setTagState}) =>
 	);
 };
 
-SearchTagForm.propTypes    = {};
+SearchTagForm.propTypes = {};
 SearchTagForm.defaultProps = {};
 
 export default SearchTagForm;

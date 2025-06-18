@@ -1,0 +1,11 @@
+# Biome ignore file
+
+# Ignore build output
+build/
+dist/
+
+# Ignore dependencies
+node_modules/
+
+# Ignore generated CSS
+src/css/style.css

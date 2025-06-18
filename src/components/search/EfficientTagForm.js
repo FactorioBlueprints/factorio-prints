@@ -1,6 +1,6 @@
-import React        from 'react';
-import Col          from 'react-bootstrap/Col';
-import Select       from 'react-select';
+import React from 'react';
+import Col from 'react-bootstrap/Col';
+import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 
 import {ArrayParam, useQueryParam, withDefault} from 'use-query-params';
@@ -11,19 +11,17 @@ const animatedComponents = makeAnimated();
 
 EfficientTagForm.propTypes = {};
 
-function EfficientTagForm()
-{
+function EfficientTagForm() {
 	const {tagValuesSet, tagOptions} = useTagOptions();
 
 	const [selectedTags, setTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const selectedTagOptions = selectedTags
-		.filter(each => tagValuesSet.has(each))
-		.map(value => ({label: value, value}));
+		.filter((each) => tagValuesSet.has(each))
+		.map((value) => ({label: value, value}));
 
-	const setSelectedTagValues = (selectedTags) =>
-	{
-		const selectedTagValues = selectedTags.map(selectedTag => selectedTag.value);
+	const setSelectedTagValues = (selectedTags) => {
+		const selectedTagValues = selectedTags.map((selectedTag) => selectedTag.value);
 		setTags(selectedTagValues);
 	};
 
@@ -36,8 +34,8 @@ function EfficientTagForm()
 				isMulti
 				closeMenuOnSelect
 				components={animatedComponents}
-				placeholder='search tags'
-				className='tag-form'
+				placeholder="search tags"
+				className="tag-form"
 			/>
 		</Col>
 	);

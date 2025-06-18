@@ -1,19 +1,14 @@
-import React    from 'react';
+import React from 'react';
 import {Helmet} from 'react-helmet';
 
-function NoMatch()
-{
+function NoMatch() {
 	return (
-		<div className='p-5 rounded-lg jumbotron'>
+		<div className="p-5 rounded-lg jumbotron">
 			<Helmet>
 				<title>Factorio Prints: 404</title>
 			</Helmet>
-			<h1 className='display-4'>
-				404
-			</h1>
-			<p className='lead'>
-				Not found.
-			</p>
+			<h1 className="display-4">404</h1>
+			<p className="lead">Not found.</p>
 		</div>
 	);
 }

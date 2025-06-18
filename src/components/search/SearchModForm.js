@@ -1,20 +1,21 @@
 import React from 'react';
-import Form  from 'react-bootstrap/Form';
+import Form from 'react-bootstrap/Form';
 
-const SearchModForm = ({modState, setModState}) =>
-{
-	const handleMod = e =>
-	{
+const SearchModForm = ({modState, setModState}) => {
+	const handleMod = (e) => {
 		e.preventDefault();
 		setModState(e.target.value);
 	};
 
 	return (
-		<Form.Group className='mb-3'>
-			<Form.Label>
-				Mod
-			</Form.Label>
-			<Form.Select size='sm' aria-label='Select mod' onChange={handleMod} value={modState}>
+		<Form.Group className="mb-3">
+			<Form.Label>Mod</Form.Label>
+			<Form.Select
+				size="sm"
+				aria-label="Select mod"
+				onChange={handleMod}
+				value={modState}
+			>
 				<option value={''}>Any mod</option>
 				<option value={'base'}>Base game only</option>
 				<option value={'base&creative'}>Only base and creative</option>
@@ -31,7 +32,7 @@ const SearchModForm = ({modState, setModState}) =>
 	);
 };
 
-SearchModForm.propTypes    = {};
+SearchModForm.propTypes = {};
 SearchModForm.defaultProps = {};
 
 export default SearchModForm;

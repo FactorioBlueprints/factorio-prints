@@ -1,5 +1,4 @@
-function getHeaders(idToken: string)
-{
+function getHeaders(idToken: string) {
 	return {
 		headers: {
 			Authorization: `Bearer ${idToken}`,

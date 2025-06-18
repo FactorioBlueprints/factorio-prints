@@ -1,7 +1,7 @@
-import React        from 'react';
+import React from 'react';
 import {createRoot} from 'react-dom/client';
 import * as Sentry from '@sentry/react';
-import Root         from './components/Root';
+import Root from './components/Root';
 
 import './css/style.css';
 
@@ -14,13 +14,13 @@ Sentry.init({
 		Sentry.browserTracingIntegration(),
 		Sentry.replayIntegration(),
 		Sentry.captureConsoleIntegration({
-			levels: ['error', 'assert', 'warn', 'info', 'log', 'debug']
-		})
+			levels: ['error', 'assert', 'warn', 'info', 'log', 'debug'],
+		}),
 	],
 	tracesSampleRate: 0.1,
 	tracePropagationTargets: ['localhost', /^https:\/\/factorioprints\.com/],
 	replaysSessionSampleRate: 0.001,
-	replaysOnErrorSampleRate: 1.0
+	replaysOnErrorSampleRate: 1.0,
 });
 
 const strictRoot = (

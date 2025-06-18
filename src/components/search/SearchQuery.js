@@ -1,25 +1,24 @@
 import React, {useState} from 'react';
 
-import Button                  from 'react-bootstrap/Button';
+import Button from 'react-bootstrap/Button';
 import SearchBlueprintTypeForm from './SearchBlueprintTypeForm';
-import SearchEntityForm        from './SearchEntityForm';
-import SearchModForm           from './SearchModForm';
-import SearchRecipeForm        from './SearchRecipeForm';
-import SearchSortOrderForm     from './SearchSortOrderForm';
-import SearchTagForm           from './SearchTagForm';
-import SearchTextForm          from './SearchTextForm';
-import SearchVersionForm       from './SearchVersionForm';
+import SearchEntityForm from './SearchEntityForm';
+import SearchModForm from './SearchModForm';
+import SearchRecipeForm from './SearchRecipeForm';
+import SearchSortOrderForm from './SearchSortOrderForm';
+import SearchTagForm from './SearchTagForm';
+import SearchTextForm from './SearchTextForm';
+import SearchVersionForm from './SearchVersionForm';
 
-const SearchQuery = ({setSearchState}) =>
-{
-	const [textState,          setTextState]          = useState('');
-	const [sortOrderState,     setSortOrderState]     = useState('Favorites');
-	const [tagState,           setTagState]           = useState(null);
-	const [entityState,        setEntityState]        = useState(null);
-	const [recipeState,        setRecipeState]        = useState(null);
-	const [versionState,       setVersionState]       = useState(null);
+const SearchQuery = ({setSearchState}) => {
+	const [textState, setTextState] = useState('');
+	const [sortOrderState, setSortOrderState] = useState('Favorites');
+	const [tagState, setTagState] = useState(null);
+	const [entityState, setEntityState] = useState(null);
+	const [recipeState, setRecipeState] = useState(null);
+	const [versionState, setVersionState] = useState(null);
 	const [blueprintTypeState, setBlueprintTypeState] = useState('');
-	const [modState,           setModState]           = useState('');
+	const [modState, setModState] = useState('');
 
 	const getSearchState = () => ({
 		textState,
@@ -32,14 +31,12 @@ const SearchQuery = ({setSearchState}) =>
 		modState,
 	});
 
-	const handleSubmit = e =>
-	{
+	const handleSubmit = (e) => {
 		e.preventDefault();
 		setSearchState(getSearchState());
-	}
+	};
 
-	const handleClear = e =>
-	{
+	const handleClear = (e) => {
 		e.preventDefault();
 		setTextState('');
 		setSortOrderState('Favorites');
@@ -50,30 +47,57 @@ const SearchQuery = ({setSearchState}) =>
 		setBlueprintTypeState('');
 		setModState('');
 		setSearchState(undefined);
-	}
+	};
 
-	return <>
-		<SearchTextForm textState={textState} setTextState={setTextState} />
+	return (
+		<>
+			<SearchTextForm
+				textState={textState}
+				setTextState={setTextState}
+			/>
 
-		<SearchSortOrderForm     sortOrderState={sortOrderState}         setSortOrderState={setSortOrderState}         />
-		<SearchModForm           modState={modState}                     setModState={setModState}                     />
-		<SearchTagForm           tagState={tagState}                     setTagState={setTagState}                     />
-		<SearchEntityForm        entityState={entityState}               setEntityState={setEntityState}               />
-		<SearchRecipeForm        recipeState={recipeState}               setRecipeState={setRecipeState}               />
-		<SearchVersionForm       versionState={versionState}             setVersionState={setVersionState}             />
-		<SearchBlueprintTypeForm blueprintTypeState={blueprintTypeState} setBlueprintTypeState={setBlueprintTypeState} />
+			<SearchSortOrderForm
+				sortOrderState={sortOrderState}
+				setSortOrderState={setSortOrderState}
+			/>
+			<SearchModForm
+				modState={modState}
+				setModState={setModState}
+			/>
+			<SearchTagForm
+				tagState={tagState}
+				setTagState={setTagState}
+			/>
+			<SearchEntityForm
+				entityState={entityState}
+				setEntityState={setEntityState}
+			/>
+			<SearchRecipeForm
+				recipeState={recipeState}
+				setRecipeState={setRecipeState}
+			/>
+			<SearchVersionForm
+				versionState={versionState}
+				setVersionState={setVersionState}
+			/>
+			<SearchBlueprintTypeForm
+				blueprintTypeState={blueprintTypeState}
+				setBlueprintTypeState={setBlueprintTypeState}
+			/>
 
-		<Button onClick={handleSubmit} variant="warning">
-			Search
-		</Button>
+			<Button
+				onClick={handleSubmit}
+				variant="warning"
+			>
+				Search
+			</Button>
 
-		<Button onClick={handleClear}>
-			Clear
-		</Button>
-	</>;
+			<Button onClick={handleClear}>Clear</Button>
+		</>
+	);
 };
 
-SearchQuery.propTypes    = {};
+SearchQuery.propTypes = {};
 SearchQuery.defaultProps = {};
 
 export default SearchQuery;
