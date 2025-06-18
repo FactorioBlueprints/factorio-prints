@@ -11,7 +11,7 @@ const useTagOptions = (): { tagValuesSet: Set<string>; tagOptions: TagOption[]; 
 		return tags.data.map((tag: { category: any; name: any; }) => `${tag.category}/${tag.name}`);
 	}
 
-	const result: any                   = useQuery(['tags'], fetchTagValues, {placeholderData: []});
+	const result: any                   = useQuery({queryKey: ['tags'], queryFn: fetchTagValues, placeholderData: []});
 	const tagValues: string[]           = result.data || [];
 	const tagValuesSet: Set<string>     = new Set(tagValues);
 	const tagOptions: TagOption[]       = tagValues.map((value) => ({label: value, value}));

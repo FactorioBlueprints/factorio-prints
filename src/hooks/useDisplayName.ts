@@ -21,11 +21,11 @@ function useDisplayName(userId: string)
 		placeholderData: {_data: {userId, displayName: ''}},
 	};
 
-	return useQuery(
+	return useQuery({
 		queryKey,
-		() => fetchDisplayName(userId),
-		queryOptions,
-	);
+		queryFn: () => fetchDisplayName(userId),
+		...queryOptions,
+	});
 }
 
 export default useDisplayName;
