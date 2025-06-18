@@ -123,7 +123,7 @@ function SearchResults({searchState}: SearchResultsProps) {
 			{blueprintSummaries.map((blueprintSummary) => (
 				<BlueprintThumbnail
 					key={blueprintSummary.key}
-					blueprintSummary={blueprintSummary as any}
+					blueprintSummary={blueprintSummary}
 				/>
 			))}
 			<CustomPagination

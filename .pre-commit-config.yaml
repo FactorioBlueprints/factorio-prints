@@ -1,38 +1,37 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-      - id: check-yaml
-        args: ["--allow-multiple-documents"]
-      - id: check-json
-        exclude: tsconfig.*\.json|package-lock\.json|biome\.jsonc
-      - id: check-toml
-      - id: check-xml
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
-      - id: check-added-large-files
-        args: ["--maxkb=1000"]
-      - id: check-case-conflict
-      - id: check-merge-conflict
-      - id: detect-private-key
-      - id: mixed-line-ending
-        args: ["--fix=lf"]
-  - repo: local
-    hooks:
-      - id: biome
-        name: biome
-        entry: npx biome check --write
-        language: system
-        files: \.(js|ts|jsx|tsx)$
-        exclude: ^(package\.json|package-lock\.json|database\.rules\.json|eslint\.config\.ts)$
-        pass_filenames: true
-      - id: prettier
-        name: prettier
-        entry: npx prettier --write
-        language: system
-        types_or: [yaml, markdown, html]
-      - id: eslint
-        name: eslint
-        entry: bash -c 'npx --no-install eslint --fix "$@"' --
-        language: system
-        files: ^src/.*\.(js|ts|jsx|tsx)$
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v5.0.0
+      hooks:
+          - id: check-yaml
+            args: ['--allow-multiple-documents']
+          - id: check-json
+            # Exclude JSONC files (JSON with Comments) as they need comment support
+            exclude: "tsconfig.*\\.json|package-lock\\.json|biome\\.jsonc"
+          - id: check-toml
+          - id: check-xml
+          - id: end-of-file-fixer
+            exclude: "package-lock\\.json|^\\.idea/"
+          - id: trailing-whitespace
+            exclude: "package-lock\\.json|^\\.idea/"
+          - id: check-added-large-files
+            args: ['--maxkb=1000']
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: detect-private-key
+          - id: mixed-line-ending
+            args: ['--fix=lf']
+
+    - repo: local
+      hooks:
+          - id: biome
+            name: biome
+            entry: npx @biomejs/biome check --write
+            language: system
+            types: [file]
+            files: \.(js|jsx|ts|tsx|mjs|cjs|json|jsonc)$
+
+          - id: prettier
+            name: prettier
+            entry: npx prettier --write --ignore-unknown
+            language: system
+            types: [file]

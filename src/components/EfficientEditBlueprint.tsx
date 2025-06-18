@@ -204,7 +204,7 @@ function EfficientEditBlueprint() {
 		const blueprintData = data?.data as BlueprintData | undefined;
 		setRenderedMarkdown(blueprintData ? (marked(blueprintData.descriptionMarkdown) as string) : '');
 		setBlueprint(blueprintData);
-	}, [blueprintKey, data?.data]);
+	}, [data?.data]);
 
 	const blueprintStringSha = blueprint?.blueprintString?.sha;
 	const {
@@ -220,12 +220,12 @@ function EfficientEditBlueprint() {
 	// TODO: Use onComplete instead?
 	React.useEffect(() => {
 		setBlueprintString(newBlueprintString);
-	}, [blueprintStringSha, newBlueprintString]);
+	}, [newBlueprintString]);
 	React.useEffect(() => {
 		const parsedBlueprint = parseBlueprint(blueprintString);
 		setParsedBlueprint(parsedBlueprint);
-		setV15Decoded(parsedBlueprint?.getV15Decoded());
-	}, [blueprintStringSha, blueprintString]);
+		setV15Decoded(parsedBlueprint?.getV15Decoded() as DecodedBlueprint | undefined);
+	}, [blueprintString]);
 
 	if (!user) {
 		return (
@@ -808,7 +808,7 @@ function EfficientEditBlueprint() {
 								<Card>
 									<div
 										style={{minHeight: 200}}
-										// biome-ignore lint/security/noDangerouslySetInnerHtml: Markdown preview is sanitized by marked library
+										// biome-ignore lint/security/noDangerouslySetInnerHtml: rendering markdown preview
 										dangerouslySetInnerHTML={{__html: renderedMarkdown || ''}}
 									/>
 								</Card>

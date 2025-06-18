@@ -119,8 +119,10 @@ function getBlueprint(data: BlueprintItemData, positionArray: number[], blueprin
 			<span className="p-1" />
 			{icons && [0, 1, 2, 3].map((index) => getItemIconIfExists(icons, index))}
 			<span className="p-1" />
-			{/* biome-ignore lint/security/noDangerouslySetInnerHtml: Rich text label from game data */}
-			<span dangerouslySetInnerHTML={{__html: labelHtml || ''}} />
+			<span
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: rendering pre-sanitized label HTML
+				dangerouslySetInnerHTML={{__html: labelHtml || ''}}
+			/>
 			<span className="p-1" />
 			{getFbeButton(positionArray, blueprintStringSha)}
 		</>
@@ -166,8 +168,10 @@ function getFirstRow(data: BlueprintItemData) {
 			<span className="p-1" />
 			{icons && [0, 1, 2, 3].map((index) => getItemIconIfExists(icons, index))}
 			<span className="p-1" />
-			{/* biome-ignore lint/security/noDangerouslySetInnerHtml: Rich text label from game data */}
-			<span dangerouslySetInnerHTML={{__html: labelHtml || ''}} />
+			<span
+				// biome-ignore lint/security/noDangerouslySetInnerHtml: rendering pre-sanitized label HTML
+				dangerouslySetInnerHTML={{__html: labelHtml || ''}}
+			/>
 		</>
 	);
 }

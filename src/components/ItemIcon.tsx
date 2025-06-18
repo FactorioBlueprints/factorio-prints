@@ -1,8 +1,6 @@
 import entitiesWithIcons from '../data/entitiesWithIcons';
 import {Placeholder} from './core/icons/FactorioIcon';
 
-const CDN_BASE_URL = 'https://factorio-icon-cdn.pages.dev';
-
 interface ItemIconProps {
 	item?: string;
 }
@@ -19,13 +17,17 @@ function ItemIcon({item}: ItemIconProps) {
 		);
 	}
 
+	const iconClass = `icon-${item}`;
+	const iconSrc = `/icons/${item}.png`;
+	const alt = `${item}`;
+
 	return (
-		<span className={`icon item-icon icon-${item}`}>
+		<span className={`icon item-icon ${iconClass}`}>
 			<img
 				height="32px"
 				width="32px"
-				src={`${CDN_BASE_URL}/item/${item}.webp`}
-				alt={item}
+				src={iconSrc}
+				alt={alt}
 			/>
 		</span>
 	);

@@ -33,12 +33,12 @@ function CustomPagination({pageNumber, dataPageNumber, numberOfPages, setPage}: 
 			{paginateResult.items.map((item, index) => {
 				return typeof item === 'string' ? (
 					<Pagination.Ellipsis
-						key={index}
+						key={`ellipsis-${index}`}
 						disabled
 					/>
 				) : (
 					<Pagination.Item
-						key={index}
+						key={`page-${item}`}
 						onClick={() => setPage(item)}
 						active={item === dataPageNumber}
 					>

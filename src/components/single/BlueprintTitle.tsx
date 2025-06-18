@@ -10,7 +10,11 @@ interface BlueprintTitleProps {
 
 function BlueprintTitle({blueprintKey}: BlueprintTitleProps) {
 	const result = useBlueprint(blueprintKey);
-	const {title} = result.data!.data;
+	const title = result.data?.data?.title;
+
+	if (!title) {
+		return null;
+	}
 
 	return (
 		<a

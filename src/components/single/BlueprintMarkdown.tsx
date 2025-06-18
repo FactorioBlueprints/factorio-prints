@@ -1,4 +1,4 @@
-import {marked, Renderer, Tokens} from 'marked';
+import {marked, Renderer, type Tokens} from 'marked';
 import useBlueprint from '../../hooks/useBlueprint';
 
 const renderer = new Renderer();
@@ -28,11 +28,18 @@ interface BlueprintMarkdownProps {
 
 function BlueprintMarkdown({blueprintKey}: BlueprintMarkdownProps) {
 	const result = useBlueprint(blueprintKey);
-	const {descriptionMarkdown} = result.data!.data;
+	const descriptionMarkdown = result.data?.data?.descriptionMarkdown;
+	if (!descriptionMarkdown) {
+		return null;
+	}
 	const renderedMarkdown = marked(descriptionMarkdown);
 
-	// biome-ignore lint/security/noDangerouslySetInnerHtml: Markdown rendering requires innerHTML
-	return <div dangerouslySetInnerHTML={{__html: renderedMarkdown as string}} />;
+	return (
+		<div
+			// biome-ignore lint/security/noDangerouslySetInnerHtml: rendering markdown content
+			dangerouslySetInnerHTML={{__html: renderedMarkdown as string}}
+		/>
+	);
 }
 
 export default BlueprintMarkdown;

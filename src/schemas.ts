@@ -252,7 +252,7 @@ export const validate = <T>(
 					console.error('Full object that failed validation:', serialized);
 				} else if (serialized) {
 					// For large objects, log a truncated version
-					const truncated = serialized.substring(0, maxLength) + '... (truncated)';
+					const truncated = `${serialized.substring(0, maxLength)}... (truncated)`;
 					console.error('Full object that failed validation (truncated):', truncated);
 				}
 			} catch (error) {
@@ -469,6 +469,7 @@ export const blueprintContentSchema = z
 	})
 	.passthrough(); // Allow additional properties
 
+// biome-ignore lint/suspicious/noExplicitAny: recursive Zod schema requires any type annotation
 export const blueprintBookEntrySchema: z.ZodSchema<any> = z.lazy(() =>
 	z
 		.object({

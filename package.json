@@ -59,7 +59,7 @@
 		"react-select": "5.10.1",
 		"serialize-query-params": "2.0.2",
 		"stylus": "0.64.0",
-		"typescript": "5.9.3",
+		"typescript": "5.8.3",
 		"use-query-params": "2.2.1",
 		"web-vitals": "5.0.3",
 		"zod": "4.1.13"
@@ -68,16 +68,15 @@
 		"analyze": "npx source-map-explorer 'build/static/js/*.js'",
 		"start": "craco start",
 		"watch": "concurrently --names 'webpack, stylus' --prefix name 'npm run start' 'npm run styles:watch'",
-		"prebuild": "rm -rf build",
-		"build": "sh -ac '. ./.env.${REACT_APP_ENV:-production}; craco build'",
+		"build": "sh -ac 'source ./.env.${REACT_APP_ENV:-production}; craco build'",
 		"build:local": "REACT_APP_ENV=local npm run build",
 		"build:production": "REACT_APP_ENV=production npm run build",
 		"test": "craco test --env=jsdom",
 		"eject": "react-scripts eject",
 		"styles": "stylus -u autoprefixer-stylus ./src/css/style.styl -o ./src/css/style.css",
 		"styles:watch": "stylus -u autoprefixer-stylus -w ./src/css/style.styl -o ./src/css/style.css",
-		"lint": "biome check . && eslint src",
-		"lint:fix": "biome check --write . && eslint src --fix"
+		"lint": "npx biome check .",
+		"lint:fix": "npx biome check --write ."
 	},
 	"browserslist": {
 		"production": [
@@ -92,18 +91,9 @@
 		]
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.3.8",
-		"@eslint/js": "^9.39.2",
+		"@biomejs/biome": "^2.3.8",
 		"@sentry/webpack-plugin": "3.5.0",
-		"@testing-library/react": "16.3.0",
-		"@typescript-eslint/eslint-plugin": "^8.49.0",
-		"@typescript-eslint/parser": "^8.49.0",
-		"eslint": "^9.39.2",
-		"eslint-plugin-react-hooks": "^7.0.1",
-		"eslint-plugin-react-refresh": "^0.4.25",
-		"globals": "^16.5.0",
-		"jiti": "^2.6.1",
-		"prettier": "^3.7.4"
+		"@testing-library/react": "16.3.0"
 	},
 	"overrides": {
 		"fork-ts-checker-webpack-plugin": "9.1.0"

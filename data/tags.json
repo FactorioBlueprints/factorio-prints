@@ -1,5 +1,5 @@
 {
-	"belt"      : [
+	"belt": [
 		"balancer",
 		"prioritizer",
 		"tap",
@@ -7,7 +7,7 @@
 		"fast transport belt (red)",
 		"express transport belt (blue)"
 	],
-	"general"   : [
+	"general": [
 		"early game",
 		"mid game",
 		"late game (megabase)",
@@ -17,23 +17,8 @@
 		"marathon",
 		"storage"
 	],
-	"mods"      : [
-		"angels",
-		"bobs",
-		"creative",
-		"factorissimo",
-		"warehousing",
-		"lighted-electric-poles",
-		"other",
-		"vanilla"
-	],
-	"power"     : [
-		"nuclear",
-		"kovarex enrichment",
-		"solar",
-		"steam",
-		"accumulator"
-	],
+	"mods": ["angels", "bobs", "creative", "factorissimo", "warehousing", "lighted-electric-poles", "other", "vanilla"],
+	"power": ["nuclear", "kovarex enrichment", "solar", "steam", "accumulator"],
 	"production": [
 		"oil processing",
 		"coal liquification",
@@ -58,7 +43,7 @@
 		"belt based",
 		"logistic (bot) based"
 	],
-	"train"     : [
+	"train": [
 		"loading station",
 		"unloading station",
 		"pax",
@@ -70,16 +55,8 @@
 		"left-hand-drive",
 		"right-hand-drive"
 	],
-	"circuit"   : [
-		"indicator",
-		"counter"
-	],
-	"version"   : [
-		"0,14",
-		"0,15",
-		"0,16",
-		"unknown"
-	],
+	"circuit": ["indicator", "counter"],
+	"version": ["0,14", "0,15", "0,16", "unknown"],
 	"moderation": [
 		"scheduled for deletion",
 		"screenshot missing alt info",

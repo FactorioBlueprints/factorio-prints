@@ -1,10 +1,12 @@
 import {faHeart} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+
 import {useQueryClient} from '@tanstack/react-query';
 import Card from 'react-bootstrap/Card';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import NoAvailableImage from '../gif/No_available_image.gif';
+
 import buildImageUrl from '../helpers/buildImageUrl';
 import useAuthored from '../hooks/useAuthored';
 import useFavorites from '../hooks/useFavorites';
@@ -44,8 +46,6 @@ function FactorioPrintsThumbnail({blueprintSummary}: FactorioPrintsThumbnailProp
 			<a
 				className="mr-1"
 				href={`https://factorioprints.com/view/${key}`}
-				target="_blank"
-				rel="noopener noreferrer"
 			>
 				<Card.Img
 					variant="top"

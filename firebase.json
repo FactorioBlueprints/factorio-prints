@@ -2,38 +2,38 @@
 	"database": {
 		"rules": "database.rules.json"
 	},
-	"hosting" : {
-		"public"  : "build",
+	"hosting": {
+		"public": "build",
 		"rewrites": [
 			{
-				"source"     : "**",
+				"source": "**",
 				"destination": "/index.html"
 			}
 		],
-		"headers" : [
+		"headers": [
 			{
-				"source" : "**/*.html",
+				"source": "**/*.html",
 				"headers": [
 					{
-						"key"  : "Cache-Control",
+						"key": "Cache-Control",
 						"value": "max-age=0, no-cache"
 					}
 				]
 			},
 			{
-				"source" : "**/*.@(js|css|json)",
+				"source": "**/*.@(js|css|json)",
 				"headers": [
 					{
-						"key"  : "Cache-Control",
+						"key": "Cache-Control",
 						"value": "max-age=1800"
 					}
 				]
 			},
 			{
-				"source" : "**/*.@(jpg|jpeg|gif|png|svg|ico)",
+				"source": "**/*.@(jpg|jpeg|gif|png|svg|ico)",
 				"headers": [
 					{
-						"key"  : "Cache-Control",
+						"key": "Cache-Control",
 						"value": "max-age=2419200"
 					}
 				]

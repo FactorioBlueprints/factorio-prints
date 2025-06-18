@@ -39,7 +39,9 @@ export const generateItemHistogram = (parsedBlueprint) => {
 		if (has(item, 'item') && has(item, 'count')) {
 			result[item.item] = (result[item.item] || 0) + item.count;
 		} else {
-			forOwn(item, (value, key) => (result[key] = (result[key] || 0) + value));
+			forOwn(item, (value, key) => {
+				result[key] = (result[key] || 0) + value;
+			});
 		}
 	});
 

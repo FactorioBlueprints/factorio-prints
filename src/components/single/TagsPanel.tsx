@@ -42,8 +42,7 @@ interface TagsPanelProps {
 
 function TagsPanel({blueprintKey}: TagsPanelProps) {
 	const result = useBlueprint(blueprintKey);
-
-	const {tags} = result.data!.data;
+	const tags = result.data?.data?.tags;
 
 	return (
 		tags &&

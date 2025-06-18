@@ -2,7 +2,7 @@ import {useState} from 'react';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import SearchQuery, {SearchState} from './SearchQuery';
+import SearchQuery, {type SearchState} from './SearchQuery';
 import SearchResults from './SearchResults';
 
 function Search() {

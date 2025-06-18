@@ -9,7 +9,7 @@ interface ImgurThumbnailProps {
 
 function ImgurThumbnail({blueprintKey}: ImgurThumbnailProps) {
 	const result = useBlueprint(blueprintKey);
-	const {imgurImage} = result.data!.data;
+	const imgurImage = result.data?.data?.imgurImage;
 
 	if (!imgurImage) {
 		return <div className="border-warning">{'Error loading imgur image.'}</div>;

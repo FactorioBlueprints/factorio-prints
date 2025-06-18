@@ -44,6 +44,7 @@ const config: Linter.Config[] = [
 		},
 		rules: {
 			...js.configs.recommended.rules,
+			...reactHooks.configs.recommended.rules,
 			'react-hooks/rules-of-hooks': 'error',
 			'react-hooks/exhaustive-deps': 'error',
 			'no-unused-vars': ['error', {varsIgnorePattern: '^([A-Z_]|_)', argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_'}],
@@ -75,11 +76,12 @@ const config: Linter.Config[] = [
 			'react-refresh': reactRefresh,
 		},
 		rules: {
-			...tseslint.configs.recommended.rules,
+			...(tseslint.configs?.['recommended']?.rules ?? {}),
+			...reactHooks.configs.recommended.rules,
 			'react-hooks/rules-of-hooks': 'error',
 			'react-hooks/exhaustive-deps': 'error',
 			'@typescript-eslint/no-unused-vars': ['error', {varsIgnorePattern: '^([A-Z_]|_)', argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_'}],
-			'@typescript-eslint/no-explicit-any': 'off',
+			'@typescript-eslint/no-explicit-any': 'off', // TODO: Consider enabling this later
 			'react-refresh/only-export-components': ['warn', {allowConstantExport: true}],
 			eqeqeq: ['error', 'smart'],
 			'one-var': ['error', 'never'],

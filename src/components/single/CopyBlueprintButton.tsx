@@ -24,8 +24,8 @@ function CopyBlueprintStringButton({blueprintStringSha}: CopyBlueprintStringButt
 	const {isPending, isError, isSuccess, data} = result;
 
 	useEffect(() => {
-		if (copyClicked && !copied && isSuccess) {
-			const blueprintString = (data as any).data.blueprintString;
+		if (copyClicked && !copied && isSuccess && data) {
+			const blueprintString = (data as {data: {blueprintString: string}}).data.blueprintString;
 			copy(blueprintString);
 			setCopied(true);
 			setTimeout(() => {
@@ -33,7 +33,7 @@ function CopyBlueprintStringButton({blueprintStringSha}: CopyBlueprintStringButt
 				setCopied(false);
 			}, 2000);
 		}
-	}, [blueprintStringSha, copyClicked, copied, data, isSuccess]);
+	}, [copyClicked, copied, data, isSuccess]);
 
 	if (copied) {
 		return (

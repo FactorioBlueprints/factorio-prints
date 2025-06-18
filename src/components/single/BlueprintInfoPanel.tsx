@@ -21,6 +21,12 @@ interface BlueprintInfoPanelProps {
 
 function BlueprintInfoPanel({blueprintKey, blueprintStringSha, ownedByCurrentUser}: BlueprintInfoPanelProps) {
 	const result = useBlueprint(blueprintKey);
+	const queryClient = useQueryClient();
+	const blueprintData = result.data?.data;
+
+	if (!blueprintData) {
+		return null;
+	}
 
 	const {
 		author: {displayName},
@@ -30,10 +36,9 @@ function BlueprintInfoPanel({blueprintKey, blueprintStringSha, ownedByCurrentUse
 			systemFrom,
 			createdBy: {userId: authorId},
 		},
-	} = result.data!.data;
+	} = blueprintData;
 
 	const numberOfUpvotes = voteSummary?.numberOfUpvotes;
-	const queryClient = useQueryClient();
 	if (voteSummary === undefined) {
 		console.log('BlueprintInfoPanel clearing the query cache');
 		queryClient.clear();
