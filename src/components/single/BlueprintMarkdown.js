@@ -1,8 +1,8 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import {marked}           from 'marked';
-import PropTypes          from 'prop-types';
-import React              from 'react';
-import useBlueprint       from '../../hooks/useBlueprint';
+import {marked} from 'marked';
+import PropTypes from 'prop-types';
+import React from 'react';
+import useBlueprint from '../../hooks/useBlueprint';
 
 const renderer = new marked.Renderer();
 renderer.table = (header, body) => `<table class="table table-striped table-bordered">
@@ -12,17 +12,16 @@ ${header}</thead>
 ${body}</tbody>
 </table>
 `;
-renderer.image = (href, title, text) =>
-	`<img src="${href}" alt="${text}" class="img-responsive">`;
+renderer.image = (href, _title, text) => `<img src="${href}" alt="${text}" class="img-responsive">`;
 
 marked.setOptions({
 	renderer,
-	gfm        : true,
-	tables     : true,
-	breaks     : false,
-	pedantic   : false,
-	sanitize   : false,
-	smartLists : true,
+	gfm: true,
+	tables: true,
+	breaks: false,
+	pedantic: false,
+	sanitize: false,
+	smartLists: true,
 	smartypants: false,
 });
 
@@ -30,12 +29,12 @@ BlueprintMarkdown.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
 });
 
-function BlueprintMarkdown({blueprintKey})
-{
-	const result                = useBlueprint(blueprintKey);
+function BlueprintMarkdown({blueprintKey}) {
+	const result = useBlueprint(blueprintKey);
 	const {descriptionMarkdown} = result.data.data;
-	const renderedMarkdown      = marked(descriptionMarkdown);
+	const renderedMarkdown = marked(descriptionMarkdown);
 
+	// biome-ignore lint/security/noDangerouslySetInnerHtml: User-provided markdown is sanitized by marked library
 	return <div dangerouslySetInnerHTML={{__html: renderedMarkdown}} />;
 }
 
