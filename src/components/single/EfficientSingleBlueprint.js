@@ -1,30 +1,30 @@
 import {faEdit, faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
-import { DiscussionEmbed } from 'disqus-react';
+import {DiscussionEmbed} from 'disqus-react';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 import React, {useContext} from 'react';
-import Button              from 'react-bootstrap/Button';
-import Card                from 'react-bootstrap/Card';
-import Col                 from 'react-bootstrap/Col';
-import Container           from 'react-bootstrap/Container';
-import Row                 from 'react-bootstrap/Row';
-import {useParams}         from 'react-router-dom';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import {useParams} from 'react-router-dom';
 
-import UserContext    from '../../context/userContext';
-import useBlueprint   from '../../hooks/useBlueprint';
+import UserContext from '../../context/userContext';
+import useBlueprint from '../../hooks/useBlueprint';
 import useIsModerator from '../../hooks/useIsModerator';
 
-import BlueprintInfoPanel        from './BlueprintInfoPanel';
-import BlueprintMarkdown         from './BlueprintMarkdown';
-import BlueprintTitle            from './BlueprintTitle';
-import BlueprintTitles           from './BlueprintTitles';
+import BlueprintInfoPanel from './BlueprintInfoPanel';
+import BlueprintMarkdown from './BlueprintMarkdown';
+import BlueprintTitle from './BlueprintTitle';
+import BlueprintTitles from './BlueprintTitles';
 import CopyBlueprintStringButton from './CopyBlueprintButton';
-import FavoriteButton            from './FavoriteButton';
-import ImgurThumbnail            from './ImgurThumbnail';
-import NewRequirementsHistogram  from './NewRequirementsHistogram';
-import Spinner                   from './Spinner';
-import TagsPanel                 from './TagsPanel';
+import FavoriteButton from './FavoriteButton';
+import ImgurThumbnail from './ImgurThumbnail';
+import NewRequirementsHistogram from './NewRequirementsHistogram';
+import Spinner from './Spinner';
+import TagsPanel from './TagsPanel';
 
 /*
 function renderEditButton(handleTransitionToEdit)
@@ -43,23 +43,21 @@ function getFactorioprintsUrl(id) {
 	return `https://factorioprints.com/view/${id}`;
 }
 
-function EfficientSingleBlueprint()
-{
+function EfficientSingleBlueprint() {
 	const {blueprintId} = useParams();
-	const blueprintKey  = blueprintId;
+	const blueprintKey = blueprintId;
 
 	const result = useBlueprint(blueprintKey);
 
 	const {isSuccess, data, isPending, isError} = result;
 
-	const {user}   = useContext(UserContext);
+	const {user} = useContext(UserContext);
 	const userId = user?.uid;
 
 	const ownedByCurrentUser = isSuccess && userId !== undefined && userId === data.data.author.authorId;
 	const blueprintStringSha = isSuccess ? data.data.blueprintString.sha : undefined;
 
 	const isModerator = useIsModerator();
-
 
 	/*
 	const navigate = useNavigate();
@@ -70,31 +68,33 @@ function EfficientSingleBlueprint()
 	}
 	*/
 
-	function renderEditLink()
-	{
+	function renderEditLink() {
 		const url = `https://factorioprints.com/edit/${blueprintKey}`;
-		return <Button
-			size='lg'
-			href={url}
-		>
-			<FontAwesomeIcon icon={faEdit} />
-			{' Edit'}
-		</Button>;
-
+		return (
+			<Button
+				size="lg"
+				href={url}
+			>
+				<FontAwesomeIcon icon={faEdit} />
+				{' Edit'}
+			</Button>
+		);
 	}
 
-	if (isPending)
-	{
-		return <Spinner />
+	if (isPending) {
+		return <Spinner />;
 	}
 
-	if (isError)
-	{
+	if (isError) {
 		console.log('Error loading blueprint details.', {result});
 		return (
-			<div className='p-5 rounded-lg jumbotron'>
+			<div className="p-5 rounded-lg jumbotron">
 				<h1>
-					<FontAwesomeIcon icon={faExclamationTriangle} size='lg' fixedWidth />
+					<FontAwesomeIcon
+						icon={faExclamationTriangle}
+						size="lg"
+						fixedWidth
+					/>
 					{'Error loading blueprint details.'}
 				</h1>
 			</div>
@@ -105,11 +105,14 @@ function EfficientSingleBlueprint()
 		<Container>
 			<Row>
 				<Col md={9}>
-					<div className='d-flex mt-4'>
+					<div className="d-flex mt-4">
 						<BlueprintTitle blueprintKey={blueprintKey} />
 					</div>
 				</Col>
-				<Col md={3} className='d-flex align-items-center justify-content-end'>
+				<Col
+					md={3}
+					className="d-flex align-items-center justify-content-end"
+				>
 					{/*{(ownedByCurrentUser || isModerator) && renderEditButton(handleTransitionToEdit)}*/}
 					{(ownedByCurrentUser || isModerator) && renderEditLink()}
 					{!ownedByCurrentUser && <FavoriteButton blueprintKey={blueprintKey} />}
@@ -128,35 +131,32 @@ function EfficientSingleBlueprint()
 				</Col>
 				<Col md={8}>
 					<Card>
-						<Card.Header>
-							Details
-						</Card.Header>
+						<Card.Header>Details</Card.Header>
 						<Card.Body>
 							<BlueprintMarkdown blueprintKey={blueprintKey} />
 							<CopyBlueprintStringButton blueprintStringSha={blueprintStringSha} />
 						</Card.Body>
 					</Card>
 					<Card>
-						<Card.Header>
-							Blueprint Titles
-						</Card.Header>
+						<Card.Header>Blueprint Titles</Card.Header>
 						<Card.Body>
-							<BlueprintTitles blueprintStringSha={blueprintStringSha} blueprintKey={blueprintKey} />
+							<BlueprintTitles
+								blueprintStringSha={blueprintStringSha}
+								blueprintKey={blueprintKey}
+							/>
 						</Card.Body>
 					</Card>
 				</Col>
 			</Row>
-			<Row className='w-100'>
+			<Row className="w-100">
 				<DiscussionEmbed
-					shortname='factorio-blueprints'
-					config={
-						{
-							url: getFactorioprintsUrl(blueprintKey),
-							identifier: blueprintKey,
-							title: blueprintKey,
-						}
-					}
-					className='w-100'
+					shortname="factorio-blueprints"
+					config={{
+						url: getFactorioprintsUrl(blueprintKey),
+						identifier: blueprintKey,
+						title: blueprintKey,
+					}}
+					className="w-100"
 				/>
 			</Row>
 		</Container>

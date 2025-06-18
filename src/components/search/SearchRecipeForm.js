@@ -1,31 +1,26 @@
-import React  from 'react';
-import Form   from 'react-bootstrap/Form';
+import React from 'react';
+import Form from 'react-bootstrap/Form';
 import Select from 'react-select';
 
 import useRecipeOptions from '../../hooks/useRecipeOptions';
 import ReactQueryStatus from './ReactQueryStatus';
 
-const SearchRecipeForm = ({recipeState, setRecipeState}) =>
-{
-	const handleRecipe = selected =>
-	{
-		if (selected === null || selected === undefined)
-		{
+const SearchRecipeForm = ({recipeState, setRecipeState}) => {
+	const handleRecipe = (selected) => {
+		if (selected === null || selected === undefined) {
 			setRecipeState(null);
 			return;
 		}
 		setRecipeState(selected.value);
 	};
 
-	const result                       = useRecipeOptions();
+	const result = useRecipeOptions();
 	const {data, isSuccess, isPending} = result;
 
-	const options = isSuccess
-		? data.data.map((value) => ({value: value, label: value}))
-		: [];
+	const options = isSuccess ? data.data.map((value) => ({value: value, label: value})) : [];
 
 	return (
-		<Form.Group className='mb-3'>
+		<Form.Group className="mb-3">
 			<Form.Label>
 				Recipes <ReactQueryStatus {...result} />
 			</Form.Label>
@@ -42,7 +37,7 @@ const SearchRecipeForm = ({recipeState, setRecipeState}) =>
 	);
 };
 
-SearchRecipeForm.propTypes    = {};
+SearchRecipeForm.propTypes = {};
 SearchRecipeForm.defaultProps = {};
 
 export default SearchRecipeForm;
