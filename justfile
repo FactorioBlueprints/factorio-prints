@@ -1,9 +1,8 @@
-set shell := ["bash", "-O", "globstar", "-c"]
-set dotenv-filename := ".envrc"
-
 factorio_prints_dir := env('FACTORIO_PRINTS_DIR', '~/projects/factorio.school')
 ui_module := env('UI_MODULE', 'factorio-prints-dropwizard-application-ui-static')
 
+# `just --list --unsorted`
+[group('default')]
 default:
     @just --list --unsorted
 
@@ -44,7 +43,8 @@ sync-icon-sprites:
 # My `woof` command uses `echo`, `say`, and sends a Pushover notification.
 echo_command := env('ECHO_COMMAND', "echo")
 
-# Install npm dependencies
+# `npm install`
+[group('setup')]
 install:
     npm install --legacy-peer-deps
 

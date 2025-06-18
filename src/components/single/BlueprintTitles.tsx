@@ -26,7 +26,6 @@ function BlueprintTitles({blueprintKey, blueprintStringSha}: BlueprintTitlesProp
 	});
 
 	if (isPending) {
-		// TODO 2023-03-08: implement placeholder
 		return (
 			<Card>
 				<LoadingIcon isPending={isPending} />
@@ -39,12 +38,12 @@ function BlueprintTitles({blueprintKey, blueprintStringSha}: BlueprintTitlesProp
 		return <Card>{`Error loading data: ${error}`}</Card>;
 	}
 
-	if (isSuccess) {
+	if (isSuccess && blueprintStringSha) {
 		return (
 			<BlueprintContentHeader
 				data={data.data}
 				blueprintKey={blueprintKey}
-				blueprintStringSha={blueprintStringSha!}
+				blueprintStringSha={blueprintStringSha}
 			/>
 		);
 	}

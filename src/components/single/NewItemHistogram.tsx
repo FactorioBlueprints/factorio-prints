@@ -68,7 +68,7 @@ function NewItemHistogram({title, items, type}: NewItemHistogramProps) {
 				</colgroup>
 
 				<tbody>
-					{items!.map((item) => (
+					{items?.map((item) => (
 						<ItemHistogramRow
 							{...item}
 							key={item.name}

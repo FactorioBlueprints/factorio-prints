@@ -1,6 +1,7 @@
-import {AuthProvider, getAuth, onAuthStateChanged, signInWithPopup, User} from 'firebase/auth';
+import {type AuthProvider, getAuth, onAuthStateChanged, signInWithPopup, type User} from 'firebase/auth';
 
-import React, {useState} from 'react';
+import type React from 'react';
+import {useState} from 'react';
 
 import {app} from '../../base';
 import UserContext, {type UserContextType} from '../../context/userContext';

@@ -49,7 +49,6 @@ function NewRequirementsHistogram({blueprintStringSha}: NewRequirementsHistogram
 				type="recipe"
 				items={data.data.recipes}
 			/>
-			{/*{upgradePlanner && <UpgradePlanner mappers={upgradePlanner.mappers} />}*/}
 		</>
 	);
 }

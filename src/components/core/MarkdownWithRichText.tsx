@@ -29,7 +29,7 @@ function processTextContent(content: string): React.ReactNode[] {
 		}
 
 		return (
-			<React.Fragment key={lineIndex}>
+			<React.Fragment key={`line-${lineIndex}`}>
 				<RichText
 					text={line}
 					inline
@@ -56,16 +56,16 @@ function processHtmlWithRichText(html: string): React.ReactNode {
 			const tagName = element.tagName.toLowerCase();
 
 			const children = Array.from(node.childNodes).map((child, index) => (
-				<React.Fragment key={`${nodeIndex}-${index}`}>{processNode(child, index)}</React.Fragment>
+				<React.Fragment key={`child-${nodeIndex}-${index}`}>{processNode(child, index)}</React.Fragment>
 			));
 
 			const props: Record<string, string | React.CSSProperties> = {};
 
-			if (element.hasAttribute('href')) props.href = element.getAttribute('href')!;
-			if (element.hasAttribute('title')) props.title = element.getAttribute('title')!;
-			if (element.hasAttribute('class')) props.className = element.getAttribute('class')!;
-			if (element.hasAttribute('src')) props.src = element.getAttribute('src')!;
-			if (element.hasAttribute('alt')) props.alt = element.getAttribute('alt')!;
+			if (element.hasAttribute('href')) props.href = element.getAttribute('href') ?? '';
+			if (element.hasAttribute('title')) props.title = element.getAttribute('title') ?? '';
+			if (element.hasAttribute('class')) props.className = element.getAttribute('class') ?? '';
+			if (element.hasAttribute('src')) props.src = element.getAttribute('src') ?? '';
+			if (element.hasAttribute('alt')) props.alt = element.getAttribute('alt') ?? '';
 			if (element.hasAttribute('style')) {
 				const style = element.getAttribute('style');
 				if (style) {

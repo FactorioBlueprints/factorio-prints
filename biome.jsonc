@@ -2,6 +2,8 @@
 	"$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
 	"files": {
 		"includes": [
+			"**/*.json",
+			"**/*.jsonc",
 			"src/**/*.js",
 			"src/**/*.jsx",
 			"src/**/*.ts",
@@ -10,15 +12,8 @@
 			"public/**/*.jsx",
 			"public/**/*.ts",
 			"public/**/*.tsx",
-			"!!**/.llm/**/*",
-			"!!**/node_modules",
-			"!!**/dist",
-			"!!**/build",
-			"!!**/coverage",
-			"!!**/package-lock.json",
-			"!!**/src/css/style.css"
 		],
-		"ignoreUnknown": true
+		"ignoreUnknown": true,
 	},
 	"formatter": {
 		"enabled": true,
@@ -26,25 +21,17 @@
 		"indentStyle": "tab",
 		"indentWidth": 4,
 		"lineWidth": 120,
-		"lineEnding": "lf"
+		"lineEnding": "lf",
 	},
 	"linter": {
 		"enabled": true,
 		"rules": {
 			"recommended": true,
-			"a11y": {
-				"useKeyWithClickEvents": "off",
-				"useButtonType": "off",
-				"noLabelWithoutControl": "off"
-			},
 			"complexity": {
 				"noExtraBooleanCast": "error",
 				"noAdjacentSpacesInRegex": "error",
 				"noUselessCatch": "error",
 				"noUselessTypeConstraint": "error",
-				"noForEach": "off",
-				"noStaticOnlyClass": "off",
-				"noThisInStatic": "off"
 			},
 			"correctness": {
 				"noConstAssign": "error",
@@ -59,7 +46,6 @@
 				"noSelfAssign": "error",
 				"noSetterReturn": "error",
 				"noSwitchDeclarations": "error",
-				"noUndeclaredVariables": "off",
 				"noUnreachable": "error",
 				"noUnreachableSuper": "error",
 				"noUnsafeFinally": "error",
@@ -69,22 +55,12 @@
 				"useIsNan": "error",
 				"useValidForDirection": "error",
 				"useYield": "error",
-				"useExhaustiveDependencies": "off",
-				"noUnknownProperty": "off"
-			},
-			"performance": {
-				"noDelete": "off"
 			},
 			"style": {
 				"useConst": "error",
-				"useImportType": "off",
-				"useNumberNamespace": "off",
-				"useTemplate": "off",
-				"useNodejsImportProtocol": "off",
-				"noUselessElse": "off",
-				"noNonNullAssertion": "off"
 			},
 			"suspicious": {
+				"noArrayIndexKey": "off",
 				"noAsyncPromiseExecutor": "error",
 				"noCatchAssign": "error",
 				"noClassAssign": "error",
@@ -96,8 +72,6 @@
 				"noDuplicateClassMembers": "error",
 				"noDuplicateObjectKeys": "error",
 				"noDuplicateParameters": "error",
-				"noEmptyBlockStatements": "off",
-				"noExplicitAny": "off",
 				"noExtraNonNullAssertion": "error",
 				"noFallthroughSwitchClause": "error",
 				"noFunctionAssign": "error",
@@ -110,15 +84,10 @@
 				"noShadowRestrictedNames": "error",
 				"noUnsafeDeclarationMerging": "error",
 				"noUnsafeNegation": "error",
+				"noVar": "error",
 				"useGetterReturn": "error",
-				"noArrayIndexKey": "off",
-				"noGlobalIsNan": "off",
-				"noImplicitAnyLet": "off",
-				"noAssignInExpressions": "off",
-				"noShorthandPropertyOverrides": "off",
-				"noVar": "error"
-			}
-		}
+			},
+		},
 	},
 	"javascript": {
 		"formatter": {
@@ -130,24 +99,40 @@
 			"bracketSpacing": false,
 			"bracketSameLine": false,
 			"quoteStyle": "single",
-			"attributePosition": "multiline"
-		}
+			"attributePosition": "multiline",
+		},
 	},
 	"json": {
 		"formatter": {
-			"trailingCommas": "none"
-		}
+			"bracketSpacing": false,
+		},
 	},
 	"overrides": [
+		{
+			"includes": ["**/*.json"],
+			"json": {
+				"formatter": {
+					"trailingCommas": "none",
+				},
+			},
+		},
+		{
+			"includes": ["**/*.jsonc"],
+			"json": {
+				"formatter": {
+					"trailingCommas": "all",
+				},
+			},
+		},
 		{
 			"includes": ["**/*.test.js", "**/*.test.jsx", "**/*.test.ts", "**/*.test.tsx"],
 			"linter": {
 				"rules": {
 					"suspicious": {
-						"noExplicitAny": "off"
-					}
-				}
-			}
-		}
-	]
+						"noExplicitAny": "off",
+					},
+				},
+			},
+		},
+	],
 }

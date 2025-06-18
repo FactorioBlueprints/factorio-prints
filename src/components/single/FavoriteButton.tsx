@@ -1,7 +1,9 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import axios from 'axios';
+import type {User} from 'firebase/auth';
 
 import {getDatabase, ref, update} from 'firebase/database';
+
 import {useContext} from 'react';
 import Button from 'react-bootstrap/Button';
 
@@ -12,7 +14,7 @@ import useIsFavorite from '../../hooks/useIsFavorite';
 
 import FavoriteIcon from './FavoriteIcon';
 
-async function postIsFavorite(blueprintKey: string, isFavorite: boolean, user: any) {
+async function postIsFavorite(blueprintKey: string, isFavorite: boolean, user: User) {
 	const url = `${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`;
 	const body = null;
 	const idToken = user === undefined ? undefined : await user.getIdToken();
@@ -54,15 +56,14 @@ function FavoriteButton({blueprintKey}: FavoriteButtonProps) {
 	const {user} = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 
-	// TODO: Switch to the other favorites hook
 	const {isSuccess, data: isFavorite} = useIsFavorite(blueprintKey);
 
 	const toggleFavoriteMutation = useMutation({
-		mutationFn: () => postIsFavorite(blueprintKey, !isFavorite, user),
+		mutationFn: () => postIsFavorite(blueprintKey, !isFavorite, user as User),
 		onSuccess: () => {
-			queryClient.invalidateQueries({queryKey: ['api/my/favorites/', (user as any).uid]});
-			queryClient.invalidateQueries({queryKey: ['api/my/favorite/', blueprintKey, (user as any).uid]});
-			queryClient.invalidateQueries({queryKey: ['/api/my/favoriteBlueprints/page', (user as any).email]});
+			queryClient.invalidateQueries({queryKey: ['api/my/favorites/', user?.uid]});
+			queryClient.invalidateQueries({queryKey: ['api/my/favorite/', blueprintKey, user?.uid]});
+			queryClient.invalidateQueries({queryKey: ['/api/my/favoriteBlueprints/page', user?.email]});
 			queryClient.invalidateQueries({queryKey: ['blueprintDetails', blueprintKey]});
 		},
 	});

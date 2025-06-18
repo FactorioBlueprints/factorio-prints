@@ -1,12 +1,13 @@
 import Col from 'react-bootstrap/Col';
+import type {GroupBase, SelectComponentsConfig} from 'react-select';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 
 import {ArrayParam, useQueryParam, withDefault} from 'use-query-params';
 
-import useTagOptions, {TagOption} from '../../hooks/useTagOptions';
+import useTagOptions, {type TagOption} from '../../hooks/useTagOptions';
 
-const animatedComponents = makeAnimated();
+const animatedComponents = makeAnimated() as SelectComponentsConfig<TagOption, true, GroupBase<TagOption>>;
 
 function EfficientTagForm() {
 	const {tagValuesSet, tagOptions} = useTagOptions();
@@ -30,7 +31,7 @@ function EfficientTagForm() {
 				onChange={setSelectedTagValues}
 				isMulti
 				closeMenuOnSelect
-				components={animatedComponents as any}
+				components={animatedComponents}
 				placeholder="search tags"
 				className="tag-form"
 			/>

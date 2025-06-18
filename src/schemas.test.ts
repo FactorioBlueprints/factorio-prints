@@ -177,7 +177,7 @@ describe('Schema validation', () => {
 			// Check that one of the calls contains the full object
 			const fullObjectCall = consoleCalls.find((call) => call[0] === 'Full object that failed validation:');
 			expect(fullObjectCall).toBeDefined();
-			expect(fullObjectCall![1]).toEqual(JSON.stringify(testData));
+			expect(fullObjectCall?.[1]).toEqual(JSON.stringify(testData));
 		});
 
 		it('should truncate very large objects in console logs', () => {
@@ -217,16 +217,21 @@ describe('Schema validation', () => {
 				field2: z.string(),
 			});
 
-			let zodError: z.ZodError;
+			let zodError: z.ZodError | undefined;
 			try {
 				testSchema.parse({field1: {nested: 123}, field2: undefined});
 			} catch (error) {
 				zodError = error as z.ZodError;
 			}
 
+			if (!zodError) {
+				throw new Error('Expected zodError to be defined');
+			}
+
+			const capturedZodError = zodError;
 			const mockSchema = {
 				parse: jest.fn(() => {
-					throw zodError!;
+					throw capturedZodError;
 				}),
 			};
 

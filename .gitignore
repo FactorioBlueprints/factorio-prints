@@ -17,8 +17,15 @@
 .env.development.local
 .env.test.local
 .env.production.local
+JUSTFILE_BRANCH
 
 npm-debug.log*
 
 .firebase
 .idea/dictionaries/
+
+# Local documentation and context
+.envrc
+eslint_report.json
+.llm/
+/.claude/

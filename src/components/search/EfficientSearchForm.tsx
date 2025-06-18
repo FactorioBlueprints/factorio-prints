@@ -1,7 +1,8 @@
 import {faSearch} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
-import React, {useCallback, useRef, useState} from 'react';
+import type React from 'react';
+import {useCallback, useRef, useState} from 'react';
 
 import Col from 'react-bootstrap/Col';
 import FormControl from 'react-bootstrap/FormControl';
@@ -16,6 +17,7 @@ function useGetLatest<T>(obj: T): () => T {
 	return useCallback(() => ref.current, []);
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: generic function type needs any for variance
 function useAsyncDebounce<T extends (...args: any[]) => any>(
 	defaultFn: T,
 	defaultWait = 0,
@@ -23,7 +25,7 @@ function useAsyncDebounce<T extends (...args: any[]) => any>(
 	const debounceRef = useRef<{
 		promise?: Promise<ReturnType<T>>;
 		resolve?: (value: ReturnType<T>) => void;
-		reject?: (reason: any) => void;
+		reject?: (reason: unknown) => void;
 		timeout?: ReturnType<typeof setTimeout>;
 	}>({});
 
@@ -46,9 +48,9 @@ function useAsyncDebounce<T extends (...args: any[]) => any>(
 			debounceRef.current.timeout = setTimeout(async () => {
 				delete debounceRef.current.timeout;
 				try {
-					debounceRef.current.resolve!(await getDefaultFn()(...args));
+					debounceRef.current.resolve?.(await getDefaultFn()(...args));
 				} catch (err) {
-					debounceRef.current.reject!(err);
+					debounceRef.current.reject?.(err);
 				} finally {
 					delete debounceRef.current.promise;
 				}
