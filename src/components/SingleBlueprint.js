@@ -169,6 +169,27 @@ const SingleBlueprint = ({
 		cacheState({blueprint, user});
 	}, [blueprint, user, cacheState]);
 
+	// Clean up Disqus on unmount to prevent DOM manipulation errors
+	useEffect(() =>
+	{
+		return () =>
+		{
+			if (window.DISQUS)
+			{
+				try
+				{
+					window.DISQUS.reset({
+						reload: false,
+					});
+				}
+				catch
+				{
+					// Silently ignore Disqus cleanup errors
+				}
+			}
+		};
+	}, []);
+
 	const hideButton = useCallback((text) => (
 		<>
 			<FontAwesomeIcon icon={faToggleOn} size='lg' fixedWidth className='text-success' />
