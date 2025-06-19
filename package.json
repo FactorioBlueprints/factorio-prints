@@ -12,7 +12,7 @@
 		"@fortawesome/free-solid-svg-icons": "6.7.2",
 		"@fortawesome/react-fontawesome": "0.2.2",
 		"@sentry/react": "9.30.0",
-		"@tanstack/query-sync-storage-persister": "5.80.7",
+		"@tanstack/query-sync-storage-persister": "5.80.10",
 		"@tanstack/react-query": "4.26.1",
 		"@tanstack/react-query-devtools": "4.26.1",
 		"@tanstack/react-query-persist-client": "4.26.1",
