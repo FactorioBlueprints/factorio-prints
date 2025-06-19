@@ -3,7 +3,7 @@ import { createStore, get, set, del } from 'idb-keyval';
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
 	CREATE_FORM: 'factorio-blueprint-create-form',
-};
+} as const;
 
 /**
  * Cache buster for query persistence. Manually increment this number when making changes that break cache compatibility.
@@ -12,17 +12,38 @@ export const CACHE_BUSTER = '5';
 
 export const indexedDbStore = createStore('factorio-prints-db', 'query-cache-store');
 
-function debounce(func, wait, options = {})
+interface DebounceOptions {
+	leading?: boolean;
+	trailing?: boolean;
+	maxWait?: number;
+}
+
+interface DebouncedFunction<T extends (...args: any[]) => any> {
+	(...args: Parameters<T>): ReturnType<T>;
+	cancel(): void;
+	flush(): ReturnType<T>;
+	pending(): boolean;
+}
+
+function debounce<T extends (...args: any[]) => any>(
+	func: T,
+	wait: number,
+	options: DebounceOptions = {}
+): DebouncedFunction<T>
 {
-	let lastArgs; let lastThis; let maxWait; let result; let timerId; let lastCallTime;
+	let lastArgs: Parameters<T> | undefined;
+	let lastThis: ThisParameterType<T> | undefined;
+	let maxWait: number;
+	let result: ReturnType<T>;
+	let timerId: ReturnType<typeof setTimeout> | undefined;
+	let lastCallTime: number | undefined;
 	let lastInvokeTime = 0;
-	let leading = !!options.leading;
-	let trailing = 'trailing' in options ? !!options.trailing : true;
-	let maxing = 'maxWait' in options;
+	const leading = !!options.leading;
+	const trailing = 'trailing' in options ? !!options.trailing : true;
+	const maxing = 'maxWait' in options;
 	maxWait = maxing ? Math.max(options.maxWait || 0, wait) : 0;
 
-	function invokeFunc(time)
-	{
+	function invokeFunc(time: number): ReturnType<T> {
 		const args = lastArgs;
 		const thisArg = lastThis;
 
@@ -32,47 +53,40 @@ function debounce(func, wait, options = {})
 		return result;
 	}
 
-	function startTimer(pendingFunc, wait)
-	{
+	function startTimer(pendingFunc: () => void, wait: number): ReturnType<typeof setTimeout> {
 		return setTimeout(pendingFunc, wait);
 	}
 
-	function cancelTimer(id)
-	{
+	function cancelTimer(id: ReturnType<typeof setTimeout>): void {
 		clearTimeout(id);
 	}
 
-	function shouldInvoke(time)
-	{
-		const timeSinceLastCall = time - lastCallTime;
+	function shouldInvoke(time: number): boolean {
+		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 
 		return (lastCallTime === undefined || timeSinceLastCall >= wait
 			|| timeSinceLastCall < 0 || (maxing && timeSinceLastInvoke >= maxWait));
 	}
 
-	function trailingEdge(time)
-	{
+	function trailingEdge(time: number): ReturnType<T> {
 		timerId = undefined;
 
-		if (trailing && lastArgs)
-		{
+		if (trailing && lastArgs) {
 			return invokeFunc(time);
 		}
 		lastArgs = lastThis = undefined;
 		return result;
 	}
 
-	function leadingEdge(time)
-	{
+	function leadingEdge(time: number): ReturnType<T> {
 		lastInvokeTime = time;
 		timerId = startTimer(timerExpired, wait);
 		return leading ? invokeFunc(time) : result;
 	}
 
-	function remainingWait(time)
-	{
-		const timeSinceLastCall = time - lastCallTime;
+	function remainingWait(time: number): number {
+		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 		const timeWaiting = wait - timeSinceLastCall;
 
@@ -81,20 +95,18 @@ function debounce(func, wait, options = {})
 			: timeWaiting;
 	}
 
-	function timerExpired()
-	{
+	function timerExpired(): void {
 		const time = Date.now();
 
-		if (shouldInvoke(time))
-		{
-			return trailingEdge(time);
+		if (shouldInvoke(time)) {
+			trailingEdge(time);
+			return;
 		}
 
 		timerId = startTimer(timerExpired, remainingWait(time));
 	}
 
-	function debounced(...args)
-	{
+	function debounced(this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T> {
 		const time = Date.now();
 		const isInvoking = shouldInvoke(time);
 
@@ -102,42 +114,34 @@ function debounce(func, wait, options = {})
 		lastThis = this;
 		lastCallTime = time;
 
-		if (isInvoking)
-		{
-			if (timerId === undefined)
-			{
+		if (isInvoking) {
+			if (timerId === undefined) {
 				return leadingEdge(lastCallTime);
 			}
-			if (maxing)
-			{
+			if (maxing) {
 				timerId = startTimer(timerExpired, wait);
 				return invokeFunc(lastCallTime);
 			}
 		}
-		if (timerId === undefined)
-		{
+		if (timerId === undefined) {
 			timerId = startTimer(timerExpired, wait);
 		}
 		return result;
 	}
 
-	debounced.cancel = function()
-	{
-		if (timerId !== undefined)
-		{
+	debounced.cancel = function(): void {
+		if (timerId !== undefined) {
 			cancelTimer(timerId);
 		}
 		lastInvokeTime = 0;
 		lastArgs = lastCallTime = lastThis = timerId = undefined;
 	};
 
-	debounced.flush = function()
-	{
+	debounced.flush = function(): ReturnType<T> {
 		return timerId === undefined ? result : trailingEdge(Date.now());
 	};
 
-	debounced.pending = function()
-	{
+	debounced.pending = function(): boolean {
 		return timerId !== undefined;
 	};
 
@@ -249,14 +253,19 @@ function formatBytes(bytes)
 	}
 }
 
-export function createIDBPersister(idbValidKey = STORAGE_KEYS.QUERY_CACHE)
+interface Persister {
+	persistClient: (client: any) => Promise<void>;
+	restoreClient: () => Promise<any>;
+	removeClient: () => Promise<void>;
+}
+
+export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister
 {
 	// Create a debounced persist function that waits 2 seconds after changes
 	// and limits executions to once every 10 seconds maximum
-	const debouncedPersist = debounce(async (client) =>
+	const debouncedPersist = debounce(async (client: any) =>
 	{
-		try
-		{
+		try {
 			const dataSize = JSON.stringify(client).length;
 			const formattedSize = formatBytes(dataSize);
 			console.log(`[IndexedDB] Persisting client data of size: ${formattedSize}`);
@@ -264,96 +273,71 @@ export function createIDBPersister(idbValidKey = STORAGE_KEYS.QUERY_CACHE)
 			await workerOperation('set', idbValidKey, client);
 
 			console.log('[IndexedDB] Persistence complete');
-		}
-		catch (error)
-		{
+		} catch (error) {
 			console.error('[IndexedDB] Error persisting to IndexedDB:', error);
 			throw error;
 		}
 	}, 2000, { maxWait: 10000 });
 
 	return {
-		persistClient: async (client) =>
-		{
+		persistClient: async (client: any) => {
 			// Use the debounced version for persistence
 			return debouncedPersist(client);
 		},
-		restoreClient: async () =>
-		{
-			try
-			{
-				const result = await workerOperation('get', idbValidKey);
+		restoreClient: async () => {
+			try {
+				const result = await workerOperation('get', idbValidKey) as { data?: any } | undefined;
 
-				if (result?.data)
-				{
+				if (result?.data) {
 					const dataSize = JSON.stringify(result.data).length;
 					const formattedSize = formatBytes(dataSize);
 					console.log(`[IndexedDB] Restored data size: ${formattedSize}`);
 				}
 
 				return result?.data;
-			}
-			catch (error)
-			{
+			} catch (error) {
 				console.error('[IndexedDB] Error restoring from IndexedDB:', error);
 				return undefined;
 			}
 		},
-		removeClient: async () =>
-		{
-			try
-			{
+		removeClient: async () => {
+			try {
 				await workerOperation('delete', idbValidKey);
-			}
-			catch (error)
-			{
+			} catch (error) {
 				console.error('[IndexedDB] Error removing from IndexedDB:', error);
 			}
 		},
 	};
 }
 
-export const saveToStorage = (key, data) =>
-{
-	try
-	{
+export const saveToStorage = (key: string, data: any): boolean => {
+	try {
 		const serializedData = JSON.stringify(data);
 		localStorage.setItem(key, serializedData);
 		return true;
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error saving to localStorage:', error);
 		return false;
 	}
 };
 
-export const loadFromStorage = (key, defaultValue = null) =>
-{
-	try
-	{
+export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null => {
+	try {
 		const serializedData = localStorage.getItem(key);
-		if (serializedData === null)
-		{
+		if (serializedData === null) {
 			return defaultValue;
 		}
-		return JSON.parse(serializedData);
-	}
-	catch (error)
-	{
+		return JSON.parse(serializedData) as T;
+	} catch (error) {
 		console.error('Error loading from localStorage:', error);
 		return defaultValue;
 	}
 };
 
-export const removeFromStorage = (key) =>
-{
-	try
-	{
+export const removeFromStorage = (key: string): void => {
+	try {
 		localStorage.removeItem(key);
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error removing from localStorage:', error);
 	}
 };
