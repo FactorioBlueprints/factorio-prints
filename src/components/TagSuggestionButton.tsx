@@ -1,12 +1,16 @@
 import {faTag}            from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
-import PropTypes          from 'prop-types';
 import React              from 'react';
 import Button             from 'react-bootstrap/Button';
 
-const TagSuggestionButton = ({tagSuggestion, addTag}) =>
+interface TagSuggestionButtonProps {
+	tagSuggestion: string;
+	addTag: (tag: string) => void;
+}
+
+const TagSuggestionButton: React.FC<TagSuggestionButtonProps> = ({tagSuggestion, addTag}) =>
 {
-	const handleClick = () =>
+	const handleClick = (): void =>
 	{
 		addTag(tagSuggestion);
 	};
@@ -22,11 +26,6 @@ const TagSuggestionButton = ({tagSuggestion, addTag}) =>
 			{tagSuggestion}
 		</Button>
 	);
-};
-
-TagSuggestionButton.propTypes = {
-	tagSuggestion: PropTypes.string.isRequired,
-	addTag       : PropTypes.func.isRequired,
 };
 
 export default TagSuggestionButton;

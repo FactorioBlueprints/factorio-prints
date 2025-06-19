@@ -1,9 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Badge from 'react-bootstrap/Badge';
 import { Link } from '@tanstack/react-router';
 
-const TagBadge = ({ tag }) =>
+interface TagBadgeProps {
+	tag: string;
+}
+
+const TagBadge: React.FC<TagBadgeProps> = ({ tag }) =>
 {
 	if (!tag.startsWith('/') || !tag.endsWith('/'))
 	{
@@ -22,16 +25,12 @@ const TagBadge = ({ tag }) =>
 	const [category, name] = parts;
 
 	return (
-		<Link key={tag} to='/tagged/$category/$name' params={{ category, name }} className='m-1'>
+		<Link key={tag} to={`/tagged/${category}/${name}`} className='m-1'>
 			<Badge bg='warning' text='light'>
 				{tag}
 			</Badge>
 		</Link>
 	);
-};
-
-TagBadge.propTypes = {
-	tag: PropTypes.string.isRequired,
 };
 
 export default TagBadge;

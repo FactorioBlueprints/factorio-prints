@@ -1,10 +1,17 @@
 import {faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types';
 import React from 'react';
 import Image from 'react-bootstrap/Image';
 
-const BlueprintImage = ({ image, thumbnail, isLoading }) =>
+interface BlueprintImageProps {
+	image?: {
+		id?: string;
+	};
+	thumbnail?: string;
+	isLoading: boolean;
+}
+
+const BlueprintImage: React.FC<BlueprintImageProps> = ({ image, thumbnail, isLoading }) =>
 {
 	if (isLoading)
 	{
@@ -29,12 +36,6 @@ const BlueprintImage = ({ image, thumbnail, isLoading }) =>
 			<Image thumbnail className='border-warning' src={thumbnail} referrerPolicy='no-referrer' />
 		</a>
 	);
-};
-
-BlueprintImage.propTypes = {
-	image    : PropTypes.object,
-	thumbnail: PropTypes.string,
-	isLoading: PropTypes.bool.isRequired,
 };
 
 export default React.memo(BlueprintImage);

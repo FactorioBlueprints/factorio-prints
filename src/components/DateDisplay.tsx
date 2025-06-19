@@ -1,10 +1,14 @@
 import {faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import moment from 'moment';
-import PropTypes from 'prop-types';
 import React from 'react';
 
-const DateDisplay = ({ date, isLoading }) =>
+interface DateDisplayProps {
+	date?: number;
+	isLoading: boolean;
+}
+
+const DateDisplay: React.FC<DateDisplayProps> = ({ date, isLoading }) =>
 {
 	if (isLoading)
 	{
@@ -18,11 +22,6 @@ const DateDisplay = ({ date, isLoading }) =>
 			{moment(date).fromNow()}
 		</span>
 	);
-};
-
-DateDisplay.propTypes = {
-	date     : PropTypes.number,
-	isLoading: PropTypes.bool.isRequired,
 };
 
 export default React.memo(DateDisplay);

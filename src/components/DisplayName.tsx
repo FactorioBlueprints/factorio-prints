@@ -1,7 +1,6 @@
 import {faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {getAuth} from 'firebase/auth';
-import PropTypes from 'prop-types';
+import {getAuth, User} from 'firebase/auth';
 import React from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {Link} from '@tanstack/react-router';
@@ -9,9 +8,15 @@ import {Link} from '@tanstack/react-router';
 import {app} from '../base';
 import {useUserDisplayName} from '../hooks/useUser';
 
-const DisplayName = ({ userId, withLink = true, externalIsLoading = false }) =>
+interface DisplayNameProps {
+	userId?: string;
+	withLink?: boolean;
+	externalIsLoading?: boolean;
+}
+
+const DisplayName: React.FC<DisplayNameProps> = ({ userId, withLink = true, externalIsLoading = false }) =>
 {
-	const [currentUser] = useAuthState(getAuth(app));
+	const [currentUser] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const isYou = currentUser && currentUser.uid === userId;
 
 	const {
@@ -40,12 +45,6 @@ const DisplayName = ({ userId, withLink = true, externalIsLoading = false }) =>
 	}
 
 	return content;
-};
-
-DisplayName.propTypes = {
-	userId           : PropTypes.string,
-	withLink         : PropTypes.bool,
-	externalIsLoading: PropTypes.bool,
 };
 
 export default React.memo(DisplayName);

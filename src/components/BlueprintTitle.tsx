@@ -1,9 +1,13 @@
 import {faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types';
 import React from 'react';
 
-const BlueprintTitle = ({ title, isLoading }) =>
+interface BlueprintTitleProps {
+	title?: string;
+	isLoading: boolean;
+}
+
+const BlueprintTitle: React.FC<BlueprintTitleProps> = ({ title, isLoading }) =>
 {
 	if (isLoading)
 	{
@@ -11,11 +15,6 @@ const BlueprintTitle = ({ title, isLoading }) =>
 	}
 
 	return <h1>{title}</h1>;
-};
-
-BlueprintTitle.propTypes = {
-	title    : PropTypes.string,
-	isLoading: PropTypes.bool.isRequired,
 };
 
 export default React.memo(BlueprintTitle);

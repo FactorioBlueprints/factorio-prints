@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useRouter } from '@tanstack/react-router';
 
-const NoMatch = () =>
+const NoMatch: React.FC = () =>
 {
 	const router = useRouter();
 	const pathname = router.state.location.pathname;
