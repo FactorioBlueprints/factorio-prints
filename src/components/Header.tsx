@@ -1,5 +1,5 @@
-import {faDiscord, faGithub, faGoogle, faPatreon} from '@fortawesome/free-brands-svg-icons';
-
+import React, { useMemo, useState } from 'react';
+import { faDiscord, faGithub, faGoogle, faPatreon } from '@fortawesome/free-brands-svg-icons';
 import {
 	faBug,
 	faClock,
@@ -15,29 +15,33 @@ import {
 	faUser,
 	faWrench,
 } from '@fortawesome/free-solid-svg-icons';
-
-import {FontAwesomeIcon}                                                           from '@fortawesome/react-fontawesome';
-import {getAuth, GithubAuthProvider, GoogleAuthProvider, signInWithPopup, signOut} from 'firebase/auth';
-import PropTypes                                                                   from 'prop-types';
-import React, {useMemo, useState}                                                   from 'react';
-import Button                                                                      from 'react-bootstrap/Button';
-import Dropdown                                                                    from 'react-bootstrap/Dropdown';
-import Nav                                                                         from 'react-bootstrap/Nav';
-import Navbar                                                                      from 'react-bootstrap/Navbar';
-import NavDropdown                                                                 from 'react-bootstrap/NavDropdown';
-import {useAuthState}                                                              from 'react-firebase-hooks/auth';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	getAuth,
+	GithubAuthProvider,
+	GoogleAuthProvider,
+	signInWithPopup,
+	signOut,
+	AuthProvider,
+	User,
+} from 'firebase/auth';
+import Button from 'react-bootstrap/Button';
+import Dropdown from 'react-bootstrap/Dropdown';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { Link } from '@tanstack/react-router';
 
-import {app}                           from '../base';
-import {useIsModerator}                from '../hooks/useModerators';
-import {historySchema, locationSchema} from '../propTypes';
+import { app } from '../base';
+import { useIsModerator } from '../hooks/useModerators';
 
-const Header = () =>
+const Header: React.FC = () =>
 {
-	const [user] = useAuthState(getAuth(app));
+	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const moderatorQuery = useIsModerator(user?.uid);
 	const isModerator = moderatorQuery.data ?? false;
-	const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+	const [showAccountDropdown, setShowAccountDropdown] = useState<boolean>(false);
 
 	const googleProvider = useMemo(() =>
 	{
@@ -51,16 +55,16 @@ const Header = () =>
 	const githubProvider = useMemo(() =>
 	{
 		const provider = new GithubAuthProvider();
-		provider.setCustomParameters({allow_signup: true});
+		provider.setCustomParameters({allow_signup: 'true'});
 		return provider;
 	}, []);
 
-	const handleLogout = () =>
+	const handleLogout = (): void =>
 	{
 		signOut(getAuth(app));
 	};
 
-	const getDisplayName = () =>
+	const getDisplayName = (): React.ReactElement | false =>
 	{
 		if (user && user.displayName)
 		{
@@ -75,7 +79,7 @@ const Header = () =>
 		return false;
 	};
 
-	const authenticate = (provider) =>
+	const authenticate = (provider: AuthProvider): void =>
 	{
 		signInWithPopup(getAuth(app), provider).catch(error =>
 		{
@@ -87,7 +91,7 @@ const Header = () =>
 		});
 	};
 
-	const renderAuthentication = () =>
+	const renderAuthentication = (): React.ReactElement =>
 	{
 		if (user)
 		{
@@ -110,7 +114,7 @@ const Header = () =>
 							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
 							{' My Favorites'}
 						</Dropdown.Item>
-						<Dropdown.Item as={Link} to='/user/$userId' params={{ userId: user.uid }} onClick={closeDropdown} className='text-light text-left'>
+						<Dropdown.Item as={Link} to={`/user/${user!.uid}`} onClick={closeDropdown} className='text-light text-left'>
 							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
 							{' My Blueprints'}
 						</Dropdown.Item>
@@ -126,7 +130,6 @@ const Header = () =>
 						)}
 						<Dropdown.Item>
 							<Button
-								type='link'
 								className='w-100'
 								variant='warning'
 								size='lg'
@@ -228,12 +231,6 @@ const Header = () =>
 			</Navbar.Collapse>
 		</Navbar>
 	);
-};
-
-Header.propTypes = {
-	location     : locationSchema,
-	history      : historySchema,
-	staticContext: PropTypes.shape({}),
 };
 
 export default Header;
