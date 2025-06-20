@@ -21,6 +21,16 @@ Sentry.init({
 	tracePropagationTargets: ['localhost', /^https:\/\/(www\.)?factorioprints\.(com|xyz)/],
 	replaysSessionSampleRate: 0.001,
 	replaysOnErrorSampleRate: 1.0,
+	_experiments: {
+		enableLogs: true,
+	},
+});
+
+// Test Sentry logging
+const {logger} = Sentry;
+logger.info('Application started', {
+	environment: process.env.NODE_ENV,
+	timestamp: new Date().toISOString(),
 });
 
 const strictRoot = (
