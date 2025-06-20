@@ -1,14 +1,13 @@
 import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
-import {getAuth}                                 from 'firebase/auth';
+import {getAuth, User}                           from 'firebase/auth';
 import update                                    from 'immutability-helper';
 import difference                                from 'lodash/difference';
 import isEmpty                                   from 'lodash/isEmpty';
 import some                                      from 'lodash/some';
-import MarkdownIt                                  from 'markdown-it';
-import DOMPurify              from 'dompurify';
-// No PropTypes needed
+import MarkdownIt                                from 'markdown-it';
+import DOMPurify                                 from 'dompurify';
 import React, {useCallback, useEffect, useState} from 'react';
 import { loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS } from '../localStorage';
 import Alert                                     from 'react-bootstrap/Alert';
@@ -32,12 +31,43 @@ import noImageAvailable       from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import {useCreateBlueprint}   from '../hooks/useCreateBlueprint';
 import {useTags}              from '../hooks/useTags';
-// No PropTypes needed
 
 import PageHeader          from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
 
-// Initialize markdown-it
+interface BlueprintFormData {
+	title: string;
+	descriptionMarkdown: string;
+	blueprintString: string;
+	imageUrl: string;
+	tags?: string[];
+}
+
+interface CreateState {
+	renderedMarkdown: string;
+	submissionErrors: string[];
+	submissionWarnings: string[];
+	uploadProgressBarVisible: boolean;
+	uploadProgressPercent: number;
+	blueprint: BlueprintFormData;
+}
+
+interface SelectOption {
+	value: string;
+	label: string;
+}
+
+type BlueprintBookEntry = {
+	blueprint?: {
+		label?: string;
+	};
+	blueprint_book?: BlueprintBook;
+};
+
+type BlueprintBook = {
+	blueprints: BlueprintBookEntry[];
+};
+
 const md = new MarkdownIt({
 	html       : true,
 	linkify    : true,
@@ -45,20 +75,20 @@ const md = new MarkdownIt({
 	breaks     : false,
 });
 
-const defaultTableRenderer = md.renderer.rules.table_open || function(tokens, idx, options, env, self)
+const defaultTableRenderer = md.renderer.rules.table_open || function(tokens: any, idx: number, options: any, env: any, self: any)
 {
 	return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.table_open = function(tokens, idx, options, env, self)
+md.renderer.rules.table_open = function(tokens: any, idx: number, options: any, env: any, self: any)
 {
 	tokens[idx].attrSet('class', 'table table-striped table-bordered');
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };
 
-const emptyTags = [];
+const emptyTags: string[] = [];
 
-const initialState = {
+const initialState: CreateState = {
 	renderedMarkdown        : '',
 	submissionErrors        : [],
 	submissionWarnings      : [],
@@ -72,13 +102,13 @@ const initialState = {
 	},
 };
 
-const Create = () =>
+const Create: React.FC = () =>
 {
-	const [user] = useAuthState(getAuth(app));
+	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const navigate = useNavigate();
-	const [state, setState] = useState(initialState);
-	const [parsedBlueprint, setParsedBlueprint] = useState(null);
-	const [v15Decoded, setV15Decoded] = useState(null);
+	const [state, setState] = useState<CreateState>(initialState);
+	const [parsedBlueprint, setParsedBlueprint] = useState<Blueprint | null>(null);
+	const [v15Decoded, setV15Decoded] = useState<any>(null);
 
 	// Get all tags using the query hook
 	const { data: tagsData, isLoading: tagsLoading } = useTags();
@@ -87,7 +117,7 @@ const Create = () =>
 	// Create blueprint mutation
 	const createBlueprintMutation = useCreateBlueprint();
 
-	const parseBlueprint = useCallback((blueprintString) =>
+	const parseBlueprint = useCallback((blueprintString: string) =>
 	{
 		try
 		{
@@ -100,7 +130,7 @@ const Create = () =>
 		}
 	}, []);
 
-	const cacheBlueprintState = useCallback((blueprint) =>
+	const cacheBlueprintState = useCallback((blueprint: BlueprintFormData | null) =>
 	{
 		if (blueprint)
 		{
@@ -154,7 +184,7 @@ const Create = () =>
 		}));
 	}, []);
 
-	const handleDescriptionChanged = useCallback((event) =>
+	const handleDescriptionChanged = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) =>
 	{
 		const descriptionMarkdown = event.target.value;
 		const renderedMarkdown = DOMPurify.sanitize(md.render(descriptionMarkdown || ''));
@@ -168,7 +198,7 @@ const Create = () =>
 		}));
 	}, []);
 
-	const handleChange = useCallback((event) =>
+	const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
 	{
 		const {name, value} = event.target;
 
@@ -190,11 +220,11 @@ const Create = () =>
 		}));
 	}, [parseBlueprint]);
 
-	const someHaveNoName = useCallback((blueprintBook) =>
+	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean =>
 	{
 		return some(
 			blueprintBook.blueprints,
-			(eachEntry) =>
+			(eachEntry: BlueprintBookEntry) =>
 			{
 				if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
 				if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
@@ -202,7 +232,7 @@ const Create = () =>
 			});
 	}, []);
 
-	const validateInputs = useCallback(() =>
+	const validateInputs = useCallback((): string[] =>
 	{
 		const submissionErrors = [];
 		const {blueprint} = state;
@@ -251,7 +281,7 @@ const Create = () =>
 		return submissionErrors;
 	}, [state]);
 
-	const validateWarnings = useCallback(() =>
+	const validateWarnings = useCallback((): string[] =>
 	{
 		const submissionWarnings = [];
 
@@ -289,7 +319,7 @@ const Create = () =>
 		return submissionWarnings;
 	}, [state.blueprint, v15Decoded, someHaveNoName]);
 
-	const handleCreateBlueprint = useCallback((event) =>
+	const handleCreateBlueprint = useCallback((event: React.FormEvent) =>
 	{
 		event.preventDefault();
 
@@ -327,7 +357,7 @@ const Create = () =>
 		});
 	}, [validateInputs, validateWarnings, createBlueprintMutation, state.blueprint, user]);
 
-	const handleForceCreateBlueprint = useCallback((event) =>
+	const handleForceCreateBlueprint = useCallback((event: React.MouseEvent) =>
 	{
 		event.preventDefault();
 
@@ -360,7 +390,7 @@ const Create = () =>
 		navigate({ to: '/blueprints' });
 	}, [navigate]);
 
-	const handleTagSelection = useCallback((selectedTags) =>
+	const handleTagSelection = useCallback((selectedTags: SelectOption[]) =>
 	{
 		const tags = selectedTags.map(each => each.value);
 		setState(prevState => ({
@@ -372,7 +402,7 @@ const Create = () =>
 		}));
 	}, []);
 
-	const addTag = useCallback((tag) =>
+	const addTag = useCallback((tag: string) =>
 	{
 		setState(prevState => update(prevState, {
 			blueprint: {tags: {$push: [tag]}},
@@ -396,9 +426,9 @@ const Create = () =>
 						<Card.Img
 							variant='top'
 							src={state.blueprint.imageUrl || noImageAvailable}
-							onError={(e) =>
+							onError={(e: React.SyntheticEvent<HTMLImageElement>) =>
 							{
-								e.target.src = noImageAvailable;
+								e.currentTarget.src = noImageAvailable;
 							}}
 						/>
 						<Card.Title className='truncate'>
@@ -684,7 +714,5 @@ const Create = () =>
 		</>
 	);
 };
-
-// No longer need propTypes since we use TanStack Router's useNavigate
 
 export default Create;
