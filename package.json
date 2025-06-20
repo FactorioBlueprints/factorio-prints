@@ -30,7 +30,7 @@
 		"@types/react": "18.3.13",
 		"@types/react-dom": "19.1.6",
 		"@types/react-helmet": "6.1.11",
-		"@types/react-router-dom": "5.1.7",
+		"@types/react-router-dom": "5.3.3",
 		"@types/react-select": "5.0.1",
 		"airbnb-prop-types": "2.16.0",
 		"antlr4": "4.13.2",
