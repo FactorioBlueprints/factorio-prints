@@ -4,9 +4,8 @@ import {FontAwesomeIcon}                            from '@fortawesome/react-fon
 import {getAuth}                                          from 'firebase/auth';
 import isEmpty                                            from 'lodash/isEmpty';
 import some                                               from 'lodash/some';
-import MarkdownIt                                           from 'markdown-it';
-import DOMPurify                                  from 'dompurify';
-import PropTypes                                          from 'prop-types';
+import MarkdownIt                                         from 'markdown-it';
+import DOMPurify                                          from 'dompurify';
 import React, {useCallback, useEffect, useState, useMemo} from 'react';
 import Alert                                              from 'react-bootstrap/Alert';
 import Button                                             from 'react-bootstrap/Button';
@@ -26,7 +25,7 @@ import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
 
 import {app}                                    from '../base';
-import Blueprint                                from '../Blueprint';
+import Blueprint, { type V15DecodedObject, type ConvertedBlueprint } from '../Blueprint';
 import noImageAvailable                         from '../gif/No_available_image.gif';
 import buildImageUrl                            from '../helpers/buildImageUrl';
 import generateTagSuggestions                   from '../helpers/generateTagSuggestions';
@@ -37,7 +36,7 @@ import {useDeleteBlueprint, useUpdateBlueprint} from '../hooks/useUpdateBlueprin
 import {useEnrichedBlueprint}                   from '../hooks/useEnrichedBlueprint';
 import {useRawBlueprint}                        from '../hooks/useRawBlueprint';
 import {useRawBlueprintSummary}                 from '../hooks/useRawBlueprintSummary';
-import * as propTypes                           from '../propTypes';
+import type { BlueprintBook } from '../schemas';
 
 import NoMatch             from './NoMatch';
 import PageHeader          from './PageHeader';
@@ -50,18 +49,18 @@ const md = new MarkdownIt({
 	breaks     : false,
 });
 
-const defaultTableRenderer = md.renderer.rules.table_open || function(tokens, idx, options, env, self)
+const defaultTableRenderer = md.renderer.rules.table_open || function(tokens: any[], idx: number, options: any, env: any, self: any)
 {
 	return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.table_open = function(tokens, idx, options, env, self)
+md.renderer.rules.table_open = function(tokens: any[], idx: number, options: any, env: any, self: any)
 {
 	tokens[idx].attrSet('class', 'table table-striped table-bordered');
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };
 
-const emptyTags = [];
+const emptyTags: string[] = [];
 
 const blueprintFormSchema = z.object({
 	title: z.string()
@@ -89,6 +88,36 @@ const blueprintFormSchema = z.object({
 		),
 	tags: z.array(z.string()),
 });
+
+type BlueprintFormData = z.infer<typeof blueprintFormSchema>;
+
+interface UiState {
+	renderedMarkdown: string;
+	uploadProgressBarVisible: boolean;
+	uploadProgressPercent: number;
+	deletionModalVisible: boolean;
+	parsedBlueprint: Blueprint | null;
+	v15Decoded: V15DecodedObject | ConvertedBlueprint | null;
+	submissionWarnings: string[];
+}
+
+interface SelectOption {
+	value: string;
+	label: string;
+}
+
+interface FormFieldError {
+	field?: string;
+	message?: string;
+}
+
+type FormValues = {
+	title: string;
+	descriptionMarkdown: string;
+	blueprintString: string;
+	imageUrl: string;
+	tags: string[];
+};
 
 function EditBlueprintWrapper()
 {
@@ -130,7 +159,7 @@ function EditBlueprintWrapper()
 	const updateBlueprintMutation = useUpdateBlueprint();
 	const deleteBlueprintMutation = useDeleteBlueprint();
 
-	const [uiState, setUiState] = useState({
+	const [uiState, setUiState] = useState<UiState>({
 		renderedMarkdown        : '',
 		uploadProgressBarVisible: false,
 		uploadProgressPercent   : 0,
@@ -141,9 +170,9 @@ function EditBlueprintWrapper()
 	});
 
 	// Store current tags separately from form state. This is needed because form state updates don't reliably trigger re-renders for dependent calculations like our tag suggestions filtering.
-	const [currentTags, setCurrentTags] = useState([]);
+	const [currentTags, setCurrentTags] = useState<string[]>([]);
 
-	const defaultValues = useMemo(() =>
+	const defaultValues = useMemo((): FormValues =>
 	{
 		const tags = blueprintData?.tags
 			? Object.keys(blueprintData.tags).filter(tag => blueprintData.tags[tag])
@@ -160,11 +189,18 @@ function EditBlueprintWrapper()
 
 	const form = useForm({
 		defaultValues,
-		validators: {
-			onSubmit: blueprintFormSchema,
-		},
 		onSubmit: async ({ value }) =>
 		{
+			// Validate using Zod schema
+			try {
+				blueprintFormSchema.parse(value);
+			} catch (error) {
+				if (error instanceof z.ZodError) {
+					console.error('Validation errors:', error.errors);
+					return;
+				}
+			}
+
 			const submissionWarnings = validateWarnings(value);
 			if (submissionWarnings.length > 0)
 			{
@@ -172,16 +208,17 @@ function EditBlueprintWrapper()
 					...prev,
 					submissionWarnings,
 				}));
-				return false;
+				return;
 			}
 
-			updateBlueprintMutation.mutate({
-				id           : blueprintId,
-				rawBlueprint : rawBlueprintData,
-				formData     : value,
-				availableTags: tags,
-			});
-			return true;
+			if (rawBlueprintData) {
+				updateBlueprintMutation.mutate({
+					id           : blueprintId,
+					rawBlueprint : rawBlueprintData,
+					formData     : value,
+					availableTags: tags,
+				});
+			}
 		},
 	});
 
@@ -240,7 +277,7 @@ function EditBlueprintWrapper()
 		}
 	}, [form.state.values.descriptionMarkdown]);
 
-	const someHaveNoName = useCallback((blueprintBook) =>
+	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean =>
 	{
 		return some(
 			blueprintBook.blueprints,
@@ -252,9 +289,9 @@ function EditBlueprintWrapper()
 			});
 	}, []);
 
-	const validateWarnings = useCallback((formValues) =>
+	const validateWarnings = useCallback((formValues: FormValues) =>
 	{
-		const warnings = [];
+		const warnings: string[] = [];
 
 		if (isEmpty(formValues.tags))
 		{
@@ -275,23 +312,23 @@ function EditBlueprintWrapper()
 				warnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
 			}
 
-			if (blueprint.isBlueprint() && uiState.v15Decoded && isEmpty(uiState.v15Decoded.blueprint.label))
+			if (blueprint.isBlueprint() && uiState.v15Decoded && 'blueprint' in uiState.v15Decoded && isEmpty(uiState.v15Decoded.blueprint?.label))
 			{
 				warnings.push('Blueprint has no name. Consider adding a name.');
 			}
-			if (blueprint.isBlueprint() && uiState.v15Decoded && isEmpty(uiState.v15Decoded.blueprint.icons))
+			if (blueprint.isBlueprint() && uiState.v15Decoded && 'blueprint' in uiState.v15Decoded && isEmpty(uiState.v15Decoded.blueprint?.icons))
 			{
 				warnings.push('The blueprint has no icons. Consider adding icons.');
 			}
 
-			if (blueprint.isBook() && uiState.v15Decoded && someHaveNoName(uiState.v15Decoded.blueprint_book))
+			if (blueprint.isBook() && uiState.v15Decoded && 'blueprint_book' in uiState.v15Decoded && uiState.v15Decoded.blueprint_book && someHaveNoName(uiState.v15Decoded.blueprint_book))
 			{
 				warnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 			}
 		}
 		catch (e)
 		{
-			warnings.push('Error validating blueprint: ' + e.message);
+			warnings.push('Error validating blueprint: ' + (e instanceof Error ? e.message : 'Unknown error'));
 		}
 
 		return warnings;
@@ -305,16 +342,18 @@ function EditBlueprintWrapper()
 		}));
 	}, []);
 
-	const handleForceSaveBlueprintEdits = useCallback((event) =>
+	const handleForceSaveBlueprintEdits = useCallback((event: React.MouseEvent<HTMLButtonElement>) =>
 	{
 		event.preventDefault();
 
-		updateBlueprintMutation.mutate({
-			id           : blueprintId,
-			rawBlueprint : rawBlueprintData,
-			formData     : form.state.values,
-			availableTags: tags,
-		});
+		if (rawBlueprintData) {
+			updateBlueprintMutation.mutate({
+				id           : blueprintId,
+				rawBlueprint : rawBlueprintData,
+				formData     : form.state.values,
+				availableTags: tags,
+			});
+		}
 	}, [updateBlueprintMutation, blueprintId, form.state.values, rawBlueprintData, tags]);
 
 	const handleCancel = useCallback(() =>
@@ -322,7 +361,7 @@ function EditBlueprintWrapper()
 		navigate({ to: `/view/${blueprintId}` });
 	}, [navigate, blueprintId]);
 
-	const handleShowConfirmDelete = useCallback((event) =>
+	const handleShowConfirmDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) =>
 	{
 		event.preventDefault();
 		setUiState(prevState => ({
@@ -343,6 +382,11 @@ function EditBlueprintWrapper()
 	{
 		const authorId = rawBlueprintData?.author?.userId;
 
+		if (!authorId) {
+			console.error('No author ID found for blueprint');
+			return;
+		}
+
 		deleteBlueprintMutation.mutate({
 			id  : blueprintId,
 			authorId,
@@ -350,19 +394,19 @@ function EditBlueprintWrapper()
 		});
 	}, [deleteBlueprintMutation, blueprintId, rawBlueprintData, currentTags]);
 
-	const handleTagSelection = useCallback((selectedTags) =>
+	const handleTagSelection = useCallback((selectedTags: readonly SelectOption[] | null) =>
 	{
-		const tagValues = selectedTags.map(each => each.value);
-		form.setFieldValue('tags', tagValues);
+		const tagValues = selectedTags ? selectedTags.map(each => each.value) : [];
+		(form as any).setFieldValue('tags', tagValues);
 		setCurrentTags(tagValues);
 	}, [form]);
 
-	const addTag = useCallback((tag) =>
+	const addTag = useCallback((tag: string) =>
 	{
 		if (!currentTags.includes(tag))
 		{
 			const updatedTags = [...currentTags, tag];
-			form.setFieldValue('tags', updatedTags);
+			(form as any).setFieldValue('tags', updatedTags);
 			setCurrentTags(updatedTags);
 		}
 	}, [form, currentTags]);
@@ -389,7 +433,8 @@ function EditBlueprintWrapper()
 							src={imageUrl || noImageAvailable}
 							onError={(e) =>
 							{
-								e.target.src = noImageAvailable;
+								const target = e.target as HTMLImageElement;
+								target.src = noImageAvailable;
 							}}
 						/>
 						<Card.Title className='truncate'>
@@ -443,7 +488,8 @@ function EditBlueprintWrapper()
 							src={imageUrl || noImageAvailable}
 							onError={(e) =>
 							{
-								e.target.src = noImageAvailable;
+								const target = e.target as HTMLImageElement;
+								target.src = noImageAvailable;
 							}}
 						/>
 						<Card.Title className='truncate'>
@@ -620,10 +666,10 @@ function EditBlueprintWrapper()
 										// Handle both string errors and object errors
 										const errorMessage = typeof error === 'string'
 											? error
-											: error?.message || JSON.stringify(error);
+											: (error as FormFieldError)?.message || JSON.stringify(error);
 										const errorKey = typeof error === 'string'
 											? error
-											: error?.field || `error-${index}`;
+											: (error as FormFieldError)?.field || `error-${index}`;
 
 										return (
 											<li key={errorKey}>
@@ -712,7 +758,7 @@ function EditBlueprintWrapper()
 										{field.state.meta.errors?.length > 0 && (
 											<div className='text-danger mt-1'>
 												{field.state.meta.errors.map(error =>
-													typeof error === 'string' ? error : error?.message || JSON.stringify(error),
+													typeof error === 'string' ? error : (error as any)?.message || JSON.stringify(error),
 												).join(', ')}
 											</div>
 										)}
@@ -745,7 +791,7 @@ function EditBlueprintWrapper()
 											{field.state.meta.errors?.length > 0 && (
 												<div className='text-danger mt-1'>
 													{field.state.meta.errors.map(error =>
-														typeof error === 'string' ? error : error?.message || JSON.stringify(error),
+														typeof error === 'string' ? error : (error as any)?.message || JSON.stringify(error),
 													).join(', ')}
 												</div>
 											)}
@@ -789,7 +835,7 @@ function EditBlueprintWrapper()
 										{field.state.meta.errors?.length > 0 && (
 											<div className='text-danger mt-1'>
 												{field.state.meta.errors.map(error =>
-													typeof error === 'string' ? error : error?.message || JSON.stringify(error),
+													typeof error === 'string' ? error : (error as any)?.message || JSON.stringify(error),
 												).join(', ')}
 											</div>
 										)}
@@ -863,7 +909,7 @@ function EditBlueprintWrapper()
 										{field.state.meta.errors?.length > 0 && (
 											<div className='text-danger mt-1'>
 												{field.state.meta.errors.map(error =>
-													typeof error === 'string' ? error : error?.message || JSON.stringify(error),
+													typeof error === 'string' ? error : (error as any)?.message || JSON.stringify(error),
 												).join(', ')}
 											</div>
 										)}
@@ -915,18 +961,5 @@ function EditBlueprintWrapper()
 		</>
 	);
 }
-
-EditBlueprintWrapper.propTypes = {
-	match: PropTypes.shape({
-		params: PropTypes.shape({
-			blueprintId: PropTypes.string.isRequired,
-		}).isRequired,
-		path   : PropTypes.string.isRequired,
-		url    : PropTypes.string.isRequired,
-		isExact: PropTypes.bool.isRequired,
-	}),
-	location     : propTypes.locationSchema,
-	staticContext: PropTypes.shape({}),
-};
 
 export default EditBlueprintWrapper;

@@ -346,3 +346,4 @@ class Blueprint {
 }
 
 export default Blueprint;
+export type { V15DecodedObject, ConvertedBlueprint };
