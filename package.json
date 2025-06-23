@@ -39,7 +39,7 @@
 		"axios": "1.10.0",
 		"bootstrap": "5.3.7",
 		"classnames": "2.5.1",
-		"concurrently": "9.1.2",
+		"concurrently": "9.2.0",
 		"copy-to-clipboard": "3.3.3",
 		"dayjs": "1.11.13",
 		"disqus-react": "1.1.6",
