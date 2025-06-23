@@ -1,9 +1,8 @@
-const { ESLINT_MODES } = require("@craco/craco");
 const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 
 module.exports = {
     eslint: {
-        mode: ESLINT_MODES.file
+        mode: "file"
     },
     webpack: {
         configure: (webpackConfig) => {
