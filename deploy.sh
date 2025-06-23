@@ -10,6 +10,6 @@ git pushf open-source HEAD:factorio-prints.com \
 	&& npm run build \
 	&& firebase deploy \
 	&& git tag prod HEAD -f \
-	&& git tag "$DATE_TAG" HEAD \
+	&& git tag "$DATE_TAG" HEAD -f \
 	&& git pushf open-source prod -f \
 	&& git pushf open-source "$DATE_TAG"
