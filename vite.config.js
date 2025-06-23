@@ -12,11 +12,9 @@ export default defineConfig(({ mode }) => ({
 		TanStackRouterVite({
 			routeFilePrefix   : '',
 			routesDirectory   : './src/routes',
-			generatedRouteTree: './src/routeTree.gen.js',
-			// Keep as 'js' until we migrate routes
-			language          : 'js',
-			// Keep disabled until we add types to routes
-			disableTypes      : true,
+			generatedRouteTree: './src/routeTree.gen.ts',
+			language          : 'ts',
+			disableTypes      : false,
 			autoCodeSplitting : true,
 		}),
 		react(),

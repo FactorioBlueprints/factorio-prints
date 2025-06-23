@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import * as Sentry from '@sentry/react';
-import { routeTree } from './routeTree.gen.js';
+import { routeTree } from './routeTree.gen.ts';
 
 const router = createRouter({
 	routeTree,
