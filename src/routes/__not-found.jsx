@@ -1,5 +1,17 @@
+import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import NoMatch from '../components/NoMatch';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Route = createFileRoute('/__not-found')({
-	// This route doesn't need a loader but could have one if needed
+	component: NotFoundComponent,
 });
+
+function NotFoundComponent()
+{
+	return (
+		<ErrorBoundary>
+			<NoMatch />
+		</ErrorBoundary>
+	);
+}

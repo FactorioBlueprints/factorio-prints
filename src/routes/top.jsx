@@ -1,5 +1,17 @@
+import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import MostFavoritedGrid from '../components/MostFavoritedGrid';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Route = createFileRoute('/top')({
-	// This route doesn't need a loader but could have one if needed
+	component: TopComponent,
 });
+
+function TopComponent()
+{
+	return (
+		<ErrorBoundary>
+			<MostFavoritedGrid />
+		</ErrorBoundary>
+	);
+}

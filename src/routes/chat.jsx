@@ -1,5 +1,17 @@
+import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import Chat from '../components/Chat';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Route = createFileRoute('/chat')({
-	// This route doesn't need a loader but could have one if needed
+	component: ChatComponent,
 });
+
+function ChatComponent()
+{
+	return (
+		<ErrorBoundary>
+			<Chat />
+		</ErrorBoundary>
+	);
+}

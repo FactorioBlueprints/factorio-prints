@@ -1,5 +1,17 @@
+import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import BlueprintGrid from '../components/BlueprintGrid';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Route = createFileRoute('/blueprints')({
-	// This route doesn't need a loader but could have one if needed
+	component: BlueprintsComponent,
 });
+
+function BlueprintsComponent()
+{
+	return (
+		<ErrorBoundary>
+			<BlueprintGrid />
+		</ErrorBoundary>
+	);
+}
