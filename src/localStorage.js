@@ -145,14 +145,30 @@ function debounce(func, wait, options = {})
 }
 
 const workerCode = `
-  importScripts('https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js');
-
-  const { createStore, get, set, del } = idbKeyval;
-
+  let idbKeyval;
+  let createStore, get, set, del;
   let store;
+  let idbAvailable = false;
+
+  try {
+    importScripts('https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js');
+    ({ createStore, get, set, del } = idbKeyval);
+    idbAvailable = true;
+  } catch (error) {
+    console.error('[Worker] Failed to load idb-keyval from CDN:', error);
+  }
 
   self.onmessage = async function(e) {
     const { type, key, data, id, storeConfig } = e.data;
+
+    if (!idbAvailable) {
+      self.postMessage({
+        id,
+        error: { message: 'idb-keyval not available in worker', fallback: true },
+        success: false
+      });
+      return;
+    }
 
     try {
       // Initialize store if needed
@@ -223,6 +239,11 @@ function getWorker()
 					}
 					else
 					{
+						if (error.fallback)
+						{
+							console.warn('[IndexedDB Worker] idb-keyval CDN failed, falling back to direct usage');
+							worker = null;
+						}
 						pendingOp.reject(new Error(error.message));
 					}
 					pendingOperations.delete(id);
