@@ -8,7 +8,10 @@ const router = createRouter({
 	defaultPreload         : 'intent',
 	defaultPreloadStaleTime: 0,
 	defaultOnError         : (error) => {
-		if (error.message && error.message.includes('Failed to fetch dynamically imported module')) {
+		if (error.message && (
+			error.message.includes('Failed to fetch dynamically imported module') ||
+			error.message.includes('is not a valid JavaScript MIME type')
+		)) {
 			Sentry.captureException(error, {
 				tags: {
 					error_type: 'lazy_load_failure',
