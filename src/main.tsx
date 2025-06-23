@@ -17,7 +17,12 @@ Sentry.init({
 	release       : import.meta.env.VITE_APP_VERSION || '0.1.0',
 	integrations  : [
 		Sentry.browserTracingIntegration(),
-		Sentry.replayIntegration(),
+		Sentry.replayIntegration({
+			maskAllInputs: false,
+			blockAllMedia: false,
+			maskAllText: false,
+			ignore: ['[id^="dsq-"]', '.disqus-thread', '#disqus_thread'],
+		}),
 	],
 	// Tracing
 	tracesSampleRate        : 1.0, //  Capture 100% of the transactions
