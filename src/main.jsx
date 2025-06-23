@@ -44,6 +44,22 @@ Sentry.init({
 	},
 });
 
+// Add Vite's preload error handler for module loading failures
+window.addEventListener('vite:preloadError', (event) =>
+{
+	console.error('Vite preload error detected, reloading page...', event.payload);
+	Sentry.captureException(event.payload, {
+		tags: {
+			error_type: 'vite_preload_error',
+		},
+		extra: {
+			message: 'Module import failed during preload',
+		},
+	});
+	event.preventDefault(); // Prevent the error from being thrown
+	window.location.reload();
+});
+
 // Add global error handler for images
 window.addEventListener('error', function(e)
 {
