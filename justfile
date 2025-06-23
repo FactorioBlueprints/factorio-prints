@@ -4,7 +4,7 @@ default:
 
 # `npm install`
 install:
-    npm install --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
+    npm install --ignore-scripts --legacy-peer-deps
 
 # `npm run dev`
 dev:
