@@ -28,11 +28,6 @@ function TaggedRouteComponent()
 			filteredTags: [tagWithSlashes],
 			titleFilter : '',
 		}));
-
-		console.log('Tagged route updated store with:', {
-			filteredTags: [tagWithSlashes],
-			titleFilter : '',
-		});
 	}, [category, name]);
 
 	return (

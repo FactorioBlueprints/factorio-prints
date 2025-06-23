@@ -24,7 +24,6 @@ searchParamsStore.subscribe(state =>
 {
 	try
 	{
-		console.log('Validating searchParamsStore state:', state);
 		storeSchema.parse(state);
 	}
 	catch (error: unknown)
