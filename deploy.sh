@@ -11,5 +11,5 @@ git pushf open-source HEAD:factorio-prints.com \
 	&& firebase deploy \
 	&& git tag prod HEAD -f \
 	&& git tag "$DATE_TAG" HEAD -f \
-	&& git pushf open-source prod -f \
-	&& git pushf open-source "$DATE_TAG"
+	&& git push open-source prod -f \
+	&& git push open-source "$DATE_TAG" -f
