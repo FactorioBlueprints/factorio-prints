@@ -1,4 +1,4 @@
-import { getAuth } from 'firebase/auth';
+import { getAuth, User } from 'firebase/auth';
 import { getDatabase, ref, runTransaction } from 'firebase/database';
 import React, { useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -9,7 +9,16 @@ import { app } from '../base';
 import ErrorBoundary from './ErrorBoundary';
 import Header from './Header';
 
-const Root = () =>
+interface UserData {
+	displayName?: string | null;
+	providerDisplayName?: string | null;
+	photoURL?: string | null;
+	email?: string | null;
+	emailVerified?: boolean;
+	providerId?: string | null;
+}
+
+const Root: React.FC = () =>
 {
 	const [user] = useAuthState(getAuth(app));
 
@@ -20,10 +29,10 @@ const Root = () =>
 		{
 			const { uid, email, photoURL, emailVerified, providerData } = user;
 
-			const providerId = providerData && providerData.length && providerData[0].providerId;
-			const providerDisplayName = providerId ? providerData[0].displayName : undefined;
+			const providerId = providerData && providerData.length > 0 ? providerData[0].providerId : null;
+			const providerDisplayName = providerId && providerData ? providerData[0].displayName : undefined;
 
-			const buildUserInformation = (existingUser) =>
+			const buildUserInformation = (existingUser: UserData | null): UserData =>
 			{
 				const existingUserInitialized = existingUser || {};
 				const displayName = existingUserInitialized.displayName || providerDisplayName;
