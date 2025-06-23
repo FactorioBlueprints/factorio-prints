@@ -1,4 +1,4 @@
-import { createStore } from 'idb-keyval';
+import { createStore, get, set, del } from 'idb-keyval';
 
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
@@ -200,45 +200,78 @@ function getWorker()
 {
 	if (!worker)
 	{
-		worker = new Worker(workerUrl);
-
-		worker.onmessage = (e) =>
+		try
 		{
-			const { id, result, error, success } = e.data;
-			const pendingOp = pendingOperations.get(id);
+			worker = new Worker(workerUrl);
 
-			if (pendingOp)
+			worker.onerror = (error) =>
 			{
-				if (success)
-				{
-					pendingOp.resolve(result);
-				}
-				else
-				{
-					pendingOp.reject(new Error(error.message));
-				}
-				pendingOperations.delete(id);
-			}
-		};
+				console.error('[IndexedDB Worker] Failed to initialize worker:', error);
+				worker = null;
+			};
 
-		// Initialize store in worker
-		worker.postMessage({
-			type       : 'init',
-			storeConfig: {
-				dbName   : 'factorio-prints-db',
-				storeName: 'query-cache-store',
-			},
-		});
+			worker.onmessage = (e) =>
+			{
+				const { id, result, error, success } = e.data;
+				const pendingOp = pendingOperations.get(id);
+
+				if (pendingOp)
+				{
+					if (success)
+					{
+						pendingOp.resolve(result);
+					}
+					else
+					{
+						pendingOp.reject(new Error(error.message));
+					}
+					pendingOperations.delete(id);
+				}
+			};
+
+			// Initialize store in worker
+			worker.postMessage({
+				type       : 'init',
+				storeConfig: {
+					dbName   : 'factorio-prints-db',
+					storeName: 'query-cache-store',
+				},
+			});
+		}
+		catch (error)
+		{
+			console.error('[IndexedDB Worker] Failed to create worker:', error);
+			worker = null;
+		}
 	}
 
 	return worker;
 }
 
-function workerOperation(type, key, data = null)
+async function workerOperation(type, key, data = null)
 {
+	const worker = getWorker();
+
+	// Fallback to direct idb-keyval if worker fails
+	if (!worker)
+	{
+		switch (type)
+		{
+			case 'set':
+				await set(key, data, indexedDbStore);
+				return { success: true };
+			case 'get':
+				return { data: await get(key, indexedDbStore) };
+			case 'delete':
+				await del(key, indexedDbStore);
+				return { success: true };
+			default:
+				throw new Error('Unknown operation type');
+		}
+	}
+
 	return new Promise((resolve, reject) =>
 	{
-		const worker = getWorker();
 		const id = operationCounter++;
 
 		pendingOperations.set(id, { resolve, reject });
