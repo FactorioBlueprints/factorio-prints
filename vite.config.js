@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
 			generatedRouteTree: './src/routeTree.gen.ts',
 			language          : 'ts',
 			disableTypes      : false,
-			autoCodeSplitting : true,
+			autoCodeSplitting : false,
 		}),
 		react(),
 		// Only upload source maps in production when auth token is available
@@ -39,7 +39,16 @@ export default defineConfig(({ mode }) => ({
 		}),
 	].filter(Boolean),
 	build: {
-		sourcemap: true, // Enable source maps for production builds
+		sourcemap    : true, // Enable source maps for production builds
+		rollupOptions: {
+			output: {
+				manualChunks: (id) =>
+				{
+					// Keep entitiesWithIcons separate due to size
+					if (id.includes('entitiesWithIcons')) return 'entities'
+				},
+			},
+		},
 	},
 	server: {
 		port : 3000,
