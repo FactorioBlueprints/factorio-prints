@@ -1,7 +1,7 @@
 {
   "name": "factorio-blueprints",
   "private": true,
-  "version": "0.1.0",
+  "version": "prod",
   "homepage": "https://factorioprints.com/",
   "type": "module",
   "scripts": {
@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "route:generate": "tanstack-router-cli generate",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version:sync": "node scripts/sync-version.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "6.7.2",
