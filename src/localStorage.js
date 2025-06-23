@@ -144,69 +144,6 @@ function debounce(func, wait, options = {})
 	return debounced;
 }
 
-const workerCode = `
-  let idbKeyval;
-  let createStore, get, set, del;
-  let store;
-  let idbAvailable = false;
-
-  try {
-    importScripts('https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js');
-    ({ createStore, get, set, del } = idbKeyval);
-    idbAvailable = true;
-  } catch (error) {
-    console.error('[Worker] Failed to load idb-keyval from CDN:', error);
-  }
-
-  self.onmessage = async function(e) {
-    const { type, key, data, id, storeConfig } = e.data;
-
-    if (!idbAvailable) {
-      self.postMessage({
-        id,
-        error: { message: 'idb-keyval not available in worker', fallback: true },
-        success: false
-      });
-      return;
-    }
-
-    try {
-      // Initialize store if needed
-      if (!store && storeConfig) {
-        store = createStore(storeConfig.dbName, storeConfig.storeName);
-      }
-
-      let result;
-
-      switch (type) {
-        case 'set':
-          await set(key, data, store);
-          result = { success: true };
-          break;
-        case 'get':
-          result = { data: await get(key, store) };
-          break;
-        case 'delete':
-          await del(key, store);
-          result = { success: true };
-          break;
-        default:
-          throw new Error('Unknown operation type');
-      }
-
-      self.postMessage({ id, result, success: true });
-    } catch (error) {
-      self.postMessage({
-        id,
-        error: { message: error.message, stack: error.stack },
-        success: false
-      });
-    }
-  };
-`;
-
-const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
-const workerUrl = URL.createObjectURL(workerBlob);
 
 let worker;
 let operationCounter = 0;
@@ -218,7 +155,7 @@ function getWorker()
 	{
 		try
 		{
-			worker = new Worker(workerUrl);
+			worker = new Worker(new URL('./localStorage.worker.js', import.meta.url), { type: 'module' });
 
 			worker.onerror = (error) =>
 			{
@@ -239,11 +176,6 @@ function getWorker()
 					}
 					else
 					{
-						if (error.fallback)
-						{
-							console.warn('[IndexedDB Worker] idb-keyval CDN failed, falling back to direct usage');
-							worker = null;
-						}
 						pendingOp.reject(new Error(error.message));
 					}
 					pendingOperations.delete(id);
