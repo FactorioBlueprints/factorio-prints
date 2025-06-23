@@ -22,6 +22,7 @@ import {
 import Disqus                    from 'disqus-react';
 import {
 	getAuth,
+	User,
 }                                from 'firebase/auth';
 import flatMap                   from 'lodash/flatMap';
 import forOwn                    from 'lodash/forOwn';
@@ -61,8 +62,16 @@ import {useEnrichedBlueprintSummary} from '../hooks/useEnrichedBlueprintSummary'
 import {useIsFavorite}               from '../hooks/useBlueprintFavorite';
 import {useIsModerator}              from '../hooks/useModerators';
 import useReconcileFavoritesMutation from '../hooks/useReconcileFavorites';
-import useToggleFavoriteMutation     from '../hooks/useToggleFavoriteMutation.js';
-import {BlueprintWrapper}            from '../parsing/BlueprintWrapper.js';
+import useToggleFavoriteMutation     from '../hooks/useToggleFavoriteMutation';
+import {BlueprintWrapper}            from '../parsing/BlueprintWrapper';
+import type {
+	BlueprintEntity,
+	BlueprintTile,
+	BlueprintContent,
+	BlueprintIcon,
+	BlueprintBookEntry,
+	RawBlueprintData,
+} from '../schemas';
 import BlueprintImage                from './BlueprintImage';
 import BlueprintMarkdownDescription  from './BlueprintMarkdownDescription';
 import BlueprintTitle                from './BlueprintTitle';
@@ -71,6 +80,45 @@ import DateDisplay                   from './DateDisplay';
 import DisplayName   from './DisplayName';
 import FavoriteCount from './FavoriteCount';
 import TagBadge      from './TagBadge';
+
+interface ReconcileResult {
+	blueprintId: string;
+	actualCount: number;
+	previousBlueprintCount: number;
+	previousSummaryCount: number;
+	hasDiscrepancy: boolean;
+	reconciled: boolean;
+}
+
+interface EntityHistogramItem {
+	name: string;
+	count: number;
+}
+
+interface ItemData {
+	item?: string;
+	count?: number;
+	id?: {
+		name: string;
+	};
+	items?: {
+		in_inventory?: unknown[];
+	};
+}
+
+interface DisqusConfig {
+	url: string;
+	identifier: string;
+	title?: string;
+}
+
+declare global {
+	interface Window {
+		DISQUS?: {
+			reset: (config: { reload: boolean }) => void;
+		};
+	}
+}
 
 function SingleBlueprintWithQuery()
 {
@@ -88,11 +136,11 @@ function SingleBlueprintWithQuery()
 
 	// Then fetch the full blueprint, passing the summary
 	const {
-			  data: blueprintData,
-			  isSuccess: blueprintIsSuccess,
-			  isLoading: blueprintIsLoading,
-			  error: blueprintError,
-		  } = useEnrichedBlueprint(blueprintId, blueprintSummary);
+		  data: blueprintData,
+		  isSuccess: blueprintIsSuccess,
+		  isLoading: blueprintIsLoading,
+		  error: blueprintError,
+	  } = useEnrichedBlueprint(blueprintId, blueprintSummary);
 
 	const tagsData = Object.keys(blueprintData?.tags || {});
 
@@ -101,9 +149,9 @@ function SingleBlueprintWithQuery()
 	const {data: isModerator = false} = useIsModerator(user?.uid);
 
 	const {
-			  data: isFavorite,
-			  isSuccess: favoriteIsSuccess,
-		  } = useIsFavorite(user?.uid, blueprintId);
+		  data: isFavorite,
+		  isSuccess: favoriteIsSuccess,
+	  } = useIsFavorite(user?.uid, blueprintId);
 
 	const [showBlueprint, setShowBlueprint] = useState(false);
 	const [showJson, setShowJson] = useState(false);
@@ -122,14 +170,14 @@ function SingleBlueprintWithQuery()
 		}
 	}, [blueprintIsSuccess]);
 
-	const hideButton = useCallback((text) => (
+	const hideButton = useCallback((text: string) => (
 		<>
 			<FontAwesomeIcon icon={faToggleOn} size='lg' fixedWidth className='text-success' />
 			{` ${text}`}
 		</>
 	), []);
 
-	const showButton = useCallback((text) => (
+	const showButton = useCallback((text: string) => (
 		<>
 			<FontAwesomeIcon icon={faToggleOff} size='lg' fixedWidth />
 			{` ${text}`}
@@ -152,12 +200,6 @@ function SingleBlueprintWithQuery()
 			userId           : uid,
 			isFavorite,
 			numberOfFavorites: blueprintData.numberOfFavorites || 0,
-		}, {
-			retry  : 1,
-			onError: (error) =>
-			{
-				console.error('Error toggling favorite status:', error);
-			},
 		});
 	}, [user, isFavorite, favoriteIsSuccess, blueprintId, blueprintData, favoriteBlueprintMutation]);
 
@@ -173,7 +215,7 @@ function SingleBlueprintWithQuery()
 
 	const handleTransitionToEdit = useCallback(() =>
 	{
-		navigate({ to: '/edit/$blueprintId', params: { blueprintId } });
+		navigate({ to: `/edit/${blueprintId}` });
 	}, [navigate, blueprintId]);
 
 	const handleReconcileFavorites = useCallback(() =>
@@ -181,39 +223,41 @@ function SingleBlueprintWithQuery()
 		reconcileFavoritesMutation.mutate(blueprintId);
 	}, [blueprintId, reconcileFavoritesMutation]);
 
-	const entityHistogram = useCallback((parsedBlueprint) =>
+	const entityHistogram = useCallback((parsedBlueprint: BlueprintContent): [string, number][] =>
 	{
-		const validEntities = (parsedBlueprint.entities || []).concat(parsedBlueprint.tiles || [])
+		const entities = parsedBlueprint.entities || [];
+		const tiles = parsedBlueprint.tiles || [];
+		const validEntities = [...entities, ...tiles]
 			.filter(entity => typeof entity.name === 'string' || typeof entity.name === 'number');
 
 		return flow(
-			countBy('name'),
+			countBy<BlueprintEntity | BlueprintTile>('name'),
 			toPairs,
 			sortBy(1),
 			reverse,
-		)(validEntities);
+		)(validEntities) as unknown as [string, number][];
 	}, []);
 
-	const itemHistogram = useCallback((parsedBlueprint) =>
+	const itemHistogram = useCallback((parsedBlueprint: BlueprintContent): [string, number][] =>
 	{
-		const result = {};
-		const items = flatMap(parsedBlueprint.entities, entity => entity.items || []);
+		const result: Record<string, number> = {};
+		const items = flatMap(parsedBlueprint.entities, entity => (entity.items || []) as ItemData[]);
 
 		items.forEach((item) =>
 		{
 			// Handle original format: {item: "copper-cable", count: 5}
 			if (has(item, 'item') && has(item, 'count'))
 			{
-				result[item.item] = (result[item.item] || 0) + item.count;
+				result[item.item!] = (result[item.item!] || 0) + item.count!;
 			}
 			// Handle new format with id.name and items structure
 			else if (has(item, 'id') && has(item.id, 'name'))
 			{
-				const itemName = item.id.name;
+				const itemName = item.id!.name;
 				// Count the number of stacks if items.in_inventory exists
 				if (has(item, 'items') && has(item.items, 'in_inventory'))
 				{
-					const stackCount = item.items.in_inventory.length;
+					const stackCount = item.items!.in_inventory!.length;
 					result[itemName] = (result[itemName] || 0) + stackCount;
 				}
 				// Just count it once if we can't determine the stack count
@@ -230,7 +274,7 @@ function SingleBlueprintWithQuery()
 					// Skip non-primitive values that might cause [object Object] rendering
 					if (typeof value !== 'object' || value === null)
 					{
-						result[key] = (result[key] || 0) + value;
+						result[key] = (result[key] || 0) + (value as number);
 					}
 				});
 			}
@@ -240,27 +284,32 @@ function SingleBlueprintWithQuery()
 			toPairs,
 			sortBy(1),
 			reverse,
-		)(result);
+		)(result) as unknown as [string, number][];
 	}, []);
 
-	const getBookEntry = useCallback((eachBlueprint) =>
+	const getBookEntry = useCallback((eachBlueprint: BlueprintBookEntry): BlueprintContent | undefined =>
 	{
 		if (eachBlueprint.blueprint)
 		{
 			return eachBlueprint.blueprint;
 		}
 
-		if (eachBlueprint.upgrade_planner)
+		if ('upgrade_planner' in eachBlueprint && eachBlueprint.upgrade_planner)
 		{
-			return eachBlueprint.upgrade_planner;
+			return eachBlueprint.upgrade_planner as BlueprintContent;
 		}
 
-		if (eachBlueprint.deconstruction_planner)
+		if ('deconstruction_planner' in eachBlueprint && eachBlueprint.deconstruction_planner)
 		{
-			return eachBlueprint.deconstruction_planner;
+			return eachBlueprint.deconstruction_planner as BlueprintContent;
 		}
 
-		return eachBlueprint.blueprint_book;
+		if ('blueprint_book' in eachBlueprint && eachBlueprint.blueprint_book)
+		{
+			return eachBlueprint.blueprint_book as BlueprintContent;
+		}
+
+		return undefined;
 	}, []);
 
 	const renderEditButton = useCallback(() => (
@@ -299,21 +348,22 @@ function SingleBlueprintWithQuery()
 	const renderReconcileButton = useCallback(() =>
 	{
 		const { data: reconcileResult, isPending, isSuccess } = reconcileFavoritesMutation;
+		const typedResult = reconcileResult as ReconcileResult | undefined;
 		const buttonText = isPending
 			? ' Reconciling...'
-			: (isSuccess && reconcileResult?.hasDiscrepancy)
-				? ` Fixed (${reconcileResult.actualCount} favorites)`
-				: (isSuccess && !reconcileResult?.hasDiscrepancy)
+			: (isSuccess && typedResult?.hasDiscrepancy)
+				? ` Fixed (${typedResult.actualCount} favorites)`
+				: (isSuccess && !typedResult?.hasDiscrepancy)
 					? ' No issues found'
 					: ' Reconcile Favorites';
 
 		const buttonVariant = isSuccess
-			? (reconcileResult?.hasDiscrepancy ? "success" : "info")
+			? (typedResult?.hasDiscrepancy ? "success" : "info")
 			: "secondary";
 
 		const tooltipText = isSuccess
-			? (reconcileResult?.hasDiscrepancy
-				? `Fixed: ${reconcileResult.previousBlueprintCount} → ${reconcileResult.actualCount} favorites`
+			? (typedResult?.hasDiscrepancy
+				? `Fixed: ${typedResult.previousBlueprintCount} → ${typedResult.actualCount} favorites`
 				: "No discrepancy detected")
 			: "Reconcile favorites count";
 
@@ -404,7 +454,7 @@ function SingleBlueprintWithQuery()
 	}
 
 	const isOwner = user && user.uid === blueprintData?.author?.userId;
-	const disqusConfig = {
+	const disqusConfig: DisqusConfig = {
 		url       : `https://factorioprints.com/view/${blueprintId}`,
 		identifier: blueprintId,
 		title     : blueprintData?.title,
@@ -508,9 +558,9 @@ function SingleBlueprintWithQuery()
 								</Card.Header>
 								<Table bordered hover>
 									<colgroup>
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} />
 									</colgroup>
 
 									<tbody>
@@ -533,8 +583,9 @@ function SingleBlueprintWithQuery()
 																		alt={pair[0]}
 																		onError={(e) =>
 																		{
-																			e.target.onerror = null;
-																			e.target.src = '/icons/entity-unknown.png';
+																			const target = e.target as HTMLImageElement;
+																			target.onerror = null;
+																			target.src = '/icons/entity-unknown.png';
 																		}}
 																	/>
 																	: ''
@@ -570,8 +621,9 @@ function SingleBlueprintWithQuery()
 																		alt={pair[0]}
 																		onError={(e) =>
 																		{
-																			e.target.onerror = null;
-																			e.target.src = '/icons/entity-unknown.png';
+																			const target = e.target as HTMLImageElement;
+																			target.onerror = null;
+																			target.src = '/icons/entity-unknown.png';
 																		}}
 																	/>
 																	: ''
@@ -599,24 +651,25 @@ function SingleBlueprintWithQuery()
 								</Card.Header>
 								<Table bordered hover>
 									<colgroup>
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} />
 									</colgroup>
 
 									<tbody>
 										<tr>
 											<td colSpan={2}>
-												{blueprintData?.parsedData.blueprint.label}
+												{(blueprintData?.parsedData as RawBlueprintData).blueprint?.label}
 											</td>
 										</tr>
 										{
-											(blueprintData?.parsedData.blueprint.icons || [])
+											((blueprintData?.parsedData as RawBlueprintData).blueprint?.icons || [])
 												.filter(icon => icon !== null)
 												.map((icon) =>
 												{
-													const iconName = icon.name || icon.signal && icon.signal.name;
+													const iconObj = icon as BlueprintIcon;
+													const iconName = ('name' in iconObj ? iconObj.name : iconObj.signal?.name) || '';
 													return (
-														<tr key={icon.index}>
+														<tr key={(icon as BlueprintIcon).index}>
 															<td className={`icon icon-${iconName}`}>
 																{
 																	entitiesWithIcons[iconName]
@@ -624,14 +677,15 @@ function SingleBlueprintWithQuery()
 																			height='32px'
 																			width='32px'
 																			src={`/icons/${iconName}.png`}
-																			alt={iconName}
+																			alt={String(iconName)}
 																			onError={(e) =>
 																			{
-																				console.log('Image error (entities):', e.target.src);
+																				console.log('Image error (entities):', (e.target as HTMLImageElement).src);
 																				try
 																				{
-																					e.target.onerror = null;
-																					e.target.src = '/icons/entity-unknown.png';
+																					const target = e.target as HTMLImageElement;
+																					target.onerror = null;
+																					target.src = '/icons/entity-unknown.png';
 																				}
 																				catch (err)
 																				{
@@ -643,7 +697,7 @@ function SingleBlueprintWithQuery()
 																}
 															</td>
 															<td>
-																{iconName}
+																{String(iconName)}
 															</td>
 														</tr>
 													);
@@ -665,7 +719,7 @@ function SingleBlueprintWithQuery()
 								<Button
 									type='button'
 									variant='warning'
-									onClick={() => copyToClipboard(blueprintData?.blueprintString)}
+									onClick={() => copyToClipboard(blueprintData?.blueprintString || '')}
 								>
 									<FontAwesomeIcon
 										icon={copiedText ? faCheck : faClipboard}
@@ -720,11 +774,11 @@ function SingleBlueprintWithQuery()
 								</Card.Header>
 								<Table bordered hover>
 									<colgroup>
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} />
 									</colgroup>
 									<tbody>
 										<tr>
@@ -732,23 +786,23 @@ function SingleBlueprintWithQuery()
 												{'Book'}
 											</td>
 											<td>
-												{blueprintData?.parsedData.blueprint_book.label}
+												{(blueprintData?.parsedData as RawBlueprintData).blueprint_book?.label}
 											</td>
 										</tr>
 										{
-											blueprintData?.parsedData.blueprint_book.blueprints.map((eachBlueprint, blueprintIndex) => (
+											(blueprintData?.parsedData as RawBlueprintData).blueprint_book?.blueprints.map((eachBlueprint, blueprintIndex) => (
 												<tr key={blueprintIndex}>
 													{
 														range(4).map((iconIndex) =>
 														{
 															const entry = getBookEntry(eachBlueprint);
-															if (entry.icons
+															if (entry && entry.icons
 																&& entry.icons.length > iconIndex
 																&& entry.icons[iconIndex] !== null)
 															{
-																const icon = entry.icons[iconIndex];
+																const icon = entry.icons[iconIndex] as BlueprintIcon;
 
-																const iconName = icon.name || icon.signal && icon.signal.name;
+																const iconName = ('name' in icon ? icon.name : icon.signal?.name) || '';
 																return (
 																	<td className={`icon icon-${iconName}`} key={iconIndex}>
 																		{
@@ -757,11 +811,12 @@ function SingleBlueprintWithQuery()
 																					height='32px'
 																					width='32px'
 																					src={`/icons/${iconName}.png`}
-																					alt={iconName}
+																					alt={String(iconName)}
 																					onError={(e) =>
 																					{
-																						e.target.onerror = null;
-																						e.target.src = '/icons/entity-unknown.png';
+																						const target = e.target as HTMLImageElement;
+																						target.onerror = null;
+																						target.src = '/icons/entity-unknown.png';
 																					}}
 																				/>
 																				: ''
@@ -791,13 +846,13 @@ function SingleBlueprintWithQuery()
 								</Card.Header>
 								<Table bordered hover>
 									<colgroup>
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' style={{width: '1%'}} />
-										<col span='1' />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} style={{width: '1%'}} />
+										<col span={1} />
 									</colgroup>
 									<tbody>
 										{
-											blueprintData?.parsedData.upgrade_planner.settings.mappers.map(({from, to, index}) => (
+											((blueprintData?.parsedData as RawBlueprintData).upgrade_planner?.settings as any)?.mappers?.map(({from, to, index}: any) => (
 												<tr key={index}>
 													<td className={`icon icon-${from.name}`}>
 														{
@@ -809,8 +864,9 @@ function SingleBlueprintWithQuery()
 																	alt={from.name}
 																	onError={(e) =>
 																	{
-																		e.target.onerror = null;
-																		e.target.src = '/icons/entity-unknown.png';
+																		const target = e.target as HTMLImageElement;
+																		target.onerror = null;
+																		target.src = '/icons/entity-unknown.png';
 																	}}
 																/>
 																: ''
@@ -826,8 +882,9 @@ function SingleBlueprintWithQuery()
 																	alt={to.name}
 																	onError={(e) =>
 																	{
-																		e.target.onerror = null;
-																		e.target.src = '/icons/entity-unknown.png';
+																		const target = e.target as HTMLImageElement;
+																		target.onerror = null;
+																		target.src = '/icons/entity-unknown.png';
 																	}}
 																/>
 																: ''
@@ -846,7 +903,6 @@ function SingleBlueprintWithQuery()
 					<Disqus.DiscussionEmbed
 						shortname='factorio-blueprints'
 						config={disqusConfig}
-						className='w-100'
 					/>
 				</Row>
 			</Container>
