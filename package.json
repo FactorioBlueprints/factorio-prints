@@ -22,7 +22,7 @@
 		"@types/atob": "2.1.4",
 		"@types/jest": "30.0.0",
 		"@types/lodash": "4.17.18",
-		"@types/node": "24.0.3",
+		"@types/node": "24.0.4",
 		"@types/pako": "2.0.3",
 		"@types/react": "18.3.13",
 		"@types/react-dom": "19.1.6",
