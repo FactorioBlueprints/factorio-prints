@@ -2,7 +2,14 @@
 
 set -exuo pipefail
 
-DATE_TAG="prod.$(date +%Y-%m-%d)"
+# Find the next available tag number for today
+BASE_TAG="$(date +%Y.%m.%d)"
+COUNT=1
+DATE_TAG="$BASE_TAG.$COUNT"
+while git tag -l "$DATE_TAG" | grep -q .; do
+    ((COUNT++))
+    DATE_TAG="$BASE_TAG.$COUNT"
+done
 
 git pushf open-source HEAD:factorio-prints.com \
 	&& git pushf open-source HEAD:factorio-prints.com \
