@@ -80,6 +80,7 @@ import DateDisplay                   from './DateDisplay';
 import DisplayName   from './DisplayName';
 import FavoriteCount from './FavoriteCount';
 import TagBadge      from './TagBadge';
+import DisqusErrorBoundary from './DisqusErrorBoundary';
 
 interface ReconcileResult {
 	blueprintId: string;
@@ -900,10 +901,12 @@ function SingleBlueprintWithQuery()
 					</Col>
 				</Row>
 				<Row className='w-100'>
-					<Disqus.DiscussionEmbed
-						shortname='factorio-blueprints'
-						config={disqusConfig}
-					/>
+					<DisqusErrorBoundary>
+						<Disqus.DiscussionEmbed
+							shortname='factorio-blueprints'
+							config={disqusConfig}
+						/>
+					</DisqusErrorBoundary>
 				</Row>
 			</Container>
 		</>

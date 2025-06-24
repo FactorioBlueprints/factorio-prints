@@ -21,7 +21,7 @@ Sentry.init({
 			maskAllInputs: false,
 			blockAllMedia: false,
 			maskAllText: false,
-			ignore: ['[id^="dsq-"]', '.disqus-thread', '#disqus_thread'],
+			ignore: ['[id^="dsq-"]', '.disqus-thread', '#disqus_thread', 'iframe[src*="disqus.com"]', 'iframe[name*="dsq-"]', 'iframe[title*="Disqus"]'],
 		}),
 	],
 	// Tracing
