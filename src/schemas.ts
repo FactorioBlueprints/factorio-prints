@@ -30,7 +30,7 @@ export const rawBlueprintSchema = z.object({
 	descriptionMarkdown: z.string(),
 	imageUrl           : z.string().optional(),
 	lastUpdatedDate    : z.number(),
-	numberOfFavorites  : z.number().default(0),
+	numberOfFavorites  : z.number().optional().default(0),
 	tags               : z.array(z.string()).optional().default([]),
 	authorId           : z.string().optional(),
 	author             : blueprintAuthorSchema,
@@ -81,9 +81,9 @@ export const enrichedPaginatedBlueprintSummariesSchema = z.object({
 export type ImgurImage = z.infer<typeof imgurImageSchema>;
 export type BlueprintAuthor = z.infer<typeof blueprintAuthorSchema>;
 export type RawBlueprintSummary = z.infer<typeof rawBlueprintSummarySchema>;
-export type RawBlueprint = z.infer<typeof rawBlueprintSchema>;
+export type RawBlueprint = z.output<typeof rawBlueprintSchema>;
 export type EnrichedBlueprintSummary = z.infer<typeof enrichedBlueprintSummarySchema>;
-export type EnrichedBlueprint = z.infer<typeof enrichedBlueprintSchema>;
+export type EnrichedBlueprint = z.output<typeof enrichedBlueprintSchema>;
 export type EnrichedBlueprintSummaries = z.infer<typeof enrichedBlueprintSummariesSchema>;
 export type RawBlueprintSummaryPage = z.infer<typeof rawBlueprintSummaryPageSchema>;
 export type RawPaginatedBlueprintSummaries = z.infer<typeof rawPaginatedBlueprintSummariesSchema>;
@@ -181,8 +181,8 @@ export const enrichedUserSchema = rawUserSchema.extend({
 	blueprintsCount: z.number(),
 }).strict();
 
-export type RawUser = z.infer<typeof rawUserSchema>;
-export type EnrichedUser = z.infer<typeof enrichedUserSchema>;
+export type RawUser = z.output<typeof rawUserSchema>;
+export type EnrichedUser = z.output<typeof enrichedUserSchema>;
 
 export const validateRawUser = (data: unknown): RawUser => {
 	return validate(data, rawUserSchema, 'raw user');
