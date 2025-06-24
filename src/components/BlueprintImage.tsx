@@ -7,7 +7,7 @@ interface BlueprintImageProps {
 	image?: {
 		id?: string;
 	};
-	thumbnail?: string;
+	thumbnail?: string | null;
 	isLoading: boolean;
 }
 

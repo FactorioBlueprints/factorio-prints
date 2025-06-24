@@ -105,12 +105,15 @@ export const fetchBlueprint = async (blueprintId: string, blueprintSummary: Enri
 				// Dates match - use CDN data
 				console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
 				return cdnBlueprint;
-			} else {
+			} else if (cdnLastUpdated && summaryLastUpdated) {
 				// Dates don't match - CDN data is stale
 				const cdnDate = new Date(cdnLastUpdated);
 				const summaryDate = new Date(summaryLastUpdated);
 				const timeDiff = formatDistance(cdnDate, summaryDate);
 				console.log(`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${cdnLastUpdated}, Summary: ${summaryLastUpdated})`);
+			} else {
+				// One or both dates are missing
+				console.log(`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated}, Summary: ${summaryLastUpdated})`);
 			}
 		}
 

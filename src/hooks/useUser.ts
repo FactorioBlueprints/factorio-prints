@@ -1,11 +1,11 @@
 import {useQuery}                                                      from '@tanstack/react-query';
 import {fetchUserBlueprints, fetchUserDisplayName, fetchUserFavorites} from '../api/firebase';
 
-export const useUserDisplayName = (userId: string) =>
+export const useUserDisplayName = (userId: string | undefined) =>
 {
 	return useQuery<string | null>({
 		queryKey : ['users', 'userId', userId, 'displayName'],
-		queryFn  : () => fetchUserDisplayName(userId),
+		queryFn  : () => fetchUserDisplayName(userId!),
 		enabled  : !!userId,
 		// 24 hours
 		staleTime: 24 * 60 * 60 * 1000,
@@ -14,11 +14,11 @@ export const useUserDisplayName = (userId: string) =>
 	});
 };
 
-export const useUserBlueprints = (userId: string) =>
+export const useUserBlueprints = (userId: string | undefined) =>
 {
 	return useQuery<Record<string, boolean>>({
 		queryKey       : ['users', 'userId', userId, 'blueprints'],
-		queryFn        : () => fetchUserBlueprints(userId),
+		queryFn        : () => fetchUserBlueprints(userId!),
 		enabled        : !!userId,
 		placeholderData: {},
 		staleTime      : 24 * 60 * 60 * 1000,
@@ -26,11 +26,11 @@ export const useUserBlueprints = (userId: string) =>
 	});
 };
 
-export const useUserFavorites = (userId: string) =>
+export const useUserFavorites = (userId: string | undefined) =>
 {
 	return useQuery<Record<string, boolean>>({
 		queryKey       : ['users', 'userId', userId, 'favorites'],
-		queryFn        : () => fetchUserFavorites(userId),
+		queryFn        : () => fetchUserFavorites(userId!),
 		enabled        : !!userId,
 		placeholderData: {},
 		staleTime      : 24 * 60 * 60 * 1000,
