@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import * as Sentry from '@sentry/react';
-import { routeTree } from './routeTree.gen.ts';
+import { routeTree } from './routeTree.gen';
 
 // Create the router instance with type assertion to work around strictNullChecks requirement
 // TODO: Remove this assertion once strictNullChecks is enabled project-wide
