@@ -2,7 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
-import { version } from './package.json'
+import getGitVersion from './scripts/get-version.js'
+
+const version = getGitVersion()
 
 export default defineConfig(({ mode }) => ({
 	define: {
