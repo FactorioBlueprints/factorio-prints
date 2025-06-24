@@ -1,4 +1,5 @@
 import { createStore, get, set, del } from 'idb-keyval';
+import * as Sentry from '@sentry/react';
 
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
@@ -180,7 +181,29 @@ function getWorker()
 					}
 					else
 					{
-						pendingOp.reject(new Error(error.message));
+						// 🛡️ Handle connection closing errors gracefully
+						if (error?.isConnectionClosing)
+						{
+							console.warn('[IndexedDB] Operation failed due to closing connection, resolving with undefined');
+							// 📊 Log to Sentry for monitoring
+							Sentry.captureMessage('IndexedDB connection closing', {
+								level: 'info',
+								tags: {
+									component: 'localStorage',
+									errorType: 'connection-closing'
+								},
+								extra: {
+									errorMessage: error.message,
+									operationType: e.data.type,
+									key: e.data.key
+								}
+							});
+							pendingOp.resolve(undefined);
+						}
+						else
+						{
+							pendingOp.reject(new Error(error.message));
+						}
 					}
 					pendingOperations.delete(id);
 				}
@@ -234,6 +257,29 @@ async function workerOperation(type, key, data = null)
 		pendingOperations.set(id, { resolve, reject });
 
 		worker.postMessage({ type, key, data, id });
+
+		// 🛡️ Add timeout to prevent hanging operations
+		setTimeout(() => {
+			if (pendingOperations.has(id))
+			{
+				pendingOperations.delete(id);
+				console.warn('[IndexedDB] Operation timed out:', type, key);
+				// 📊 Log timeout to Sentry
+				Sentry.captureMessage('IndexedDB operation timeout', {
+					level: 'warning',
+					tags: {
+						component: 'localStorage',
+						errorType: 'timeout'
+					},
+					extra: {
+						operationType: type,
+						key: key,
+						timeout: 5000
+					}
+				});
+				resolve(type === 'get' ? { data: undefined } : { success: false });
+			}
+		}, 5000);
 	});
 }
 

@@ -37,9 +37,22 @@ self.onmessage = async function(e)
 	}
 	catch (error)
 	{
+		// 🛡️ Check if the error is due to database connection closing
+		const isConnectionClosing = error.message?.includes('database connection is closing')
+			|| error.message?.includes('IDBDatabase');
+
+		if (isConnectionClosing)
+		{
+			console.warn('[IndexedDB Worker] Database connection closing, operation skipped:', type, key);
+		}
+
 		self.postMessage({
 			id,
-			error  : { message: error.message, stack: error.stack },
+			error: {
+				message: error.message,
+				stack  : error.stack,
+				isConnectionClosing,
+			},
 			success: false,
 		});
 	}
