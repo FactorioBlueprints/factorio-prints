@@ -236,6 +236,7 @@ export const blueprintIconSchema = z.object({
 	signal: z.object({
 		name: z.string(),
 		type: z.string().optional(),
+		quality: z.string().optional(),
 	}).strict(),
 	index: z.number(),
 }).strict();
