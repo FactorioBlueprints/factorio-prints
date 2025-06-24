@@ -35,7 +35,7 @@ import {useTags}                                from '../hooks/useTags';
 import {useDeleteBlueprint, useUpdateBlueprint} from '../hooks/useUpdateBlueprint';
 import {useEnrichedBlueprint}                   from '../hooks/useEnrichedBlueprint';
 import {useRawBlueprint}                        from '../hooks/useRawBlueprint';
-import {useRawBlueprintSummary}                 from '../hooks/useRawBlueprintSummary';
+import {useEnrichedBlueprintSummary}            from '../hooks/useEnrichedBlueprintSummary';
 import type { BlueprintBook } from '../schemas';
 
 import NoMatch             from './NoMatch';
@@ -130,7 +130,7 @@ function EditBlueprintWrapper()
 	const {
 		data: blueprintSummary,
 		isLoading: summaryIsLoading,
-	} = useRawBlueprintSummary(blueprintId);
+	} = useEnrichedBlueprintSummary(blueprintId);
 
 	// Fetch raw blueprint data for mutations
 	const {
