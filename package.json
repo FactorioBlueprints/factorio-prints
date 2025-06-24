@@ -15,7 +15,7 @@
 		"@tanstack/query-sync-storage-persister": "5.81.2",
 		"@tanstack/react-query": "5.80.6",
 		"@tanstack/react-query-devtools": "5.81.2",
-		"@tanstack/react-query-persist-client": "5.80.6",
+		"@tanstack/react-query-persist-client": "5.81.2",
 		"@testing-library/jest-dom": "6.6.3",
 		"@testing-library/user-event": "14.6.1",
 		"@types/airbnb-prop-types": "2.13.7",
