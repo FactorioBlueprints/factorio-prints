@@ -2,9 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
-import getGitVersion from './scripts/get-version.js'
+import { execSync } from 'child_process'
 
-const version = getGitVersion()
+const version = execSync('git describe --always --tags', { encoding: 'utf8' }).trim()
 
 export default defineConfig(({ mode }) => ({
 	define: {

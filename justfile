@@ -20,7 +20,6 @@ hooks:
 
 # `npm run build`
 build: install
-    npm run version:sync
     op run -- npm run build
 
 # Run install, build, test, lint, and pre-commit hooks in sequence
