@@ -26,33 +26,25 @@ export class BlueprintError extends Error
 
 export function deserializeBlueprint(blueprintData: string): RawBlueprintData
 {
-	try
+	if (!blueprintData.startsWith('0'))
 	{
-		if (!blueprintData.startsWith('0'))
-		{
-			throw new BlueprintError(
-				`Unknown blueprint format: string does not start with '0'.\nStarts with:\n'${blueprintData.slice(0, 80)}'`,
-			);
-		}
-
-		const base64String = blueprintData.slice(1);
-		const bytes = Uint8Array.from(atob(base64String), (c: string) => c.charCodeAt(0));
-
-		const decompressedBytes = unzlibSync(bytes);
-		const decompressedStr = new TextDecoder().decode(decompressedBytes);
-
-		const parsedData = JSON.parse(decompressedStr.trim());
-
-		// Validate the parsed data using Zod schema
-		const result = validateRawBlueprintData(parsedData);
-
-		return result;
+		throw new BlueprintError(
+			`Unknown blueprint format: string does not start with '0'.\nStarts with:\n'${blueprintData.slice(0, 80)}'`,
+		);
 	}
-	catch (error)
-	{
-		console.error('Error deserializing blueprint:', error);
-		throw error;
-	}
+
+	const base64String = blueprintData.slice(1);
+	const bytes = Uint8Array.from(atob(base64String), (c: string) => c.charCodeAt(0));
+
+	const decompressedBytes = unzlibSync(bytes);
+	const decompressedStr = new TextDecoder().decode(decompressedBytes);
+
+	const parsedData = JSON.parse(decompressedStr.trim());
+
+	// Validate the parsed data using Zod schema
+	const result = validateRawBlueprintData(parsedData);
+
+	return result;
 }
 
 export function deserializeBlueprintNoThrow(data: string): RawBlueprintData | null
@@ -63,7 +55,6 @@ export function deserializeBlueprintNoThrow(data: string): RawBlueprintData | nu
 	}
 	catch (error)
 	{
-		console.error('Failed to parse blueprint:', error);
 		return null;
 	}
 }

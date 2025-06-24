@@ -2,7 +2,7 @@ import isArray from 'lodash/isArray';
 import isNull from 'lodash/isNull';
 import sortBy from 'lodash/sortBy';
 import toPairs from 'lodash/toPairs';
-import { deserializeBlueprint } from './parsing/blueprintParser';
+import { deserializeBlueprintNoThrow } from './parsing/blueprintParser';
 
 // Blueprint data structure interfaces
 interface BlueprintIcon {
@@ -170,12 +170,7 @@ class Blueprint {
 			console.warn('Blueprint version 0.14 is no longer supported');
 			return { type: 'unsupported-v14' };
 		} else if (this.isV15()) {
-			try {
-				return deserializeBlueprint(this.encodedText) as V15DecodedObject;
-			} catch (error) {
-				console.error('Error deserializing blueprint:', error);
-				return undefined;
-			}
+			return deserializeBlueprintNoThrow(this.encodedText) as V15DecodedObject;
 		}
 
 		return undefined;
