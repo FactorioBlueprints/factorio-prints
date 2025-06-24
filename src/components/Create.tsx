@@ -117,7 +117,7 @@ const Create: React.FC = () =>
 	// Create blueprint mutation
 	const createBlueprintMutation = useCreateBlueprint();
 
-	const parseBlueprint = useCallback((blueprintString: string) =>
+	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null =>
 	{
 		try
 		{
@@ -126,7 +126,7 @@ const Create: React.FC = () =>
 		catch (ignored)
 		{
 			console.log('Create.parseBlueprint', {ignored});
-			return undefined;
+			return null;
 		}
 	}, []);
 
@@ -234,7 +234,7 @@ const Create: React.FC = () =>
 
 	const validateInputs = useCallback((): string[] =>
 	{
-		const submissionErrors = [];
+		const submissionErrors: string[] = [];
 		const {blueprint} = state;
 		if (!blueprint.title)
 		{
@@ -283,7 +283,7 @@ const Create: React.FC = () =>
 
 	const validateWarnings = useCallback((): string[] =>
 	{
-		const submissionWarnings = [];
+		const submissionWarnings: string[] = [];
 
 		if (isEmpty(state.blueprint.tags))
 		{
@@ -347,7 +347,7 @@ const Create: React.FC = () =>
 		// Use mutation hook with raw data
 		createBlueprintMutation.mutate({
 			formData: state.blueprint,
-			user,
+			user: user!,
 		}, {
 			onSuccess: () =>
 			{
@@ -374,7 +374,7 @@ const Create: React.FC = () =>
 		// Use mutation hook with raw data (force)
 		createBlueprintMutation.mutate({
 			formData: state.blueprint,
-			user,
+			user: user!,
 		}, {
 			onSuccess: () =>
 			{
