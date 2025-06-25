@@ -231,11 +231,9 @@ describe('useCreateBlueprint', () =>
 		// Check summary cache was updated
 		const summaryData = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'newBlueprint123']);
 		expect(summaryData).toEqual({
-			key              : 'newBlueprint123',
 			title            : 'New Blueprint',
 			imgurId          : 'new1234',
 			imgurType        : 'image/png',
-			authorId         : 'user123',
 			numberOfFavorites: 0,
 			lastUpdatedDate  : expect.any(Number),
 		});

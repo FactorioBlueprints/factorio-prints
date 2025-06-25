@@ -138,11 +138,9 @@ export const useCreateBlueprint = () =>
 				try
 				{
 					const summaryData = {
-						key              : blueprintId,
 						title            : formData.title,
 						imgurId          : imgurId,
 						imgurType        : 'image/png',
-						authorId         : user.uid,
 						numberOfFavorites: 0,
 						lastUpdatedDate  : unixTimestamp,
 					};
@@ -209,11 +207,9 @@ export const useCreateBlueprint = () =>
 			const summaryKey = ['blueprintSummaries', 'blueprintId', blueprintId];
 
 			const summaryData = {
-				key              : blueprintId,
 				title            : formData.title,
 				imgurId          : imgurId,
 				imgurType        : 'image/png',
-				authorId         : user.uid,
 				numberOfFavorites: 0,
 				lastUpdatedDate  : unixTimestamp,
 			};

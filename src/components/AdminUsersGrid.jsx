@@ -182,7 +182,7 @@ function AdminUsersGrid()
 						{filteredAndSortedUsers.map((user) => (
 							<tr key={user.id}>
 								<td>
-									<Link to={`/admin/user/${user.id}`}>
+									<Link to='/admin/user/$userId' params={{ userId: user.id }}>
 										{user.displayName || '(Anonymous)'}
 									</Link>
 								</td>
@@ -192,7 +192,8 @@ function AdminUsersGrid()
 								<td>
 									<Button
 										as={Link}
-										to={`/admin/user/${user.id}`}
+										to='/admin/user/$userId'
+										params={{ userId: user.id }}
 										variant='primary'
 										size='sm'
 									>

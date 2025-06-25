@@ -114,9 +114,11 @@ const Header: React.FC = () =>
 							<FontAwesomeIcon icon={faHeart} size='lg' fixedWidth />
 							{' My Favorites'}
 						</Dropdown.Item>
-						<Dropdown.Item as={Link} to={`/user/${user!.uid}`} onClick={closeDropdown} className='text-light text-left'>
-							<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
-							{' My Blueprints'}
+						<Dropdown.Item as='div' onClick={closeDropdown} className='text-light text-left p-0'>
+							<Link to='/user/$userId' params={{ userId: user!.uid }} className='dropdown-item text-light text-left'>
+								<FontAwesomeIcon icon={faUser} size='lg' fixedWidth />
+								{' My Blueprints'}
+							</Link>
 						</Dropdown.Item>
 						<Dropdown.Item as={Link} to='/account' onClick={closeDropdown} className='text-light text-left'>
 							<FontAwesomeIcon icon={faWrench} size='lg' fixedWidth style={{color: 'var(--bs-orange)'}} />

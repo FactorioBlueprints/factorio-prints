@@ -38,7 +38,7 @@ const DisplayName: React.FC<DisplayNameProps> = ({ userId, withLink = true, exte
 	if (withLink)
 	{
 		return (
-			<Link to={`/user/${userId}`}>
+			<Link to="/user/$userId" params={{ userId }}>
 				{content}
 			</Link>
 		);

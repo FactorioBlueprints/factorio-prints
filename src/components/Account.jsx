@@ -44,7 +44,7 @@ const Account = () =>
 		{
 			// Invalidate any queries that might be using the display name
 			queryClient.invalidateQueries(['userDisplayName', user.uid]);
-			navigate({ to: `/user/${user.uid}` });
+			navigate({ to: '/user/$userId', params: { userId: user.uid } });
 		},
 		onError: (error) =>
 		{
