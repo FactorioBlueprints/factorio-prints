@@ -416,6 +416,16 @@ const Create: React.FC = () =>
 			return <div />;
 		}
 
+		// Convert imgur URLs to direct image URLs for preview
+		let previewUrl = state.blueprint.imageUrl;
+		const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
+		const match = previewUrl.match(imgurPageRegex);
+		if (match)
+		{
+			// Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
+			previewUrl = `https://i.imgur.com/${match[1]}.png`;
+		}
+
 		return (
 			<Form.Group as={Row} className='mb-3'>
 				<Form.Label column sm='2'>
@@ -425,7 +435,7 @@ const Create: React.FC = () =>
 					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
 						<Card.Img
 							variant='top'
-							src={state.blueprint.imageUrl || noImageAvailable}
+							src={previewUrl || noImageAvailable}
 							onError={(e: React.SyntheticEvent<HTMLImageElement>) =>
 							{
 								e.currentTarget.src = noImageAvailable;
