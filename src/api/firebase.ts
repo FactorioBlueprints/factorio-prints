@@ -298,7 +298,7 @@ export const fetchAllUsers = async (): Promise<UserData[]> =>
 			return [];
 		}
 
-		const usersData = [];
+		const usersData: UserData[] = [];
 		snapshot.forEach((childSnapshot) =>
 		{
 			const userData = childSnapshot.val();
@@ -374,8 +374,12 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
 		const userFavoritesSnapshot = await get(userFavoritesRef);
 		const userFavorites = userFavoritesSnapshot.exists() ? userFavoritesSnapshot.val() : {};
 
-		const discrepancies = [];
-		const updates = {};
+		const discrepancies: Array<{
+			blueprintId: string;
+			issue: string;
+			fixed: boolean;
+		}> = [];
+		const updates: Record<string, boolean> = {};
 
 		for (const blueprintId of Object.keys(userFavorites))
 		{

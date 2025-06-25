@@ -13,7 +13,7 @@ const useRawBlueprintSummaries = (
 	blueprintsData: Record<string, boolean> | null | undefined,
 	blueprintsSuccess: boolean
 ): {
-	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary, Error>>;
+	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>>;
 	rawBlueprintSummaries: RawBlueprintSummary[];
 } =>
 {
@@ -30,7 +30,7 @@ const useRawBlueprintSummaries = (
 
 	const queriesByKey = useMemo(() =>
 	{
-		const resultMap: Record<string, UseQueryResult<RawBlueprintSummary, Error>> = {};
+		const resultMap: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>> = {};
 		for (let i = 0; i < blueprintIds.length; i++)
 		{
 			resultMap[blueprintIds[i]] = queryResults[i];
@@ -41,8 +41,8 @@ const useRawBlueprintSummaries = (
 	const rawBlueprintSummaries = useMemo(() =>
 	{
 		return Object.entries(queriesByKey)
-			.filter(([, query]) => query.isSuccess && query.data)
-			.map(([, query]) => query.data);
+			.filter(([, query]) => query.isSuccess && query.data !== null && query.data !== undefined)
+			.map(([, query]) => query.data as RawBlueprintSummary);
 	}, [queriesByKey]);
 
 	return {
