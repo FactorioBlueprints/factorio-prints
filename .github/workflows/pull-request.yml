@@ -53,6 +53,7 @@ jobs:
 
       - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
 
+      - run: npm run route:generate
       - run: npm test
 
   build:
