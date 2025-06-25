@@ -23,6 +23,18 @@ Sentry.init({
 			maskAllText: false,
 			ignore: ['[id^="dsq-"]', '.disqus-thread', '#disqus_thread', 'iframe[src*="disqus.com"]', 'iframe[name*="dsq-"]', 'iframe[title*="Disqus"]'],
 		}),
+		Sentry.captureConsoleIntegration({
+			levels: ['error', 'warn', 'info', 'debug'],
+		}),
+		Sentry.contextLinesIntegration(),
+		Sentry.breadcrumbsIntegration({
+			console: true,
+			dom: true,
+			fetch: true,
+			history: true,
+			sentry: true,
+			xhr: true,
+		}),
 	],
 	// Tracing
 	tracesSampleRate        : 1.0, //  Capture 100% of the transactions
@@ -39,6 +51,10 @@ Sentry.init({
 		'https://factorioprints.com',
 	],
 	enabled   : true,
+	// Set maxBreadcrumbs to capture more console logs
+	maxBreadcrumbs          : 100,
+	// Attach stack traces to messages
+	attachStacktrace        : true,
 	beforeSend: (event, hint) =>
 	{
 		if (import.meta.env.DEV)
@@ -46,6 +62,15 @@ Sentry.init({
 			console.error('Sentry Error:', hint.originalException || hint.syntheticException);
 		}
 		return event;
+	},
+	beforeBreadcrumb: (breadcrumb) =>
+	{
+		// Log breadcrumbs in development for debugging
+		if (import.meta.env.DEV && breadcrumb.category === 'console')
+		{
+			console.log('Sentry Breadcrumb:', breadcrumb);
+		}
+		return breadcrumb;
 	},
 });
 
