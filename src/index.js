@@ -12,11 +12,14 @@ Sentry.init({
 	sendDefaultPii: true,
 	integrations: [
 		Sentry.browserTracingIntegration(),
-		Sentry.replayIntegration()
+		Sentry.replayIntegration(),
+		Sentry.captureConsoleIntegration({
+			levels: ['error', 'assert', 'warn', 'info', 'log', 'debug']
+		})
 	],
-	tracesSampleRate: 1.0,
+	tracesSampleRate: 0.1,
 	tracePropagationTargets: ['localhost', /^https:\/\/factorioprints\.com/],
-	replaysSessionSampleRate: 0.1,
+	replaysSessionSampleRate: 0.001,
 	replaysOnErrorSampleRate: 1.0
 });
 
