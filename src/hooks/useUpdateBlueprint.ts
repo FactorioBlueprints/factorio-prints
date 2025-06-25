@@ -276,7 +276,7 @@ export const useDeleteBlueprint = () =>
 			queryClient.removeQueries({ queryKey: ['blueprints', 'blueprintId', id] });
 			queryClient.removeQueries({ queryKey: ['blueprintSummaries', 'blueprintId', id] });
 
-			navigate({ to: `/user/${authorId}` });
+			navigate({ to: '/user/$userId', params: { userId: authorId } });
 		},
 	});
 };

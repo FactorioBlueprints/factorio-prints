@@ -225,7 +225,7 @@ describe('useDeleteBlueprint', () =>
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/test-author' });
+		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: 'test-author' } });
 	});
 
 	it('should handle database update failure', async () =>
@@ -263,7 +263,7 @@ describe('useDeleteBlueprint', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Should complete successfully even without existing cache data
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/test-author' });
+		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: 'test-author' } });
 	});
 
 	it('should handle missing tag cache gracefully', async () =>
@@ -282,7 +282,7 @@ describe('useDeleteBlueprint', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Should complete successfully even without existing tag cache data
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/test-author' });
+		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: 'test-author' } });
 	});
 
 	it('should provide loading states', async () =>
