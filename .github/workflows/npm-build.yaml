@@ -19,3 +19,15 @@ jobs:
       - run: npm install --legacy-peer-deps
 
       - run: npm run build:production
+
+      - run: npm test -- --watchAll=false
+
+      - run: npm run lint
+
+  all-checks:
+    name: All checks
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All checks passed
+        run: echo "All checks passed!"
