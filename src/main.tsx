@@ -69,7 +69,8 @@ Sentry.init({
 
 		if (import.meta.env.DEV)
 		{
-			console.error('Sentry Error:', hint.originalException || hint.syntheticException);
+			// Use console.log instead of console.error to avoid triggering Sentry again
+			console.log('Sentry Error:', hint.originalException || hint.syntheticException);
 		}
 		return event;
 	},
