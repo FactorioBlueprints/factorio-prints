@@ -203,7 +203,7 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 		{
 			tagSuggestions.push('/belt/balancer/');
 
-			const checkBeltSpeed = (beltTypes, tag) =>
+			const checkBeltSpeed = (beltTypes: string[], tag: string) =>
 			{
 				if (every(entityHistogram, pair => beltTypes.includes(pair[0])))
 				{
@@ -336,7 +336,7 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 			return;
 		}
 
-		const allVanilla = every(allGameEntities, each => entitiesWithIcons[each] === true);
+		const allVanilla = every(allGameEntities, each => (entitiesWithIcons as any)[each] === true);
 		if (allVanilla)
 		{
 			tagSuggestions.push('/mods/vanilla/');

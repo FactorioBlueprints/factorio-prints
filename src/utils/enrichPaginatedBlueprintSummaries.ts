@@ -41,7 +41,7 @@ export const enrichPaginatedBlueprintSummaries = (rawPaginatedBlueprintSummaries
 
 	const { pages, pageParams } = rawPaginatedBlueprintSummaries;
 
-	const enrichedPages = pages.map(page => enrichBlueprintSummaryPage(page));
+	const enrichedPages = pages.map((page: RawBlueprintSummaryPage | null) => enrichBlueprintSummaryPage(page));
 
 	const enrichedPaginated = {
 		pages: enrichedPages,

@@ -150,7 +150,7 @@ function debounce<T extends (...args: any[]) => any>(
 }
 
 
-let worker;
+let worker: Worker | undefined;
 let operationCounter = 0;
 const pendingOperations = new Map();
 
@@ -165,7 +165,7 @@ function getWorker()
 			worker.onerror = (error) =>
 			{
 				console.error('[IndexedDB Worker] Failed to initialize worker:', error);
-				worker = null;
+				worker = undefined;
 			};
 
 			worker.onmessage = (e) =>
@@ -221,14 +221,14 @@ function getWorker()
 		catch (error)
 		{
 			console.error('[IndexedDB Worker] Failed to create worker:', error);
-			worker = null;
+			worker = undefined;
 		}
 	}
 
 	return worker;
 }
 
-async function workerOperation(type, key, data = null)
+async function workerOperation(type: string, key: string, data = null)
 {
 	const worker = getWorker();
 
@@ -283,7 +283,7 @@ async function workerOperation(type, key, data = null)
 	});
 }
 
-function formatBytes(bytes)
+function formatBytes(bytes: number)
 {
 	if (bytes > 1024 * 1024)
 	{
