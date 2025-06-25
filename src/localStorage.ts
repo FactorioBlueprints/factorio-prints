@@ -258,28 +258,43 @@ async function workerOperation(type: string, key: string, data = null)
 
 		worker.postMessage({ type, key, data, id });
 
-		// 🛡️ Add timeout to prevent hanging operations
+		const timeoutDuration = 10000;
+		const startTime = Date.now();
+
 		setTimeout(() => {
 			if (pendingOperations.has(id))
 			{
 				pendingOperations.delete(id);
-				console.warn('[IndexedDB] Operation timed out:', type, key);
-				// 📊 Log timeout to Sentry
+				const duration = Date.now() - startTime;
+				console.warn('[IndexedDB] Operation timed out:', type, key, `after ${duration}ms`);
+
 				Sentry.captureMessage('IndexedDB operation timeout', {
 					level: 'warning',
 					tags: {
 						component: 'localStorage',
-						errorType: 'timeout'
+						errorType: 'timeout',
+						operationType: type,
+						database: 'FACTORIO_PRINTS_QUERY_CACHE'
 					},
 					extra: {
 						operationType: type,
 						key: key,
-						timeout: 5000
+						timeout: timeoutDuration,
+						actualDuration: duration,
+						userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined
 					}
 				});
+
+				if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
+					console.warn('[IndexedDB] Query cache timeout - clearing cache');
+					del(key, indexedDbStore).catch(err =>
+						console.error('[IndexedDB] Failed to clear cache after timeout:', err)
+					);
+				}
+
 				resolve(type === 'get' ? { data: undefined } : { success: false });
 			}
-		}, 5000);
+		}, timeoutDuration);
 	});
 }
 
@@ -332,17 +347,52 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 		},
 		restoreClient: async () => {
 			try {
+				const startTime = Date.now();
 				const result = await workerOperation('get', idbValidKey) as { data?: any } | undefined;
+				const duration = Date.now() - startTime;
 
 				if (result?.data) {
 					const dataSize = JSON.stringify(result.data).length;
 					const formattedSize = formatBytes(dataSize);
-					console.log(`[IndexedDB] Restored data size: ${formattedSize}`);
+					console.log(`[IndexedDB] Restored data size: ${formattedSize} in ${duration}ms`);
+
+					if (duration > 5000) {
+						Sentry.captureMessage('IndexedDB slow restore', {
+							level: 'info',
+							tags: {
+								component: 'localStorage',
+								errorType: 'slow-restore'
+							},
+							extra: {
+								duration: duration,
+								dataSize: dataSize,
+								formattedSize: formattedSize
+							}
+						});
+					}
 				}
 
 				return result?.data;
 			} catch (error) {
 				console.error('[IndexedDB] Error restoring from IndexedDB:', error);
+
+				Sentry.captureException(error, {
+					tags: {
+						component: 'localStorage',
+						errorType: 'restore-error'
+					},
+					extra: {
+						key: idbValidKey
+					}
+				});
+
+				try {
+					await workerOperation('delete', idbValidKey);
+					console.log('[IndexedDB] Cleared cache after restore error');
+				} catch (deleteError) {
+					console.error('[IndexedDB] Failed to clear cache:', deleteError);
+				}
+
 				return undefined;
 			}
 		},
