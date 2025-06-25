@@ -1,0 +1,51 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.0.5/schema.json",
+	"files": {
+		"includes": ["src/**", "public/**", "test/**", "*.json"],
+		"experimentalScannerIgnores": [
+			".llm/**/*",
+			"node_modules",
+			"dist",
+			"build",
+			"coverage",
+			"package.json",
+			"package-lock.json",
+			"**/*.css",
+			"src/routeTree.gen.ts"
+		],
+		"ignoreUnknown": true
+	},
+	"formatter": {
+		"enabled": true,
+		"formatWithErrors": false,
+		"indentStyle": "tab",
+		"indentWidth": 4,
+		"lineWidth": 120,
+		"lineEnding": "lf"
+	},
+	"javascript": {
+		"formatter": {
+			"jsxQuoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"trailingCommas": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"bracketSpacing": false,
+			"bracketSameLine": false,
+			"quoteStyle": "single",
+			"attributePosition": "multiline"
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["test/**/*"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		}
+	]
+}

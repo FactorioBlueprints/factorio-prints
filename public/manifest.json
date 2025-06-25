@@ -1,15 +1,15 @@
 {
-  "short_name": "Factorio Prints",
-  "name": "Factorio Prints",
-  "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "32x32",
-      "type": "image/png"
-    }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+	"short_name": "Factorio Prints",
+	"name": "Factorio Prints",
+	"icons": [
+		{
+			"src": "favicon.ico",
+			"sizes": "32x32",
+			"type": "image/png"
+		}
+	],
+	"start_url": "/",
+	"display": "standalone",
+	"theme_color": "#000000",
+	"background_color": "#ffffff"
 }
