@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { createRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen.js';
+import { routeTree } from './routeTree.gen';
 
 const rootRouteChildren = {
 	IndexRoute          : { id: '/' },
