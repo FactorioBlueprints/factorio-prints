@@ -9,7 +9,7 @@ const router = createRouter({
 	routeTree,
 	defaultPreload: 'intent',
 	defaultPreloadStaleTime: 0,
-	defaultOnError         : (error) =>
+	defaultOnError         : (error: Error) =>
 	{
 		Sentry.captureException(error);
 	},

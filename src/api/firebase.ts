@@ -541,7 +541,7 @@ export const fetchPaginatedSummaries = async (pageSize = 60, lastKey: string | n
 		}
 
 		// Build the data object from the reversed entries
-		const data = {};
+		const data: Record<string, RawBlueprintSummary> = {};
 		entries.forEach(([key, value]) =>
 		{
 			data[key] = value;

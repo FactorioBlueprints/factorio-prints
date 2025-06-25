@@ -582,9 +582,9 @@ function SingleBlueprintWithQuery()
 												}
 												return (
 													<tr key={pair[0]}>
-														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
+														<td className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}>
 															{
-																entitiesWithIcons[pair[0]]
+																(entitiesWithIcons as any)[pair[0]]
 																	? <img
 																		height='32px'
 																		width='32px'
@@ -620,9 +620,9 @@ function SingleBlueprintWithQuery()
 												}
 												return (
 													<tr key={pair[0]}>
-														<td className={`icon icon-${entitiesWithIcons[pair[0]]}`}>
+														<td className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}>
 															{
-																entitiesWithIcons[pair[0]]
+																(entitiesWithIcons as any)[pair[0]]
 																	? <img
 																		height='32px'
 																		width='32px'
@@ -676,12 +676,12 @@ function SingleBlueprintWithQuery()
 												.map((icon) =>
 												{
 													const iconObj = icon as BlueprintIcon;
-													const iconName = ('name' in iconObj ? iconObj.name : iconObj.signal?.name) || '';
+													const iconName = ('name' in iconObj ? String(iconObj.name) : String(iconObj.signal?.name || '')) || '';
 													return (
 														<tr key={(icon as BlueprintIcon).index}>
 															<td className={`icon icon-${iconName}`}>
 																{
-																	entitiesWithIcons[iconName]
+																	(entitiesWithIcons as any)[iconName]
 																		? <img
 																			height='32px'
 																			width='32px'
@@ -811,11 +811,11 @@ function SingleBlueprintWithQuery()
 															{
 																const icon = entry.icons[iconIndex] as BlueprintIcon;
 
-																const iconName = ('name' in icon ? icon.name : icon.signal?.name) || '';
+																const iconName = ('name' in icon ? String(icon.name) : String(icon.signal?.name || '')) || '';
 																return (
 																	<td className={`icon icon-${iconName}`} key={iconIndex}>
 																		{
-																			entitiesWithIcons[iconName]
+																			(entitiesWithIcons as any)[iconName]
 																				? <img
 																					height='32px'
 																					width='32px'
@@ -865,7 +865,7 @@ function SingleBlueprintWithQuery()
 												<tr key={index}>
 													<td className={`icon icon-${from.name}`}>
 														{
-															entitiesWithIcons[from.name]
+															(entitiesWithIcons as any)[from.name]
 																? <img
 																	height='32px'
 																	width='32px'
@@ -883,7 +883,7 @@ function SingleBlueprintWithQuery()
 													</td>
 													<td className={`icon icon-${to.name}`}>
 														{
-															entitiesWithIcons[to.name]
+															(entitiesWithIcons as any)[to.name]
 																? <img
 																	height='32px'
 																	width='32px'

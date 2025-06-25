@@ -66,6 +66,7 @@
     "@sentry/vite-plugin": "^3.5.0",
     "@tanstack/router-cli": "^1.121.34",
     "@tanstack/router-vite-plugin": "^1.121.34",
+    "@types/atob": "^2.1.4",
     "@types/dompurify": "^3.2.0",
     "@types/lodash": "^4.17.18",
     "@types/markdown-it": "^14.1.2",
