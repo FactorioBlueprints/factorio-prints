@@ -6,6 +6,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: pre-commit/action@v3.0.1
+
   eslint:
     permissions:
       pull-requests: read
@@ -68,7 +77,7 @@ jobs:
 
   all-checks:
     name: All checks
-    needs: [eslint, test, build]
+    needs: [pre-commit, eslint, test, build]
     runs-on: ubuntu-latest
     steps:
       - name: All checks passed
