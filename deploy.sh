@@ -11,7 +11,8 @@ while git tag -l "$DATE_TAG" | grep -q .; do
     DATE_TAG="$BASE_TAG.$COUNT"
 done
 
-git pushf open-source HEAD:factorio-prints.com \
+just precommit \
+	&& git pushf open-source HEAD:factorio-prints.com \
 	&& git pushf open-source HEAD:factorio-prints.com \
 	&& git tag "$DATE_TAG" HEAD -f \
 	&& npm install --ignore-scripts --legacy-peer-deps \
