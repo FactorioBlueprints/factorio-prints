@@ -33,7 +33,7 @@ export const enrichBlueprintSummaryPage = (rawBlueprintSummaryPage: RawBlueprint
 	return validateEnrichedBlueprintSummaryPage(enrichedPage);
 };
 
-export const enrichPaginatedBlueprintSummaries = (rawPaginatedBlueprintSummaries: RawPaginatedBlueprintSummaries | null): EnrichedPaginatedBlueprintSummaries | null =>
+export const enrichPaginatedBlueprintSummaries = (rawPaginatedBlueprintSummaries: any): EnrichedPaginatedBlueprintSummaries | null =>
 {
 	if (!rawPaginatedBlueprintSummaries) return null;
 

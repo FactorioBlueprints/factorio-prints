@@ -115,7 +115,7 @@ describe('useEnrichedTagBlueprintSummaries', () => {
 			tagQuery: createMockQueryResult({ data: { blueprint1: true, blueprint2: true }, isLoading: false, isSuccess: true, isError: false }),
 			blueprintQueries: {
 				blueprint1: mockRawBlueprintQuery1,
-				blueprint2: mockRawBlueprintQuery2,
+				blueprint2: mockRawBlueprintQuery2 as UseQueryResult<RawBlueprintSummary | null, Error>,
 			},
 			blueprintIds: ['blueprint1', 'blueprint2'],
 			isLoading: false,
@@ -138,27 +138,27 @@ describe('useEnrichedTagBlueprintSummaries', () => {
 	});
 
 	it('should not enrich when raw blueprint data is null or undefined', () => {
-		const mockRawBlueprintQuery1 = createMockQueryResult<RawBlueprintSummary>({
-			data: null,
-			isLoading: false,
-			isSuccess: false,
-			isError: false,
-			error: null,
-		});
-
-		const mockRawBlueprintQuery2 = createMockQueryResult<RawBlueprintSummary>({
+		const mockRawBlueprintQuery1 = createMockQueryResult<RawBlueprintSummary | null>({
 			data: undefined,
 			isLoading: false,
 			isSuccess: false,
-			isError: false,
-			error: null,
+			isError: true,
+			error: new Error('No data'),
+		});
+
+		const mockRawBlueprintQuery2 = createMockQueryResult<RawBlueprintSummary | null>({
+			data: null,
+			isLoading: false,
+			isSuccess: false,
+			isError: true,
+			error: new Error('No data'),
 		});
 
 		const mockRawResult = {
 			tagQuery: createMockQueryResult({ data: { blueprint1: true, blueprint2: true }, isLoading: false, isSuccess: true, isError: false }),
 			blueprintQueries: {
 				blueprint1: mockRawBlueprintQuery1,
-				blueprint2: mockRawBlueprintQuery2,
+				blueprint2: mockRawBlueprintQuery2 as UseQueryResult<RawBlueprintSummary | null, Error>,
 			},
 			blueprintIds: ['blueprint1', 'blueprint2'],
 			isLoading: false,

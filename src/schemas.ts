@@ -124,7 +124,14 @@ export const validateRawBlueprintSummary = (data: unknown): RawBlueprintSummary 
 };
 
 export const validateRawBlueprint = (data: unknown): RawBlueprint => {
-	return validate(data, rawBlueprintSchema, 'raw blueprint');
+	const parsed = validate(data, rawBlueprintSchema, 'raw blueprint');
+	// Ensure defaults are applied
+	return {
+		...parsed,
+		numberOfFavorites: parsed.numberOfFavorites ?? 0,
+		tags: parsed.tags ?? [],
+		favorites: parsed.favorites ?? {},
+	};
 };
 
 export const validateEnrichedBlueprintSummary = (data: unknown): EnrichedBlueprintSummary => {
@@ -136,7 +143,14 @@ export const validateEnrichedBlueprintSummaries = (data: unknown): EnrichedBluep
 };
 
 export const validateEnrichedBlueprint = (data: unknown): EnrichedBlueprint => {
-	return validate(data, enrichedBlueprintSchema, 'enriched blueprint');
+	const parsed = validate(data, enrichedBlueprintSchema, 'enriched blueprint');
+	// Ensure defaults are applied
+	return {
+		...parsed,
+		numberOfFavorites: parsed.numberOfFavorites ?? 0,
+		tags: parsed.tags ?? {},
+		favorites: parsed.favorites ?? {},
+	};
 };
 
 export const validateRawBlueprintSummaryPage = (data: unknown): RawBlueprintSummaryPage => {
@@ -185,11 +199,23 @@ export type RawUser = z.output<typeof rawUserSchema>;
 export type EnrichedUser = z.output<typeof enrichedUserSchema>;
 
 export const validateRawUser = (data: unknown): RawUser => {
-	return validate(data, rawUserSchema, 'raw user');
+	const parsed = validate(data, rawUserSchema, 'raw user');
+	// Ensure defaults are applied
+	return {
+		...parsed,
+		favorites: parsed.favorites ?? {},
+		blueprints: parsed.blueprints ?? {},
+	};
 };
 
 export const validateEnrichedUser = (data: unknown): EnrichedUser => {
-	return validate(data, enrichedUserSchema, 'enriched user');
+	const parsed = validate(data, enrichedUserSchema, 'enriched user');
+	// Ensure defaults are applied
+	return {
+		...parsed,
+		favorites: parsed.favorites ?? {},
+		blueprints: parsed.blueprints ?? {},
+	};
 };
 
 // Raw user blueprints schema - matching Firebase data structure

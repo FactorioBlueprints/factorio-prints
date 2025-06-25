@@ -481,8 +481,8 @@ export const fetchPaginatedSummaries = async (pageSize = 60, lastKey: string | n
 	try
 	{
 		let summariesQuery;
-		let nextLastKey = null;
-		let nextLastValue = null;
+		let nextLastKey: string | null = null;
+		let nextLastValue: number | null = null;
 
 		if (lastKey && lastValue)
 		{

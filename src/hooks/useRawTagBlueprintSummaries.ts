@@ -35,7 +35,7 @@ export const useRawTagBlueprintSummaries = (tagId: string) => {
 	});
 
 	// Organize queries by blueprint ID for easier access
-	const queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary, Error>> = {};
+	const queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>> = {};
 	for (let i = 0; i < blueprintIds.length; i++) {
 		queriesByKey[blueprintIds[i]] = blueprintQueries[i];
 	}

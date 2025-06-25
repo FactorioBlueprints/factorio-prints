@@ -156,8 +156,12 @@ export const useCreateBlueprint = () =>
 					);
 
 					type BlueprintWithKey = Record<string, unknown> & { key: string };
+					const newSummaryWithKey = {
+						...newSummary,
+						key: blueprintId
+					} as BlueprintWithKey;
 					const updatedBlueprints = [
-						newSummary as BlueprintWithKey,
+						newSummaryWithKey,
 						...allBlueprints.filter((item): item is BlueprintWithKey =>
 							typeof item === 'object' && item !== null && 'key' in item && item.key !== blueprintId
 						),

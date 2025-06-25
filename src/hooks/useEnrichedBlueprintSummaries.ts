@@ -14,7 +14,7 @@ const useEnrichedBlueprintSummaries = (
 	blueprintsData: Record<string, boolean> | null | undefined,
 	blueprintsSuccess: boolean
 ): {
-	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary, Error>>;
+	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>>;
 	blueprintSummaries: (EnrichedBlueprintSummary | null)[];
 	rawBlueprintSummaries: RawBlueprintSummary[];
 } =>

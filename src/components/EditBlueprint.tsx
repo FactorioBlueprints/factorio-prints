@@ -241,7 +241,7 @@ function EditBlueprintWrapper()
 			try
 			{
 				const parsedBlueprint = new Blueprint(form.state.values.blueprintString);
-				const v15Decoded = parsedBlueprint ? parsedBlueprint.getV15Decoded() : null;
+				const v15Decoded = parsedBlueprint.getV15Decoded();
 
 				setUiState(prev => ({
 					...prev,
@@ -252,6 +252,11 @@ function EditBlueprintWrapper()
 			catch (ignored)
 			{
 				console.log('EditBlueprint.parseBlueprint', {ignored});
+				setUiState(prev => ({
+					...prev,
+					parsedBlueprint: null,
+					v15Decoded: null,
+				}));
 			}
 		}
 	}, [form.state.values.blueprintString]);
@@ -666,10 +671,14 @@ function EditBlueprintWrapper()
 										// Handle both string errors and object errors
 										const errorMessage = typeof error === 'string'
 											? error
-											: (error as FormFieldError)?.message || JSON.stringify(error);
+											: error && typeof error === 'object' && 'message' in error
+												? ((error as any).message as string) || JSON.stringify(error)
+												: JSON.stringify(error);
 										const errorKey = typeof error === 'string'
 											? error
-											: (error as FormFieldError)?.field || `error-${index}`;
+											: error && typeof error === 'object' && 'field' in error
+												? ((error as any).field as string) || `error-${index}`
+												: `error-${index}`;
 
 										return (
 											<li key={errorKey}>

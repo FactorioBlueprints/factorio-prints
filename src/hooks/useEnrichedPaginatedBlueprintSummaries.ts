@@ -24,7 +24,7 @@ export const useEnrichedPaginatedBlueprintSummaries = (
 		// Enrich the raw data
 		// rawPaginatedQuery.data already has the structure { pages, pageParams } from useInfiniteQuery
 		console.log('Raw paginated data before enrichment:', JSON.stringify(rawPaginatedQuery.data));
-		const enriched = enrichPaginatedBlueprintSummaries(rawPaginatedQuery.data as RawPaginatedBlueprintSummaries);
+		const enriched = enrichPaginatedBlueprintSummaries(rawPaginatedQuery.data);
 		console.log('Enriched paginated data before validation:', JSON.stringify(enriched));
 
 		// Strict validation to catch any issues

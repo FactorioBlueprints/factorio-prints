@@ -147,7 +147,7 @@ type ConvertedBlueprint = SingleBlueprint | BlueprintBook;
 
 class Blueprint {
 	private encodedText: string;
-	private cachedDecodedObject: DecodedObject = null;
+	private cachedDecodedObject: DecodedObject = undefined;
 
 	constructor(encodedText: string) {
 		// TODO 2025-04-22: Assert that encodedText is truthy
@@ -327,7 +327,7 @@ class Blueprint {
 			: this.convertSingleBlueprint();
 	};
 
-	getV15Decoded = (): V15DecodedObject | ConvertedBlueprint | undefined => {
+	getV15Decoded = (): V15DecodedObject | ConvertedBlueprint | null => {
 		try {
 			if (this.isV15()) {
 				return this.decodedObject as V15DecodedObject;
@@ -335,7 +335,7 @@ class Blueprint {
 
 			return this.convert();
 		} catch {
-			return undefined;
+			return null;
 		}
 	};
 }

@@ -103,7 +103,7 @@ interface ItemData {
 		name: string;
 	};
 	items?: {
-		in_inventory?: unknown[];
+		in_inventory?: any[];
 	};
 }
 
@@ -256,10 +256,18 @@ function SingleBlueprintWithQuery()
 			{
 				const itemName = item.id!.name;
 				// Count the number of stacks if items.in_inventory exists
-				if (has(item, 'items') && has(item.items, 'in_inventory'))
+				if (has(item, 'items') && item.items && has(item.items, 'in_inventory'))
 				{
-					const stackCount = item.items!.in_inventory!.length;
-					result[itemName] = (result[itemName] || 0) + stackCount;
+					const inventory = item.items.in_inventory as any;
+					if (Array.isArray(inventory))
+					{
+						const stackCount = inventory.length;
+						result[itemName] = (result[itemName] || 0) + stackCount;
+					}
+					else if (inventory)
+					{
+						result[itemName] = (result[itemName] || 0) + 1;
+					}
 				}
 				// Just count it once if we can't determine the stack count
 				else
