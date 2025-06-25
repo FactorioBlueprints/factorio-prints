@@ -101,7 +101,7 @@ window.addEventListener('vite:preloadError', (event) =>
 	window.location.reload();
 });
 
-// Add global error handler for images and Disqus errors
+// Add global error handler for images
 window.addEventListener('error', function(e: ErrorEvent)
 {
 	const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
@@ -117,15 +117,18 @@ window.addEventListener('error', function(e: ErrorEvent)
 		return true;
 	}
 
-	// Handle Disqus-related errors
-	if (e.error && e.error.stack && (e.error.stack.includes('embed.js') || e.error.stack.includes('disqus')))
-	{
-		// In development, log a brief warning
-		if (import.meta.env.DEV)
-		{
-			console.warn('Disqus error caught and suppressed');
+	// Handle third-party script errors (like Google Ads embed.js)
+	if (e.filename && (
+		e.filename.includes('embed.js') ||
+		e.filename.includes('disqus') ||
+		e.filename.includes('googlesyndication') ||
+		e.filename.includes('googletagmanager') ||
+		e.filename.includes('adsbygoogle')
+	)) {
+		if (import.meta.env.DEV) {
+			console.warn('Third-party script error suppressed:', e.error?.message, 'from', e.filename);
 		}
-		// Prevent the error from bubbling up
+		// Prevent the error from being reported to Sentry
 		e.preventDefault();
 		return true;
 	}
