@@ -11,9 +11,12 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {QueryParamProvider}           from 'use-query-params';
 import {ReactRouter6Adapter}          from 'use-query-params/adapters/react-router-6';
 
+import * as Sentry from '@sentry/react';
+
 import Header      from './Header';
 import ScrollToTop from './ScrollToTop';
 import UserState   from './user/UserState';
+import ErrorFallback from './ErrorFallback';
 
 import { Suspense } from "react";
 
@@ -55,38 +58,40 @@ const localStoragePersister = createSyncStoragePersister({
 function Root()
 {
 	return (
-		<PersistQueryClientProvider client={queryClient} persistOptions={{persister: localStoragePersister}}>
-			<Helmet>
-				<title>Factorio Prints</title>
-			</Helmet>
-			<UserState>
-				<BrowserRouter>
-					<QueryParamProvider adapter={ReactRouter6Adapter}>
-						<ScrollToTop />
-						<Header />
-						<Suspense fallback={<div>Loading...</div>}>
-							<Routes>
-								<Route path='/' element={<div><Intro /><BlueprintGrid /></div>} />
-								<Route path='/blueprints' element={<BlueprintGrid />} />
-								<Route path='/duplicates' element={<DuplicateBlueprintGrid />} />
-								<Route path='/top' element={<MostFavoritedGrid />} />
-								{/* <Route path='/create' element={<Create />} /> */}
-								<Route path='/favorites' element={<MyFavoritesGrid />} />
-								<Route path='/chat' element={<Chat />} />
-								<Route path='/account' element={<Account />} />
-								<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
-								<Route path='/edit/:blueprintId' element={<EfficientEditBlueprint />} />
-								<Route path='/user/:userId' element={<UserGrid />} />
-								<Route path='/contributors' element={<Contributors />} />
-								<Route path='/search' element={<Search />} />
-								<Route element={<NoMatch />} />
-							</Routes>
-						</Suspense>
-					</QueryParamProvider>
-				</BrowserRouter>
-			</UserState>
-			<ReactQueryDevtools initialIsOpen />
-		</PersistQueryClientProvider>
+		<Sentry.ErrorBoundary fallback={ErrorFallback} showDialog>
+			<PersistQueryClientProvider client={queryClient} persistOptions={{persister: localStoragePersister}}>
+				<Helmet>
+					<title>Factorio Prints</title>
+				</Helmet>
+				<UserState>
+					<BrowserRouter>
+						<QueryParamProvider adapter={ReactRouter6Adapter}>
+							<ScrollToTop />
+							<Header />
+							<Suspense fallback={<div>Loading...</div>}>
+								<Routes>
+									<Route path='/' element={<div><Intro /><BlueprintGrid /></div>} />
+									<Route path='/blueprints' element={<BlueprintGrid />} />
+									<Route path='/duplicates' element={<DuplicateBlueprintGrid />} />
+									<Route path='/top' element={<MostFavoritedGrid />} />
+									{/* <Route path='/create' element={<Create />} /> */}
+									<Route path='/favorites' element={<MyFavoritesGrid />} />
+									<Route path='/chat' element={<Chat />} />
+									<Route path='/account' element={<Account />} />
+									<Route path='/view/:blueprintId' element={<SingleBlueprint />} />
+									<Route path='/edit/:blueprintId' element={<EfficientEditBlueprint />} />
+									<Route path='/user/:userId' element={<UserGrid />} />
+									<Route path='/contributors' element={<Contributors />} />
+									<Route path='/search' element={<Search />} />
+									<Route element={<NoMatch />} />
+								</Routes>
+							</Suspense>
+						</QueryParamProvider>
+					</BrowserRouter>
+				</UserState>
+				<ReactQueryDevtools initialIsOpen />
+			</PersistQueryClientProvider>
+		</Sentry.ErrorBoundary>
 	);
 }
 
