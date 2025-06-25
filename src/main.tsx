@@ -76,11 +76,6 @@ Sentry.init({
 	},
 	beforeBreadcrumb: (breadcrumb) =>
 	{
-		// Log breadcrumbs in development for debugging
-		if (import.meta.env.DEV && breadcrumb.category === 'console')
-		{
-			console.log('Sentry Breadcrumb:', breadcrumb);
-		}
 		return breadcrumb;
 	},
 });
