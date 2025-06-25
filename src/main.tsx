@@ -57,6 +57,16 @@ Sentry.init({
 	attachStacktrace        : true,
 	beforeSend: (event, hint) =>
 	{
+		// Filter out Disqus errors
+		const error = hint.originalException;
+		if (error && error instanceof Error)
+		{
+			if (error.stack && (error.stack.includes('embed.js') || error.stack.includes('disqus')))
+			{
+				return null; // Don't send to Sentry
+			}
+		}
+
 		if (import.meta.env.DEV)
 		{
 			console.error('Sentry Error:', hint.originalException || hint.syntheticException);
@@ -90,7 +100,7 @@ window.addEventListener('vite:preloadError', (event) =>
 	window.location.reload();
 });
 
-// Add global error handler for images
+// Add global error handler for images and Disqus errors
 window.addEventListener('error', function(e: ErrorEvent)
 {
 	const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
@@ -100,6 +110,19 @@ window.addEventListener('error', function(e: ErrorEvent)
 		if (import.meta.env.DEV)
 		{
 			console.log('Image/iframe load error:', target.src);
+		}
+		// Prevent the error from bubbling up
+		e.preventDefault();
+		return true;
+	}
+
+	// Handle Disqus-related errors
+	if (e.error && e.error.stack && (e.error.stack.includes('embed.js') || e.error.stack.includes('disqus')))
+	{
+		// In development, log a brief warning
+		if (import.meta.env.DEV)
+		{
+			console.warn('Disqus error caught and suppressed');
 		}
 		// Prevent the error from bubbling up
 		e.preventDefault();
