@@ -58,25 +58,13 @@ build: install
 build-ci: route-generate-ci
     npm run build
 
+# `npm run format`
+format: install
+    npm run format
+
+# Check format for CI
+format-ci: install-ci
+    npm run ci:format
+
 # Run install, build, test, lint, and pre-commit hooks in sequence
-precommit: lint-fix hooks build test
-
-# Format files based on their extensions
-format +files: install
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    echo "Running pre-commit hooks on all files..."
-    uv tool run pre-commit run --files {{files}}
-
-    for file in {{files}}; do
-        if [[ "$file" =~ \.(js|jsx|ts|tsx|json|yaml|yml|md)$ ]]; then
-            echo "Formatting $file with prettier..."
-            uv tool run pre-commit run prettier --files "$file"
-        fi
-
-        if [[ "$file" =~ \.(js|jsx|ts|tsx)$ ]]; then
-            echo "Formatting $file with ESLint..."
-            node_modules/.bin/eslint "$file" --fix
-        fi
-    done
+precommit: lint-fix format hooks build test

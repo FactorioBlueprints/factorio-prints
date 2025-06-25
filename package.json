@@ -9,6 +9,8 @@
     "build": "npm run route:generate && tsc && vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "format": "biome format --write .",
+    "ci:format": "biome format .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -57,6 +59,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.0.5",
     "@eslint/js": "^9.30.0",
     "@sentry/vite-plugin": "^3.5.0",
     "@tanstack/router-cli": "^1.125.4",
