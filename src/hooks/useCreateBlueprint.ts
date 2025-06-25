@@ -258,7 +258,7 @@ export const useCreateBlueprint = () =>
 				});
 			}
 
-			navigate({to: `/view/${blueprintId}`});
+			navigate({to: '/view/$blueprintId', params: { blueprintId }});
 		},
 	});
 };

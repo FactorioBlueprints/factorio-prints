@@ -118,7 +118,7 @@ describe('useCreateBlueprint', () =>
 		});
 
 		// Verify navigation
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/view/newBlueprint123' });
+		expect(navigateMock).toHaveBeenCalledWith({ to: '/view/$blueprintId', params: { blueprintId: 'newBlueprint123' } });
 	});
 
 	it('should handle imgur URLs with file extension', async () =>
