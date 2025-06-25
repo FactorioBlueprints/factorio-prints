@@ -254,7 +254,10 @@ describe('useCreateBlueprint', () =>
 		dbUpdate.mockResolvedValue();
 
 		// Set up existing user blueprints
-		queryClient.setQueryData(['users', 'userId', 'user123', 'blueprints'], ['existing1', 'existing2']);
+		queryClient.setQueryData(['users', 'userId', 'user123', 'blueprints'], {
+			existing1: true,
+			existing2: true,
+		});
 
 		const formData = {
 			title              : 'Test Blueprint',
@@ -277,7 +280,11 @@ describe('useCreateBlueprint', () =>
 
 		// Check user blueprints were updated
 		const userBlueprints = queryClient.getQueryData(['users', 'userId', 'user123', 'blueprints']);
-		expect(userBlueprints).toEqual(['existing1', 'existing2', 'newBlueprint123']);
+		expect(userBlueprints).toEqual({
+			existing1      : true,
+			existing2      : true,
+			newBlueprint123: true,
+		});
 	});
 
 	it('should update tag cache', async () =>

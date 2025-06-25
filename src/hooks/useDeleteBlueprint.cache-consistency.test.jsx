@@ -61,11 +61,11 @@ describe('useDeleteBlueprint cache consistency', () =>
 
 		// Cache user blueprints list
 		const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
-		queryClient.setQueryData(userBlueprintsKey, [
-			'other-blueprint-1',
-			blueprintId,
-			'other-blueprint-2',
-		]);
+		queryClient.setQueryData(userBlueprintsKey, {
+			'other-blueprint-1': true,
+			[blueprintId]      : true,
+			'other-blueprint-2': true,
+		});
 
 		// Cache tag data for each tag
 		const tag1Key = ['byTag', 'combat'];
@@ -107,7 +107,10 @@ describe('useDeleteBlueprint cache consistency', () =>
 		// Verify user blueprints cache was updated
 		expect(setQueryDataSpy).toHaveBeenCalledWith(
 			userBlueprintsKey,
-			['other-blueprint-1', 'other-blueprint-2'],
+			{
+				'other-blueprint-1': true,
+				'other-blueprint-2': true,
+			},
 		);
 
 		// Verify tag caches were updated to remove the blueprint
@@ -181,8 +184,15 @@ describe('useDeleteBlueprint cache consistency', () =>
 		const setQueryDataSpy = vi.spyOn(queryClient, 'setQueryData');
 
 		// Set up cache where blueprint appears in multiple places
-		const userBlueprints1 = ['blueprint-1', blueprintId, 'blueprint-2'];
-		const userBlueprints2 = [blueprintId, 'other-blueprint'];
+		const userBlueprints1 = {
+			'blueprint-1': true,
+			[blueprintId]: true,
+			'blueprint-2': true,
+		};
+		const userBlueprints2 = {
+			[blueprintId]    : true,
+			'other-blueprint': true,
+		};
 		const tagData = {
 			[blueprintId]: true,
 			'blueprint-1': true,
@@ -209,7 +219,10 @@ describe('useDeleteBlueprint cache consistency', () =>
 		// Verify only the correct user's blueprints list was updated using spy
 		expect(setQueryDataSpy).toHaveBeenCalledWith(
 			['users', 'userId', authorId, 'blueprints'],
-			['blueprint-1', 'blueprint-2'],
+			{
+				'blueprint-1': true,
+				'blueprint-2': true,
+			},
 		);
 
 		// Verify tag data was updated correctly using spy

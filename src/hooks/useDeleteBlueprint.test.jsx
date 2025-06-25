@@ -127,7 +127,11 @@ describe('useDeleteBlueprint', () =>
 
 		// Set up existing user blueprints in cache
 		const userBlueprintsKey = ['users', 'userId', 'test-author', 'blueprints'];
-		queryClient.setQueryData(userBlueprintsKey, ['blueprint1', 'test-id', 'blueprint3']);
+		queryClient.setQueryData(userBlueprintsKey, {
+			"blueprint1": true,
+			'test-id'   : true,
+			"blueprint3": true,
+		});
 
 		const setQueryDataSpy = vi.spyOn(queryClient, 'setQueryData');
 
@@ -144,7 +148,10 @@ describe('useDeleteBlueprint', () =>
 		// Verify setQueryData was called for user blueprints
 		expect(setQueryDataSpy).toHaveBeenCalledWith(
 			userBlueprintsKey,
-			['blueprint1', 'blueprint3'],
+			{
+				blueprint1: true,
+				blueprint3: true,
+			},
 		);
 	});
 
