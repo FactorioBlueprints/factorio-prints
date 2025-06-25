@@ -199,7 +199,8 @@ describe('firebase API', () =>
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
 			expect(result).toBeNull();
-			expect(consoleWarnSpy).toHaveBeenCalledWith('Error fetching blueprint from CDN:', expect.any(Error));
+			// Network errors (status 0) should not be logged
+			expect(consoleWarnSpy).not.toHaveBeenCalled();
 
 			consoleWarnSpy.mockRestore();
 		});
