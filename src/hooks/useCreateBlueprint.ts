@@ -218,19 +218,15 @@ export const useCreateBlueprint = () =>
 			queryClient.setQueryData(summaryKey, blueprintSummary);
 
 			const userBlueprintsKey  = ['users', 'userId', authorId, 'blueprints'];
-			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey);
+			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey) as Record<string, boolean> | undefined;
 
 			if (userBlueprintsData)
 			{
-				if (!Array.isArray(userBlueprintsData))
-				{
-					throw new Error('Expected userBlueprintsData to be an array');
-				}
-
-				queryClient.setQueryData(userBlueprintsKey, [
+				// Add the new blueprint to the user's blueprints object
+				queryClient.setQueryData(userBlueprintsKey, {
 					...userBlueprintsData,
-					blueprintId,
-				]);
+					[blueprintId]: true,
+				});
 			}
 
 			const availableTagsKey = ['tags'];

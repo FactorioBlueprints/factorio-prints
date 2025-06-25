@@ -720,7 +720,15 @@ function EditBlueprintWrapper()
 									<details>
 										<summary>Error Details</summary>
 										<pre className='mt-2 p-2 bg-dark text-light rounded'>
-											{JSON.stringify(deleteBlueprintMutation.error, null, 2)}
+											{(() => {
+												try {
+													return JSON.stringify(deleteBlueprintMutation.error, null, 2);
+												} catch (stringifyError) {
+													console.error('Error serializing error object:', deleteBlueprintMutation.error);
+													console.error('Stringify error:', stringifyError);
+													return `Error message: ${deleteBlueprintMutation.error.message}\nStack: ${deleteBlueprintMutation.error.stack || 'No stack trace available'}`;
+												}
+											})()}
 										</pre>
 									</details>
 								</div>

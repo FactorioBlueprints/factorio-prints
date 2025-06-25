@@ -251,13 +251,12 @@ export const useDeleteBlueprint = () =>
 			queryClient.invalidateQueries({ queryKey: lastUpdatedDateKey });
 
 			const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
-			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey) as string[] | undefined;
+			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey) as Record<string, boolean> | undefined;
 
 			if (userBlueprintsData)
 			{
-				const updatedUserBlueprints = userBlueprintsData.filter(
-					blueprintId => blueprintId !== id,
-				);
+				// Create a new object without the deleted blueprint
+				const { [id]: _, ...updatedUserBlueprints } = userBlueprintsData;
 				queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
 			}
 

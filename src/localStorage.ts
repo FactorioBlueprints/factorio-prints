@@ -9,7 +9,7 @@ export const STORAGE_KEYS = {
 /**
  * Cache buster for query persistence. Manually increment this number when making changes that break cache compatibility.
  */
-export const CACHE_BUSTER = '5';
+export const CACHE_BUSTER = '6';
 
 export const indexedDbStore = createStore('factorio-prints-db', 'query-cache-store');
 
