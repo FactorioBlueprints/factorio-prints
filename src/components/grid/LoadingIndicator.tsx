@@ -1,10 +1,14 @@
 import {faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types';
 import React from 'react';
 import Row from 'react-bootstrap/Row';
 
-const LoadingIndicator = ({ isLoading, message = 'Loading...' }) =>
+interface LoadingIndicatorProps {
+	isLoading: boolean;
+	message?: string;
+}
+
+const LoadingIndicator = ({ isLoading, message = 'Loading...' }: LoadingIndicatorProps) =>
 {
 	if (!isLoading) return null;
 
@@ -16,11 +20,6 @@ const LoadingIndicator = ({ isLoading, message = 'Loading...' }) =>
 			</div>
 		</Row>
 	);
-};
-
-LoadingIndicator.propTypes = {
-	isLoading: PropTypes.bool.isRequired,
-	message  : PropTypes.string,
 };
 
 export default LoadingIndicator;
