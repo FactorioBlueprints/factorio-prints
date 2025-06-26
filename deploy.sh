@@ -12,10 +12,10 @@ while git tag -l "$DATE_TAG" | grep -q .; do
 done
 
 just precommit \
-	&& git pushf open-source HEAD:factorio-prints.com \
-	&& git pushf open-source HEAD:factorio-prints.com \
+	&& git pushf origin HEAD:factorio-prints.com \
+	&& git pushf origin HEAD:factorio-prints.com \
 	&& git tag "$DATE_TAG" HEAD -f \
 	&& npm install --ignore-scripts --legacy-peer-deps \
 	&& op run -- npm run build \
 	&& firebase deploy \
-	&& git push open-source "$DATE_TAG" -f
+	&& git push origin "$DATE_TAG" -f
