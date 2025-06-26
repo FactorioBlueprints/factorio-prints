@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {getAuth, User} from 'firebase/auth';
 import React from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {Link} from '@tanstack/react-router';
+import {Link, useRouterState} from '@tanstack/react-router';
 
 import {app} from '../base';
 import {useUserDisplayName} from '../hooks/useUser';

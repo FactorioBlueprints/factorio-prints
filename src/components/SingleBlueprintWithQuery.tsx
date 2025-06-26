@@ -454,7 +454,7 @@ function SingleBlueprintWithQuery()
 							This blueprint has been deleted or is no longer available.
 						</div>
 					)}
-					<Link to='/' className='btn btn-primary'>
+					<Link to='/' from="/view/$blueprintId" className='btn btn-primary'>
 						Return to Home
 					</Link>
 				</div>
