@@ -40,10 +40,14 @@ export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintS
 		}
 
 		const cdnUrl = getBlueprintCdnUrl(blueprintKey);
-		const response = await fetch(cdnUrl).catch((error) => {
+		let response: Response;
+
+		try {
+			response = await fetch(cdnUrl);
+		} catch (error) {
 			// Network errors are expected for CDN - don't let them bubble to Sentry
-			return { ok: false, status: 0, statusText: 'Network Error' } as Response;
-		});
+			return null;
+		}
 
 		if (!response.ok) {
 			// Only log non-404 and non-network errors, as both are expected for CDN
