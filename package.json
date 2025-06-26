@@ -68,7 +68,7 @@
     "@tanstack/router-vite-plugin": "^1.121.34",
     "@types/atob": "^2.1.4",
     "@types/dompurify": "^3.2.0",
-    "@types/lodash": "^4.17.18",
+    "@types/lodash": "^4.17.19",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.0.4",
     "@types/react": "^19.1.8",
