@@ -63,7 +63,7 @@
   "devDependencies": {
     "@eslint/js": "^9.29.0",
     "@sentry/vite-plugin": "^3.5.0",
-    "@tanstack/router-cli": "^1.121.37",
+    "@tanstack/router-cli": "^1.121.40",
     "@tanstack/router-vite-plugin": "^1.121.41",
     "@types/atob": "^2.1.4",
     "@types/dompurify": "^3.2.0",
