@@ -3,7 +3,6 @@ import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {getAuth, updateProfile}      from 'firebase/auth';
 import {getDatabase, ref, set}       from 'firebase/database';
-import PropTypes                     from 'prop-types';
 import React, {useEffect, useState}  from 'react';
 import Button                        from 'react-bootstrap/Button';
 import Col                           from 'react-bootstrap/Col';
@@ -14,9 +13,8 @@ import Row                           from 'react-bootstrap/Row';
 import {useAuthState}                from 'react-firebase-hooks/auth';
 import {useNavigate}                 from '@tanstack/react-router';
 
-import {app}                           from '../base';
-import {historySchema, locationSchema} from '../propTypes';
-import PageHeader                      from './PageHeader';
+import {app}        from '../base';
+import PageHeader   from './PageHeader';
 
 const Account = () =>
 {
@@ -27,15 +25,15 @@ const Account = () =>
 
 	// Setup mutation for updating display name
 	const updateDisplayNameMutation = useMutation({
-		mutationFn: async (newDisplayName) =>
+		mutationFn: async (newDisplayName: string) =>
 		{
 			// Update display name in Firebase Auth profile
-			await updateProfile(user, {
+			await updateProfile(user!, {
 				displayName: newDisplayName,
 			});
 
 			// Update display name in Firebase Database
-			const userRef = ref(getDatabase(app), `/users/${user.uid}/displayName/`);
+			const userRef = ref(getDatabase(app), `/users/${user!.uid}/displayName/`);
 			await set(userRef, newDisplayName);
 
 			return newDisplayName;
@@ -43,8 +41,8 @@ const Account = () =>
 		onSuccess: () =>
 		{
 			// Invalidate any queries that might be using the display name
-			queryClient.invalidateQueries(['userDisplayName', user.uid]);
-			navigate({ to: '/user/$userId', params: { userId: user.uid } });
+			queryClient.invalidateQueries({ queryKey: ['userDisplayName', user!.uid] });
+			navigate({ to: '/user/$userId', params: { userId: user!.uid } });
 		},
 		onError: (error) =>
 		{
@@ -60,22 +58,22 @@ const Account = () =>
 		}
 	}, [user]);
 
-	const handleChange = (event) =>
+	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
 	{
 		event.preventDefault();
 		setDisplayName(event.target.value);
 	};
 
-	const handleSaveAccount = (event) =>
+	const handleSaveAccount = (event: React.MouseEvent<HTMLButtonElement>) =>
 	{
 		event.preventDefault();
 		updateDisplayNameMutation.mutate(displayName);
 	};
 
-	const handleCancel = (event) =>
+	const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) =>
 	{
 		event.preventDefault();
-		navigate({ to: `/user/${user.uid}` });
+		navigate({ to: '/user/$userId', params: { userId: user!.uid } });
 	};
 
 	if (!user)
@@ -140,12 +138,6 @@ const Account = () =>
 			</Row>
 		</Container>
 	);
-};
-
-Account.propTypes = {
-	location     : locationSchema,
-	history      : historySchema,
-	staticContext: PropTypes.shape({}),
 };
 
 export default Account;
