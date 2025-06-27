@@ -1,8 +1,13 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import Row from 'react-bootstrap/Row';
 
-const EmptyResults = ({ isEmpty, children, filteredTags = [] }) =>
+interface EmptyResultsProps {
+	isEmpty: boolean;
+	children?: React.ReactNode;
+	filteredTags?: string[];
+}
+
+const EmptyResults = ({ isEmpty, children, filteredTags = [] }: EmptyResultsProps) =>
 {
 	if (!isEmpty) return null;
 
@@ -19,12 +24,6 @@ const EmptyResults = ({ isEmpty, children, filteredTags = [] }) =>
 			</div>
 		</Row>
 	);
-};
-
-EmptyResults.propTypes = {
-	isEmpty     : PropTypes.bool.isRequired,
-	children    : PropTypes.node,
-	filteredTags: PropTypes.array,
 };
 
 export default EmptyResults;

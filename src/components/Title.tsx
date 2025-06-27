@@ -1,19 +1,19 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import type {IconProp} from '@fortawesome/fontawesome-svg-core';
 
-const Title = props => (
+interface TitleProps {
+	icon: IconProp;
+	text: string;
+	className?: string;
+}
+
+const Title: React.FC<TitleProps> = props => (
 	<div>
 		<FontAwesomeIcon icon={props.icon} size='lg' fixedWidth className={props.className} />
 		{` ${props.text}`}
 	</div>
 );
-
-Title.propTypes = {
-	icon     : PropTypes.string.isRequired,
-	text     : PropTypes.string.isRequired,
-	className: PropTypes.string,
-};
 
 export default Title;
