@@ -2,17 +2,16 @@ import {createSyncStoragePersister}                     from '@tanstack/query-sy
 import {QueryCache, QueryClient, QueryClientProvider}   from '@tanstack/react-query';
 import {ReactQueryDevtools}                             from '@tanstack/react-query-devtools';
 import {persistQueryClient, removeOldestQuery}          from '@tanstack/react-query-persist-client';
-import PropTypes                                        from 'prop-types';
 import React, {useEffect}                               from 'react';
 import useBlueprintCacheSync                            from '../hooks/useBlueprintCacheSync';
 import {CACHE_BUSTER, createIDBPersister, STORAGE_KEYS} from '../localStorage';
 
 const queryCache = new QueryCache({
-	onSuccess: (data, query) =>
+	onSuccess: (data: any, query) =>
 	{
 		if (query.queryKey[0] === 'rawPaginatedBlueprintSummaries' && data?.pages)
 		{
-			data.pages.forEach(page =>
+			data.pages.forEach((page: any) =>
 			{
 				Object.entries(page.data).forEach(([blueprintId, summary]) =>
 				{
@@ -42,17 +41,22 @@ const queryClient = new QueryClient({
 	},
 });
 
-function BlueprintCacheSyncProvider({ children })
+interface BlueprintCacheSyncProviderProps {
+	children: React.ReactNode;
+}
+
+function BlueprintCacheSyncProvider({ children }: BlueprintCacheSyncProviderProps)
 {
 	useBlueprintCacheSync();
 	return <>{children}</>;
 }
 
-BlueprintCacheSyncProvider.propTypes = {
-	children: PropTypes.node.isRequired,
-};
 
-function QueryProvider({ children })
+interface QueryProviderProps {
+	children: React.ReactNode;
+}
+
+function QueryProvider({ children }: QueryProviderProps)
 {
 	useEffect(() =>
 	{
@@ -61,11 +65,10 @@ function QueryProvider({ children })
 			const idbPersister = createIDBPersister();
 
 			persistQueryClient({
-				queryClient,
+				queryClient: queryClient as any,
 				persister: idbPersister,
 				maxAge   : Infinity,
 				buster   : CACHE_BUSTER,
-				retry    : removeOldestQuery,
 			});
 		}
 		else if (typeof window !== 'undefined' && window.localStorage)
@@ -75,15 +78,13 @@ function QueryProvider({ children })
 				storage     : window.localStorage,
 				key         : STORAGE_KEYS.QUERY_CACHE,
 				throttleTime: 1000,
-				retry       : removeOldestQuery,
 			});
 
 			persistQueryClient({
-				queryClient,
+				queryClient: queryClient as any,
 				persister: localStoragePersister,
 				maxAge   : Infinity,
 				buster   : CACHE_BUSTER,
-				retry    : removeOldestQuery,
 			});
 		}
 	}, []);
@@ -98,8 +99,5 @@ function QueryProvider({ children })
 	);
 }
 
-QueryProvider.propTypes = {
-	children: PropTypes.node.isRequired,
-};
 
 export default QueryProvider;
