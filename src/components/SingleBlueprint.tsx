@@ -121,7 +121,7 @@ declare global {
 	}
 }
 
-function SingleBlueprintWithQuery()
+function SingleBlueprint()
 {
 	const { blueprintId } = useParams({ from: '/view/$blueprintId' });
 	const navigate = useNavigate();
@@ -921,4 +921,4 @@ function SingleBlueprintWithQuery()
 	);
 }
 
-export default React.memo(SingleBlueprintWithQuery);
+export default React.memo(SingleBlueprint);
