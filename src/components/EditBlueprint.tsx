@@ -458,28 +458,15 @@ function EditBlueprintWrapper()
 			return null;
 		}
 
-		const goodRegex1 = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
-		const match = form.state.values.imageUrl.match(goodRegex1);
-		if (!match)
+		// Convert imgur URLs to direct image URLs for preview
+		let previewUrl = form.state.values.imageUrl;
+		const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
+		const match = previewUrl.match(imgurPageRegex);
+		if (match)
 		{
-			return (
-				<Form.Group as={Row} className='mb-3'>
-					<Form.Label column sm='2'>
-						{'Attached screenshot'}
-					</Form.Label>
-					<Col sm={10}>
-						<Card className='m-0'>
-							<Card.Title className='m-2'>
-								{'Please use a direct link to an image like https://imgur.com/{id}. Click on the "Copy Link" button on the Imgur image page.'}
-							</Card.Title>
-						</Card>
-					</Col>
-				</Form.Group>
-			);
+			// Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
+			previewUrl = `https://i.imgur.com/${match[1]}.png`;
 		}
-
-		const imgurId = match[1];
-		const imageUrl = buildImageUrl(imgurId, 'image/png', 'b');
 
 		return (
 			<Form.Group as={Row} className='mb-3'>
@@ -490,7 +477,8 @@ function EditBlueprintWrapper()
 					<Card className='mb-2 mr-2' style={{width: '14rem', backgroundColor: '#1c1e22'}}>
 						<Card.Img
 							variant='top'
-							src={imageUrl || noImageAvailable}
+							src={previewUrl || noImageAvailable}
+							key={previewUrl}
 							onError={(e) =>
 							{
 								const target = e.target as HTMLImageElement;
