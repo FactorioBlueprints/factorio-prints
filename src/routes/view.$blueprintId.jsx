@@ -1,6 +1,6 @@
 import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import SingleBlueprintWithQuery from '../components/SingleBlueprintWithQuery';
+import SingleBlueprint from '../components/SingleBlueprint';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Route = createFileRoute('/view/$blueprintId')({
@@ -15,7 +15,7 @@ function ViewBlueprintComponent()
 {
 	return (
 		<ErrorBoundary>
-			<SingleBlueprintWithQuery />
+			<SingleBlueprint />
 		</ErrorBoundary>
 	);
 }
