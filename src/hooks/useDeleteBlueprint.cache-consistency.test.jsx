@@ -169,7 +169,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 
 		// Operation should complete successfully
 		expect(result.current.isSuccess).toBe(true);
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: authorId } });
+		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: authorId }, from: '/edit/$blueprintId' });
 	});
 
 	it('should maintain referential integrity across multiple cache entries', async () =>

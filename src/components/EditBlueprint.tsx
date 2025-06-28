@@ -363,7 +363,7 @@ function EditBlueprintWrapper()
 
 	const handleCancel = useCallback(() =>
 	{
-		navigate({ to: `/view/${blueprintId}` });
+		navigate({ to: '/view/$blueprintId', params: { blueprintId }, from: '/edit/$blueprintId' });
 	}, [navigate, blueprintId]);
 
 	const handleShowConfirmDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) =>

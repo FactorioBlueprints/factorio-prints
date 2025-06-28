@@ -19,6 +19,7 @@ import {
 	useNavigate,
 	useParams,
 }                                from '@tanstack/react-router';
+import { Route as ViewBlueprintIdRoute } from '../routes/view.$blueprintId';
 import Disqus                    from 'disqus-react';
 import {
 	getAuth,
@@ -216,7 +217,7 @@ function SingleBlueprint()
 
 	const handleTransitionToEdit = useCallback(() =>
 	{
-		navigate({ to: `/edit/${blueprintId}` });
+		navigate({ to: '/edit/$blueprintId', params: { blueprintId }, from: '/view/$blueprintId' });
 	}, [navigate, blueprintId]);
 
 	const handleReconcileFavorites = useCallback(() =>

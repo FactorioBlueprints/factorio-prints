@@ -101,7 +101,7 @@ describe('useUpdateBlueprint', () =>
 		});
 
 		// Verify navigation
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/view/blueprint123' });
+		expect(navigateMock).toHaveBeenCalledWith({ to: '/view/$blueprintId', params: { blueprintId: 'blueprint123' }, from: '/edit/$blueprintId' });
 	});
 
 	it('should handle update without image change', async () =>
