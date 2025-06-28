@@ -90,7 +90,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 
 	return (
 		<Card className='blueprint-thumbnail col-auto' style={{width: '11rem', backgroundColor: '#1c1e22'}}>
-			<Link to='/view/$blueprintId' params={{ blueprintId: key }}>
+			<Link to='/view/$blueprintId' params={{ blueprintId: key }} from='/'>
 				<Card.Img
 					variant='top'
 					src={imageUrl}
@@ -163,7 +163,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				</span>
 				{'  '}
 				<OverlayTrigger placement='bottom' overlay={tooltip}>
-					<Link to='/view/$blueprintId' params={{ blueprintId: key }}>
+					<Link to='/view/$blueprintId' params={{ blueprintId: key }} from='/'>
 						<span className={mineStyle}>
 							{title}
 						</span>

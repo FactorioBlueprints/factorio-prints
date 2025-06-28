@@ -387,7 +387,7 @@ const Create: React.FC = () =>
 	const handleCancel = useCallback(() =>
 	{
 		removeFromStorage('factorio-blueprint-create-form');
-		navigate({ to: '/blueprints' });
+		navigate({ to: '/blueprints', from: '/create' });
 	}, [navigate]);
 
 	const handleTagSelection = useCallback((selectedTags: SelectOption[]) =>

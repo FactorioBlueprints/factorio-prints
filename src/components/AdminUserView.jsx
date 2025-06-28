@@ -27,7 +27,7 @@ import TagForm            from './TagForm';
 
 function AdminUserView()
 {
-	const { userId } = useParams({ from: '/admin/user/$userId' });
+	const { userId } = useParams();
 	const [currentUser] = useAuthState(getAuth(app));
 	const moderatorQuery = useIsModerator(currentUser?.uid);
 	const isModerator = moderatorQuery.data ?? false;

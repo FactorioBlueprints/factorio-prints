@@ -3,6 +3,7 @@ import React                         from 'react';
 import Container                     from 'react-bootstrap/Container';
 import Row                           from 'react-bootstrap/Row';
 import {useParams}                   from '@tanstack/react-router';
+import { Route as UserUserIdRoute }  from '../routes/user.$userId';
 import useEnrichedBlueprintSummaries from '../hooks/useEnrichedBlueprintSummaries';
 import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import {useUserBlueprints}           from '../hooks/useUser';
@@ -20,7 +21,7 @@ import TagForm            from './TagForm';
 
 const UserGrid: React.FC = () =>
 {
-	const {userId}       = useParams({ from: '/user/$userId' });
+	const {userId}       = useParams({ from: UserUserIdRoute.id });
 	const filteredTags  = useStore(searchParamsStore, state => state.filteredTags);
 
 	const {

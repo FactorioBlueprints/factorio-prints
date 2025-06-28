@@ -18,7 +18,7 @@ import SingleTagSelector from './SingleTagSelector';
 
 const SingleTagGrid = () =>
 {
-	const { tag } = useParams({ from: '/tag/$tag' });
+	const { tag } = useParams();
 	const tagId = tag || '';
 
 	const {
