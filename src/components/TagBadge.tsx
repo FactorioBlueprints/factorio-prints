@@ -25,7 +25,7 @@ const TagBadge: React.FC<TagBadgeProps> = ({ tag }) =>
 	const [category, name] = parts;
 
 	return (
-		<Link key={tag} to={`/tagged/${category}/${name}`} className='m-1'>
+		<Link key={tag} to='/tagged/$category/$name' params={{ category, name }} className='m-1'>
 			<Badge bg='warning' text='light'>
 				{tag}
 			</Badge>
