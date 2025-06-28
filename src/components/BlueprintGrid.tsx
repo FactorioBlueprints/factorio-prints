@@ -1,6 +1,5 @@
 import {faChevronDown, faCog}        from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
-import PropTypes                     from 'prop-types';
 import React                         from 'react';
 import Button                        from 'react-bootstrap/Button';
 import Col                           from 'react-bootstrap/Col';
@@ -10,14 +9,12 @@ import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummarie
 import {useEnrichedPaginatedSummaries}    from '../hooks/useEnrichedPaginatedSummaries';
 import useFlattenedEnrichedPaginatedSummaries from '../hooks/useFlattenedEnrichedPaginatedSummaries';
 
-import * as propTypes from '../propTypes';
-
 import BlueprintThumbnail from './BlueprintThumbnail';
 import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
-const MostFavoritedGrid = () =>
+const BlueprintGrid: React.FC = () =>
 {
 	const {
 		data,
@@ -25,10 +22,12 @@ const MostFavoritedGrid = () =>
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-	} = useEnrichedPaginatedSummaries(60, 'numberOfFavorites');
+	} = useEnrichedPaginatedSummaries(60, 'lastUpdatedDate');
 
 	const flattenedSummaries = useFlattenedEnrichedPaginatedSummaries(data);
+
 	const filteredSummaries = useFilteredBlueprintSummaries(flattenedSummaries);
+
 	const blueprintSummaries = filteredSummaries;
 
 	if (isLoading)
@@ -45,7 +44,7 @@ const MostFavoritedGrid = () =>
 
 	return (
 		<Container fluid>
-			<PageHeader title='Most Favorited' />
+			<PageHeader title='Most Recent' />
 			<Row className='search-row'>
 				<SearchForm />
 				<TagForm />
@@ -60,7 +59,7 @@ const MostFavoritedGrid = () =>
 				<Row className='text-center my-4'>
 					<Col>
 						<Button
-							onClick={fetchNextPage}
+							onClick={() => fetchNextPage()}
 							disabled={isFetchingNextPage}
 							variant='primary'
 							size='lg'
@@ -84,16 +83,4 @@ const MostFavoritedGrid = () =>
 	);
 };
 
-MostFavoritedGrid.propTypes = {
-	location     : propTypes.locationSchema,
-	history      : propTypes.historySchema,
-	staticContext: PropTypes.shape({}),
-	match        : PropTypes.shape({
-		params : PropTypes.shape({}).isRequired,
-		path   : PropTypes.string.isRequired,
-		url    : PropTypes.string.isRequired,
-		isExact: PropTypes.bool.isRequired,
-	}),
-};
-
-export default MostFavoritedGrid;
+export default BlueprintGrid;

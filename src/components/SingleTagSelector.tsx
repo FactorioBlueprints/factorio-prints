@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 import Col from 'react-bootstrap/Col';
 import Select from 'react-select';
@@ -6,19 +5,27 @@ import { useNavigate } from '@tanstack/react-router';
 
 import { useTags } from '../hooks/useTags';
 
-const SingleTagSelector = ({ currentTag }) =>
+interface TagOption {
+	value: string;
+	label: string;
+}
+
+interface SingleTagSelectorProps {
+	currentTag?: string;
+}
+
+const SingleTagSelector: React.FC<SingleTagSelectorProps> = ({ currentTag }) =>
 {
 	const { data: tagsData, isLoading: tagsLoading } = useTags();
 	const navigate = useNavigate();
 
 	const normalizedCurrentTag = currentTag?.replace(/^\/|\/$/g, '') || '';
 
-	const selectedOption = normalizedCurrentTag
+	const selectedOption: TagOption | null = normalizedCurrentTag
 		? { value: normalizedCurrentTag, label: normalizedCurrentTag.replace(/\//g, ' › ') }
 		: null;
 
-	// Format tag options for react-select
-	const options = useMemo(() =>
+	const options = useMemo((): TagOption[] =>
 	{
 		const tags = tagsData?.tags || [];
 		return tags.map(value => ({
@@ -27,7 +34,7 @@ const SingleTagSelector = ({ currentTag }) =>
 		}));
 	}, [tagsData]);
 
-	const handleTagSelection = (selected) =>
+	const handleTagSelection = (selected: TagOption | null): void =>
 	{
 		if (!selected) return;
 
@@ -67,8 +74,5 @@ const SingleTagSelector = ({ currentTag }) =>
 	);
 };
 
-SingleTagSelector.propTypes = {
-	currentTag: PropTypes.string,
-};
 
 export default SingleTagSelector;

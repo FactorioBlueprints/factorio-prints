@@ -1,19 +1,24 @@
 import {useStore}       from '@tanstack/react-store';
 import React, {useMemo} from 'react';
 import Col              from 'react-bootstrap/Col';
-import Select           from 'react-select';
+import Select, {MultiValue} from 'react-select';
 
 import {useTags}           from '../hooks/useTags';
 import {searchParamsStore} from '../store/searchParamsStore';
 
-const TagForm = () =>
+interface TagOption {
+	value: string;
+	label: string;
+}
+
+const TagForm: React.FC = () =>
 {
 	const { data: tagsData, isLoading: tagsLoading } = useTags();
 
 	const filteredTags = useStore(searchParamsStore, state => state.filteredTags);
 	const selectedOptions = filteredTags.map(value => ({ value, label: value }));
 
-	const handleTagSelection = (selectedTags) =>
+	const handleTagSelection = (selectedTags: MultiValue<TagOption>) =>
 	{
 		if (selectedTags === undefined)
 		{
@@ -21,7 +26,7 @@ const TagForm = () =>
 			throw new Error('selectedTags is undefined in handleTagSelection');
 		}
 
-		const tagValues = selectedTags.map(tag => tag.value);
+		const tagValues = selectedTags ? [...selectedTags].map(tag => tag.value) : [];
 		searchParamsStore.setState(state => ({ ...state, filteredTags: tagValues }));
 
 		console.log('TagForm updated filteredTags:', tagValues);
@@ -38,7 +43,7 @@ const TagForm = () =>
 
 	return (
 		<Col md={6}>
-			<Select
+			<Select<TagOption, true>
 				value={selectedOptions}
 				options={options}
 				onChange={handleTagSelection}
@@ -53,7 +58,5 @@ const TagForm = () =>
 		</Col>
 	);
 };
-
-TagForm.propTypes = {};
 
 export default TagForm;
