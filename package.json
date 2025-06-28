@@ -87,7 +87,8 @@
 		"eject": "react-scripts eject",
 		"styles": "stylus -u autoprefixer-stylus ./src/css/style.styl -o ./src/css/style.css",
 		"styles:watch": "stylus -u autoprefixer-stylus -w ./src/css/style.styl -o ./src/css/style.css",
-		"eslint-find-option-rules": "eslint-find-rules --unused --plugin .eslintrc"
+		"eslint-find-option-rules": "eslint-find-rules --unused --plugin .eslintrc",
+		"lint": "npx biome check src --linter-enabled=true --formatter-enabled=false --organize-imports-enabled=false"
 	},
 	"browserslist": {
 		"production": [
