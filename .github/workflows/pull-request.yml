@@ -35,6 +35,19 @@ jobs:
 
       - uses: ataylorme/eslint-annotate-action@v3
 
+  format:
+    name: Format (Biome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: "npm"
+
+      - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
+      - run: npm run ci:format
+
   test:
     name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
@@ -78,7 +91,7 @@ jobs:
 
   all-checks:
     name: All checks
-    needs: [pre-commit, eslint, test, build]
+    needs: [pre-commit, eslint, format, test, build]
     runs-on: ubuntu-latest
     steps:
       - name: All checks passed
