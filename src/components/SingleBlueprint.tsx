@@ -82,6 +82,7 @@ import DisplayName   from './DisplayName';
 import FavoriteCount from './FavoriteCount';
 import TagBadge      from './TagBadge';
 import DisqusErrorBoundary from './DisqusErrorBoundary';
+import {FactorioIcon, type SignalType, type Quality} from './core/icons/FactorioIcon';
 
 interface ReconcileResult {
 	blueprintId: string;
@@ -586,17 +587,9 @@ function SingleBlueprint()
 														<td className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}>
 															{
 																(entitiesWithIcons as any)[pair[0]]
-																	? <img
-																		height='32px'
-																		width='32px'
-																		src={`/icons/${pair[0]}.png`}
-																		alt={pair[0]}
-																		onError={(e) =>
-																		{
-																			const target = e.target as HTMLImageElement;
-																			target.onerror = null;
-																			target.src = '/icons/entity-unknown.png';
-																		}}
+																	? <FactorioIcon
+																		icon={{ name: pair[0], type: 'item' }}
+																		size="small"
 																	/>
 																	: ''
 															}
@@ -624,17 +617,9 @@ function SingleBlueprint()
 														<td className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}>
 															{
 																(entitiesWithIcons as any)[pair[0]]
-																	? <img
-																		height='32px'
-																		width='32px'
-																		src={`/icons/${pair[0]}.png`}
-																		alt={pair[0]}
-																		onError={(e) =>
-																		{
-																			const target = e.target as HTMLImageElement;
-																			target.onerror = null;
-																			target.src = '/icons/entity-unknown.png';
-																		}}
+																	? <FactorioIcon
+																		icon={{ name: pair[0], type: 'item' }}
+																		size="small"
 																	/>
 																	: ''
 															}
@@ -681,30 +666,18 @@ function SingleBlueprint()
 													return (
 														<tr key={(icon as BlueprintIcon).index}>
 															<td className={`icon icon-${iconName}`}>
-																{
-																	(entitiesWithIcons as any)[iconName]
-																		? <img
-																			height='32px'
-																			width='32px'
-																			src={`/icons/${iconName}.png`}
-																			alt={String(iconName)}
-																			onError={(e) =>
-																			{
-																				console.log('Image error (entities):', (e.target as HTMLImageElement).src);
-																				try
-																				{
-																					const target = e.target as HTMLImageElement;
-																					target.onerror = null;
-																					target.src = '/icons/entity-unknown.png';
-																				}
-																				catch (err)
-																				{
-																					console.error('Error in image error handler:', err);
-																				}
+																{iconObj.signal ? (
+																	<div style={{ width: '32px', height: '32px' }}>
+																		<FactorioIcon
+																			icon={{
+																				name: iconObj.signal.name,
+																				type: (iconObj.signal.type || 'item') as SignalType,
+																				quality: iconObj.signal.quality as Quality
 																			}}
+																			size="small"
 																		/>
-																		: ''
-																}
+																	</div>
+																) : null}
 															</td>
 															<td>
 																{String(iconName)}
@@ -815,22 +788,18 @@ function SingleBlueprint()
 																const iconName = ('name' in icon ? String(icon.name) : String(icon.signal?.name || '')) || '';
 																return (
 																	<td className={`icon icon-${iconName}`} key={iconIndex}>
-																		{
-																			(entitiesWithIcons as any)[iconName]
-																				? <img
-																					height='32px'
-																					width='32px'
-																					src={`/icons/${iconName}.png`}
-																					alt={String(iconName)}
-																					onError={(e) =>
-																					{
-																						const target = e.target as HTMLImageElement;
-																						target.onerror = null;
-																						target.src = '/icons/entity-unknown.png';
+																		{icon.signal ? (
+																			<div style={{ width: '32px', height: '32px' }}>
+																				<FactorioIcon
+																					icon={{
+																						name: icon.signal.name,
+																						type: (icon.signal.type || 'item') as SignalType,
+																						quality: icon.signal.quality as Quality
 																					}}
+																					size="small"
 																				/>
-																				: ''
-																		}
+																			</div>
+																		) : null}
 																	</td>
 																);
 															}
@@ -867,17 +836,13 @@ function SingleBlueprint()
 													<td className={`icon icon-${from.name}`}>
 														{
 															(entitiesWithIcons as any)[from.name]
-																? <img
-																	height='32px'
-																	width='32px'
-																	src={`/icons/${from.name}.png`}
-																	alt={from.name}
-																	onError={(e) =>
-																	{
-																		const target = e.target as HTMLImageElement;
-																		target.onerror = null;
-																		target.src = '/icons/entity-unknown.png';
+																? <FactorioIcon
+																	icon={{
+																		name: from.name,
+																		type: from.type || 'item',
+																		quality: from.quality
 																	}}
+																	size="small"
 																/>
 																: ''
 														}
@@ -885,17 +850,13 @@ function SingleBlueprint()
 													<td className={`icon icon-${to.name}`}>
 														{
 															(entitiesWithIcons as any)[to.name]
-																? <img
-																	height='32px'
-																	width='32px'
-																	src={`/icons/${to.name}.png`}
-																	alt={to.name}
-																	onError={(e) =>
-																	{
-																		const target = e.target as HTMLImageElement;
-																		target.onerror = null;
-																		target.src = '/icons/entity-unknown.png';
+																? <FactorioIcon
+																	icon={{
+																		name: to.name,
+																		type: to.type || 'item',
+																		quality: to.quality
 																	}}
+																	size="small"
 																/>
 																: ''
 														}
