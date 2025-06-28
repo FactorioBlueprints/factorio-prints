@@ -7,6 +7,7 @@ import useEnrichedBlueprintSummaries from '../hooks/useEnrichedBlueprintSummarie
 import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import {useUserBlueprints}           from '../hooks/useUser';
 import {searchParamsStore}           from '../store/searchParamsStore';
+import {EnrichedBlueprintSummary}    from '../schemas';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import DisplayName        from './DisplayName';
@@ -17,7 +18,7 @@ import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
-function UserGrid()
+const UserGrid: React.FC = () =>
 {
 	const {userId}       = useParams({ from: '/user/$userId' });
 	const filteredTags  = useStore(searchParamsStore, state => state.filteredTags);
@@ -31,14 +32,17 @@ function UserGrid()
 
 	const { blueprintSummaries } = useEnrichedBlueprintSummaries(data, isSuccess);
 
-	const filteredBlueprints = useFilteredBlueprintSummaries(blueprintSummaries);
+	// Filter out null values before passing to the filter hook
+	const validBlueprintSummaries = blueprintSummaries.filter((summary): summary is EnrichedBlueprintSummary => summary !== null);
+
+	const filteredBlueprints = useFilteredBlueprintSummaries(validBlueprintSummaries);
 
 	// Sort newest first
-	const sortedBlueprints = [...filteredBlueprints].sort((a, b) =>
+	const sortedBlueprints = [...filteredBlueprints].sort((a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) =>
 	{
 		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-		return dateB - dateA;
+		return dateB.getTime() - dateA.getTime();
 	});
 
 	const isEmpty = isSuccess && sortedBlueprints.length === 0;
@@ -73,12 +77,12 @@ function UserGrid()
 			</EmptyResults>
 
 			<Row className='blueprint-grid-row justify-content-center'>
-				{sortedBlueprints.map(blueprintSummary =>
+				{sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary) =>
 					<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />,
 				)}
 			</Row>
 		</Container>
 	);
-}
+};
 
 export default UserGrid;

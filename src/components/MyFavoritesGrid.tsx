@@ -3,7 +3,6 @@ import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
 import {useQueryClient}   from '@tanstack/react-query';
 import {useStore}         from '@tanstack/react-store';
 import {getAuth}                 from 'firebase/auth';
-import PropTypes                 from 'prop-types';
 import React from 'react';
 import Container                 from 'react-bootstrap/Container';
 import Row                       from 'react-bootstrap/Row';
@@ -14,7 +13,7 @@ import {cleanupInvalidUserFavorite}  from '../api/firebase';
 import useEnrichedBlueprintSummaries from '../hooks/useEnrichedBlueprintSummaries';
 import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import {useUserFavorites}            from '../hooks/useUser';
-import * as propTypes                from '../propTypes';
+import {EnrichedBlueprintSummary}    from '../schemas';
 import {searchParamsStore}           from '../store/searchParamsStore';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
@@ -26,7 +25,7 @@ import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
-function MyFavoritesGrid()
+const MyFavoritesGrid: React.FC = () =>
 {
 	const [user]       = useAuthState(getAuth(app));
 	const userId = user?.uid;
@@ -54,7 +53,7 @@ function MyFavoritesGrid()
 				if (query.isError && query.error?.message?.includes('not found'))
 				{
 					cleanupInvalidUserFavorite(userId, blueprintId)
-						.then(success =>
+						.then((success: boolean) =>
 						{
 							if (success)
 							{
@@ -63,7 +62,7 @@ function MyFavoritesGrid()
 								// 1. Update user favorites list
 								queryClient.setQueryData(
 									['users', 'userId', userId, 'favorites'],
-									oldData =>
+									(oldData: Record<string, boolean> | undefined) =>
 									{
 										if (!oldData) return oldData;
 
@@ -87,7 +86,7 @@ function MyFavoritesGrid()
 								// 4. Update any blueprint favorites cache if it exists
 								queryClient.setQueryData(
 									['blueprints', 'blueprintId', blueprintId, 'favorites'],
-									oldData =>
+									(oldData: Record<string, boolean> | undefined) =>
 									{
 										if (!oldData) return oldData;
 
@@ -101,7 +100,7 @@ function MyFavoritesGrid()
 								// 5. Update blueprint favorite count if it exists
 								queryClient.setQueryData(
 									['blueprints', 'blueprintId', blueprintId],
-									oldData =>
+									(oldData: any) =>
 									{
 										if (!oldData || !oldData.numberOfFavorites) return oldData;
 
@@ -115,7 +114,7 @@ function MyFavoritesGrid()
 								// 6. Update blueprint summary favorite count if it exists
 								queryClient.setQueryData(
 									['blueprintSummaries', 'blueprintId', blueprintId],
-									oldData =>
+									(oldData: any) =>
 									{
 										if (!oldData || !oldData.numberOfFavorites) return oldData;
 
@@ -127,7 +126,7 @@ function MyFavoritesGrid()
 								);
 							}
 						})
-						.catch(error =>
+						.catch((error: Error) =>
 						{
 							console.error(`Failed to clean up invalid favorite ${blueprintId}:`, error);
 						});
@@ -136,14 +135,14 @@ function MyFavoritesGrid()
 		}
 	}, [isSuccess, userId, blueprintQueriesById, queryClient]);
 
-	const filteredBlueprints = useFilteredBlueprintSummaries(blueprintSummaries);
+	const filteredBlueprints = useFilteredBlueprintSummaries(blueprintSummaries.filter((bp): bp is EnrichedBlueprintSummary => bp !== null));
 
 	// Sort newest first
-	const sortedBlueprints = [...filteredBlueprints].sort((a, b) =>
+	const sortedBlueprints = [...filteredBlueprints].sort((a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) =>
 	{
 		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-		return dateB - dateA;
+		return dateB.getTime() - dateA.getTime();
 	});
 
 	if (!user)
@@ -193,7 +192,7 @@ function MyFavoritesGrid()
 			</EmptyResults>
 
 			<Row className='blueprint-grid-row justify-content-center'>
-				{sortedBlueprints.map(blueprintSummary =>
+				{sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary) =>
 					<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />,
 				)}
 			</Row>
@@ -201,18 +200,6 @@ function MyFavoritesGrid()
 			{/* Pagination removed - show all blueprints */}
 		</Container>
 	);
-}
-
-MyFavoritesGrid.propTypes = {
-	location     : propTypes.locationSchema,
-	history      : propTypes.historySchema,
-	staticContext: PropTypes.shape({}),
-	match        : PropTypes.shape({
-		params : PropTypes.shape({}).isRequired,
-		path   : PropTypes.string.isRequired,
-		url    : PropTypes.string.isRequired,
-		isExact: PropTypes.bool.isRequired,
-	}),
 };
 
 export default MyFavoritesGrid;

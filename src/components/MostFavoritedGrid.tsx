@@ -1,6 +1,5 @@
 import {faChevronDown, faCog}        from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
-import PropTypes                     from 'prop-types';
 import React                         from 'react';
 import Button                        from 'react-bootstrap/Button';
 import Col                           from 'react-bootstrap/Col';
@@ -10,14 +9,12 @@ import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummarie
 import {useEnrichedPaginatedSummaries}    from '../hooks/useEnrichedPaginatedSummaries';
 import useFlattenedEnrichedPaginatedSummaries from '../hooks/useFlattenedEnrichedPaginatedSummaries';
 
-import * as propTypes from '../propTypes';
-
 import BlueprintThumbnail from './BlueprintThumbnail';
 import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
-const BlueprintGrid = () =>
+const MostFavoritedGrid: React.FC = () =>
 {
 	const {
 		data,
@@ -25,12 +22,10 @@ const BlueprintGrid = () =>
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
-	} = useEnrichedPaginatedSummaries(60, 'lastUpdatedDate');
+	} = useEnrichedPaginatedSummaries(60, 'numberOfFavorites');
 
 	const flattenedSummaries = useFlattenedEnrichedPaginatedSummaries(data);
-
 	const filteredSummaries = useFilteredBlueprintSummaries(flattenedSummaries);
-
 	const blueprintSummaries = filteredSummaries;
 
 	if (isLoading)
@@ -47,7 +42,7 @@ const BlueprintGrid = () =>
 
 	return (
 		<Container fluid>
-			<PageHeader title='Most Recent' />
+			<PageHeader title='Most Favorited' />
 			<Row className='search-row'>
 				<SearchForm />
 				<TagForm />
@@ -62,7 +57,7 @@ const BlueprintGrid = () =>
 				<Row className='text-center my-4'>
 					<Col>
 						<Button
-							onClick={fetchNextPage}
+							onClick={() => fetchNextPage()}
 							disabled={isFetchingNextPage}
 							variant='primary'
 							size='lg'
@@ -86,16 +81,4 @@ const BlueprintGrid = () =>
 	);
 };
 
-BlueprintGrid.propTypes = {
-	location     : propTypes.locationSchema,
-	history      : propTypes.historySchema,
-	staticContext: PropTypes.shape({}),
-	match        : PropTypes.shape({
-		params : PropTypes.shape({}).isRequired,
-		path   : PropTypes.string.isRequired,
-		url    : PropTypes.string.isRequired,
-		isExact: PropTypes.bool.isRequired,
-	}),
-};
-
-export default BlueprintGrid;
+export default MostFavoritedGrid;

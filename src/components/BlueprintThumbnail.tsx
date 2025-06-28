@@ -9,12 +9,15 @@ import {useAuthState}     from 'react-firebase-hooks/auth';
 import {Link}             from '@tanstack/react-router';
 import {app}              from '../base';
 import buildImageUrl                         from '../helpers/buildImageUrl';
-import useToggleFavoriteMutation             from '../hooks/useToggleFavoriteMutation.js';
+import useToggleFavoriteMutation             from '../hooks/useToggleFavoriteMutation';
 import {useUserBlueprints, useUserFavorites} from '../hooks/useUser';
-import {blueprintSummarySchema}              from '../propTypes';
-import {validateEnrichedBlueprintSummary}    from '../schemas';
+import {EnrichedBlueprintSummary, validateEnrichedBlueprintSummary} from '../schemas';
 
-const BlueprintThumbnail = ({blueprintSummary}) =>
+interface BlueprintThumbnailProps {
+	blueprintSummary: EnrichedBlueprintSummary;
+}
+
+const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary}) =>
 {
 	const [user] = useAuthState(getAuth(app));
 	const {
@@ -92,13 +95,14 @@ const BlueprintThumbnail = ({blueprintSummary}) =>
 					variant='top'
 					src={imageUrl}
 					referrerPolicy='no-referrer'
-					onError={(e) =>
+					onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) =>
 					{
-						console.log('Image load error in BlueprintThumbnail:', e.target.src);
+						const target = e.target as HTMLImageElement;
+						console.log('Image load error in BlueprintThumbnail:', target.src);
 						try
 						{
-							e.target.onerror = null;
-							e.target.src = '/icons/entity-unknown.png';
+							target.onerror = null;
+							target.src = '/icons/entity-unknown.png';
 						}
 						catch (err)
 						{
@@ -133,7 +137,7 @@ const BlueprintThumbnail = ({blueprintSummary}) =>
 					}}
 					role='button'
 					tabIndex={0}
-					onKeyDown={(e) =>
+					onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) =>
 					{
 						// Allow triggering with Enter or Space key for accessibility
 						if (!user || favoriteBlueprintMutation.isPending)
@@ -170,8 +174,5 @@ const BlueprintThumbnail = ({blueprintSummary}) =>
 	);
 };
 
-BlueprintThumbnail.propTypes = {
-	blueprintSummary: blueprintSummarySchema,
-};
 
 export default BlueprintThumbnail;
