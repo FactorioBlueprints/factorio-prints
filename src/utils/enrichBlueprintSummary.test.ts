@@ -7,6 +7,10 @@ import { validateRawBlueprintSummary, validateEnrichedBlueprintSummary } from '.
 vi.mock('../helpers/buildImageUrl');
 vi.mock('../schemas');
 
+const mockedBuildImageUrl = vi.mocked(buildImageUrl);
+const mockedValidateRawBlueprintSummary = vi.mocked(validateRawBlueprintSummary);
+const mockedValidateEnrichedBlueprintSummary = vi.mocked(validateEnrichedBlueprintSummary);
+
 describe('enrichBlueprintSummary', () =>
 {
 	const mockBlueprintId = 'test-blueprint-123';
@@ -14,13 +18,13 @@ describe('enrichBlueprintSummary', () =>
 	beforeEach(() =>
 	{
 		// Set up mock implementations
-		buildImageUrl.mockImplementation((imgurId, imgurType, suffix) =>
+		mockedBuildImageUrl.mockImplementation((imgurId, imgurType, suffix) =>
 		{
 			return `https://i.imgur.com/${imgurId}${suffix}.${imgurType.split('/')[1] || 'png'}`;
 		});
 
-		validateRawBlueprintSummary.mockImplementation(data => data);
-		validateEnrichedBlueprintSummary.mockImplementation(data => data);
+		mockedValidateRawBlueprintSummary.mockImplementation(data => data as any);
+		mockedValidateEnrichedBlueprintSummary.mockImplementation(data => data as any);
 	});
 
 	afterEach(() =>
@@ -43,7 +47,7 @@ describe('enrichBlueprintSummary', () =>
 		};
 
 		enrichBlueprintSummary(mockData, mockBlueprintId);
-		expect(validateRawBlueprintSummary).toHaveBeenCalledWith(mockData);
+		expect(mockedValidateRawBlueprintSummary).toHaveBeenCalledWith(mockData);
 	});
 
 	it('should add the key field to the enriched summary', () =>
@@ -56,7 +60,8 @@ describe('enrichBlueprintSummary', () =>
 		};
 
 		const result = enrichBlueprintSummary(mockData, mockBlueprintId);
-		expect(result.key).toBe(mockBlueprintId);
+		expect(result).not.toBeNull();
+		expect(result!.key).toBe(mockBlueprintId);
 	});
 
 	it('should generate a thumbnail URL when imgurId is available', () =>
@@ -69,8 +74,9 @@ describe('enrichBlueprintSummary', () =>
 		};
 
 		const result = enrichBlueprintSummary(mockData, mockBlueprintId);
-		expect(buildImageUrl).toHaveBeenCalledWith('abc123', 'image/png', 'b');
-		expect(result.thumbnail).toBe('https://i.imgur.com/abc123b.png');
+		expect(mockedBuildImageUrl).toHaveBeenCalledWith('abc123', 'image/png', 'b');
+		expect(result).not.toBeNull();
+		expect(result!.thumbnail).toBe('https://i.imgur.com/abc123b.png');
 	});
 
 	it('should handle missing imgurType by defaulting to image/png', () =>
@@ -78,23 +84,27 @@ describe('enrichBlueprintSummary', () =>
 		enrichBlueprintSummary({
 			title            : 'Test Blueprint',
 			imgurId          : 'abc123',
+			imgurType        : 'image/png',
 			numberOfFavorites: 5,
 		}, mockBlueprintId);
 
 
-		expect(buildImageUrl).toHaveBeenCalledWith('abc123', 'image/png', 'b');
+		expect(mockedBuildImageUrl).toHaveBeenCalledWith('abc123', 'image/png', 'b');
 	});
 
 	it('should have a null thumbnail if imgurId is missing', () =>
 	{
 		const mockData = {
 			title            : 'Test Blueprint',
+			imgurId          : '',
+			imgurType        : 'image/png',
 			numberOfFavorites: 5,
 		};
 
 		const result = enrichBlueprintSummary(mockData, mockBlueprintId);
-		expect(buildImageUrl).not.toHaveBeenCalled();
-		expect(result.thumbnail).toBeNull();
+		expect(mockedBuildImageUrl).not.toHaveBeenCalled();
+		expect(result).not.toBeNull();
+		expect(result!.thumbnail).toBeNull();
 	});
 
 	it('should validate the enriched blueprint summary data', () =>
@@ -108,7 +118,7 @@ describe('enrichBlueprintSummary', () =>
 
 		enrichBlueprintSummary(mockData, mockBlueprintId);
 
-		expect(validateEnrichedBlueprintSummary).toHaveBeenCalledWith(expect.objectContaining({
+		expect(mockedValidateEnrichedBlueprintSummary).toHaveBeenCalledWith(expect.objectContaining({
 			...mockData,
 			key      : mockBlueprintId,
 			thumbnail: expect.any(String),
@@ -128,9 +138,10 @@ describe('enrichBlueprintSummary', () =>
 		};
 
 		const result = enrichBlueprintSummary(mockData, mockBlueprintId);
+		expect(result).not.toBeNull();
 		Object.keys(mockData).forEach(key =>
 		{
-			expect(result[key]).toBe(mockData[key]);
+			expect((result as any)[key]).toBe((mockData as any)[key]);
 		});
 	});
 });

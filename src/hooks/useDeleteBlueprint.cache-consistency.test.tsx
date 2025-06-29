@@ -25,9 +25,9 @@ vi.mock('../base', () => ({
 
 describe('useDeleteBlueprint cache consistency', () =>
 {
-	let queryClient;
-	let wrapper;
-	let navigateMock;
+	let queryClient: QueryClient;
+	let wrapper: ({ children }: { children: React.ReactNode }) => React.JSX.Element;
+	let navigateMock: any;
 
 	beforeEach(() =>
 	{
@@ -38,17 +38,17 @@ describe('useDeleteBlueprint cache consistency', () =>
 				mutations: { retry: false },
 			},
 		});
-		wrapper = ({ children }) => (
+		wrapper = ({ children }: { children: React.ReactNode }) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 
 		navigateMock = vi.fn();
-		useNavigate.mockReturnValue(navigateMock);
+		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
 	it('should maintain cache consistency across all related data structures', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'test-blueprint-id';
 		const authorId = 'test-author-id';
@@ -130,7 +130,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 
 	it('should handle partial cache state gracefully', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'test-blueprint-id';
 		const authorId = 'test-author-id';
@@ -174,7 +174,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 
 	it('should maintain referential integrity across multiple cache entries', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'shared-blueprint-id';
 		const authorId = 'author-id';
@@ -240,7 +240,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 
 	it('should handle edge case of blueprint in multiple tags with different cache states', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'multi-tag-blueprint';
 		const authorId = 'author-id';
@@ -290,7 +290,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 
 	it('should ensure clean cache state after deletion', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'cleanup-test-blueprint';
 		const authorId = 'test-author';

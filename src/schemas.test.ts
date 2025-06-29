@@ -37,7 +37,7 @@ describe('Schema validation', () =>
 			const mockSchema = { parse: vi.fn(data => data) };
 			const mockData = { test: 'data' };
 
-			const result = validate(mockData, mockSchema, 'test data');
+			const result = validate(mockData, mockSchema as any, 'test data');
 
 			expect(mockSchema.parse).toHaveBeenCalledWith(mockData);
 			expect(result).toEqual(mockData);
@@ -45,7 +45,7 @@ describe('Schema validation', () =>
 
 		it('should throw error with description for invalid data', () =>
 		{
-			const mockError = new Error('Validation error');
+			const mockError = new Error('Validation error') as any;
 			mockError.errors = ['error details'];
 
 			const mockSchema = {
@@ -58,7 +58,7 @@ describe('Schema validation', () =>
 			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() =>
 			{});
 
-			expect(() => validate({ test: 'invalid' }, mockSchema, 'test data'))
+			expect(() => validate({ test: 'invalid' }, mockSchema as any, 'test data'))
 				.toThrow('Invalid test data: Validation error');
 
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
@@ -703,7 +703,7 @@ describe('Schema validation', () =>
 
 				it('should validate empty array', () =>
 				{
-					const emptyArray = [];
+					const emptyArray: any[] = [];
 					expect(() => enrichedTagsSchema.parse(emptyArray)).not.toThrow();
 					const result = validateEnrichedTags(emptyArray);
 					expect(result).toEqual(emptyArray);
@@ -803,10 +803,10 @@ describe('Schema validation', () =>
 
 				it('should handle null and undefined inputs', () =>
 				{
-					expect(() => validateRawTags(null)).toThrow();
-					expect(() => validateRawTags(undefined)).toThrow();
-					expect(() => validateEnrichedTags(null)).toThrow();
-					expect(() => validateEnrichedTags(undefined)).toThrow();
+					expect(() => validateRawTags(null as any)).toThrow();
+					expect(() => validateRawTags(undefined as any)).toThrow();
+					expect(() => validateEnrichedTags(null as any)).toThrow();
+					expect(() => validateEnrichedTags(undefined as any)).toThrow();
 				});
 
 				it('should validate complex nested structures', () =>
@@ -938,10 +938,10 @@ describe('Schema validation', () =>
 			{
 				it('should handle null and undefined inputs', () =>
 				{
-					expect(() => validateRawUser(null)).toThrow();
-					expect(() => validateRawUser(undefined)).toThrow();
-					expect(() => validateEnrichedUser(null)).toThrow();
-					expect(() => validateEnrichedUser(undefined)).toThrow();
+					expect(() => validateRawUser(null as any)).toThrow();
+					expect(() => validateRawUser(undefined as any)).toThrow();
+					expect(() => validateEnrichedUser(null as any)).toThrow();
+					expect(() => validateEnrichedUser(undefined as any)).toThrow();
 				});
 
 				it('should validate user with empty favorites and blueprints', () =>
@@ -991,9 +991,9 @@ describe('Schema validation', () =>
 
 					it('should reject non-object types', () =>
 					{
-						expect(() => validateRawUserBlueprints([])).toThrow();
-						expect(() => validateRawUserBlueprints('string')).toThrow();
-						expect(() => validateRawUserBlueprints(123)).toThrow();
+						expect(() => validateRawUserBlueprints([] as any)).toThrow();
+						expect(() => validateRawUserBlueprints('string' as any)).toThrow();
+						expect(() => validateRawUserBlueprints(123 as any)).toThrow();
 					});
 
 					it('should validate real-world blueprint data', () =>
@@ -1097,9 +1097,9 @@ describe('Schema validation', () =>
 
 					it('should reject non-object types', () =>
 					{
-						expect(() => validateRawUserFavorites(null)).toThrow();
-						expect(() => validateRawUserFavorites(undefined)).toThrow();
-						expect(() => validateRawUserFavorites([])).toThrow();
+						expect(() => validateRawUserFavorites(null as any)).toThrow();
+						expect(() => validateRawUserFavorites(undefined as any)).toThrow();
+						expect(() => validateRawUserFavorites([] as any)).toThrow();
 					});
 
 					it('should validate real-world favorite data with mixed boolean values', () =>

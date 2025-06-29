@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, type UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
 import { useEnrichedBlueprintSummary } from './useEnrichedBlueprintSummary';
 import { useRawBlueprintSummary } from './useRawBlueprintSummary';
@@ -9,6 +9,25 @@ import { enrichBlueprintSummary } from '../utils/enrichBlueprintSummary';
 // Mock dependencies
 vi.mock('./useRawBlueprintSummary');
 vi.mock('../utils/enrichBlueprintSummary');
+
+// Helper function to create a partial UseQueryResult with defaults
+const createMockQueryResult = <T,>(overrides: Partial<UseQueryResult<T, Error>>): UseQueryResult<T, Error> => ({
+	data: undefined,
+	error: null,
+	isError: false,
+	isLoading: false,
+	isSuccess: false,
+	isPending: false,
+	status: 'pending',
+	fetchStatus: 'idle',
+	isFetching: false,
+	isStale: false,
+	isRefetching: false,
+	isLoadingError: false,
+	isRefetchError: false,
+	refetch: vi.fn(),
+	...overrides,
+} as UseQueryResult<T, Error>);
 
 const createWrapper = () =>
 {
@@ -19,7 +38,7 @@ const createWrapper = () =>
 			},
 		},
 	});
-	return ({ children }) => (
+	return ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
 			{children}
 		</QueryClientProvider>
@@ -45,13 +64,13 @@ describe('useEnrichedBlueprintSummary', () =>
 	beforeEach(() =>
 	{
 		// Set up mock implementations
-		useRawBlueprintSummary.mockReturnValue({
+		vi.mocked(useRawBlueprintSummary).mockReturnValue({
 			data     : mockRawSummary,
 			isLoading: false,
 			isSuccess: true,
 			error    : null,
-		});
-		enrichBlueprintSummary.mockReturnValue(mockEnrichedSummary);
+		} as any);
+		vi.mocked(enrichBlueprintSummary).mockReturnValue(mockEnrichedSummary);
 	});
 
 	afterEach(() =>
@@ -80,12 +99,12 @@ describe('useEnrichedBlueprintSummary', () =>
 
 	it('should return null data if raw data is null', () =>
 	{
-		useRawBlueprintSummary.mockReturnValue({
+		vi.mocked(useRawBlueprintSummary).mockReturnValue({
 			data     : null,
 			isLoading: false,
 			isSuccess: false,
 			error    : null,
-		});
+		} as any);
 
 		const { result } = renderHook(() => useEnrichedBlueprintSummary(mockBlueprintId), {
 			wrapper: createWrapper(),
@@ -104,9 +123,9 @@ describe('useEnrichedBlueprintSummary', () =>
 			error      : null,
 			refetch    : vi.fn(),
 			fetchStatus: 'idle',
-		};
+		} as any;
 
-		useRawBlueprintSummary.mockReturnValue(mockQueryResult);
+		vi.mocked(useRawBlueprintSummary).mockReturnValue(mockQueryResult);
 
 		const { result } = renderHook(() => useEnrichedBlueprintSummary(mockBlueprintId), {
 			wrapper: createWrapper(),

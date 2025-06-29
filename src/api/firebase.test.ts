@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fetchPaginatedSummaries, getBlueprintCdnUrl, fetchBlueprintFromCdn } from './firebase';
 import { get } from 'firebase/database';
+import type { EnrichedBlueprintSummary, RawBlueprint } from '../schemas';
 
 vi.mock('firebase/database', () => ({
 	ref         : vi.fn(),
@@ -65,13 +66,17 @@ describe('firebase API', () =>
 
 		it('should fetch blueprint data from CDN successfully', async () =>
 		{
-			const mockBlueprintSummary = {
+			const mockBlueprintSummary: EnrichedBlueprintSummary = {
 				key            : '-KnQ865j-qQ21WoUPbd3',
 				title          : 'Test Blueprint',
 				lastUpdatedDate: 1607936203137,
+				imgurId        : 'test123',
+				imgurType      : 'image/png',
+				numberOfFavorites: 0,
+				thumbnail      : null,
 			};
 
-			const mockBlueprintData = {
+			const mockBlueprintData: Partial<RawBlueprint> = {
 				title              : 'Test Blueprint',
 				lastUpdatedDate    : 1607936203137,
 				createdDate        : 1607936203137,
@@ -87,14 +92,14 @@ describe('firebase API', () =>
 				},
 			};
 
-			globalThis.fetch.mockResolvedValueOnce({
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
 				ok  : true,
 				json: async () => mockBlueprintData,
-			});
+			} as unknown as Response);
 
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
-			const expectedBlueprintData = {
+			const expectedBlueprintData: RawBlueprint = {
 				title              : 'Test Blueprint',
 				lastUpdatedDate    : 1607936203137,
 				createdDate        : 1607936203137,
@@ -119,7 +124,7 @@ describe('firebase API', () =>
 
 		it('should return null when blueprint summary has no key', async () =>
 		{
-			const mockBlueprintSummary = {
+			const mockBlueprintSummary: Partial<EnrichedBlueprintSummary> = {
 				title          : 'Test Blueprint',
 				lastUpdatedDate: 1607936203137,
 			};
@@ -127,7 +132,7 @@ describe('firebase API', () =>
 			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() =>
 			{});
 
-			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
+			const result = await fetchBlueprintFromCdn(mockBlueprintSummary as any);
 
 			expect(result).toBeNull();
 			expect(consoleErrorSpy).toHaveBeenCalledWith('Blueprint summary missing key');
@@ -138,16 +143,21 @@ describe('firebase API', () =>
 
 		it('should return null when CDN fetch returns 404 (without logging)', async () =>
 		{
-			const mockBlueprintSummary = {
+			const mockBlueprintSummary: EnrichedBlueprintSummary = {
 				key  : '-KnQ865j-qQ21WoUPbd3',
 				title: 'Test Blueprint',
+				lastUpdatedDate: 1607936203137,
+				imgurId: 'test123',
+				imgurType: 'image/png',
+				numberOfFavorites: 0,
+				thumbnail: null,
 			};
 
-			globalThis.fetch.mockResolvedValueOnce({
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
 				ok        : false,
 				status    : 404,
 				statusText: 'Not Found',
-			});
+			} as unknown as Response);
 
 			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() =>
 			{});
@@ -162,16 +172,21 @@ describe('firebase API', () =>
 
 		it('should log warning for non-404 CDN fetch errors', async () =>
 		{
-			const mockBlueprintSummary = {
+			const mockBlueprintSummary: EnrichedBlueprintSummary = {
 				key  : '-KnQ865j-qQ21WoUPbd3',
 				title: 'Test Blueprint',
+				lastUpdatedDate: 1607936203137,
+				imgurId: 'test123',
+				imgurType: 'image/png',
+				numberOfFavorites: 0,
+				thumbnail: null,
 			};
 
-			globalThis.fetch.mockResolvedValueOnce({
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
 				ok        : false,
 				status    : 500,
 				statusText: 'Internal Server Error',
-			});
+			} as unknown as Response);
 
 			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() =>
 			{});
@@ -186,12 +201,17 @@ describe('firebase API', () =>
 
 		it('should return null when network error occurs', async () =>
 		{
-			const mockBlueprintSummary = {
+			const mockBlueprintSummary: EnrichedBlueprintSummary = {
 				key  : '-KnQ865j-qQ21WoUPbd3',
 				title: 'Test Blueprint',
+				lastUpdatedDate: 1607936203137,
+				imgurId: 'test123',
+				imgurType: 'image/png',
+				numberOfFavorites: 0,
+				thumbnail: null,
 			};
 
-			globalThis.fetch.mockRejectedValueOnce(new Error('Network error'));
+			vi.mocked(globalThis.fetch).mockRejectedValueOnce(new Error('Network error'));
 
 			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() =>
 			{});
@@ -207,18 +227,23 @@ describe('firebase API', () =>
 
 		it('should return null when JSON parsing fails', async () =>
 		{
-			const mockBlueprintSummary = {
+			const mockBlueprintSummary: EnrichedBlueprintSummary = {
 				key  : '-KnQ865j-qQ21WoUPbd3',
 				title: 'Test Blueprint',
+				lastUpdatedDate: 1607936203137,
+				imgurId: 'test123',
+				imgurType: 'image/png',
+				numberOfFavorites: 0,
+				thumbnail: null,
 			};
 
-			globalThis.fetch.mockResolvedValueOnce({
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
 				ok  : true,
 				json: async () =>
 				{
 					throw new Error('Invalid JSON');
 				},
-			});
+			} as unknown as Response);
 
 			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() =>
 			{});
@@ -262,7 +287,7 @@ describe('firebase API', () =>
 
 			const mockSnapshot = {
 				exists : () => true,
-				forEach: (callback) =>
+				forEach: (callback: (child: any) => void) =>
 				{
 					const entries = Object.entries(mockData)
 						.sort(([, a], [, b]) => a.lastUpdatedDate - b.lastUpdatedDate);
@@ -277,13 +302,13 @@ describe('firebase API', () =>
 				},
 			};
 
-			get.mockResolvedValue(mockSnapshot);
+			vi.mocked(get).mockResolvedValue(mockSnapshot as any);
 
 			const result = await fetchPaginatedSummaries();
 
 			const entries = Object.entries(result.data).map(([key, value]) => ({ key, ...value }));
 
-			const sortedByDateDesc = [...entries].sort((a, b) => b.lastUpdatedDate - a.lastUpdatedDate);
+			const sortedByDateDesc = [...entries].sort((a, b) => (b.lastUpdatedDate || 0) - (a.lastUpdatedDate || 0));
 
 			expect(sortedByDateDesc[0].key).toBe('blueprint1'); // Newest (300) should be first
 			expect(sortedByDateDesc[1].key).toBe('blueprint2'); // Second newest (200) should be second

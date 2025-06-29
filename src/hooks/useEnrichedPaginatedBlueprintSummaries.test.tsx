@@ -70,7 +70,7 @@ const fakeEnrichedPaginatedData = {
 
 describe('useEnrichedPaginatedBlueprintSummaries', () =>
 {
-	let queryClient;
+	let queryClient: QueryClient;
 
 	beforeEach(() =>
 	{
@@ -91,13 +91,13 @@ describe('useEnrichedPaginatedBlueprintSummaries', () =>
 			isFetchingNextPage: false,
 			hasNextPage       : true,
 			fetchNextPage     : vi.fn(),
-		});
+		} as any);
 
 		// TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
 		vi.mocked(enrichPaginatedBlueprintSummaries).mockReturnValue(fakeEnrichedPaginatedData);
 	});
 
-	const wrapper = ({ children }) => (
+	const wrapper = ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
 			{children}
 		</QueryClientProvider>
@@ -129,13 +129,13 @@ describe('useEnrichedPaginatedBlueprintSummaries', () =>
 	it('should handle null raw data', async () =>
 	{
 		// TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
-		useRawPaginatedBlueprintSummaries.mockReturnValue({
+		vi.mocked(useRawPaginatedBlueprintSummaries).mockReturnValue({
 			data              : null,
 			isLoading         : true,
 			isFetchingNextPage: false,
 			hasNextPage       : false,
 			fetchNextPage     : vi.fn(),
-		});
+		} as any);
 
 		const { result } = renderHook(() => useEnrichedPaginatedBlueprintSummaries(), { wrapper });
 

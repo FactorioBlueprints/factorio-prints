@@ -11,7 +11,7 @@ describe('enrichBlueprintSummaryPage', () =>
 
 	it('should transform raw page data into enriched page data', () =>
 	{
-		const rawPage = {
+		const rawPage: any = {
 			data: {
 				key1: {
 					title            : 'Blueprint 1',
@@ -65,7 +65,7 @@ describe('enrichBlueprintSummaryPage', () =>
 
 	it('should handle empty data object', () =>
 	{
-		const rawPage = {
+		const rawPage: any = {
 			data     : {},
 			hasMore  : false,
 			lastKey  : null,
@@ -85,7 +85,7 @@ describe('enrichBlueprintSummaryPage', () =>
 
 	it('should throw validation error for invalid raw data', () =>
 	{
-		const invalidRawPage = {
+		const invalidRawPage: any = {
 			// Missing required fields
 			data: { key1: { title: 'Test' } },
 		};
@@ -96,7 +96,7 @@ describe('enrichBlueprintSummaryPage', () =>
 
 	it('should handle summaries without optional fields', () =>
 	{
-		const rawPage = {
+		const rawPage: any = {
 			data: {
 				key1: {
 					title            : 'Blueprint 1',
@@ -142,7 +142,7 @@ describe('enrichPaginatedBlueprintSummaries', () =>
 
 	it('should transform raw paginated data into enriched paginated data', () =>
 	{
-		const rawPaginated = {
+		const rawPaginated: any = {
 			pages: [
 				{
 					data: {
@@ -216,7 +216,7 @@ describe('enrichPaginatedBlueprintSummaries', () =>
 
 	it('should handle empty pages array', () =>
 	{
-		const rawPaginated = {
+		const rawPaginated: any = {
 			pages     : [],
 			pageParams: [],
 		};
@@ -232,7 +232,7 @@ describe('enrichPaginatedBlueprintSummaries', () =>
 
 	it('should handle paginated data without pageParams', () =>
 	{
-		const rawPaginated = {
+		const rawPaginated: any = {
 			pages: [
 				{
 					data: {
@@ -278,7 +278,7 @@ describe('enrichPaginatedBlueprintSummaries', () =>
 
 	it('should throw validation error for invalid raw data', () =>
 	{
-		const invalidRawPaginated = {
+		const invalidRawPaginated: any = {
 			// Missing required 'pages' field
 			pageParams: [],
 		};
@@ -289,7 +289,7 @@ describe('enrichPaginatedBlueprintSummaries', () =>
 
 	it('should handle pages with empty data objects', () =>
 	{
-		const rawPaginated = {
+		const rawPaginated: any = {
 			pages: [
 				{
 					data     : {}, // Empty data object
@@ -319,7 +319,7 @@ describe('enrichPaginatedBlueprintSummaries', () =>
 
 	it('should preserve original structure when enriching multiple pages', () =>
 	{
-		const rawPaginated = {
+		const rawPaginated: any = {
 			pages: [
 				{
 					data: {
@@ -407,7 +407,7 @@ describe('enrichPaginatedBlueprintSummaries', () =>
 
 	it('should handle page with null values in pagination metadata', () =>
 	{
-		const rawPaginated = {
+		const rawPaginated: any = {
 			pages: [
 				{
 					data: {

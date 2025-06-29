@@ -25,9 +25,9 @@ vi.mock('../base', () => ({
 
 describe('useDeleteBlueprint', () =>
 {
-	let queryClient;
-	let wrapper;
-	let navigateMock;
+	let queryClient: QueryClient;
+	let wrapper: ({ children }: { children: React.ReactNode }) => React.JSX.Element;
+	let navigateMock: any;
 
 	beforeEach(() =>
 	{
@@ -38,19 +38,19 @@ describe('useDeleteBlueprint', () =>
 				mutations: { retry: false },
 			},
 		});
-		wrapper = ({ children }) => (
+		wrapper = ({ children }: { children: React.ReactNode }) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 
 		navigateMock = vi.fn();
-		useNavigate.mockReturnValue(navigateMock);
+		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
 	it('should delete blueprint from multiple database paths', async () =>
 	{
 		const mockRef = { path: 'mock-ref' };
-		ref.mockReturnValue(mockRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
 
@@ -78,8 +78,8 @@ describe('useDeleteBlueprint', () =>
 	it('should handle empty tags array', async () =>
 	{
 		const mockRef = { path: 'mock-ref' };
-		ref.mockReturnValue(mockRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
 
@@ -103,7 +103,7 @@ describe('useDeleteBlueprint', () =>
 
 	it('should invalidate lastUpdatedDate queries on success', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 		const invalidateQueriesSpy = vi.spyOn(queryClient, 'invalidateQueries');
 
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
@@ -123,7 +123,7 @@ describe('useDeleteBlueprint', () =>
 
 	it('should update user blueprints cache on success', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		// Set up existing user blueprints in cache
 		const userBlueprintsKey = ['users', 'userId', 'test-author', 'blueprints'];
@@ -157,7 +157,7 @@ describe('useDeleteBlueprint', () =>
 
 	it('should update tag caches on success', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		// Set up existing tag data in cache
 		const tag1Key = ['byTag', 'tag1'];
@@ -190,7 +190,7 @@ describe('useDeleteBlueprint', () =>
 
 	it('should remove blueprint queries from cache on success', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 		const removeQueriesSpy = vi.spyOn(queryClient, 'removeQueries');
 
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
@@ -213,7 +213,7 @@ describe('useDeleteBlueprint', () =>
 
 	it('should navigate to user profile on success', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
 
@@ -231,7 +231,7 @@ describe('useDeleteBlueprint', () =>
 	it('should handle database update failure', async () =>
 	{
 		const error = new Error('Database update failed');
-		dbUpdate.mockRejectedValue(error);
+		vi.mocked(dbUpdate).mockRejectedValue(error);
 
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
 
@@ -249,7 +249,7 @@ describe('useDeleteBlueprint', () =>
 
 	it('should handle missing user blueprints cache gracefully', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		// Don't set any user blueprints in cache
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
@@ -268,7 +268,7 @@ describe('useDeleteBlueprint', () =>
 
 	it('should handle missing tag cache gracefully', async () =>
 	{
-		dbUpdate.mockResolvedValue();
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		// Don't set any tag data in cache
 		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
@@ -287,8 +287,8 @@ describe('useDeleteBlueprint', () =>
 
 	it('should provide loading states', async () =>
 	{
-		let resolvePromise;
-		dbUpdate.mockImplementation(() => new Promise(resolve =>
+		let resolvePromise: any;
+		vi.mocked(dbUpdate).mockImplementation(() => new Promise(resolve =>
 		{
 			resolvePromise = resolve;
 		}));
@@ -307,7 +307,7 @@ describe('useDeleteBlueprint', () =>
 		await waitFor(() => expect(result.current.isPending).toBe(true));
 
 		// Resolve the promise to complete the mutation
-		resolvePromise();
+		resolvePromise?.();
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 

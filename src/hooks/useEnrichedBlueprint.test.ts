@@ -70,25 +70,25 @@ describe('useEnrichedBlueprint', () =>
 		vi.clearAllMocks();
 
 		// Set up the useRawBlueprint mock
-		useRawBlueprint.mockImplementation(() => ({
+		vi.mocked(useRawBlueprint).mockImplementation(() => ({
 			data     : expectedRawBlueprint,
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		}));
+		}) as any);
 
 		// Set up the enrichBlueprint mock
-		enrichBlueprint.mockReturnValue(expectedEnrichedBlueprint);
+		vi.mocked(enrichBlueprint).mockReturnValue(expectedEnrichedBlueprint);
 	});
 
 	it('should return enriched blueprint data when raw data is available', async () =>
 	{
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary as any), { wrapper });
 
 		// Check if useRawBlueprint was called with correct ID and summary
 		expect(useRawBlueprint).toHaveBeenCalledWith(expectedBlueprintId, expectedBlueprintSummary);
@@ -102,19 +102,19 @@ describe('useEnrichedBlueprint', () =>
 
 	it('should return undefined data when raw data is not available', async () =>
 	{
-		useRawBlueprint.mockImplementation(() => ({
+		vi.mocked(useRawBlueprint).mockImplementation(() => ({
 			data     : undefined,
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		}));
+		}) as any);
 
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary as any), { wrapper });
 
 		// Verify that enrichBlueprint was not called
 		expect(enrichBlueprint).not.toHaveBeenCalled();
@@ -125,19 +125,19 @@ describe('useEnrichedBlueprint', () =>
 
 	it('should preserve loading state from the raw query', async () =>
 	{
-		useRawBlueprint.mockImplementation(() => ({
+		vi.mocked(useRawBlueprint).mockImplementation(() => ({
 			data     : undefined,
 			isLoading: true,
 			isError  : false,
 			error    : null,
-		}));
+		}) as any);
 
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary as any), { wrapper });
 
 		// Verify loading state is preserved
 		expect(result.current.isLoading).toBe(true);
@@ -147,19 +147,19 @@ describe('useEnrichedBlueprint', () =>
 	it('should preserve error state from the raw query', async () =>
 	{
 		const expectedError = new Error('Failed to fetch blueprint');
-		useRawBlueprint.mockImplementation(() => ({
+		vi.mocked(useRawBlueprint).mockImplementation(() => ({
 			data     : undefined,
 			isLoading: false,
 			isError  : true,
 			error    : expectedError,
-		}));
+		}) as any);
 
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useEnrichedBlueprint(expectedBlueprintId, expectedBlueprintSummary as any), { wrapper });
 
 		// Verify error state is preserved
 		expect(result.current.isError).toBe(true);
