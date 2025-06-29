@@ -32,9 +32,9 @@ vi.mock('../schemas', () => ({
 
 describe('useUpdateBlueprint', () =>
 {
-	let queryClient;
-	let wrapper;
-	let navigateMock;
+	let queryClient: QueryClient;
+	let wrapper: ({ children }: { children: React.ReactNode }) => React.JSX.Element;
+	let navigateMock: any;
 
 	beforeEach(() =>
 	{
@@ -45,18 +45,18 @@ describe('useUpdateBlueprint', () =>
 				mutations: { retry: false },
 			},
 		});
-		wrapper = ({ children }) => (
+		wrapper = ({ children }: { children: React.ReactNode }) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 		navigateMock = vi.fn();
-		useNavigate.mockReturnValue(navigateMock);
+		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
 	it('should update blueprint with raw data', async () =>
 	{
 		const mockRef = {};
-		ref.mockReturnValue(mockRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const rawBlueprint = {
 			title              : 'Old Title',
@@ -65,6 +65,10 @@ describe('useUpdateBlueprint', () =>
 			tags               : ['old-tag'],
 			image              : { id: 'oldImageId', type: 'image/png' },
 			author             : { userId: 'user123', displayName: 'Test User' },
+			numberOfFavorites  : 0,
+			lastUpdatedDate    : Date.now(),
+			createdDate        : Date.now(),
+			favorites          : {},
 		};
 
 		const formData = {
@@ -85,7 +89,7 @@ describe('useUpdateBlueprint', () =>
 		});
 
 		// Verify Firebase update was called with correct data
-		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+		expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 			'/blueprints/blueprint123/title'                   : 'New Title',
 			'/blueprints/blueprint123/blueprintString'         : 'new string',
 			'/blueprints/blueprint123/descriptionMarkdown'     : 'new description',
@@ -107,8 +111,8 @@ describe('useUpdateBlueprint', () =>
 	it('should handle update without image change', async () =>
 	{
 		const mockRef = {};
-		ref.mockReturnValue(mockRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const rawBlueprint = {
 			title              : 'Old Title',
@@ -116,6 +120,11 @@ describe('useUpdateBlueprint', () =>
 			descriptionMarkdown: 'old description',
 			tags               : ['old-tag'],
 			image              : { id: 'same123', type: 'image/png' },
+			numberOfFavorites  : 0,
+			lastUpdatedDate    : Date.now(),
+			createdDate        : Date.now(),
+			author             : { userId: 'user123', displayName: 'Test User' },
+			favorites          : {},
 		};
 
 		const formData = {
@@ -136,7 +145,7 @@ describe('useUpdateBlueprint', () =>
 		});
 
 		// Verify Firebase update was called without image update
-		const updateCalls = dbUpdate.mock.calls[0][1];
+		const updateCalls = vi.mocked(dbUpdate).mock.calls[0][1] as any;
 		expect(updateCalls['/blueprints/blueprint123/image']).toBeUndefined();
 		expect(updateCalls['/blueprintSummaries/blueprint123/imgurId/']).toBeUndefined();
 		expect(updateCalls['/blueprintSummaries/blueprint123/imgurType/']).toBeUndefined();
@@ -145,8 +154,8 @@ describe('useUpdateBlueprint', () =>
 	it('should update cache on success', async () =>
 	{
 		const mockRef = {};
-		ref.mockReturnValue(mockRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const existingBlueprint = {
 			title              : 'Old Title',
@@ -154,6 +163,11 @@ describe('useUpdateBlueprint', () =>
 			descriptionMarkdown: 'old description',
 			tags               : ['old-tag'],
 			lastUpdatedDate    : 1000000,
+			numberOfFavorites  : 0,
+			createdDate        : Date.now(),
+			author             : { userId: 'user123', displayName: 'Test User' },
+			image              : { id: 'img123', type: 'image/png' },
+			favorites          : {},
 		};
 
 		queryClient.setQueryData(['blueprints', 'blueprintId', 'blueprint123'], existingBlueprint);
@@ -176,7 +190,7 @@ describe('useUpdateBlueprint', () =>
 		});
 
 		// Check cache was updated
-		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', 'blueprint123']);
+		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', 'blueprint123']) as any;
 		expect(updatedBlueprint.title).toBe('New Title');
 		expect(updatedBlueprint.blueprintString).toBe('new string');
 		expect(updatedBlueprint.descriptionMarkdown).toBe('new description');

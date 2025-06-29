@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getDatabase, ref, update as dbUpdate } from 'firebase/database';
 import { useToggleFavoriteMutation } from './useToggleFavoriteMutation';
 
@@ -18,10 +18,10 @@ vi.mock('../base', () => ({
 
 describe('useToggleFavoriteMutation', () =>
 {
-	let queryClient;
-	let wrapper;
-	let mockDatabase;
-	let mockRef;
+	let queryClient: QueryClient;
+	let wrapper: ({ children }: { children: React.ReactNode }) => React.JSX.Element;
+	let mockDatabase: any;
+	let mockRef: any;
 
 	beforeEach(() =>
 	{
@@ -32,7 +32,7 @@ describe('useToggleFavoriteMutation', () =>
 			},
 		});
 
-		wrapper = ({ children }) => (
+		wrapper = ({ children }: { children: React.ReactNode }) => (
 			<QueryClientProvider client={queryClient}>
 				{children}
 			</QueryClientProvider>
@@ -40,9 +40,9 @@ describe('useToggleFavoriteMutation', () =>
 
 		mockDatabase = {};
 		mockRef = {};
-		getDatabase.mockReturnValue(mockDatabase);
-		ref.mockReturnValue(mockRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(getDatabase).mockReturnValue(mockDatabase);
+		vi.mocked(ref).mockReturnValue(mockRef);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 	});
 
 	afterEach(() =>
@@ -67,7 +67,7 @@ describe('useToggleFavoriteMutation', () =>
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/numberOfFavorites'        : 6,
 				'/blueprints/blueprint123/favorites/user456'        : true,
 				'/blueprintSummaries/blueprint123/numberOfFavorites': 6,
@@ -90,7 +90,7 @@ describe('useToggleFavoriteMutation', () =>
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/numberOfFavorites'        : 4,
 				'/blueprints/blueprint123/favorites/user456'        : null,
 				'/blueprintSummaries/blueprint123/numberOfFavorites': 4,
@@ -113,7 +113,7 @@ describe('useToggleFavoriteMutation', () =>
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/numberOfFavorites'        : 0,
 				'/blueprints/blueprint123/favorites/user456'        : null,
 				'/blueprintSummaries/blueprint123/numberOfFavorites': 0,
@@ -136,7 +136,7 @@ describe('useToggleFavoriteMutation', () =>
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/numberOfFavorites'        : 1,
 				'/blueprints/blueprint123/favorites/user456'        : true,
 				'/blueprintSummaries/blueprint123/numberOfFavorites': 1,
@@ -159,7 +159,7 @@ describe('useToggleFavoriteMutation', () =>
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/numberOfFavorites'        : 1,
 				'/blueprints/blueprint123/favorites/user456'        : true,
 				'/blueprintSummaries/blueprint123/numberOfFavorites': 1,
@@ -348,7 +348,7 @@ describe('useToggleFavoriteMutation', () =>
 		it('should handle Firebase update errors', async () =>
 		{
 			const error = new Error('Firebase update failed');
-			dbUpdate.mockRejectedValue(error);
+			vi.mocked(dbUpdate).mockRejectedValue(error);
 
 			const { result } = renderHook(() => useToggleFavoriteMutation(), { wrapper });
 
@@ -385,7 +385,7 @@ describe('useToggleFavoriteMutation', () =>
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 			// Should use the provided numberOfFavorites (42) directly
-			expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/numberOfFavorites'        : 43,
 				'/blueprints/blueprint123/favorites/user456'        : true,
 				'/blueprintSummaries/blueprint123/numberOfFavorites': 43,
@@ -409,9 +409,9 @@ describe('useToggleFavoriteMutation', () =>
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 			// Should only call dbUpdate, no other Firebase operations
-			expect(dbUpdate).toHaveBeenCalledTimes(1);
-			expect(getDatabase).toHaveBeenCalledTimes(1);
-			expect(ref).toHaveBeenCalledTimes(1);
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledTimes(1);
+			expect(vi.mocked(getDatabase)).toHaveBeenCalledTimes(1);
+			expect(vi.mocked(ref)).toHaveBeenCalledTimes(1);
 		});
 	});
 });

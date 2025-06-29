@@ -52,17 +52,17 @@ describe('useRawBlueprint', () =>
 	beforeEach(() =>
 	{
 		vi.clearAllMocks();
-		fetchBlueprint.mockResolvedValue(fakeRawBlueprint);
+		vi.mocked(fetchBlueprint).mockResolvedValue(fakeRawBlueprint);
 	});
 
 	it('should return empty result when blueprintId is not provided', async () =>
 	{
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useRawBlueprint(null, fakeBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useRawBlueprint(null as any, fakeBlueprintSummary as any), { wrapper });
 
 		expect(result.current.isLoading).toBe(false);
 		expect(result.current.data).toBeUndefined();
@@ -72,7 +72,7 @@ describe('useRawBlueprint', () =>
 	it('should return empty result when blueprintSummary is not provided', async () =>
 	{
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
@@ -86,11 +86,11 @@ describe('useRawBlueprint', () =>
 	it('should fetch blueprint data when blueprintId is provided', async () =>
 	{
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), { wrapper });
 
 		// Initial state is loading
 		expect(result.current.isLoading).toBe(true);
@@ -105,14 +105,14 @@ describe('useRawBlueprint', () =>
 	it('should handle error when fetchBlueprint fails', async () =>
 	{
 		const fakeError = new Error('Failed to fetch blueprint');
-		fetchBlueprint.mockRejectedValue(fakeError);
+		vi.mocked(fetchBlueprint).mockRejectedValue(fakeError);
 
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), { wrapper });
 
 		// Wait for query to complete
 		await waitFor(() => expect(result.current.isError).toBe(true));
@@ -124,14 +124,14 @@ describe('useRawBlueprint', () =>
 	it('should handle validation error', async () =>
 	{
 		const validationError = new Error('Invalid raw blueprint: Validation failed');
-		fetchBlueprint.mockRejectedValue(validationError);
+		vi.mocked(fetchBlueprint).mockRejectedValue(validationError);
 
 		const queryClient = createTestQueryClient();
-		const wrapper = ({ children }) => (
+		const wrapper = ({ children }: { children: React.ReactNode }) => (
 			React.createElement(QueryClientProvider, { client: queryClient }, children)
 		);
 
-		const { result } = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary), { wrapper });
+		const { result } = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), { wrapper });
 
 		// Wait for query to complete
 		await waitFor(() => expect(result.current.isError).toBe(true));

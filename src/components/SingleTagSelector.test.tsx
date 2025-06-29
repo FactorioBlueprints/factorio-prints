@@ -27,12 +27,12 @@ vi.mock('react-select', () => ({
 		isSearchable,
 		closeMenuOnSelect,
 		isMulti,
-	}) =>
+	}: any) =>
 	{
-		const handleChange = (event) =>
+		const handleChange = (event: any) =>
 		{
 			const selectedValue = event.target.value;
-			const selectedOption = options.find((opt) => opt.value === selectedValue);
+			const selectedOption = options.find((opt: any) => opt.value === selectedValue);
 			if (selectedOption && onChange)
 			{
 				onChange(selectedOption);
@@ -44,7 +44,7 @@ vi.mock('react-select', () => ({
 		if (value)
 		{
 			// The value passed has normalized tag, but options have full path
-			const matchingOption = options.find(opt =>
+			const matchingOption = options.find((opt: any) =>
 			{
 				const normalizedOptionValue = opt.value.replace(/^\/|\/$/g, '');
 				return normalizedOptionValue === value.value;
@@ -61,7 +61,7 @@ vi.mock('react-select', () => ({
 					disabled={isLoading}
 				>
 					<option value=''>{placeholder}</option>
-					{options.map((option) => (
+					{options.map((option: any) => (
 						<option key={option.value} value={option.value}>
 							{option.label}
 						</option>
@@ -92,7 +92,7 @@ const mockTagsData = {
 
 describe('SingleTagSelector', () =>
 {
-	let queryClient;
+	let queryClient: QueryClient;
 
 	beforeEach(() =>
 	{
@@ -107,7 +107,7 @@ describe('SingleTagSelector', () =>
 		vi.clearAllMocks();
 	});
 
-	const wrapper = ({ children }) => (
+	const wrapper = ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 
@@ -118,7 +118,7 @@ describe('SingleTagSelector', () =>
 			isLoading: true,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 
@@ -133,11 +133,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select).not.toBeDisabled();
 
 		// Check that options are rendered with formatted labels
@@ -156,11 +156,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('/category1/tag1/');
 	});
 
@@ -171,11 +171,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector currentTag='/category1/tag1/' />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('/category1/tag1/');
 	});
 
@@ -186,11 +186,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 
 		// Select a different tag
 		fireEvent.change(select, { target: { value: '/category2/tag3/' } });
@@ -208,11 +208,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 
 		// Select the same tag
 		fireEvent.change(select, { target: { value: '/category1/tag1/' } });
@@ -227,11 +227,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select).not.toBeDisabled();
 
 		// Only placeholder should be present
@@ -247,11 +247,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select).not.toBeDisabled();
 
 		// Only placeholder should be present
@@ -273,11 +273,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		fireEvent.change(select, { target: { value: 'invalidtag' } });
 
 		expect(consoleSpy).toHaveBeenCalledWith(
@@ -295,11 +295,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
 
-		const selectProps = JSON.parse(screen.getByTestId('select-props').textContent);
+		const selectProps = JSON.parse(screen.getByTestId('select-props').textContent || '{}');
 
 		expect(selectProps).toEqual({
 			isClearable      : false,
@@ -317,7 +317,7 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 
@@ -334,11 +334,11 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 
 		// This should log an error as it has more than one slash
 		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() =>
@@ -360,14 +360,14 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector currentTag={undefined} />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('');
 
-		const selectProps = JSON.parse(screen.getByTestId('select-props').textContent);
+		const selectProps = JSON.parse(screen.getByTestId('select-props').textContent || '{}');
 		expect(selectProps.hasValue).toBe(false);
 	});
 
@@ -378,14 +378,14 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector currentTag='' />, { wrapper });
 
-		const select = screen.getByTestId('tag-select');
+		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('');
 
-		const selectProps = JSON.parse(screen.getByTestId('select-props').textContent);
+		const selectProps = JSON.parse(screen.getByTestId('select-props').textContent || '{}');
 		expect(selectProps.hasValue).toBe(false);
 	});
 
@@ -405,7 +405,7 @@ describe('SingleTagSelector', () =>
 			isLoading: false,
 			isError  : false,
 			error    : null,
-		});
+		} as any);
 
 		render(<SingleTagSelector />, { wrapper });
 

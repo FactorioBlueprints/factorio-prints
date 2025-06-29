@@ -33,11 +33,36 @@ vi.mock('../schemas', () => ({
 	validateRawPaginatedBlueprintSummaries: vi.fn(data => data),
 }));
 
+// Helper to create a complete RawBlueprint
+const createMockBlueprint = (overrides: any) => ({
+	title              : 'Test Blueprint',
+	blueprintString    : 'test-string',
+	descriptionMarkdown: 'test description',
+	tags               : [],
+	lastUpdatedDate    : 1000,
+	numberOfFavorites  : 5,
+	createdDate        : 900,
+	author             : { userId: 'user-1', displayName: 'Test User' },
+	image              : { id: 'img123', type: 'image/png' },
+	favorites          : {},
+	...overrides,
+});
+
+// Helper to create UpdateBlueprintFormData
+const createMockFormData = (blueprint: any, overrides: any = {}) => ({
+	title: blueprint.title,
+	blueprintString: blueprint.blueprintString,
+	descriptionMarkdown: blueprint.descriptionMarkdown,
+	tags: blueprint.tags,
+	imageUrl: 'https://i.imgur.com/img123.png',
+	...overrides,
+});
+
 describe('Tag Operations Cache Consistency', () =>
 {
-	let queryClient;
-	let wrapper;
-	let navigateMock;
+	let queryClient: QueryClient;
+	let wrapper: ({ children }: { children: React.ReactNode }) => React.JSX.Element;
+	let navigateMock: any;
 
 	beforeEach(() =>
 	{
@@ -48,33 +73,26 @@ describe('Tag Operations Cache Consistency', () =>
 				mutations: { retry: false },
 			},
 		});
-		wrapper = ({ children }) => (
+		wrapper = ({ children }: { children: React.ReactNode }) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 
 		navigateMock = vi.fn();
-		useNavigate.mockReturnValue(navigateMock);
+		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
 	describe('useUpdateBlueprint tag cache consistency', () =>
 	{
 		it('should update tag caches when tags are added and removed', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'test-blueprint';
 			const oldTags = ['combat', 'logistics'];
 			const newTags = ['logistics', 'production', 'trains'];
 
 			// Set up existing blueprint data
-			const existingBlueprint = {
-				title              : 'Test Blueprint',
-				blueprintString    : 'test-string',
-				descriptionMarkdown: 'test description',
-				tags               : oldTags,
-				lastUpdatedDate    : 1000,
-				image              : { id: 'img123', type: 'image/png' },
-			};
+			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
@@ -99,10 +117,7 @@ describe('Tag Operations Cache Consistency', () =>
 			result.current.mutate({
 				id          : blueprintId,
 				rawBlueprint: existingBlueprint,
-				formData    : {
-					...existingBlueprint,
-					tags: newTags,
-				},
+				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: ['combat', 'logistics', 'production', 'trains', 'circuits'],
 			});
 
@@ -135,19 +150,13 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should handle removing all tags from a blueprint', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'test-blueprint';
 			const oldTags = ['combat', 'logistics', 'production'];
-			const newTags = [];
+			const newTags: string[] = [];
 
-			const existingBlueprint = {
-				title              : 'Test Blueprint',
-				blueprintString    : 'test-string',
-				descriptionMarkdown: 'test description',
-				tags               : oldTags,
-				lastUpdatedDate    : 1000,
-			};
+			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
@@ -165,10 +174,7 @@ describe('Tag Operations Cache Consistency', () =>
 			result.current.mutate({
 				id          : blueprintId,
 				rawBlueprint: existingBlueprint,
-				formData    : {
-					...existingBlueprint,
-					tags: newTags,
-				},
+				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: oldTags,
 			});
 
@@ -185,19 +191,13 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should handle adding tags to a blueprint with no previous tags', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'test-blueprint';
-			const oldTags = [];
-			const newTags = ['combat', 'logistics'];
+			const oldTags: string[] = [];
+			const newTags: string[] = ['combat', 'logistics'];
 
-			const existingBlueprint = {
-				title              : 'Test Blueprint',
-				blueprintString    : 'test-string',
-				descriptionMarkdown: 'test description',
-				tags               : oldTags,
-				lastUpdatedDate    : 1000,
-			};
+			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
@@ -212,10 +212,7 @@ describe('Tag Operations Cache Consistency', () =>
 			result.current.mutate({
 				id          : blueprintId,
 				rawBlueprint: existingBlueprint,
-				formData    : {
-					...existingBlueprint,
-					tags: newTags,
-				},
+				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: newTags,
 			});
 
@@ -232,19 +229,13 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should not modify tag caches that are not in availableTags', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'test-blueprint';
 			const oldTags = ['combat'];
 			const newTags = ['logistics'];
 
-			const existingBlueprint = {
-				title              : 'Test Blueprint',
-				blueprintString    : 'test-string',
-				descriptionMarkdown: 'test description',
-				tags               : oldTags,
-				lastUpdatedDate    : 1000,
-			};
+			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
@@ -262,10 +253,7 @@ describe('Tag Operations Cache Consistency', () =>
 			result.current.mutate({
 				id          : blueprintId,
 				rawBlueprint: existingBlueprint,
-				formData    : {
-					...existingBlueprint,
-					tags: newTags,
-				},
+				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: ['combat', 'logistics'], // uncached-tag not included
 			});
 
@@ -282,14 +270,14 @@ describe('Tag Operations Cache Consistency', () =>
 	{
 		it('should add new blueprint to appropriate tag caches', async () =>
 		{
-			const mockPushRef = { key: 'new-blueprint-id' };
-			push.mockReturnValue(mockPushRef);
-			dbUpdate.mockResolvedValue();
+			const mockPushRef = { key: 'new-blueprint-id' } as any;
+			vi.mocked(push).mockReturnValue(mockPushRef);
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const user = {
 				uid        : 'user-123',
 				displayName: 'Test User',
-			};
+			} as any;
 
 			const formData = {
 				title              : 'New Blueprint',
@@ -338,14 +326,14 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should handle creating blueprint with no tags', async () =>
 		{
-			const mockPushRef = { key: 'new-blueprint-id' };
-			push.mockReturnValue(mockPushRef);
-			dbUpdate.mockResolvedValue();
+			const mockPushRef = { key: 'new-blueprint-id' } as any;
+			vi.mocked(push).mockReturnValue(mockPushRef);
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const user = {
 				uid        : 'user-123',
 				displayName: 'Test User',
-			};
+			} as any;
 
 			const formData = {
 				title              : 'New Blueprint',
@@ -377,14 +365,14 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should only update cached tags', async () =>
 		{
-			const mockPushRef = { key: 'new-blueprint-id' };
-			push.mockReturnValue(mockPushRef);
-			dbUpdate.mockResolvedValue();
+			const mockPushRef = { key: 'new-blueprint-id' } as any;
+			vi.mocked(push).mockReturnValue(mockPushRef);
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const user = {
 				uid        : 'user-123',
 				displayName: 'Test User',
-			};
+			} as any;
 
 			const formData = {
 				title              : 'New Blueprint',
@@ -423,7 +411,7 @@ describe('Tag Operations Cache Consistency', () =>
 	{
 		it('should update tag caches to remove deleted blueprint', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'delete-test-blueprint';
 			const authorId = 'test-author';
@@ -479,7 +467,7 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should handle deleting blueprint that is not in some tag caches', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'partial-cache-blueprint';
 			const authorId = 'test-author';
@@ -525,14 +513,14 @@ describe('Tag Operations Cache Consistency', () =>
 		it('should maintain consistency when blueprint is created, updated, and deleted', async () =>
 		{
 			// Step 1: Create blueprint with tags
-			const mockPushRef = { key: 'lifecycle-blueprint' };
-			push.mockReturnValue(mockPushRef);
-			dbUpdate.mockResolvedValue();
+			const mockPushRef = { key: 'lifecycle-blueprint' } as any;
+			vi.mocked(push).mockReturnValue(mockPushRef);
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const user = {
 				uid        : 'user-123',
 				displayName: 'Test User',
-			};
+			} as any;
 
 			// Set up initial tag caches
 			queryClient.setQueryData(['byTag', 'combat'], {});
@@ -566,13 +554,10 @@ describe('Tag Operations Cache Consistency', () =>
 			expect(queryClient.getQueryData(['byTag', 'production'])).toEqual({});
 
 			// Step 2: Update blueprint tags
-			const existingBlueprint = {
-				title              : 'Lifecycle Blueprint',
-				blueprintString    : 'test-string',
-				descriptionMarkdown: 'test description',
-				tags               : ['combat', 'logistics'],
-				lastUpdatedDate    : 1000,
-			};
+			const existingBlueprint = createMockBlueprint({
+				title: 'Lifecycle Blueprint',
+				tags : ['combat', 'logistics'],
+			});
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', 'lifecycle-blueprint'], existingBlueprint);
 
@@ -581,10 +566,9 @@ describe('Tag Operations Cache Consistency', () =>
 			updateResult.current.mutate({
 				id          : 'lifecycle-blueprint',
 				rawBlueprint: existingBlueprint,
-				formData    : {
-					...existingBlueprint,
+				formData    : createMockFormData(existingBlueprint, {
 					tags: ['logistics', 'production'], // Remove combat, keep logistics, add production
-				},
+				}),
 				availableTags: ['combat', 'logistics', 'production'],
 			});
 
@@ -616,7 +600,7 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should handle concurrent operations on same tags', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			// Set up initial state with multiple blueprints
 			queryClient.setQueryData(['byTag', 'combat'], {
@@ -628,14 +612,13 @@ describe('Tag Operations Cache Consistency', () =>
 			// Operation 1: Update bp-1 to remove combat tag
 			const { result: update1 } = renderHook(() => useUpdateBlueprint(), { wrapper });
 
-			queryClient.setQueryData(['blueprints', 'blueprintId', 'bp-1'], {
-				tags: ['combat'],
-			});
+			const bp1 = createMockBlueprint({ tags: ['combat'] });
+			queryClient.setQueryData(['blueprints', 'blueprintId', 'bp-1'], bp1);
 
 			update1.current.mutate({
 				id           : 'bp-1',
-				rawBlueprint : { tags: ['combat'] },
-				formData     : { tags: [] },
+				rawBlueprint : bp1,
+				formData     : createMockFormData(bp1, { tags: [] }),
 				availableTags: ['combat'],
 			});
 
@@ -667,19 +650,18 @@ describe('Tag Operations Cache Consistency', () =>
 				'bp-1': true,
 			});
 
-			queryClient.setQueryData(['blueprints', 'blueprintId', 'bp-1'], {
-				tags: ['combat'],
-			});
+			const bp1 = createMockBlueprint({ tags: ['combat'] });
+			queryClient.setQueryData(['blueprints', 'blueprintId', 'bp-1'], bp1);
 
 			// Make update fail
-			dbUpdate.mockRejectedValueOnce(new Error('Network error'));
+			vi.mocked(dbUpdate).mockRejectedValueOnce(new Error('Network error'));
 
 			const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
 
 			result.current.mutate({
 				id           : 'bp-1',
-				rawBlueprint : { tags: ['combat'] },
-				formData     : { tags: ['logistics'] },
+				rawBlueprint : bp1,
+				formData     : createMockFormData(bp1, { tags: ['logistics'] }),
 				availableTags: ['combat', 'logistics'],
 			});
 
@@ -697,16 +679,15 @@ describe('Tag Operations Cache Consistency', () =>
 	{
 		it('should handle malformed tag cache data gracefully', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'test-blueprint';
 
 			// Set up malformed tag cache (not an object)
 			queryClient.setQueryData(['byTag', 'combat'], 'invalid-data');
 
-			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], {
-				tags: [],
-			});
+			const blueprint = createMockBlueprint({ tags: [] });
+			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], blueprint);
 
 			const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
 
@@ -715,8 +696,8 @@ describe('Tag Operations Cache Consistency', () =>
 			{
 				result.current.mutate({
 					id           : blueprintId,
-					rawBlueprint : { tags: [] },
-					formData     : { tags: ['combat'] },
+					rawBlueprint : blueprint,
+					formData     : createMockFormData(blueprint, { tags: ['combat'] }),
 					availableTags: ['combat'],
 				});
 			}).not.toThrow();
@@ -724,7 +705,7 @@ describe('Tag Operations Cache Consistency', () =>
 
 		it('should handle missing blueprint data in tag cache gracefully', async () =>
 		{
-			dbUpdate.mockResolvedValue();
+			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = 'test-blueprint';
 

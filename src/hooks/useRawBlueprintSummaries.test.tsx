@@ -19,7 +19,7 @@ const createWrapper = () =>
 			},
 		},
 	});
-	return ({ children }) => (
+	return ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
 			{children}
 		</QueryClientProvider>
@@ -58,11 +58,11 @@ describe('useRawBlueprintSummaries', () =>
 	beforeEach(() =>
 	{
 		// Set up mock implementations
-		fetchBlueprintSummary.mockImplementation((blueprintId) =>
+		vi.mocked(fetchBlueprintSummary).mockImplementation((blueprintId: any) =>
 		{
-			return Promise.resolve(mockSummaries[blueprintId]);
+			return Promise.resolve((mockSummaries as any)[blueprintId]);
 		});
-		validateRawBlueprintSummary.mockImplementation(data => data);
+		vi.mocked(validateRawBlueprintSummary).mockImplementation((data: any) => data);
 	});
 
 	afterEach(() =>
@@ -89,11 +89,11 @@ describe('useRawBlueprintSummaries', () =>
 			{
 				queryClient.setQueryData(
 					['blueprintSummaries', 'blueprintId', id],
-					mockSummaries[id],
+					(mockSummaries as any)[id],
 				);
 			});
 
-			return ({ children }) => (
+			return ({ children }: { children: React.ReactNode }) => (
 				<QueryClientProvider client={queryClient}>
 					{children}
 				</QueryClientProvider>

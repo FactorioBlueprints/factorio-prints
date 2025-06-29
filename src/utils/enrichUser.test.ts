@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { enrichUser } from './enrichUser';
+import type { RawUser } from '../schemas';
 
 describe('enrichUser', () =>
 {
 	it('should enrich user data with counts', () =>
 	{
-		const rawUser = {
+		const rawUser: RawUser = {
 			id         : 'user123',
 			displayName: 'John Doe',
 			email      : 'john@example.com',
@@ -49,8 +50,10 @@ describe('enrichUser', () =>
 
 	it('should handle user with minimal data', () =>
 	{
-		const rawUser = {
+		const rawUser: RawUser = {
 			id: 'user123',
+			favorites: {},
+			blueprints: {},
 		};
 
 		const result = enrichUser(rawUser);
@@ -66,7 +69,7 @@ describe('enrichUser', () =>
 
 	it('should handle user with empty favorites and blueprints', () =>
 	{
-		const rawUser = {
+		const rawUser: RawUser = {
 			id        : 'user123',
 			favorites : {},
 			blueprints: {},
@@ -85,7 +88,7 @@ describe('enrichUser', () =>
 
 	it('should count only true values in favorites and blueprints', () =>
 	{
-		const rawUser = {
+		const rawUser: RawUser = {
 			id       : 'user123',
 			favorites: {
 				'blueprint-1': true,

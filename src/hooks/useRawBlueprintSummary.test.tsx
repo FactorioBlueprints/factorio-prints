@@ -17,7 +17,7 @@ const createWrapper = () =>
 			},
 		},
 	});
-	return ({ children }) => (
+	return ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
 			{children}
 		</QueryClientProvider>
@@ -37,7 +37,7 @@ describe('useRawBlueprintSummary', () =>
 
 	beforeEach(() =>
 	{
-		fetchBlueprintSummary.mockResolvedValue(mockBlueprintSummary);
+		vi.mocked(fetchBlueprintSummary).mockResolvedValue(mockBlueprintSummary);
 	});
 
 	afterEach(() =>
@@ -63,7 +63,7 @@ describe('useRawBlueprintSummary', () =>
 
 	it('should not fetch data if blueprintId is falsy', async () =>
 	{
-		const { result } = renderHook(() => useRawBlueprintSummary(null), {
+		const { result } = renderHook(() => useRawBlueprintSummary(null as any), {
 			wrapper: createWrapper(),
 		});
 
@@ -76,7 +76,7 @@ describe('useRawBlueprintSummary', () =>
 	it('should handle API errors', async () =>
 	{
 		const mockError = new Error('API error');
-		fetchBlueprintSummary.mockRejectedValue(mockError);
+		vi.mocked(fetchBlueprintSummary).mockRejectedValue(mockError);
 
 		const { result } = renderHook(() => useRawBlueprintSummary(mockBlueprintId), {
 			wrapper: createWrapper(),
@@ -91,7 +91,7 @@ describe('useRawBlueprintSummary', () =>
 	it('should handle validation errors', async () =>
 	{
 		const mockValidationError = new Error('Invalid raw blueprint summary: Validation error');
-		fetchBlueprintSummary.mockRejectedValue(mockValidationError);
+		vi.mocked(fetchBlueprintSummary).mockRejectedValue(mockValidationError);
 
 		const { result } = renderHook(() => useRawBlueprintSummary(mockBlueprintId), {
 			wrapper: createWrapper(),

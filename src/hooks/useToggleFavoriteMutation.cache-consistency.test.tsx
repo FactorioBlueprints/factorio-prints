@@ -18,10 +18,10 @@ vi.mock('../base', () => ({
 
 describe('useToggleFavoriteMutation cache consistency', () =>
 {
-	let queryClient;
-	let wrapper;
-	let mockDatabase;
-	let mockRef;
+	let queryClient: QueryClient;
+	let wrapper: ({ children }: { children: React.ReactNode }) => React.JSX.Element;
+	let mockDatabase: any;
+	let mockRef: any;
 
 	beforeEach(() =>
 	{
@@ -32,15 +32,15 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 				mutations: { retry: false },
 			},
 		});
-		wrapper = ({ children }) => (
+		wrapper = ({ children }: { children: React.ReactNode }) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 
 		mockDatabase = {};
 		mockRef = {};
-		getDatabase.mockReturnValue(mockDatabase);
-		ref.mockReturnValue(mockRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(getDatabase).mockReturnValue(mockDatabase);
+		vi.mocked(ref).mockReturnValue(mockRef);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 	});
 
 	it('should maintain cache consistency across all related data structures when favoriting', async () =>
@@ -111,7 +111,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 			['blueprints', 'blueprintId', blueprintId],
 			expect.any(Function),
 		);
-		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint).toEqual({
 			id               : blueprintId,
 			title            : 'Test Blueprint',
@@ -127,7 +127,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 			['blueprintSummaries', 'blueprintId', blueprintId],
 			expect.any(Function),
 		);
-		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]);
+		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]) as any;
 		expect(updatedSummary).toEqual({
 			id               : blueprintId,
 			title            : 'Test Blueprint Summary',
@@ -218,7 +218,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify all cache updates
-		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint).toEqual({
 			id               : blueprintId,
 			title            : 'Test Blueprint',
@@ -229,7 +229,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 			},
 		});
 
-		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]);
+		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]) as any;
 		expect(updatedSummary).toEqual({
 			id               : blueprintId,
 			title            : 'Test Blueprint Summary',
@@ -283,7 +283,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify the existing cache was updated
-		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint).toEqual({
 			id               : blueprintId,
 			title            : 'Test Blueprint',
@@ -351,7 +351,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify blueprint was updated to include user 2
-		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint.numberOfFavorites).toBe(11);
 		expect(updatedBlueprint.favorites).toEqual({
 			[userId1]: true,
@@ -411,10 +411,10 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify count went to 0
-		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint.numberOfFavorites).toBe(0);
 
-		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]);
+		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]) as any;
 		expect(updatedSummary.numberOfFavorites).toBe(0);
 	});
 
@@ -458,7 +458,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify final state is consistent
-		const finalBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const finalBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(finalBlueprint.numberOfFavorites).toBe(5);
 		expect(finalBlueprint.favorites[userId]).toBeUndefined();
 
@@ -479,7 +479,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		const userId = 'new-fan';
 
 		// Create a blueprint with many existing favorites
-		const manyFavorites = {};
+		const manyFavorites: Record<string, boolean> = {};
 		for (let i = 1; i <= 50; i++)
 		{
 			manyFavorites[`user-${i}`] = true;
@@ -505,7 +505,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify the new user was added without affecting existing favorites
-		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint.numberOfFavorites).toBe(51);
 		expect(Object.keys(updatedBlueprint.favorites)).toHaveLength(51);
 		expect(updatedBlueprint.favorites[userId]).toBe(true);
@@ -559,7 +559,7 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		// The last update wins, but both users should be marked as having favorited
 		// This tests that the cache update logic handles concurrent updates gracefully
 
-		const finalBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]);
+		const finalBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(finalBlueprint.favorites[userId1]).toBeDefined();
 		expect(finalBlueprint.favorites[userId2]).toBeDefined();
 	});

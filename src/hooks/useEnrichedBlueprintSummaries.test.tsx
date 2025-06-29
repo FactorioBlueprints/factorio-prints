@@ -19,7 +19,7 @@ const createWrapper = () =>
 			},
 		},
 	});
-	return ({ children }) => (
+	return ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
 			{children}
 		</QueryClientProvider>
@@ -70,7 +70,7 @@ describe('useEnrichedBlueprintSummaries', () =>
 	beforeEach(() =>
 	{
 		// Set up mock implementations
-		useRawBlueprintSummaries.mockReturnValue({
+		vi.mocked(useRawBlueprintSummaries).mockReturnValue({
 			queriesByKey: {
 				'blueprint-1': {
 					data     : mockRawSummaries[0],
@@ -82,9 +82,9 @@ describe('useEnrichedBlueprintSummaries', () =>
 				},
 			},
 			rawBlueprintSummaries: mockRawSummaries,
-		});
+		} as any);
 
-		enrichBlueprintSummary.mockImplementation((rawSummary, blueprintId) =>
+		vi.mocked(enrichBlueprintSummary).mockImplementation((rawSummary: any, blueprintId: any) =>
 		{
 			if (blueprintId === 'blueprint-1')
 			{
@@ -153,17 +153,17 @@ describe('useEnrichedBlueprintSummaries', () =>
 	it('should handle unsuccessful queries', () =>
 	{
 		// Mock one unsuccessful query
-		useRawBlueprintSummaries.mockReturnValue({
+		vi.mocked(useRawBlueprintSummaries).mockReturnValue({
 			queriesByKey: {
 				'blueprint-1': {
 					data     : mockRawSummaries[0],
 					isSuccess: true,
-				},
+				} as any,
 				'blueprint-2': {
 					error    : new Error('Query failed'),
 					isSuccess: false,
 					isError  : true,
-				},
+				} as any,
 			},
 			rawBlueprintSummaries: [mockRawSummaries[0]],
 		});

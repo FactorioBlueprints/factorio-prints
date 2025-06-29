@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { ref, push, update as dbUpdate } from 'firebase/database';
 import { useCreateBlueprint } from './useCreateBlueprint';
+import type { User } from 'firebase/auth';
 
 // Mock Firebase
 vi.mock('firebase/database', () => ({
@@ -33,9 +34,9 @@ vi.mock('../schemas', () => ({
 
 describe('useCreateBlueprint', () =>
 {
-	let queryClient;
-	let wrapper;
-	let navigateMock;
+	let queryClient: QueryClient;
+	let wrapper: ({ children }: { children: React.ReactNode }) => React.ReactNode;
+	let navigateMock: ReturnType<typeof vi.fn>;
 
 	beforeEach(() =>
 	{
@@ -46,20 +47,20 @@ describe('useCreateBlueprint', () =>
 				mutations: { retry: false },
 			},
 		});
-		wrapper = ({ children }) => (
+		wrapper = ({ children }: { children: React.ReactNode }) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 		navigateMock = vi.fn();
-		useNavigate.mockReturnValue(navigateMock);
+		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
 	it('should create blueprint with raw data', async () =>
 	{
 		const mockRef = {};
 		const mockNewBlueprintRef = { key: 'newBlueprint123' };
-		ref.mockReturnValue(mockRef);
-		push.mockReturnValue(mockNewBlueprintRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue();
 
 		const formData = {
 			title              : 'Test Blueprint',
@@ -72,7 +73,7 @@ describe('useCreateBlueprint', () =>
 		const user = {
 			uid        : 'user123',
 			displayName: 'Test User',
-		};
+		} as Partial<User> as User;
 
 		const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -125,9 +126,9 @@ describe('useCreateBlueprint', () =>
 	{
 		const mockRef = {};
 		const mockNewBlueprintRef = { key: 'newBlueprint123' };
-		ref.mockReturnValue(mockRef);
-		push.mockReturnValue(mockNewBlueprintRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue();
 
 		const formData = {
 			title              : 'Test Blueprint',
@@ -140,7 +141,7 @@ describe('useCreateBlueprint', () =>
 		const user = {
 			uid        : 'user123',
 			displayName: null,
-		};
+		} as Partial<User> as User;
 
 		const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -170,7 +171,7 @@ describe('useCreateBlueprint', () =>
 
 		const user = {
 			uid: 'user123',
-		};
+		} as Partial<User> as User;
 
 		const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -184,9 +185,9 @@ describe('useCreateBlueprint', () =>
 	{
 		const mockRef = {};
 		const mockNewBlueprintRef = { key: 'newBlueprint123' };
-		ref.mockReturnValue(mockRef);
-		push.mockReturnValue(mockNewBlueprintRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue();
 
 		// Set up existing cache data
 		const existingPaginatedData = {
@@ -219,7 +220,7 @@ describe('useCreateBlueprint', () =>
 
 		const user = {
 			uid: 'user123',
-		};
+		} as Partial<User> as User;
 
 		const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -239,7 +240,7 @@ describe('useCreateBlueprint', () =>
 		});
 
 		// Check paginated data was updated
-		const paginatedData = queryClient.getQueryData(['blueprintSummaries', 'orderByField', 'lastUpdatedDate']);
+		const paginatedData = queryClient.getQueryData(['blueprintSummaries', 'orderByField', 'lastUpdatedDate']) as any;
 		expect(paginatedData.pages[0].data).toHaveProperty('newBlueprint123');
 	});
 
@@ -247,9 +248,9 @@ describe('useCreateBlueprint', () =>
 	{
 		const mockRef = {};
 		const mockNewBlueprintRef = { key: 'newBlueprint123' };
-		ref.mockReturnValue(mockRef);
-		push.mockReturnValue(mockNewBlueprintRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue();
 
 		// Set up existing user blueprints
 		queryClient.setQueryData(['users', 'userId', 'user123', 'blueprints'], {
@@ -267,7 +268,7 @@ describe('useCreateBlueprint', () =>
 
 		const user = {
 			uid: 'user123',
-		};
+		} as Partial<User> as User;
 
 		const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -289,9 +290,9 @@ describe('useCreateBlueprint', () =>
 	{
 		const mockRef = {};
 		const mockNewBlueprintRef = { key: 'newBlueprint123' };
-		ref.mockReturnValue(mockRef);
-		push.mockReturnValue(mockNewBlueprintRef);
-		dbUpdate.mockResolvedValue();
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue();
 
 		// Set up existing tags and tag data
 		queryClient.setQueryData(['tags'], ['tag1', 'tag2', 'tag3']);
@@ -308,7 +309,7 @@ describe('useCreateBlueprint', () =>
 
 		const user = {
 			uid: 'user123',
-		};
+		} as Partial<User> as User;
 
 		const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 

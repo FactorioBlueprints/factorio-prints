@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SingleTagGrid from './SingleTagGrid';
 import { useEnrichedTagBlueprintSummaries } from '../hooks/useEnrichedTagBlueprintSummaries';
 import { useFilterByTitle } from '../hooks/useFilterByTitle';
+import type { EnrichedBlueprintSummary } from '../schemas';
 
 // Mock the router params
 vi.mock('@tanstack/react-router', () => ({
@@ -18,7 +19,7 @@ vi.mock('../hooks/useFilterByTitle');
 
 // Mock the components
 vi.mock('./BlueprintThumbnail', () => ({
-	default: ({ blueprintSummary }) => (
+	default: ({ blueprintSummary }: { blueprintSummary: EnrichedBlueprintSummary }) => (
 		<div data-testid={`blueprint-thumbnail-${blueprintSummary.key}`}>
 			{blueprintSummary.title}
 		</div>
@@ -26,7 +27,7 @@ vi.mock('./BlueprintThumbnail', () => ({
 }));
 
 vi.mock('./PageHeader', () => ({
-	default: ({ title }) => <div data-testid='page-header'>{title}</div>,
+	default: ({ title }: { title: string }) => <div data-testid='page-header'>{title}</div>,
 }));
 
 vi.mock('./SearchForm', () => ({
@@ -34,7 +35,7 @@ vi.mock('./SearchForm', () => ({
 }));
 
 vi.mock('./SingleTagSelector', () => ({
-	default: ({ currentTag }) => (
+	default: ({ currentTag }: { currentTag: string }) => (
 		<div data-testid='single-tag-selector' data-current-tag={currentTag}>
 			Tag Selector
 		</div>
@@ -42,21 +43,21 @@ vi.mock('./SingleTagSelector', () => ({
 }));
 
 vi.mock('./grid/LoadingIndicator', () => ({
-	default: ({ isLoading, message }) =>
+	default: ({ isLoading, message }: { isLoading: boolean; message: string }) =>
 		isLoading ? <div data-testid='loading-indicator'>{message}</div> : null,
 }));
 
 vi.mock('./grid/ErrorDisplay', () => ({
-	default: ({ error, message }) =>
+	default: ({ error, message }: { error: any; message: string }) =>
 		error ? <div data-testid='error-display'>{message}</div> : null,
 }));
 
 vi.mock('./grid/EmptyResults', () => ({
-	default: ({ isEmpty, children }) =>
+	default: ({ isEmpty, children }: { isEmpty: boolean; children: React.ReactNode }) =>
 		isEmpty ? <div data-testid='empty-results'>{children}</div> : null,
 }));
 
-const mockEnrichedBlueprintSummary1 = {
+const mockEnrichedBlueprintSummary1: EnrichedBlueprintSummary = {
 	key              : 'blueprint1',
 	title            : 'Test Blueprint 1',
 	lastUpdatedDate  : 1000,
@@ -66,7 +67,7 @@ const mockEnrichedBlueprintSummary1 = {
 	imgurType        : 'image/png',
 };
 
-const mockEnrichedBlueprintSummary2 = {
+const mockEnrichedBlueprintSummary2: EnrichedBlueprintSummary = {
 	key              : 'blueprint2',
 	title            : 'Test Blueprint 2',
 	lastUpdatedDate  : 2000,
@@ -76,7 +77,7 @@ const mockEnrichedBlueprintSummary2 = {
 	imgurType        : 'image/jpeg',
 };
 
-const mockEnrichedBlueprintSummary3 = {
+const mockEnrichedBlueprintSummary3: EnrichedBlueprintSummary = {
 	key              : 'blueprint3',
 	title            : 'Test Blueprint 3',
 	lastUpdatedDate  : 500,
@@ -88,7 +89,7 @@ const mockEnrichedBlueprintSummary3 = {
 
 describe('SingleTagGrid', () =>
 {
-	let queryClient;
+	let queryClient: QueryClient;
 
 	beforeEach(() =>
 	{
@@ -103,10 +104,10 @@ describe('SingleTagGrid', () =>
 		vi.clearAllMocks();
 
 		// Default mock implementation for useFilterByTitle (returns all blueprints)
-		vi.mocked(useFilterByTitle).mockImplementation((blueprints) => blueprints);
+		vi.mocked(useFilterByTitle).mockImplementation((blueprints) => blueprints || []);
 	});
 
-	const wrapper = ({ children }) => (
+	const wrapper = ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 
@@ -119,7 +120,7 @@ describe('SingleTagGrid', () =>
 			isError         : false,
 			isSuccess       : false,
 			blueprintIds    : [],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -141,7 +142,7 @@ describe('SingleTagGrid', () =>
 			isError         : true,
 			isSuccess       : false,
 			blueprintIds    : [],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -162,7 +163,7 @@ describe('SingleTagGrid', () =>
 			isError         : false,
 			isSuccess       : true,
 			blueprintIds    : [],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -195,7 +196,7 @@ describe('SingleTagGrid', () =>
 			isError     : false,
 			isSuccess   : true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -234,7 +235,7 @@ describe('SingleTagGrid', () =>
 			isError     : false,
 			isSuccess   : true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -272,7 +273,7 @@ describe('SingleTagGrid', () =>
 			isError     : false,
 			isSuccess   : true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -302,10 +303,10 @@ describe('SingleTagGrid', () =>
 			isError     : false,
 			isSuccess   : true,
 			blueprintIds: ['blueprint1', 'blueprint2'],
-		};
+		} as any;
 
 		// Mock filter to only return blueprint1
-		vi.mocked(useFilterByTitle).mockReturnValue([mockEnrichedBlueprintSummary1]);
+		vi.mocked(useFilterByTitle).mockImplementation(() => [mockEnrichedBlueprintSummary1]);
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -325,7 +326,7 @@ describe('SingleTagGrid', () =>
 			isError         : false,
 			isSuccess       : true,
 			blueprintIds    : [],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -346,7 +347,7 @@ describe('SingleTagGrid', () =>
 			isError         : false,
 			isSuccess       : true,
 			blueprintIds    : [],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -375,14 +376,14 @@ describe('SingleTagGrid', () =>
 				},
 				blueprint3: {
 					isSuccess: true,
-					data     : undefined,
+					data     : undefined as any,
 				},
 			},
 			isLoading   : false,
 			isError     : false,
 			isSuccess   : true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -399,7 +400,7 @@ describe('SingleTagGrid', () =>
 		const blueprintWithoutDate = {
 			...mockEnrichedBlueprintSummary1,
 			lastUpdatedDate: null,
-		};
+		} as any;
 
 		const mockResult = {
 			tagQuery        : { isSuccess: true, error: null },
@@ -417,7 +418,7 @@ describe('SingleTagGrid', () =>
 			isError     : false,
 			isSuccess   : true,
 			blueprintIds: ['blueprint1', 'blueprint2'],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
@@ -443,7 +444,7 @@ describe('SingleTagGrid', () =>
 			isError         : false,
 			isSuccess       : true,
 			blueprintIds    : [],
-		};
+		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 

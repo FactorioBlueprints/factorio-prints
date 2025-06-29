@@ -31,7 +31,7 @@ const fakeRawData = {
 
 describe('useRawPaginatedBlueprintSummaries', () =>
 {
-	let queryClient;
+	let queryClient: QueryClient;
 
 	beforeEach(() =>
 	{
@@ -48,7 +48,7 @@ describe('useRawPaginatedBlueprintSummaries', () =>
 		vi.mocked(fetchPaginatedSummaries).mockResolvedValue(fakeRawData);
 	});
 
-	const wrapper = ({ children }) => (
+	const wrapper = ({ children }: { children: React.ReactNode }) => (
 		<QueryClientProvider client={queryClient}>
 			{children}
 		</QueryClientProvider>
@@ -63,8 +63,8 @@ describe('useRawPaginatedBlueprintSummaries', () =>
 		await waitFor(() => expect(result.current.isLoading).toBeFalsy());
 
 		expect(result.current.data).toBeDefined();
-		expect(result.current.data.pages).toHaveLength(1);
-		expect(result.current.data.pages[0]).toEqual(fakeRawData);
+		expect((result.current.data as any).pages).toHaveLength(1);
+		expect((result.current.data as any).pages[0]).toEqual(fakeRawData);
 
 		expect(result.current.hasNextPage).toBeTruthy();
 
@@ -107,7 +107,7 @@ describe('useRawPaginatedBlueprintSummaries', () =>
 			lastValue: null,
 		};
 
-		fetchPaginatedSummaries
+		vi.mocked(fetchPaginatedSummaries)
 			.mockResolvedValueOnce(fakeRawData)
 			.mockResolvedValueOnce(fakeSecondPageData);
 
