@@ -1,9 +1,8 @@
 import {faGithub, faReddit} from '@fortawesome/free-brands-svg-icons';
 import {FontAwesomeIcon}    from '@fortawesome/react-fontawesome';
+import React from 'react';
 
-import React     from 'react';
-
-const KnownIssues = () =>
+const KnownIssues: React.FC = () =>
 	(
 		<div className='p-5 rounded-lg jumbotron'>
 			<h1 className='display-4'>
