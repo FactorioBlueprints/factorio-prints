@@ -61,7 +61,7 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
+    "@eslint/js": "^9.30.0",
     "@sentry/vite-plugin": "^3.5.0",
     "@tanstack/router-cli": "^1.122.0",
     "@tanstack/router-vite-plugin": "^1.122.0",
