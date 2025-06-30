@@ -34,7 +34,7 @@
         ]
       },
       {
-        "source": "/service-worker.js",
+        "source": "/service-worker.ts",
         "headers": [
           {
             "key": "Cache-Control",
