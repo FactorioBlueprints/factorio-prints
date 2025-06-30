@@ -26,7 +26,7 @@
     "@tanstack/query-sync-storage-persister": "5.81.5",
     "@tanstack/react-form": "^1.12.4",
     "@tanstack/react-query": "^5.81.5",
-    "@tanstack/react-query-devtools": "^5.75.0",
+    "@tanstack/react-query-devtools": "^5.81.5",
     "@tanstack/react-query-persist-client": "5.81.5",
     "@tanstack/react-router": "^1.122.0",
     "@tanstack/react-store": "^0.7.0",
