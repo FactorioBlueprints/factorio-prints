@@ -12,7 +12,7 @@ import type { RawBlueprintSummary, EnrichedBlueprintSummary } from '../schemas';
  */
 const useEnrichedBlueprintSummaries = (
 	blueprintsData: Record<string, boolean> | null | undefined,
-	blueprintsSuccess: boolean
+	blueprintsSuccess: boolean,
 ): {
 	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>>;
 	blueprintSummaries: (EnrichedBlueprintSummary | null)[];

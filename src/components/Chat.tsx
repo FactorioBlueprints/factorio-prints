@@ -2,7 +2,8 @@ import { faDiscord, faGithub, faReddit } from '@fortawesome/free-brands-svg-icon
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 
-function Chat(): React.ReactElement {
+function Chat(): React.ReactElement
+{
 	return (
 		<div className='p-5 rounded-lg jumbotron'>
 			<p className='lead'>

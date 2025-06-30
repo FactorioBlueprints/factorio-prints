@@ -8,7 +8,7 @@ import {
 	RawUser,
 	validateRawBlueprint,
 	validateRawBlueprintSummary,
-	validateRawBlueprintSummaryPage
+	validateRawBlueprintSummaryPage,
 } from '../schemas';
 import { formatDistance } from 'date-fns';
 
@@ -19,7 +19,8 @@ import { formatDistance } from 'date-fns';
  * @param blueprintKey - The blueprint key (e.g., "-KnQ865j-qQ21WoUPbd3")
  * @returns The CDN URL (e.g., "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json")
  */
-export const getBlueprintCdnUrl = (blueprintKey: string): string => {
+export const getBlueprintCdnUrl = (blueprintKey: string): string =>
+{
 	const prefix = blueprintKey.slice(0, 3);
 	const suffix = blueprintKey.slice(3);
 	return `https://factorio-blueprint-firebase-cdn.pages.dev/${prefix}/${suffix}.json`;
@@ -31,10 +32,13 @@ export const getBlueprintCdnUrl = (blueprintKey: string): string => {
  * @param blueprintSummary - The blueprint summary containing the blueprint key
  * @returns The blueprint data from CDN or null if fetch fails
  */
-export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintSummary): Promise<RawBlueprint | null> => {
-	try {
+export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintSummary): Promise<RawBlueprint | null> =>
+{
+	try
+	{
 		const blueprintKey = blueprintSummary.key;
-		if (!blueprintKey) {
+		if (!blueprintKey)
+		{
 			console.error('Blueprint summary missing key');
 			return null;
 		}
@@ -42,16 +46,21 @@ export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintS
 		const cdnUrl = getBlueprintCdnUrl(blueprintKey);
 		let response: Response;
 
-		try {
+		try
+		{
 			response = await fetch(cdnUrl);
-		} catch (error) {
+		}
+		catch
+		{
 			// Network errors are expected for CDN - don't let them bubble to Sentry
 			return null;
 		}
 
-		if (!response.ok) {
+		if (!response.ok)
+		{
 			// Only log non-404 and non-network errors, as both are expected for CDN
-			if (response.status !== 404 && response.status !== 0) {
+			if (response.status !== 404 && response.status !== 0)
+			{
 				console.warn(`CDN fetch failed for blueprint ${blueprintKey}: ${response.status} ${response.statusText}`);
 			}
 			return null;
@@ -59,7 +68,9 @@ export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintS
 
 		const data = await response.json();
 		return validateRawBlueprint(data);
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.warn('Error fetching blueprint from CDN:', error);
 		return null;
 	}
@@ -105,21 +116,27 @@ export const fetchBlueprint = async (blueprintId: string, blueprintSummary: Enri
 		// Attempt to fetch from CDN first
 		const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
 
-		if (cdnBlueprint) {
+		if (cdnBlueprint)
+		{
 			// CDN fetch succeeded - compare lastUpdatedDate values
 			const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-			if (cdnLastUpdated === summaryLastUpdated) {
+			if (cdnLastUpdated === summaryLastUpdated)
+			{
 				// Dates match - use CDN data
 				console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
 				return cdnBlueprint;
-			} else if (cdnLastUpdated && summaryLastUpdated) {
+			}
+			else if (cdnLastUpdated && summaryLastUpdated)
+			{
 				// Dates don't match - CDN data is stale
 				const cdnDate = new Date(cdnLastUpdated);
 				const summaryDate = new Date(summaryLastUpdated);
 				const timeDiff = formatDistance(cdnDate, summaryDate);
 				console.log(`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${cdnLastUpdated}, Summary: ${summaryLastUpdated})`);
-			} else {
+			}
+			else
+			{
 				// One or both dates are missing
 				console.log(`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated}, Summary: ${summaryLastUpdated})`);
 			}
@@ -280,11 +297,11 @@ export const fetchUser = async (userId: string): Promise<RawUser | null> =>
 
 		const userData = snapshot.val();
 		return {
-			id: userId,
+			id         : userId,
 			displayName: userData.displayName || undefined,
-			email: userData.email || undefined,
-			favorites: userData.favorites || {},
-			blueprints: userData.blueprints || {},
+			email      : userData.email || undefined,
+			favorites  : userData.favorites || {},
+			blueprints : userData.blueprints || {},
 		};
 	}
 	catch (error)

@@ -2,9 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import enrichTags from './enrichTags';
 import type { RawTags } from '../schemas';
 
-describe('enrichTags', () => {
-	describe('tagNameToLabel conversion', () => {
-		it('should convert simple tag names to labels', () => {
+describe('enrichTags', () =>
+{
+	describe('tagNameToLabel conversion', () =>
+	{
+		it('should convert simple tag names to labels', () =>
+		{
 			const rawTags: RawTags = {
 				belt: ['balancer', 'bus', 'loader'],
 			};
@@ -16,7 +19,8 @@ describe('enrichTags', () => {
 			expect(enriched[2].label).toBe('Loader');
 		});
 
-		it('should handle multi-word tags with spaces', () => {
+		it('should handle multi-word tags with spaces', () =>
+		{
 			const rawTags: RawTags = {
 				production: ['oil processing', 'coal liquification', 'rocket parts'],
 			};
@@ -28,7 +32,8 @@ describe('enrichTags', () => {
 			expect(enriched[2].label).toBe('Rocket Parts');
 		});
 
-		it('should handle hyphenated tags', () => {
+		it('should handle hyphenated tags', () =>
+		{
 			const rawTags: RawTags = {
 				train: ['left-hand-drive', 'multi-station', 'right-hand-drive'],
 			};
@@ -40,7 +45,8 @@ describe('enrichTags', () => {
 			expect(enriched[2].label).toBe('Right-Hand-Drive');
 		});
 
-		it('should handle parentheses in tag names', () => {
+		it('should handle parentheses in tag names', () =>
+		{
 			const rawTags: RawTags = {
 				belt: [
 					'express transport belt (blue)',
@@ -56,7 +62,8 @@ describe('enrichTags', () => {
 			expect(enriched[2].label).toBe('Transport Belt (Yellow)');
 		});
 
-		it('should handle complex combinations', () => {
+		it('should handle complex combinations', () =>
+		{
 			const rawTags: RawTags = {
 				production: [
 					'advanced circuit (red)',
@@ -74,7 +81,8 @@ describe('enrichTags', () => {
 			expect(enriched[3].label).toBe('Processing Unit (Blue)');
 		});
 
-		it('should handle special characters in version tags', () => {
+		it('should handle special characters in version tags', () =>
+		{
 			const rawTags: RawTags = {
 				version: ['0,14', '0,15'],
 			};
@@ -86,18 +94,22 @@ describe('enrichTags', () => {
 		});
 	});
 
-	describe('enrichTags function', () => {
-		it('should return empty array for null input', () => {
+	describe('enrichTags function', () =>
+	{
+		it('should return empty array for null input', () =>
+		{
 			const result = enrichTags(null);
 			expect(result).toEqual([]);
 		});
 
-		it('should return empty array for empty tags object', () => {
+		it('should return empty array for empty tags object', () =>
+		{
 			const result = enrichTags({});
 			expect(result).toEqual([]);
 		});
 
-		it('should enrich single category with multiple tags', () => {
+		it('should enrich single category with multiple tags', () =>
+		{
 			const rawTags: RawTags = {
 				belt: ['balancer', 'bus', 'loader'],
 			};
@@ -106,30 +118,31 @@ describe('enrichTags', () => {
 
 			expect(enriched).toHaveLength(3);
 			expect(enriched[0]).toEqual({
-				path: '/belt/balancer/',
+				path    : '/belt/balancer/',
 				category: 'belt',
-				name: 'balancer',
-				label: 'Balancer',
+				name    : 'balancer',
+				label   : 'Balancer',
 			});
 			expect(enriched[1]).toEqual({
-				path: '/belt/bus/',
+				path    : '/belt/bus/',
 				category: 'belt',
-				name: 'bus',
-				label: 'Bus',
+				name    : 'bus',
+				label   : 'Bus',
 			});
 			expect(enriched[2]).toEqual({
-				path: '/belt/loader/',
+				path    : '/belt/loader/',
 				category: 'belt',
-				name: 'loader',
-				label: 'Loader',
+				name    : 'loader',
+				label   : 'Loader',
 			});
 		});
 
-		it('should sort tags by category first, then by name', () => {
+		it('should sort tags by category first, then by name', () =>
+		{
 			const rawTags: RawTags = {
 				production: ['science', 'mining'],
-				belt: ['loader', 'balancer'],
-				train: ['junction', 'station'],
+				belt      : ['loader', 'balancer'],
+				train     : ['junction', 'station'],
 			};
 
 			const enriched = enrichTags(rawTags);
@@ -145,18 +158,19 @@ describe('enrichTags', () => {
 			]);
 		});
 
-		it('should handle real-world tag data', () => {
+		it('should handle real-world tag data', () =>
+		{
 			const realWorldTags: RawTags = {
-				belt: ['balancer', 'bus', 'express transport belt (blue)', 'fast transport belt (red)', 'loader', 'transport belt (yellow)'],
-				circuit: ['clock', 'combinator', 'counter', 'display', 'indicator', 'memory cell', 'power switch'],
-				general: ['beaconized', 'book', 'compact', 'early game', 'late game (megabase)', 'mid game', 'modular', 'safe', 'tileable', 'tricks', 'upgradeable'],
-				meta: ['copypasta', 'tutorial'],
-				mods: ['angels', 'bobs', 'creative', 'expensive', 'factorissimo', 'lighted-electric-poles', 'other', 'vanilla', 'warehousing'],
-				other: ['art', 'defenses', 'storage'],
-				power: ['accumulator', 'kovarex enrichment', 'nuclear', 'solar', 'steam'],
+				belt      : ['balancer', 'bus', 'express transport belt (blue)', 'fast transport belt (red)', 'loader', 'transport belt (yellow)'],
+				circuit   : ['clock', 'combinator', 'counter', 'display', 'indicator', 'memory cell', 'power switch'],
+				general   : ['beaconized', 'book', 'compact', 'early game', 'late game (megabase)', 'mid game', 'modular', 'safe', 'tileable', 'tricks', 'upgradeable'],
+				meta      : ['copypasta', 'tutorial'],
+				mods      : ['angels', 'bobs', 'creative', 'expensive', 'factorissimo', 'lighted-electric-poles', 'other', 'vanilla', 'warehousing'],
+				other     : ['art', 'defenses', 'storage'],
+				power     : ['accumulator', 'kovarex enrichment', 'nuclear', 'solar', 'steam'],
 				production: ['advanced circuit (red)', 'batteries', 'belts', 'circuits', 'coal liquification', 'electronic circuit (green)', 'fluids', 'guns and ammo', 'inserters', 'mall (make everything)', 'mining', 'modules', 'oil processing', 'plastic', 'processing unit (blue)', 'research (labs)', 'robots', 'rocket parts', 'science', 'smelting', 'uranium'],
-				train: ['crossing', 'junction', 'left-hand-drive', 'loading station', 'multi-station', 'pax', 'right-hand-drive', 'roundabout', 'stacker', 'unloading station'],
-				version: ['0,14', '0,15'],
+				train     : ['crossing', 'junction', 'left-hand-drive', 'loading station', 'multi-station', 'pax', 'right-hand-drive', 'roundabout', 'stacker', 'unloading station'],
+				version   : ['0,14', '0,15'],
 			};
 
 			const enriched = enrichTags(realWorldTags);
@@ -168,39 +182,41 @@ describe('enrichTags', () => {
 			// Check specific examples
 			const balancer = enriched.find(t => t.name === 'balancer');
 			expect(balancer).toEqual({
-				path: '/belt/balancer/',
+				path    : '/belt/balancer/',
 				category: 'belt',
-				name: 'balancer',
-				label: 'Balancer',
+				name    : 'balancer',
+				label   : 'Balancer',
 			});
 
 			const kovarex = enriched.find(t => t.name === 'kovarex enrichment');
 			expect(kovarex).toEqual({
-				path: '/power/kovarex enrichment/',
+				path    : '/power/kovarex enrichment/',
 				category: 'power',
-				name: 'kovarex enrichment',
-				label: 'Kovarex Enrichment',
+				name    : 'kovarex enrichment',
+				label   : 'Kovarex Enrichment',
 			});
 
 			const leftHandDrive = enriched.find(t => t.name === 'left-hand-drive');
 			expect(leftHandDrive).toEqual({
-				path: '/train/left-hand-drive/',
+				path    : '/train/left-hand-drive/',
 				category: 'train',
-				name: 'left-hand-drive',
-				label: 'Left-Hand-Drive',
+				name    : 'left-hand-drive',
+				label   : 'Left-Hand-Drive',
 			});
 
 			const expressBlue = enriched.find(t => t.name === 'express transport belt (blue)');
 			expect(expressBlue).toEqual({
-				path: '/belt/express transport belt (blue)/',
+				path    : '/belt/express transport belt (blue)/',
 				category: 'belt',
-				name: 'express transport belt (blue)',
-				label: 'Express Transport Belt (Blue)',
+				name    : 'express transport belt (blue)',
+				label   : 'Express Transport Belt (Blue)',
 			});
 		});
 
-		it('should validate raw tags input', () => {
-			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		it('should validate raw tags input', () =>
+		{
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() =>
+			{});
 
 			const invalidTags = {
 				belt: 'not an array', // Invalid: should be array
@@ -212,7 +228,8 @@ describe('enrichTags', () => {
 			consoleSpy.mockRestore();
 		});
 
-		it('should validate enriched tags output', () => {
+		it('should validate enriched tags output', () =>
+		{
 			const rawTags: RawTags = {
 				belt: ['balancer'],
 			};
@@ -223,16 +240,17 @@ describe('enrichTags', () => {
 			// If validation passes, we should get valid enriched tags
 			expect(enriched).toHaveLength(1);
 			expect(enriched[0]).toMatchObject({
-				path: '/belt/balancer/',
+				path    : '/belt/balancer/',
 				category: 'belt',
-				name: 'balancer',
-				label: 'Balancer',
+				name    : 'balancer',
+				label   : 'Balancer',
 			});
 		});
 
-		it('should handle categories with no tags', () => {
+		it('should handle categories with no tags', () =>
+		{
 			const rawTags: RawTags = {
-				belt: [],
+				belt : [],
 				train: ['station'],
 			};
 
@@ -243,7 +261,8 @@ describe('enrichTags', () => {
 			expect(enriched[0].name).toBe('station');
 		});
 
-		it('should preserve special characters in tag names', () => {
+		it('should preserve special characters in tag names', () =>
+		{
 			const rawTags: RawTags = {
 				special: ['tag/with/slashes', 'tag_with_underscores', 'tag.with.dots'],
 			};
@@ -265,7 +284,8 @@ describe('enrichTags', () => {
 			expect(underscoreTag!.path).toBe('/special/tag_with_underscores/');
 		});
 
-		it('should handle long category and tag names', () => {
+		it('should handle long category and tag names', () =>
+		{
 			const rawTags: RawTags = {
 				'very-long-category-name-that-should-still-work': [
 					'extremely-long-tag-name-that-goes-on-and-on-and-on',
@@ -281,13 +301,16 @@ describe('enrichTags', () => {
 		});
 	});
 
-	describe('edge cases', () => {
-		it('should handle undefined input gracefully', () => {
+	describe('edge cases', () =>
+	{
+		it('should handle undefined input gracefully', () =>
+		{
 			const result = enrichTags(undefined as any);
 			expect(result).toEqual([]);
 		});
 
-		it('should handle tag names with only spaces', () => {
+		it('should handle tag names with only spaces', () =>
+		{
 			const rawTags: RawTags = {
 				test: ['   ', 'normal tag'],
 			};
@@ -301,7 +324,8 @@ describe('enrichTags', () => {
 			expect(enriched[1].label).toBe('Normal Tag');
 		});
 
-		it('should handle empty string tag names', () => {
+		it('should handle empty string tag names', () =>
+		{
 			const rawTags: RawTags = {
 				test: ['', 'valid'],
 			};
@@ -314,7 +338,8 @@ describe('enrichTags', () => {
 			expect(enriched[1].label).toBe('Valid');
 		});
 
-		it('should handle numeric-like strings', () => {
+		it('should handle numeric-like strings', () =>
+		{
 			const rawTags: RawTags = {
 				numbers: ['123', '456-789', '0.5'],
 			};

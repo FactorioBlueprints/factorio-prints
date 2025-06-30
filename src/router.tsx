@@ -7,7 +7,7 @@ import { routeTree } from './routeTree.gen';
 // TODO: Remove this assertion once strictNullChecks is enabled project-wide
 const router = createRouter({
 	routeTree,
-	defaultPreload: 'intent',
+	defaultPreload         : 'intent',
 	defaultPreloadStaleTime: 0,
 	defaultOnError         : (error: Error) =>
 	{
@@ -22,6 +22,7 @@ declare module '@tanstack/react-router' {
 	}
 }
 
-export function Router(): React.ReactElement {
+export function Router(): React.ReactElement
+{
 	return <RouterProvider router={router} />;
 }

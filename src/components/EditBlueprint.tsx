@@ -192,10 +192,14 @@ function EditBlueprintWrapper()
 		onSubmit: async ({ value }) =>
 		{
 			// Validate using Zod schema
-			try {
+			try
+			{
 				blueprintFormSchema.parse(value);
-			} catch (error) {
-				if (error instanceof z.ZodError) {
+			}
+			catch (error)
+			{
+				if (error instanceof z.ZodError)
+				{
 					console.error('Validation errors:', error.errors);
 					return;
 				}
@@ -211,7 +215,8 @@ function EditBlueprintWrapper()
 				return;
 			}
 
-			if (rawBlueprintData) {
+			if (rawBlueprintData)
+			{
 				updateBlueprintMutation.mutate({
 					id           : blueprintId,
 					rawBlueprint : rawBlueprintData,
@@ -255,7 +260,7 @@ function EditBlueprintWrapper()
 				setUiState(prev => ({
 					...prev,
 					parsedBlueprint: null,
-					v15Decoded: null,
+					v15Decoded     : null,
 				}));
 			}
 		}
@@ -351,7 +356,8 @@ function EditBlueprintWrapper()
 	{
 		event.preventDefault();
 
-		if (rawBlueprintData) {
+		if (rawBlueprintData)
+		{
 			updateBlueprintMutation.mutate({
 				id           : blueprintId,
 				rawBlueprint : rawBlueprintData,
@@ -387,7 +393,8 @@ function EditBlueprintWrapper()
 	{
 		const authorId = rawBlueprintData?.author?.userId;
 
-		if (!authorId) {
+		if (!authorId)
+		{
 			console.error('No author ID found for blueprint');
 			return;
 		}
@@ -717,10 +724,14 @@ function EditBlueprintWrapper()
 									<details>
 										<summary>Error Details</summary>
 										<pre className='mt-2 p-2 bg-dark text-light rounded'>
-											{(() => {
-												try {
+											{(() =>
+											{
+												try
+												{
 													return JSON.stringify(deleteBlueprintMutation.error, null, 2);
-												} catch (stringifyError) {
+												}
+												catch (stringifyError)
+												{
 													console.error('Error serializing error object:', deleteBlueprintMutation.error);
 													console.error('Stringify error:', stringifyError);
 													return `Error message: ${deleteBlueprintMutation.error.message}\nStack: ${deleteBlueprintMutation.error.stack || 'No stack trace available'}`;

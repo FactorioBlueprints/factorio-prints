@@ -51,8 +51,8 @@ describe('enrichUser', () =>
 	it('should handle user with minimal data', () =>
 	{
 		const rawUser: RawUser = {
-			id: 'user123',
-			favorites: {},
+			id        : 'user123',
+			favorites : {},
 			blueprints: {},
 		};
 

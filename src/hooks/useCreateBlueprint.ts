@@ -91,7 +91,8 @@ export const useCreateBlueprint = () =>
 			const newBlueprintRef = push(blueprintsRef, blueprintData);
 			const newBlueprintKey = newBlueprintRef.key;
 
-			if (!newBlueprintKey) {
+			if (!newBlueprintKey)
+			{
 				throw new Error('Failed to generate blueprint key');
 			}
 
@@ -113,7 +114,7 @@ export const useCreateBlueprint = () =>
 				authorId   : user.uid,
 			};
 		},
-		onSuccess: ({blueprintId, authorId}, {formData, user}) =>
+		onSuccess: ({blueprintId, authorId}, {formData}) =>
 		{
 			const now = new Date();
 			const unixTimestamp = now.getTime();
@@ -149,19 +150,19 @@ export const useCreateBlueprint = () =>
 					const allBlueprints = flatMap(lastUpdatedDateData.pages, page =>
 						page?.data ? Object.entries(page.data).map(([key, summary]) => ({
 							...(summary as Record<string, unknown>),
-							key
+							key,
 						})) : [],
 					);
 
 					type BlueprintWithKey = Record<string, unknown> & { key: string };
 					const newSummaryWithKey = {
 						...newSummary,
-						key: blueprintId
+						key: blueprintId,
 					} as BlueprintWithKey;
 					const updatedBlueprints = [
 						newSummaryWithKey,
 						...allBlueprints.filter((item): item is BlueprintWithKey =>
-							typeof item === 'object' && item !== null && 'key' in item && item.key !== blueprintId
+							typeof item === 'object' && item !== null && 'key' in item && item.key !== blueprintId,
 						),
 					];
 
@@ -232,7 +233,8 @@ export const useCreateBlueprint = () =>
 			const availableTagsKey = ['tags'];
 			const availableTags = queryClient.getQueryData(availableTagsKey) || [];
 
-			if (Array.isArray(availableTags)) {
+			if (Array.isArray(availableTags))
+			{
 				availableTags.forEach(tag =>
 				{
 					const tagKey = ['byTag', tag];

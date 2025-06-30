@@ -16,7 +16,7 @@ const reconcileFavorites = async (
 	userId: string,
 	blueprintId: string,
 	userHasFavorite: boolean,
-	blueprintHasFavorite: boolean
+	blueprintHasFavorite: boolean,
 ): Promise<void> =>
 {
 	if (!userId || !blueprintId) return;
@@ -46,7 +46,7 @@ const reconcileFavorites = async (
 
 export const useIsUserFavorite = (
 	userId: string | null | undefined,
-	blueprintId: string | null | undefined
+	blueprintId: string | null | undefined,
 ): UseQueryResult<boolean> =>
 {
 	return useQuery({
@@ -63,7 +63,7 @@ export const useIsUserFavorite = (
 
 export const useIsBlueprintFavorite = (
 	blueprintId: string | null | undefined,
-	userId: string | null | undefined
+	userId: string | null | undefined,
 ): UseQueryResult<boolean> =>
 {
 	return useQuery({
@@ -80,7 +80,7 @@ export const useIsBlueprintFavorite = (
 
 export const useIsFavorite = (
 	userId: string | null | undefined,
-	blueprintId: string | null | undefined
+	blueprintId: string | null | undefined,
 ): UseQueryResult<boolean> =>
 {
 	const queryClient = useQueryClient();

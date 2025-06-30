@@ -6,8 +6,10 @@ declare global {
 	}
 }
 
-const GoogleAd: React.FC = () => {
-	useEffect(() => {
+const GoogleAd: React.FC = () =>
+{
+	useEffect(() =>
+	{
 		(window.adsbygoogle = window.adsbygoogle || []).push({});
 	}, []);
 

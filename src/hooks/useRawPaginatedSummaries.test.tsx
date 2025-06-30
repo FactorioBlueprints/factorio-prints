@@ -11,51 +11,53 @@ vi.mock('../api/firebase');
 const examplePage1: RawBlueprintSummaryPage = {
 	data: {
 		blueprint1: {
-			title: 'Test Blueprint 1',
-			imgurId: 'img1',
-			imgurType: 'image/png',
+			title            : 'Test Blueprint 1',
+			imgurId          : 'img1',
+			imgurType        : 'image/png',
 			numberOfFavorites: 10,
-			lastUpdatedDate: 1000,
+			lastUpdatedDate  : 1000,
 		},
 		blueprint2: {
-			title: 'Test Blueprint 2',
-			imgurId: 'img2',
-			imgurType: 'image/jpeg',
+			title            : 'Test Blueprint 2',
+			imgurId          : 'img2',
+			imgurType        : 'image/jpeg',
 			numberOfFavorites: 20,
-			lastUpdatedDate: 2000,
+			lastUpdatedDate  : 2000,
 		},
 	},
-	hasMore: true,
-	lastKey: 'blueprint2',
+	hasMore  : true,
+	lastKey  : 'blueprint2',
 	lastValue: 2000,
 };
 
 const examplePage2: RawBlueprintSummaryPage = {
 	data: {
 		blueprint3: {
-			title: 'Test Blueprint 3',
-			imgurId: 'img3',
-			imgurType: 'image/png',
+			title            : 'Test Blueprint 3',
+			imgurId          : 'img3',
+			imgurType        : 'image/png',
 			numberOfFavorites: 30,
-			lastUpdatedDate: 3000,
+			lastUpdatedDate  : 3000,
 		},
 		blueprint4: {
-			title: 'Test Blueprint 4',
-			imgurId: 'img4',
-			imgurType: 'image/jpeg',
+			title            : 'Test Blueprint 4',
+			imgurId          : 'img4',
+			imgurType        : 'image/jpeg',
 			numberOfFavorites: 40,
-			lastUpdatedDate: 4000,
+			lastUpdatedDate  : 4000,
 		},
 	},
-	hasMore: false,
-	lastKey: null,
+	hasMore  : false,
+	lastKey  : null,
 	lastValue: null,
 };
 
-describe('useRawPaginatedSummaries', () => {
+describe('useRawPaginatedSummaries', () =>
+{
 	let queryClient: QueryClient;
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: {
@@ -74,32 +76,35 @@ describe('useRawPaginatedSummaries', () => {
 		</QueryClientProvider>
 	);
 
-	it('should fetch and return raw paginated summaries with default parameters', async () => {
+	it('should fetch and return raw paginated summaries with default parameters', async () =>
+	{
 		const { result } = renderHook(() => useRawPaginatedSummaries(), { wrapper });
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.data).toStrictEqual({
-			pages: [examplePage1],
+			pages     : [examplePage1],
 			pageParams: [{ lastKey: null, lastValue: null }],
 		});
 	});
 
-	it('should populate individual blueprint summaries in cache after fetching', async () => {
+	it('should populate individual blueprint summaries in cache after fetching', async () =>
+	{
 		const { result } = renderHook(() => useRawPaginatedSummaries(), { wrapper });
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify each summary was cached individually
 		expect(queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'blueprint1'])).toStrictEqual(
-			examplePage1.data.blueprint1
+			examplePage1.data.blueprint1,
 		);
 		expect(queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'blueprint2'])).toStrictEqual(
-			examplePage1.data.blueprint2
+			examplePage1.data.blueprint2,
 		);
 	});
 
-	it('should handle pagination correctly', async () => {
+	it('should handle pagination correctly', async () =>
+	{
 		vi.mocked(fetchPaginatedSummaries)
 			.mockResolvedValueOnce(examplePage1)
 			.mockResolvedValueOnce(examplePage2);
@@ -113,7 +118,7 @@ describe('useRawPaginatedSummaries', () => {
 		await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
 
 		expect(result.current.data).toStrictEqual({
-			pages: [examplePage1, examplePage2],
+			pages     : [examplePage1, examplePage2],
 			pageParams: [
 				{ lastKey: null, lastValue: null },
 				{ lastKey: 'blueprint2', lastValue: 2000 },
@@ -122,23 +127,24 @@ describe('useRawPaginatedSummaries', () => {
 
 		// Verify all summaries are cached
 		expect(queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'blueprint1'])).toStrictEqual(
-			examplePage1.data.blueprint1
+			examplePage1.data.blueprint1,
 		);
 		expect(queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'blueprint2'])).toStrictEqual(
-			examplePage1.data.blueprint2
+			examplePage1.data.blueprint2,
 		);
 		expect(queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'blueprint3'])).toStrictEqual(
-			examplePage2.data.blueprint3
+			examplePage2.data.blueprint3,
 		);
 		expect(queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'blueprint4'])).toStrictEqual(
-			examplePage2.data.blueprint4
+			examplePage2.data.blueprint4,
 		);
 	});
 
-	it('should use custom parameters correctly', async () => {
+	it('should use custom parameters correctly', async () =>
+	{
 		const { result } = renderHook(
 			() => useRawPaginatedSummaries(30, 'numberOfFavorites'),
-			{ wrapper }
+			{ wrapper },
 		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -147,11 +153,12 @@ describe('useRawPaginatedSummaries', () => {
 			30,
 			null,
 			null,
-			'numberOfFavorites'
+			'numberOfFavorites',
 		);
 	});
 
-	it('should handle errors correctly', async () => {
+	it('should handle errors correctly', async () =>
+	{
 		const error = new Error('Failed to fetch summaries');
 		vi.mocked(fetchPaginatedSummaries).mockRejectedValue(error);
 
@@ -162,11 +169,12 @@ describe('useRawPaginatedSummaries', () => {
 		expect(result.current.error).toStrictEqual(error);
 	});
 
-	it('should not allow fetching next page when hasMore is false', async () => {
+	it('should not allow fetching next page when hasMore is false', async () =>
+	{
 		const singlePage: RawBlueprintSummaryPage = {
-			data: { blueprint1: examplePage1.data.blueprint1 },
-			hasMore: false,
-			lastKey: null,
+			data     : { blueprint1: examplePage1.data.blueprint1 },
+			hasMore  : false,
+			lastKey  : null,
 			lastValue: null,
 		};
 		vi.mocked(fetchPaginatedSummaries).mockResolvedValue(singlePage);
@@ -177,7 +185,7 @@ describe('useRawPaginatedSummaries', () => {
 
 		expect(result.current.hasNextPage).toBe(false);
 		expect(result.current.data).toStrictEqual({
-			pages: [singlePage],
+			pages     : [singlePage],
 			pageParams: [{ lastKey: null, lastValue: null }],
 		});
 	});

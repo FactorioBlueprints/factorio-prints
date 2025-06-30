@@ -589,7 +589,7 @@ function SingleBlueprint()
 																(entitiesWithIcons as any)[pair[0]]
 																	? <FactorioIcon
 																		icon={{ name: pair[0], type: 'item' }}
-																		size="small"
+																		size='small'
 																	/>
 																	: ''
 															}
@@ -619,7 +619,7 @@ function SingleBlueprint()
 																(entitiesWithIcons as any)[pair[0]]
 																	? <FactorioIcon
 																		icon={{ name: pair[0], type: 'item' }}
-																		size="small"
+																		size='small'
 																	/>
 																	: ''
 															}
@@ -670,11 +670,11 @@ function SingleBlueprint()
 																	<div style={{ width: '32px', height: '32px' }}>
 																		<FactorioIcon
 																			icon={{
-																				name: iconObj.signal.name,
-																				type: (iconObj.signal.type || 'item') as SignalType,
-																				quality: iconObj.signal.quality as Quality
+																				name   : iconObj.signal.name,
+																				type   : (iconObj.signal.type || 'item') as SignalType,
+																				quality: iconObj.signal.quality as Quality,
 																			}}
-																			size="small"
+																			size='small'
 																		/>
 																	</div>
 																) : null}
@@ -792,11 +792,11 @@ function SingleBlueprint()
 																			<div style={{ width: '32px', height: '32px' }}>
 																				<FactorioIcon
 																					icon={{
-																						name: icon.signal.name,
-																						type: (icon.signal.type || 'item') as SignalType,
-																						quality: icon.signal.quality as Quality
+																						name   : icon.signal.name,
+																						type   : (icon.signal.type || 'item') as SignalType,
+																						quality: icon.signal.quality as Quality,
 																					}}
-																					size="small"
+																					size='small'
 																				/>
 																			</div>
 																		) : null}
@@ -838,11 +838,11 @@ function SingleBlueprint()
 															(entitiesWithIcons as any)[from.name]
 																? <FactorioIcon
 																	icon={{
-																		name: from.name,
-																		type: from.type || 'item',
-																		quality: from.quality
+																		name   : from.name,
+																		type   : from.type || 'item',
+																		quality: from.quality,
 																	}}
-																	size="small"
+																	size='small'
 																/>
 																: ''
 														}
@@ -852,11 +852,11 @@ function SingleBlueprint()
 															(entitiesWithIcons as any)[to.name]
 																? <FactorioIcon
 																	icon={{
-																		name: to.name,
-																		type: to.type || 'item',
-																		quality: to.quality
+																		name   : to.name,
+																		type   : to.type || 'item',
+																		quality: to.quality,
 																	}}
-																	size="small"
+																	size='small'
 																/>
 																: ''
 														}

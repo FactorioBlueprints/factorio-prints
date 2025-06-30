@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {getAuth, User} from 'firebase/auth';
 import React from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {Link, useRouterState} from '@tanstack/react-router';
+import {Link} from '@tanstack/react-router';
 
 import {app} from '../base';
 import {useUserDisplayName} from '../hooks/useUser';
@@ -38,7 +38,7 @@ const DisplayName: React.FC<DisplayNameProps> = ({ userId, withLink = true, exte
 	if (withLink)
 	{
 		return (
-			<Link to="/user/$userId" params={{ userId }}>
+			<Link to='/user/$userId' params={{ userId }}>
 				{content}
 			</Link>
 		);

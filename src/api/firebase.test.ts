@@ -67,13 +67,13 @@ describe('firebase API', () =>
 		it('should fetch blueprint data from CDN successfully', async () =>
 		{
 			const mockBlueprintSummary: EnrichedBlueprintSummary = {
-				key            : '-KnQ865j-qQ21WoUPbd3',
-				title          : 'Test Blueprint',
-				lastUpdatedDate: 1607936203137,
-				imgurId        : 'test123',
-				imgurType      : 'image/png',
+				key              : '-KnQ865j-qQ21WoUPbd3',
+				title            : 'Test Blueprint',
+				lastUpdatedDate  : 1607936203137,
+				imgurId          : 'test123',
+				imgurType        : 'image/png',
 				numberOfFavorites: 0,
-				thumbnail      : null,
+				thumbnail        : null,
 			};
 
 			const mockBlueprintData: Partial<RawBlueprint> = {
@@ -144,13 +144,13 @@ describe('firebase API', () =>
 		it('should return null when CDN fetch returns 404 (without logging)', async () =>
 		{
 			const mockBlueprintSummary: EnrichedBlueprintSummary = {
-				key  : '-KnQ865j-qQ21WoUPbd3',
-				title: 'Test Blueprint',
-				lastUpdatedDate: 1607936203137,
-				imgurId: 'test123',
-				imgurType: 'image/png',
+				key              : '-KnQ865j-qQ21WoUPbd3',
+				title            : 'Test Blueprint',
+				lastUpdatedDate  : 1607936203137,
+				imgurId          : 'test123',
+				imgurType        : 'image/png',
 				numberOfFavorites: 0,
-				thumbnail: null,
+				thumbnail        : null,
 			};
 
 			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
@@ -173,13 +173,13 @@ describe('firebase API', () =>
 		it('should log warning for non-404 CDN fetch errors', async () =>
 		{
 			const mockBlueprintSummary: EnrichedBlueprintSummary = {
-				key  : '-KnQ865j-qQ21WoUPbd3',
-				title: 'Test Blueprint',
-				lastUpdatedDate: 1607936203137,
-				imgurId: 'test123',
-				imgurType: 'image/png',
+				key              : '-KnQ865j-qQ21WoUPbd3',
+				title            : 'Test Blueprint',
+				lastUpdatedDate  : 1607936203137,
+				imgurId          : 'test123',
+				imgurType        : 'image/png',
 				numberOfFavorites: 0,
-				thumbnail: null,
+				thumbnail        : null,
 			};
 
 			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
@@ -202,13 +202,13 @@ describe('firebase API', () =>
 		it('should return null when network error occurs', async () =>
 		{
 			const mockBlueprintSummary: EnrichedBlueprintSummary = {
-				key  : '-KnQ865j-qQ21WoUPbd3',
-				title: 'Test Blueprint',
-				lastUpdatedDate: 1607936203137,
-				imgurId: 'test123',
-				imgurType: 'image/png',
+				key              : '-KnQ865j-qQ21WoUPbd3',
+				title            : 'Test Blueprint',
+				lastUpdatedDate  : 1607936203137,
+				imgurId          : 'test123',
+				imgurType        : 'image/png',
 				numberOfFavorites: 0,
-				thumbnail: null,
+				thumbnail        : null,
 			};
 
 			vi.mocked(globalThis.fetch).mockRejectedValueOnce(new Error('Network error'));
@@ -228,13 +228,13 @@ describe('firebase API', () =>
 		it('should return null when JSON parsing fails', async () =>
 		{
 			const mockBlueprintSummary: EnrichedBlueprintSummary = {
-				key  : '-KnQ865j-qQ21WoUPbd3',
-				title: 'Test Blueprint',
-				lastUpdatedDate: 1607936203137,
-				imgurId: 'test123',
-				imgurType: 'image/png',
+				key              : '-KnQ865j-qQ21WoUPbd3',
+				title            : 'Test Blueprint',
+				lastUpdatedDate  : 1607936203137,
+				imgurId          : 'test123',
+				imgurType        : 'image/png',
 				numberOfFavorites: 0,
-				thumbnail: null,
+				thumbnail        : null,
 			};
 
 			vi.mocked(globalThis.fetch).mockResolvedValueOnce({

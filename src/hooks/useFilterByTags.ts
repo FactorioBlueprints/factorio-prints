@@ -4,7 +4,7 @@ import { useBlueprintsTags } from './useBlueprintTags';
 import type { EnrichedBlueprintSummary } from '../schemas';
 
 export const useFilterByTags = (
-	blueprintSummaries: EnrichedBlueprintSummary[] = []
+	blueprintSummaries: EnrichedBlueprintSummary[] = [],
 ): EnrichedBlueprintSummary[] =>
 {
 	const filteredTags = useStore(searchParamsStore, state => state.filteredTags);

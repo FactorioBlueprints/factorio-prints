@@ -9,14 +9,17 @@ import type { RawBlueprintSummary, EnrichedBlueprintSummary } from '../schemas';
  * @param tagId - The tag ID to fetch blueprints for (normalized without slashes)
  * @returns The enriched blueprint summaries query results
  */
-export const useEnrichedTagBlueprintSummaries = (tagId: string) => {
+export const useEnrichedTagBlueprintSummaries = (tagId: string) =>
+{
 	const rawResult = useRawTagBlueprintSummaries(tagId);
 
 	// Enrich each blueprint query result
-	const enrichedBlueprintQueries = useMemo(() => {
+	const enrichedBlueprintQueries = useMemo(() =>
+	{
 		const enrichedQueries: Record<string, UseQueryResult<EnrichedBlueprintSummary, Error>> = {};
 
-		for (const blueprintId of rawResult.blueprintIds) {
+		for (const blueprintId of rawResult.blueprintIds)
+		{
 			const rawQuery = rawResult.blueprintQueries[blueprintId];
 
 			enrichedQueries[blueprintId] = {

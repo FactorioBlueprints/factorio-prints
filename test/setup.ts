@@ -4,6 +4,7 @@ import { afterEach } from 'vitest';
 import 'fake-indexeddb/auto';
 
 // Cleanup after each test
-afterEach(() => {
-    cleanup();
+afterEach(() =>
+{
+	cleanup();
 });

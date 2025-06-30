@@ -20,8 +20,8 @@ Sentry.init({
 		Sentry.replayIntegration({
 			maskAllInputs: false,
 			blockAllMedia: false,
-			maskAllText: false,
-			ignore: ['[id^="dsq-"]', '.disqus-thread', '#disqus_thread', 'iframe[src*="disqus.com"]', 'iframe[name*="dsq-"]', 'iframe[title*="Disqus"]'],
+			maskAllText  : false,
+			ignore       : ['[id^="dsq-"]', '.disqus-thread', '#disqus_thread', 'iframe[src*="disqus.com"]', 'iframe[name*="dsq-"]', 'iframe[title*="Disqus"]'],
 		}),
 		Sentry.captureConsoleIntegration({
 			levels: ['error', 'warn', 'info', 'debug'],
@@ -29,11 +29,11 @@ Sentry.init({
 		Sentry.contextLinesIntegration(),
 		Sentry.breadcrumbsIntegration({
 			console: true,
-			dom: true,
-			fetch: true,
+			dom    : true,
+			fetch  : true,
 			history: true,
-			sentry: true,
-			xhr: true,
+			sentry : true,
+			xhr    : true,
 		}),
 	],
 	// Tracing
@@ -50,12 +50,12 @@ Sentry.init({
 		/localhost:\d{4}/,
 		'https://factorioprints.com',
 	],
-	enabled   : true,
+	enabled         : true,
 	// Set maxBreadcrumbs to capture more console logs
-	maxBreadcrumbs          : 100,
+	maxBreadcrumbs  : 100,
 	// Attach stack traces to messages
-	attachStacktrace        : true,
-	beforeSend: (event, hint) =>
+	attachStacktrace: true,
+	beforeSend      : (event, hint) =>
 	{
 		// Filter out Disqus errors
 		const error = hint.originalException;
@@ -114,13 +114,15 @@ window.addEventListener('error', function(e: ErrorEvent)
 
 	// Handle third-party script errors (like Google Ads embed.js)
 	if (e.filename && (
-		e.filename.includes('embed.js') ||
-		e.filename.includes('disqus') ||
-		e.filename.includes('googlesyndication') ||
-		e.filename.includes('googletagmanager') ||
-		e.filename.includes('adsbygoogle')
-	)) {
-		if (import.meta.env.DEV) {
+		e.filename.includes('embed.js')
+		|| e.filename.includes('disqus')
+		|| e.filename.includes('googlesyndication')
+		|| e.filename.includes('googletagmanager')
+		|| e.filename.includes('adsbygoogle')
+	))
+	{
+		if (import.meta.env.DEV)
+		{
 			console.warn('Third-party script error suppressed:', e.error?.message, 'from', e.filename);
 		}
 		// Prevent the error from being reported to Sentry
@@ -130,7 +132,8 @@ window.addEventListener('error', function(e: ErrorEvent)
 }, true);
 
 const container = document.getElementById('root');
-if (!container) {
+if (!container)
+{
 	throw new Error('Root element not found');
 }
 

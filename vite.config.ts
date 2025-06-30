@@ -37,7 +37,8 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
 		sourcemap    : true,
 		rollupOptions: {
 			output: {
-				manualChunks: (id: string) => {
+				manualChunks: (id: string) =>
+				{
 					if (id.includes('entitiesWithIcons')) return 'entities'
 				},
 			},

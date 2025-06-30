@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { EnrichedPaginatedBlueprintSummaries, EnrichedBlueprintSummary } from '../schemas';
 
 export const useFlattenedEnrichedPaginatedSummaries = (
-	paginatedData: EnrichedPaginatedBlueprintSummaries | null | undefined
+	paginatedData: EnrichedPaginatedBlueprintSummaries | null | undefined,
 ): EnrichedBlueprintSummary[] =>
 {
 	return useMemo(() =>

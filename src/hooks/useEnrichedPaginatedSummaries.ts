@@ -12,7 +12,7 @@ import type { RawPaginatedBlueprintSummaries, EnrichedPaginatedBlueprintSummarie
  */
 export const useEnrichedPaginatedSummaries = (
 	pageSize = 60,
-	orderByField = 'lastUpdatedDate'
+	orderByField = 'lastUpdatedDate',
 ) =>
 {
 	const rawPaginatedQuery = useRawPaginatedSummaries(pageSize, orderByField);

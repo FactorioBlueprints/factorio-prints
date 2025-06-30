@@ -50,11 +50,11 @@ const createMockBlueprint = (overrides: any) => ({
 
 // Helper to create UpdateBlueprintFormData
 const createMockFormData = (blueprint: any, overrides: any = {}) => ({
-	title: blueprint.title,
-	blueprintString: blueprint.blueprintString,
+	title              : blueprint.title,
+	blueprintString    : blueprint.blueprintString,
 	descriptionMarkdown: blueprint.descriptionMarkdown,
-	tags: blueprint.tags,
-	imageUrl: 'https://i.imgur.com/img123.png',
+	tags               : blueprint.tags,
+	imageUrl           : 'https://i.imgur.com/img123.png',
 	...overrides,
 });
 
@@ -115,9 +115,9 @@ describe('Tag Operations Cache Consistency', () =>
 			const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
 
 			result.current.mutate({
-				id          : blueprintId,
-				rawBlueprint: existingBlueprint,
-				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
+				id           : blueprintId,
+				rawBlueprint : existingBlueprint,
+				formData     : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: ['combat', 'logistics', 'production', 'trains', 'circuits'],
 			});
 
@@ -172,9 +172,9 @@ describe('Tag Operations Cache Consistency', () =>
 			const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
 
 			result.current.mutate({
-				id          : blueprintId,
-				rawBlueprint: existingBlueprint,
-				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
+				id           : blueprintId,
+				rawBlueprint : existingBlueprint,
+				formData     : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: oldTags,
 			});
 
@@ -210,9 +210,9 @@ describe('Tag Operations Cache Consistency', () =>
 			const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
 
 			result.current.mutate({
-				id          : blueprintId,
-				rawBlueprint: existingBlueprint,
-				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
+				id           : blueprintId,
+				rawBlueprint : existingBlueprint,
+				formData     : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: newTags,
 			});
 
@@ -251,9 +251,9 @@ describe('Tag Operations Cache Consistency', () =>
 			const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
 
 			result.current.mutate({
-				id          : blueprintId,
-				rawBlueprint: existingBlueprint,
-				formData    : createMockFormData(existingBlueprint, { tags: newTags }),
+				id           : blueprintId,
+				rawBlueprint : existingBlueprint,
+				formData     : createMockFormData(existingBlueprint, { tags: newTags }),
 				availableTags: ['combat', 'logistics'], // uncached-tag not included
 			});
 
