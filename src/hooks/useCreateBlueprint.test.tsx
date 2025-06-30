@@ -30,6 +30,7 @@ vi.mock('../base', () => ({
 vi.mock('../schemas', () => ({
 	validateRawBlueprintSummary           : vi.fn((data) => data),
 	validateRawPaginatedBlueprintSummaries: vi.fn((data) => data),
+	validateRawUserBlueprints             : vi.fn((data) => data),
 }));
 
 describe('useCreateBlueprint', () =>

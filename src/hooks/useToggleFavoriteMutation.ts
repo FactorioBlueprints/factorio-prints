@@ -1,6 +1,7 @@
 import {useMutation, useQueryClient}          from '@tanstack/react-query';
 import {getDatabase, ref, update as dbUpdate} from 'firebase/database';
 import {app}                                  from '../base';
+import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserFavorites} from '../schemas';
 
 interface ToggleFavoriteMutationParams {
 	blueprintId: string;
@@ -53,8 +54,8 @@ export const useToggleFavoriteMutation = () =>
 				{
 					if (!oldData) return oldData;
 
-					const blueprint = oldData as Record<string, unknown>;
-					const existingFavorites = (blueprint.favorites as Record<string, boolean>) || {};
+					const blueprint = validateRawBlueprint(oldData);
+					const existingFavorites = blueprint.favorites || {};
 
 					return {
 						...blueprint,
@@ -73,7 +74,7 @@ export const useToggleFavoriteMutation = () =>
 				{
 					if (!oldData) return oldData;
 
-					const summary = oldData as Record<string, unknown>;
+					const summary = validateRawBlueprintSummary(oldData);
 
 					return {
 						...summary,
@@ -88,7 +89,7 @@ export const useToggleFavoriteMutation = () =>
 				{
 					if (!oldData) return oldData;
 
-					const favorites = oldData as Record<string, boolean>;
+					const favorites = validateRawUserFavorites(oldData);
 
 					return {
 						...favorites,

@@ -173,9 +173,21 @@ describe('useToggleFavoriteMutation', () =>
 		it('should update blueprint cache when toggling favorite on', async () =>
 		{
 			const existingBlueprint = {
-				title            : 'Test Blueprint',
-				numberOfFavorites: 5,
-				favorites        : { user789: true },
+				title              : 'Test Blueprint',
+				blueprintString    : 'test-string',
+				createdDate        : 1234567890,
+				descriptionMarkdown: 'Test description',
+				lastUpdatedDate    : 1234567890,
+				numberOfFavorites  : 5,
+				favorites          : { user789: true },
+				author             : {
+					displayName: 'Test User',
+					userId     : 'testuser123',
+				},
+				image: {
+					id  : 'test-image',
+					type: 'image/png',
+				},
 			};
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', 'blueprint123'], existingBlueprint);
@@ -195,21 +207,46 @@ describe('useToggleFavoriteMutation', () =>
 
 			const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', 'blueprint123']);
 			expect(updatedBlueprint).toEqual({
-				title            : 'Test Blueprint',
-				numberOfFavorites: 6,
-				favorites        : {
+				title              : 'Test Blueprint',
+				blueprintString    : 'test-string',
+				createdDate        : 1234567890,
+				descriptionMarkdown: 'Test description',
+				lastUpdatedDate    : 1234567890,
+				numberOfFavorites  : 6,
+				favorites          : {
 					user789: true,
 					user456: true,
 				},
+				author: {
+					displayName: 'Test User',
+					userId     : 'testuser123',
+				},
+				image: {
+					id  : 'test-image',
+					type: 'image/png',
+				},
+				tags: [],
 			});
 		});
 
 		it('should update blueprint cache when toggling favorite off', async () =>
 		{
 			const existingBlueprint = {
-				title            : 'Test Blueprint',
-				numberOfFavorites: 5,
-				favorites        : { user456: true, user789: true },
+				title              : 'Test Blueprint',
+				blueprintString    : 'test-string',
+				createdDate        : 1234567890,
+				descriptionMarkdown: 'Test description',
+				lastUpdatedDate    : 1234567890,
+				numberOfFavorites  : 5,
+				favorites          : { user456: true, user789: true },
+				author             : {
+					displayName: 'Test User',
+					userId     : 'testuser123',
+				},
+				image: {
+					id  : 'test-image',
+					type: 'image/png',
+				},
 			};
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', 'blueprint123'], existingBlueprint);
@@ -229,12 +266,25 @@ describe('useToggleFavoriteMutation', () =>
 
 			const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', 'blueprint123']);
 			expect(updatedBlueprint).toEqual({
-				title            : 'Test Blueprint',
-				numberOfFavorites: 4,
-				favorites        : {
+				title              : 'Test Blueprint',
+				blueprintString    : 'test-string',
+				createdDate        : 1234567890,
+				descriptionMarkdown: 'Test description',
+				lastUpdatedDate    : 1234567890,
+				numberOfFavorites  : 4,
+				favorites          : {
 					user456: undefined,
 					user789: true,
 				},
+				author: {
+					displayName: 'Test User',
+					userId     : 'testuser123',
+				},
+				image: {
+					id  : 'test-image',
+					type: 'image/png',
+				},
+				tags: [],
 			});
 		});
 
@@ -242,6 +292,8 @@ describe('useToggleFavoriteMutation', () =>
 		{
 			const existingSummary = {
 				title            : 'Test Blueprint',
+				imgurId          : 'test-imgur-id',
+				imgurType        : 'image/png',
 				numberOfFavorites: 5,
 			};
 
@@ -263,6 +315,8 @@ describe('useToggleFavoriteMutation', () =>
 			const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'blueprint123']);
 			expect(updatedSummary).toEqual({
 				title            : 'Test Blueprint',
+				imgurId          : 'test-imgur-id',
+				imgurType        : 'image/png',
 				numberOfFavorites: 6,
 			});
 		});

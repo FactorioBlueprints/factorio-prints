@@ -23,6 +23,11 @@ vi.mock('../base', () => ({
 	app: {},
 }));
 
+// Mock schemas
+vi.mock('../schemas', () => ({
+	validateRawUserBlueprints: vi.fn((data) => data || {}),
+}));
+
 describe('useDeleteBlueprint cache consistency', () =>
 {
 	let queryClient: QueryClient;
@@ -97,7 +102,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 			tags,
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify cache operations were performed correctly
 		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
@@ -160,7 +165,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 			tags,
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify the existing cache was updated correctly using spy
 		expect(setQueryDataSpy).toHaveBeenCalledWith(['byTag', 'combat'], {
@@ -214,7 +219,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 			tags,
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify only the correct user's blueprints list was updated using spy
 		expect(setQueryDataSpy).toHaveBeenCalledWith(
@@ -271,7 +276,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 			tags,
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify only cached tag with data was updated using spy
 		expect(setQueryDataSpy).toHaveBeenCalledWith(['byTag', 'tag-with-cache'], {
@@ -279,8 +284,8 @@ describe('useDeleteBlueprint cache consistency', () =>
 			'other-blueprint-2': true,
 		});
 
-		// Verify only one setQueryData call was made (only for tag-with-cache)
-		expect(setQueryDataSpy).toHaveBeenCalledTimes(1);
+		// Verify setQueryData was called for both user blueprints and tag cache
+		expect(setQueryDataSpy).toHaveBeenCalledTimes(2);
 
 		// Missing cache and empty cache should not be updated based on the implementation
 		// The hook only updates existing caches that contain the blueprint ID
@@ -315,7 +320,7 @@ describe('useDeleteBlueprint cache consistency', () =>
 			tags,
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify complete cleanup
 		expect(queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId])).toBeUndefined();

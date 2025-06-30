@@ -54,17 +54,24 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		// Set up existing cache data for all 5 query keys
 		// 1. Full blueprint data
 		const existingBlueprint = {
-			id               : blueprintId,
-			title            : 'Test Blueprint',
-			numberOfFavorites: 5,
-			favorites        : { 'other-user': true },
+			title              : 'Test Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 5,
+			favorites          : { 'other-user': true },
+			author             : { displayName: 'Test Author', userId: 'author-id' },
+			image              : { id: 'test-image', type: 'image/png' },
+			tags               : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
 		// 2. Blueprint summary data
 		const existingSummary = {
-			id               : blueprintId,
 			title            : 'Test Blueprint Summary',
+			imgurId          : 'test-image',
+			imgurType        : 'image/png',
 			numberOfFavorites: 5,
 		};
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], existingSummary);
@@ -113,13 +120,19 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		);
 		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint).toEqual({
-			id               : blueprintId,
-			title            : 'Test Blueprint',
-			numberOfFavorites: 6,
-			favorites        : {
+			title              : 'Test Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : existingBlueprint.createdDate,
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : existingBlueprint.lastUpdatedDate,
+			numberOfFavorites  : 6,
+			favorites          : {
 				'other-user': true,
 				[userId]    : true,
 			},
+			author: { displayName: 'Test Author', userId: 'author-id' },
+			image : { id: 'test-image', type: 'image/png' },
+			tags  : ['test'],
 		});
 
 		// 2. Verify blueprint summary was updated
@@ -129,8 +142,9 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		);
 		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]) as any;
 		expect(updatedSummary).toEqual({
-			id               : blueprintId,
 			title            : 'Test Blueprint Summary',
+			imgurId          : 'test-image',
+			imgurType        : 'image/png',
 			numberOfFavorites: 6,
 		});
 
@@ -169,19 +183,26 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 
 		// Set up existing cache data showing item is favorited
 		const existingBlueprint = {
-			id               : blueprintId,
-			title            : 'Test Blueprint',
-			numberOfFavorites: 5,
-			favorites        : {
+			title              : 'Test Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 5,
+			favorites          : {
 				[userId]    : true,
 				'other-user': true,
 			},
+			author: { displayName: 'Test Author', userId: 'author-id' },
+			image : { id: 'test-image', type: 'image/png' },
+			tags  : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
 		const existingSummary = {
-			id               : blueprintId,
 			title            : 'Test Blueprint Summary',
+			imgurId          : 'test-image',
+			imgurType        : 'image/png',
 			numberOfFavorites: 5,
 		};
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], existingSummary);
@@ -220,19 +241,26 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		// Verify all cache updates
 		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint).toEqual({
-			id               : blueprintId,
-			title            : 'Test Blueprint',
-			numberOfFavorites: 4,
-			favorites        : {
+			title              : 'Test Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : existingBlueprint.createdDate,
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : existingBlueprint.lastUpdatedDate,
+			numberOfFavorites  : 4,
+			favorites          : {
 				[userId]    : undefined,
 				'other-user': true,
 			},
+			author: { displayName: 'Test Author', userId: 'author-id' },
+			image : { id: 'test-image', type: 'image/png' },
+			tags  : ['test'],
 		});
 
 		const updatedSummary = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId]) as any;
 		expect(updatedSummary).toEqual({
-			id               : blueprintId,
 			title            : 'Test Blueprint Summary',
+			imgurId          : 'test-image',
+			imgurType        : 'image/png',
 			numberOfFavorites: 4,
 		});
 
@@ -260,10 +288,16 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 
 		// Set up only partial cache data (missing some query keys)
 		const existingBlueprint = {
-			id               : blueprintId,
-			title            : 'Test Blueprint',
-			numberOfFavorites: 3,
-			favorites        : {},
+			title              : 'Test Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 3,
+			favorites          : {},
+			author             : { displayName: 'Test Author', userId: 'author-id' },
+			image              : { id: 'test-image', type: 'image/png' },
+			tags               : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
@@ -285,12 +319,18 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		// Verify the existing cache was updated
 		const updatedBlueprint = queryClient.getQueryData(['blueprints', 'blueprintId', blueprintId]) as any;
 		expect(updatedBlueprint).toEqual({
-			id               : blueprintId,
-			title            : 'Test Blueprint',
-			numberOfFavorites: 4,
-			favorites        : {
+			title              : 'Test Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : existingBlueprint.createdDate,
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : existingBlueprint.lastUpdatedDate,
+			numberOfFavorites  : 4,
+			favorites          : {
 				[userId]: true,
 			},
+			author: { displayName: 'Test Author', userId: 'author-id' },
+			image : { id: 'test-image', type: 'image/png' },
+			tags  : ['test'],
 		});
 
 		// Verify specific favorite status caches were set
@@ -316,14 +356,20 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 
 		// Set up complex cache state with multiple users
 		const existingBlueprint = {
-			id               : blueprintId,
-			title            : 'Popular Blueprint',
-			numberOfFavorites: 10,
-			favorites        : {
+			title              : 'Popular Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 10,
+			favorites          : {
 				[userId1]: true,
 				'user-3' : true,
 				'user-4' : true,
 			},
+			author: { displayName: 'Test Author', userId: 'author-id' },
+			image : { id: 'test-image', type: 'image/png' },
+			tags  : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
@@ -382,18 +428,25 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 
 		// Set up blueprint with 1 favorite that will be removed
 		const existingBlueprint = {
-			id               : blueprintId,
-			title            : 'Unpopular Blueprint',
-			numberOfFavorites: 1,
-			favorites        : {
+			title              : 'Unpopular Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 1,
+			favorites          : {
 				[userId]: true,
 			},
+			author: { displayName: 'Test Author', userId: 'author-id' },
+			image : { id: 'test-image', type: 'image/png' },
+			tags  : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
 		const existingSummary = {
-			id               : blueprintId,
 			title            : 'Unpopular Blueprint',
+			imgurId          : 'test-image',
+			imgurType        : 'image/png',
 			numberOfFavorites: 1,
 		};
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], existingSummary);
@@ -425,10 +478,16 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 
 		// Set up initial state
 		const initialBlueprint = {
-			id               : blueprintId,
-			title            : 'Rapid Toggle Blueprint',
-			numberOfFavorites: 5,
-			favorites        : {},
+			title              : 'Rapid Toggle Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 5,
+			favorites          : {},
+			author             : { displayName: 'Test Author', userId: 'author-id' },
+			image              : { id: 'test-image', type: 'image/png' },
+			tags               : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], initialBlueprint);
 
@@ -486,10 +545,16 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 		}
 
 		const existingBlueprint = {
-			id               : blueprintId,
-			title            : 'Very Popular Blueprint',
-			numberOfFavorites: 50,
-			favorites        : manyFavorites,
+			title              : 'Very Popular Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 50,
+			favorites          : manyFavorites,
+			author             : { displayName: 'Test Author', userId: 'author-id' },
+			image              : { id: 'test-image', type: 'image/png' },
+			tags               : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
 
@@ -525,10 +590,16 @@ describe('useToggleFavoriteMutation cache consistency', () =>
 
 		// Set up initial state
 		const initialBlueprint = {
-			id               : blueprintId,
-			title            : 'Concurrent Blueprint',
-			numberOfFavorites: 5,
-			favorites        : {},
+			title              : 'Concurrent Blueprint',
+			blueprintString    : 'test-blueprint-string',
+			createdDate        : Date.now(),
+			descriptionMarkdown: 'Test description',
+			lastUpdatedDate    : Date.now(),
+			numberOfFavorites  : 5,
+			favorites          : {},
+			author             : { displayName: 'Test Author', userId: 'author-id' },
+			image              : { id: 'test-image', type: 'image/png' },
+			tags               : ['test'],
 		};
 		queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], initialBlueprint);
 

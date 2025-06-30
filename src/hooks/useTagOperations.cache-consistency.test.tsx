@@ -10,9 +10,9 @@ import { useCreateBlueprint } from './useCreateBlueprint';
 // Mock Firebase
 vi.mock('firebase/database', () => ({
 	getDatabase    : vi.fn(),
-	ref            : vi.fn(),
-	update         : vi.fn(),
-	push           : vi.fn(),
+	ref            : vi.fn(() => ({})),
+	update         : vi.fn(() => Promise.resolve()),
+	push           : vi.fn(() => ({ key: 'new-blueprint-id' })),
 	serverTimestamp: vi.fn(() => ({ '.sv': 'timestamp' })),
 }));
 
@@ -26,12 +26,6 @@ vi.mock('../base', () => ({
 	app: {},
 }));
 
-// Mock schemas
-vi.mock('../schemas', () => ({
-	validateRawBlueprint                  : vi.fn(data => data),
-	validateRawBlueprintSummary           : vi.fn(data => data),
-	validateRawPaginatedBlueprintSummaries: vi.fn(data => data),
-}));
 
 // Helper to create a complete RawBlueprint
 const createMockBlueprint = (overrides: any) => ({
@@ -45,6 +39,7 @@ const createMockBlueprint = (overrides: any) => ({
 	author             : { userId: 'user-1', displayName: 'Test User' },
 	image              : { id: 'img123', type: 'image/png' },
 	favorites          : {},
+	authorId           : 'user-1',
 	...overrides,
 });
 
@@ -91,10 +86,16 @@ describe('Tag Operations Cache Consistency', () =>
 			const oldTags = ['combat', 'logistics'];
 			const newTags = ['logistics', 'production', 'trains'];
 
-			// Set up existing blueprint data
 			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
+			queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], {
+				title            : existingBlueprint.title,
+				imgurId          : existingBlueprint.image.id,
+				imgurType        : existingBlueprint.image.type,
+				numberOfFavorites: existingBlueprint.numberOfFavorites,
+				lastUpdatedDate  : existingBlueprint.lastUpdatedDate,
+			});
 
 			// Set up tag caches
 			queryClient.setQueryData(['byTag', 'combat'], {
@@ -159,6 +160,13 @@ describe('Tag Operations Cache Consistency', () =>
 			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
+			queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], {
+				title            : existingBlueprint.title,
+				imgurId          : existingBlueprint.image.id,
+				imgurType        : existingBlueprint.image.type,
+				numberOfFavorites: existingBlueprint.numberOfFavorites,
+				lastUpdatedDate  : existingBlueprint.lastUpdatedDate,
+			});
 
 			// Set up tag caches with the blueprint
 			oldTags.forEach(tag =>
@@ -200,6 +208,13 @@ describe('Tag Operations Cache Consistency', () =>
 			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
+			queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], {
+				title            : existingBlueprint.title,
+				imgurId          : existingBlueprint.image.id,
+				imgurType        : existingBlueprint.image.type,
+				numberOfFavorites: existingBlueprint.numberOfFavorites,
+				lastUpdatedDate  : existingBlueprint.lastUpdatedDate,
+			});
 
 			// Set up empty tag caches
 			newTags.forEach(tag =>
@@ -238,6 +253,13 @@ describe('Tag Operations Cache Consistency', () =>
 			const existingBlueprint = createMockBlueprint({ tags: oldTags });
 
 			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], existingBlueprint);
+			queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], {
+				title            : existingBlueprint.title,
+				imgurId          : existingBlueprint.image.id,
+				imgurType        : existingBlueprint.image.type,
+				numberOfFavorites: existingBlueprint.numberOfFavorites,
+				lastUpdatedDate  : existingBlueprint.lastUpdatedDate,
+			});
 
 			// Set up tag caches
 			queryClient.setQueryData(['byTag', 'combat'], {
@@ -298,8 +320,8 @@ describe('Tag Operations Cache Consistency', () =>
 				'existing-bp-3': true,
 			});
 
-			// Set up available tags
 			queryClient.setQueryData(['tags'], ['combat', 'logistics', 'production', 'trains']);
+			queryClient.setQueryData(['users', 'userId', user.uid, 'blueprints'], {});
 
 			const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -348,8 +370,8 @@ describe('Tag Operations Cache Consistency', () =>
 				'existing-bp': true,
 			});
 
-			// Set up available tags
 			queryClient.setQueryData(['tags'], ['combat', 'logistics']);
+			queryClient.setQueryData(['users', 'userId', user.uid, 'blueprints'], {});
 
 			const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -387,8 +409,8 @@ describe('Tag Operations Cache Consistency', () =>
 				'existing-bp': true,
 			});
 
-			// Set up available tags (including uncached-tag)
 			queryClient.setQueryData(['tags'], ['combat', 'logistics', 'uncached-tag']);
+			queryClient.setQueryData(['users', 'userId', user.uid, 'blueprints'], {});
 
 			const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
@@ -428,6 +450,11 @@ describe('Tag Operations Cache Consistency', () =>
 			});
 			queryClient.setQueryData(['byTag', 'production'], {
 				[blueprintId]: true,
+			});
+
+			queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
+				[blueprintId]  : true,
+				'other-user-bp': true,
 			});
 
 			// Spy on setQueryData to verify tag cache updates
@@ -483,6 +510,10 @@ describe('Tag Operations Cache Consistency', () =>
 			});
 			// production cache doesn't exist
 
+			queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
+				[blueprintId]: true,
+			});
+
 			// Spy on setQueryData to verify tag cache updates
 			const setQueryDataSpy = vi.spyOn(queryClient, 'setQueryData');
 			setQueryDataSpy.mockClear();
@@ -527,6 +558,7 @@ describe('Tag Operations Cache Consistency', () =>
 			queryClient.setQueryData(['byTag', 'logistics'], {});
 			queryClient.setQueryData(['byTag', 'production'], {});
 			queryClient.setQueryData(['tags'], ['combat', 'logistics', 'production']);
+			queryClient.setQueryData(['users', 'userId', user.uid, 'blueprints'], {});
 
 			// Create blueprint
 			const { result: createResult } = renderHook(() => useCreateBlueprint(), { wrapper });
@@ -614,6 +646,13 @@ describe('Tag Operations Cache Consistency', () =>
 
 			const bp1 = createMockBlueprint({ tags: ['combat'] });
 			queryClient.setQueryData(['blueprints', 'blueprintId', 'bp-1'], bp1);
+			queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'bp-1'], {
+				title            : bp1.title,
+				imgurId          : bp1.image.id,
+				imgurType        : bp1.image.type,
+				numberOfFavorites: bp1.numberOfFavorites,
+				lastUpdatedDate  : bp1.lastUpdatedDate,
+			});
 
 			update1.current.mutate({
 				id           : 'bp-1',
@@ -624,6 +663,10 @@ describe('Tag Operations Cache Consistency', () =>
 
 			// Operation 2: Delete bp-2
 			const { result: delete2 } = renderHook(() => useDeleteBlueprint(), { wrapper });
+
+			queryClient.setQueryData(['users', 'userId', 'author-2', 'blueprints'], {
+				'bp-2': true,
+			});
 
 			delete2.current.mutate({
 				id      : 'bp-2',
@@ -652,6 +695,13 @@ describe('Tag Operations Cache Consistency', () =>
 
 			const bp1 = createMockBlueprint({ tags: ['combat'] });
 			queryClient.setQueryData(['blueprints', 'blueprintId', 'bp-1'], bp1);
+			queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'bp-1'], {
+				title            : bp1.title,
+				imgurId          : bp1.image.id,
+				imgurType        : bp1.image.type,
+				numberOfFavorites: bp1.numberOfFavorites,
+				lastUpdatedDate  : bp1.lastUpdatedDate,
+			});
 
 			// Make update fail
 			vi.mocked(dbUpdate).mockRejectedValueOnce(new Error('Network error'));
@@ -709,11 +759,14 @@ describe('Tag Operations Cache Consistency', () =>
 
 			const blueprintId = 'test-blueprint';
 
-			// Tag cache has undefined/null values
+			// Tag cache exists but doesn't contain the blueprint we're deleting
 			queryClient.setQueryData(['byTag', 'combat'], {
-				[blueprintId]: undefined,
-				'other-bp'   : true,
-				'null-bp'    : null,
+				'other-bp'  : true,
+				'another-bp': true,
+			});
+
+			queryClient.setQueryData(['users', 'userId', 'test-author', 'blueprints'], {
+				[blueprintId]: true,
 			});
 
 			// Spy on setQueryData
@@ -730,8 +783,7 @@ describe('Tag Operations Cache Consistency', () =>
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			// The implementation should not update the cache if the blueprint isn't properly in it
-			// Since blueprint has undefined value, it won't be considered as existing
+			// Verify cache wasn't modified since blueprint wasn't in it
 			expect(setQueryDataSpy).not.toHaveBeenCalledWith(['byTag', 'combat'], expect.anything());
 		});
 	});

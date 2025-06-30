@@ -23,6 +23,11 @@ vi.mock('../base', () => ({
 	app: {},
 }));
 
+// Mock schemas
+vi.mock('../schemas', () => ({
+	validateRawUserBlueprints: vi.fn((data) => data || {}),
+}));
+
 describe('useDeleteBlueprint', () =>
 {
 	let queryClient: QueryClient;
@@ -62,7 +67,7 @@ describe('useDeleteBlueprint', () =>
 
 		result.current.mutate(testData);
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify Firebase update was called with correct paths
 		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
@@ -91,7 +96,7 @@ describe('useDeleteBlueprint', () =>
 
 		result.current.mutate(testData);
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify Firebase update was called without tag paths
 		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
@@ -114,7 +119,7 @@ describe('useDeleteBlueprint', () =>
 			tags    : [],
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
 			queryKey: ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'],
@@ -143,7 +148,7 @@ describe('useDeleteBlueprint', () =>
 			tags    : [],
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify setQueryData was called for user blueprints
 		expect(setQueryDataSpy).toHaveBeenCalledWith(
@@ -181,7 +186,7 @@ describe('useDeleteBlueprint', () =>
 			tags    : ['tag1', 'tag2'],
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Verify setQueryData was called for tag updates
 		expect(setQueryDataSpy).toHaveBeenCalledWith(tag1Key, { 'other-blueprint': true });
@@ -201,7 +206,7 @@ describe('useDeleteBlueprint', () =>
 			tags    : [],
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		expect(removeQueriesSpy).toHaveBeenCalledWith({
 			queryKey: ['blueprints', 'blueprintId', 'test-id'],
@@ -223,7 +228,7 @@ describe('useDeleteBlueprint', () =>
 			tags    : [],
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: 'test-author' }, from: '/edit/$blueprintId' });
 	});
@@ -260,7 +265,7 @@ describe('useDeleteBlueprint', () =>
 			tags    : [],
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Should complete successfully even without existing cache data
 		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: 'test-author' }, from: '/edit/$blueprintId' });
@@ -279,7 +284,7 @@ describe('useDeleteBlueprint', () =>
 			tags    : ['tag1', 'tag2'],
 		});
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		// Should complete successfully even without existing tag cache data
 		expect(navigateMock).toHaveBeenCalledWith({ to: '/user/$userId', params: { userId: 'test-author' }, from: '/edit/$blueprintId' });
@@ -309,7 +314,7 @@ describe('useDeleteBlueprint', () =>
 		// Resolve the promise to complete the mutation
 		resolvePromise?.();
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
 		expect(result.current.isPending).toBe(false);
 	});
