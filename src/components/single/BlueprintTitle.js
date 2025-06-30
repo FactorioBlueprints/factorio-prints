@@ -1,7 +1,7 @@
 import {faLink}          from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../../utils/propTypes';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import {Helmet}           from 'react-helmet';

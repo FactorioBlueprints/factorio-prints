@@ -1,0 +1,1 @@
+export const forbidExtraProps = (propTypes) => propTypes;

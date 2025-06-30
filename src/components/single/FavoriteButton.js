@@ -1,5 +1,5 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {forbidExtraProps}            from 'airbnb-prop-types';
+import {forbidExtraProps}            from '../../utils/propTypes';
 import axios                         from 'axios';
 
 import {getDatabase, ref, update} from 'firebase/database';

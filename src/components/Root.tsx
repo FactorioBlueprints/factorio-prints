@@ -1,4 +1,4 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../../utils/propTypes';
 import React              from 'react';
 import {Helmet}           from 'react-helmet';
 

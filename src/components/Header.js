@@ -15,7 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../utils/propTypes';
 
 import {GithubAuthProvider, GoogleAuthProvider} from 'firebase/auth';
 

@@ -1,7 +1,7 @@
 import {faCalendar, faClock, faCodeBranch, faHeart, faUser} from '@fortawesome/free-solid-svg-icons';
 
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../../utils/propTypes';
 import dayjs              from 'dayjs';
 import relativeTime       from 'dayjs/plugin/relativeTime';
 import PropTypes          from 'prop-types';

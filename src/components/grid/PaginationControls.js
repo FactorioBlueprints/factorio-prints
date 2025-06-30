@@ -2,7 +2,7 @@ import {faAngleDoubleLeft, faAngleLeft, faAngleRight} from '@fortawesome/free-so
 
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../../utils/propTypes';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 

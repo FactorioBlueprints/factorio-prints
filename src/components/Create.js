@@ -2,7 +2,7 @@
 import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
-import {forbidExtraProps}     from 'airbnb-prop-types';
+import {forbidExtraProps}     from '../utils/propTypes';
 import classNames             from 'classnames';
 import firebase               from 'firebase/app';
 import update                 from 'immutability-helper';

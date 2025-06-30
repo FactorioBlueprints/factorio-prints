@@ -1,4 +1,4 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../../utils/propTypes';
 
 import isEmpty   from 'lodash/isEmpty';
 import PropTypes from 'prop-types';

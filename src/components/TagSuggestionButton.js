@@ -1,6 +1,6 @@
 import {faTag}            from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon}  from '@fortawesome/react-fontawesome';
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../utils/propTypes';
 import PropTypes          from 'prop-types';
 import React              from 'react';
 import Button             from 'react-bootstrap/Button';

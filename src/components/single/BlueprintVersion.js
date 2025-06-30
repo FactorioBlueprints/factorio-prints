@@ -1,5 +1,5 @@
 import {useQuery}         from '@tanstack/react-query';
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../../utils/propTypes';
 
 import axios            from 'axios';
 import PropTypes        from 'prop-types';

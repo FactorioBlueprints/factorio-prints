@@ -1,4 +1,4 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../../utils/propTypes';
 import PropTypes          from 'prop-types';
 
 const ImgurImageProjection = PropTypes.shape(forbidExtraProps({

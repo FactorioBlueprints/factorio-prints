@@ -2,7 +2,7 @@ import {faHeart}         from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 import {useQueryClient}   from '@tanstack/react-query';
-import {forbidExtraProps} from 'airbnb-prop-types';
+import {forbidExtraProps} from '../utils/propTypes';
 
 import React          from 'react';
 import Card           from 'react-bootstrap/Card';
