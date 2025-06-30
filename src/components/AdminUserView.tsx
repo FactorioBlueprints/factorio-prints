@@ -9,7 +9,7 @@ import Row                           from 'react-bootstrap/Row';
 import Tab                           from 'react-bootstrap/Tab';
 import Tabs                          from 'react-bootstrap/Tabs';
 import {useAuthState}                from 'react-firebase-hooks/auth';
-import {Link, useParams}   from '@tanstack/react-router';
+import {Link, useParams}             from '@tanstack/react-router';
 
 import {app}                                                     from '../base';
 import useEnrichedBlueprintSummaries                             from '../hooks/useEnrichedBlueprintSummaries';
@@ -18,6 +18,7 @@ import {useIsModerator}                                          from '../hooks/
 import useReconcileUserFavorites                                 from '../hooks/useReconcileUserFavorites';
 import {useUserBlueprints, useUserDisplayName, useUserFavorites} from '../hooks/useUser';
 import {searchParamsStore}                                       from '../store/searchParamsStore';
+import type {EnrichedBlueprintSummary}                           from '../schemas';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import NoMatch            from './NoMatch';
@@ -25,9 +26,9 @@ import PageHeader         from './PageHeader';
 import SearchForm         from './SearchForm';
 import TagForm            from './TagForm';
 
-function AdminUserView()
+const AdminUserView: React.FC = () =>
 {
-	const { userId } = useParams();
+	const { userId } = useParams({ from: '/admin/user/$userId' });
 	const [currentUser] = useAuthState(getAuth(app));
 	const moderatorQuery = useIsModerator(currentUser?.uid);
 	const isModerator = moderatorQuery.data ?? false;
@@ -69,22 +70,22 @@ function AdminUserView()
 		userFavoritesSuccess,
 	);
 
-	const filteredBlueprints = useFilteredBlueprintSummaries(blueprintSummaries);
-	const filteredFavorites = useFilteredBlueprintSummaries(favoriteSummaries);
+	const filteredBlueprints = useFilteredBlueprintSummaries(blueprintSummaries.filter((b): b is EnrichedBlueprintSummary => b !== null));
+	const filteredFavorites = useFilteredBlueprintSummaries(favoriteSummaries.filter((b): b is EnrichedBlueprintSummary => b !== null));
 
 	// Sort newest first
 	const sortedBlueprints = [...filteredBlueprints].sort((a, b) =>
 	{
 		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-		return dateB - dateA;
+		return dateB.getTime() - dateA.getTime();
 	});
 
 	const sortedFavorites = [...filteredFavorites].sort((a, b) =>
 	{
 		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-		return dateB - dateA;
+		return dateB.getTime() - dateA.getTime();
 	});
 
 	const isLoading = displayNameLoading || userBlueprintsLoading || userFavoritesLoading;
@@ -95,7 +96,7 @@ function AdminUserView()
 		const { data: reconcileResult, isPending, isSuccess } = reconcileFavoritesMutation;
 		const buttonText = isPending
 			? ' Reconciling...'
-			: (isSuccess && reconcileResult?.reconciled)
+			: (isSuccess && reconcileResult?.reconciled && 'totalFixed' in reconcileResult)
 				? ` Fixed (${reconcileResult.totalFixed} issues)`
 				: (isSuccess && !reconcileResult?.reconciled)
 					? ' No issues found'
@@ -168,9 +169,11 @@ function AdminUserView()
 			} />
 
 			<div className='mb-3'>
-				<Button as={Link} to='/admin' variant='outline-secondary' className='me-2'>
-					← Back to Admin
-				</Button>
+				<Link to='/admin'>
+					<Button variant='outline-secondary' className='me-2'>
+						← Back to Admin
+					</Button>
+				</Link>
 				{renderReconcileButton()}
 			</div>
 
@@ -184,8 +187,8 @@ function AdminUserView()
 					<Row className='blueprint-grid-row justify-content-center'>
 						{
 							sortedBlueprints.length > 0 ? (
-								sortedBlueprints.map(blueprintSummary =>
-									<BlueprintThumbnail key={blueprintSummary.key || blueprintSummary.id} blueprintSummary={blueprintSummary} />)
+								sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary) =>
+									<BlueprintThumbnail key={blueprintSummary.key || blueprintSummary.key} blueprintSummary={blueprintSummary} />)
 							) : (
 								<div className='col-12 text-center'>
 									<h3>No blueprints found</h3>
@@ -204,8 +207,8 @@ function AdminUserView()
 					<Row className='blueprint-grid-row justify-content-center'>
 						{
 							sortedFavorites.length > 0 ? (
-								sortedFavorites.map(blueprintSummary =>
-									<BlueprintThumbnail key={blueprintSummary.key || blueprintSummary.id} blueprintSummary={blueprintSummary} />)
+								sortedFavorites.map((blueprintSummary: EnrichedBlueprintSummary) =>
+									<BlueprintThumbnail key={blueprintSummary.key || blueprintSummary.key} blueprintSummary={blueprintSummary} />)
 							) : (
 								<div className='col-12 text-center'>
 									<h3>No favorites found</h3>
