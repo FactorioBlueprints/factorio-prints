@@ -1,7 +1,7 @@
 import {faCog, faHeart, faImage, faUser} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {getAuth} from 'firebase/auth';
-import React, {useMemo, useState} from 'react';
+import React, {ChangeEvent, useMemo, useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -11,19 +11,23 @@ import {useAuthState} from 'react-firebase-hooks/auth';
 import {Link} from '@tanstack/react-router';
 
 import {app} from '../base';
+import {UserData} from '../api/firebase';
 import useAllUsers from '../hooks/useAllUsers';
 import {useIsModerator} from '../hooks/useModerators';
 
 import PageHeader from './PageHeader';
 
-function AdminUsersGrid()
+type SortField = 'displayName' | 'email' | 'favoritesCount' | 'blueprintsCount';
+type SortDirection = 'asc' | 'desc';
+
+function AdminUsersGrid(): React.JSX.Element | null
 {
 	const [user] = useAuthState(getAuth(app));
 	const moderatorQuery = useIsModerator(user?.uid);
 	const isModerator = moderatorQuery.data ?? false;
-	const [searchTerm, setSearchTerm] = useState('');
-	const [sortBy, setSortBy] = useState('favoritesCount');
-	const [sortDirection, setSortDirection] = useState('desc');
+	const [searchTerm, setSearchTerm] = useState<string>('');
+	const [sortBy, setSortBy] = useState<SortField>('favoritesCount');
+	const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
 	const {
 		data: allUsers,
@@ -31,7 +35,7 @@ function AdminUsersGrid()
 		error,
 	} = useAllUsers(isModerator);
 
-	const filteredAndSortedUsers = useMemo(() =>
+	const filteredAndSortedUsers = useMemo((): UserData[] =>
 	{
 		if (!allUsers) return [];
 
@@ -68,7 +72,7 @@ function AdminUsersGrid()
 		});
 	}, [allUsers, searchTerm, sortBy, sortDirection]);
 
-	const handleHeaderClick = (field) =>
+	const handleHeaderClick = (field: SortField): void =>
 	{
 		if (sortBy === field)
 		{
@@ -81,12 +85,16 @@ function AdminUsersGrid()
 		}
 	};
 
-	const renderSortIndicator = (field) =>
+	const renderSortIndicator = (field: SortField): string | null =>
 	{
 		if (sortBy !== field) return null;
 		return sortDirection === 'asc' ? ' ↑' : ' ↓';
 	};
 
+	const handleSearchChange = (event: ChangeEvent<HTMLInputElement>): void =>
+	{
+		setSearchTerm(event.target.value);
+	};
 
 	if (user && !isModerator)
 	{
@@ -143,7 +151,7 @@ function AdminUsersGrid()
 					type='text'
 					placeholder='Search users by name, email, or ID...'
 					value={searchTerm}
-					onChange={(e) => setSearchTerm(e.target.value)}
+					onChange={handleSearchChange}
 				/>
 			</Form.Group>
 
@@ -190,15 +198,17 @@ function AdminUsersGrid()
 								<td>{user.favoritesCount || 0}</td>
 								<td>{user.blueprintsCount || 0}</td>
 								<td>
-									<Button
-										as={Link}
+									<Link
 										to='/admin/user/$userId'
 										params={{ userId: user.id }}
-										variant='primary'
-										size='sm'
 									>
-										View Details
-									</Button>
+										<Button
+											variant='primary'
+											size='sm'
+										>
+											View Details
+										</Button>
+									</Link>
 								</td>
 							</tr>
 						))}

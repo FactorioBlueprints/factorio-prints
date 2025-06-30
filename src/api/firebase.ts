@@ -65,9 +65,10 @@ export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintS
 	}
 };
 
-interface UserData {
+export interface UserData {
 	id: string;
 	displayName?: string;
+	email?: string;
 	favorites?: Record<string, boolean>;
 	blueprints?: Record<string, boolean>;
 	favoritesCount: number;
@@ -312,6 +313,7 @@ export const fetchAllUsers = async (): Promise<UserData[]> =>
 			usersData.push({
 				id             : childSnapshot.key,
 				...userData,
+				email          : userData.email || undefined,
 				favoritesCount : userData.favorites ? Object.keys(userData.favorites).length : 0,
 				blueprintsCount: userData.blueprints ? Object.keys(userData.blueprints).length : 0,
 			});
