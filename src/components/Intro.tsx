@@ -1,16 +1,14 @@
-import {getAuth}      from 'firebase/auth';
-import isEmpty        from 'lodash/isEmpty';
-import React          from 'react';
-import {useAuthState} from 'react-firebase-hooks/auth';
-import {app}          from '../base.js';
+import { getAuth } from 'firebase/auth';
+import isEmpty from 'lodash/isEmpty';
+import React from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { app } from '../base.js';
 
-const Intro = () =>
-{
+const Intro: React.FC = () => {
 	const [user] = useAuthState(getAuth(app));
 
-	if (!isEmpty(user))
-	{
-		return false;
+	if (!isEmpty(user)) {
+		return null;
 	}
 
 	return (
