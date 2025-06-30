@@ -160,7 +160,7 @@ function getWorker()
 	{
 		try
 		{
-			worker = new Worker(new URL('./localStorage.worker.js', import.meta.url), { type: 'module' });
+			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), { type: 'module' });
 
 			worker.onerror = (error) =>
 			{
