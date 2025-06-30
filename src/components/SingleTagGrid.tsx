@@ -7,6 +7,7 @@ import { useParams } from '@tanstack/react-router';
 
 import { useEnrichedTagBlueprintSummaries } from '../hooks/useEnrichedTagBlueprintSummaries';
 import { useFilterByTitle } from '../hooks/useFilterByTitle';
+import type { EnrichedBlueprintSummary } from '../schemas';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import EmptyResults from './grid/EmptyResults';
@@ -16,9 +17,9 @@ import PageHeader from './PageHeader';
 import SearchForm from './SearchForm';
 import SingleTagSelector from './SingleTagSelector';
 
-const SingleTagGrid = () =>
+const SingleTagGrid: React.FC = () =>
 {
-	const { tag } = useParams();
+	const { tag } = useParams({ strict: false });
 	const tagId = tag || '';
 
 	const {
@@ -28,19 +29,18 @@ const SingleTagGrid = () =>
 		isError,
 	} = useEnrichedTagBlueprintSummaries(tagId);
 
-	// Extract enriched blueprint summaries from the queries
-	const blueprintSummaries = Object.entries(blueprintQueries)
+	const blueprintSummaries: EnrichedBlueprintSummary[] = Object.entries(blueprintQueries)
 		.filter(([, query]) => query.isSuccess && query.data)
-		.map(([, query]) => query.data)
+		.map(([, query]) => query.data!)
 		.filter(Boolean);
 
 	const filteredBlueprints = useFilterByTitle(blueprintSummaries);
 
-	const sortedBlueprints = [...filteredBlueprints].sort((a, b) =>
+	const sortedBlueprints = [...filteredBlueprints].sort((a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary): number =>
 	{
 		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-		return dateB - dateA;
+		return dateB.getTime() - dateA.getTime();
 	});
 
 	const formattedTag = tagId.replace(/\//g, ' › ') || '';
