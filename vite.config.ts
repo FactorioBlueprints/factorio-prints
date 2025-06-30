@@ -3,10 +3,11 @@ import react from '@vitejs/plugin-react'
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import { execSync } from 'child_process'
+import type { ConfigEnv, UserConfig } from 'vite'
 
 const version = execSync('git describe --always --tags', { encoding: 'utf8' }).trim()
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
 	define: {
 		'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
 	},
@@ -15,38 +16,28 @@ export default defineConfig(({ mode }) => ({
 			routeFilePrefix   : '',
 			routesDirectory   : './src/routes',
 			generatedRouteTree: './src/routeTree.gen.ts',
-			language          : 'ts',
 			disableTypes      : false,
 			autoCodeSplitting : false,
 		}),
 		react(),
-		// Only upload source maps in production when auth token is available
-		// eslint-disable-next-line no-undef
 		mode === 'production' && process.env.SENTRY_AUTH_TOKEN && sentryVitePlugin({
-			// eslint-disable-next-line no-undef
 			org      : process.env.SENTRY_ORG,
-			// eslint-disable-next-line no-undef
 			project  : process.env.SENTRY_PROJECT,
-			// eslint-disable-next-line no-undef
 			authToken: process.env.SENTRY_AUTH_TOKEN,
 			release  : {
 				name: version,
 			},
 			sourcemaps: {
-				// Upload source maps to Sentry
 				assets                  : './dist/**',
-				// Don't include source maps in the build output after upload
 				filesToDeleteAfterUpload: ['./dist/**/*.map'],
 			},
 		}),
 	].filter(Boolean),
 	build: {
-		sourcemap    : true, // Enable source maps for production builds
+		sourcemap    : true,
 		rollupOptions: {
 			output: {
-				manualChunks: (id) =>
-				{
-					// Keep entitiesWithIcons separate due to size
+				manualChunks: (id: string) => {
 					if (id.includes('entitiesWithIcons')) return 'entities'
 				},
 			},
