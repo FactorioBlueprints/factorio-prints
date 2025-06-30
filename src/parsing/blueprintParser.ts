@@ -53,7 +53,7 @@ export function deserializeBlueprintNoThrow(data: string): RawBlueprintData | nu
 	{
 		return deserializeBlueprint(data);
 	}
-	catch (error)
+	catch
 	{
 		return null;
 	}

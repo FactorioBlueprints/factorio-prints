@@ -1,7 +1,7 @@
 import {createSyncStoragePersister}                     from '@tanstack/query-sync-storage-persister';
 import {QueryCache, QueryClient, QueryClientProvider}   from '@tanstack/react-query';
 import {ReactQueryDevtools}                             from '@tanstack/react-query-devtools';
-import {persistQueryClient, removeOldestQuery}          from '@tanstack/react-query-persist-client';
+import {persistQueryClient}                             from '@tanstack/react-query-persist-client';
 import React, {useEffect}                               from 'react';
 import useBlueprintCacheSync                            from '../hooks/useBlueprintCacheSync';
 import {CACHE_BUSTER, createIDBPersister, STORAGE_KEYS} from '../localStorage';
@@ -66,9 +66,9 @@ function QueryProvider({ children }: QueryProviderProps)
 
 			persistQueryClient({
 				queryClient: queryClient as any,
-				persister: idbPersister,
-				maxAge   : Infinity,
-				buster   : CACHE_BUSTER,
+				persister  : idbPersister,
+				maxAge     : Infinity,
+				buster     : CACHE_BUSTER,
 			});
 		}
 		else if (typeof window !== 'undefined' && window.localStorage)
@@ -82,9 +82,9 @@ function QueryProvider({ children }: QueryProviderProps)
 
 			persistQueryClient({
 				queryClient: queryClient as any,
-				persister: localStoragePersister,
-				maxAge   : Infinity,
-				buster   : CACHE_BUSTER,
+				persister  : localStoragePersister,
+				maxAge     : Infinity,
+				buster     : CACHE_BUSTER,
 			});
 		}
 	}, []);

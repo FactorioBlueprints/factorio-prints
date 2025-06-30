@@ -2,10 +2,11 @@ import {
 	validateRawUser,
 	validateEnrichedUser,
 	type RawUser,
-	type EnrichedUser
+	type EnrichedUser,
 } from '../schemas';
 
-export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null => {
+export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null =>
+{
 	if (!rawUser) return null;
 
 	validateRawUser(rawUser);

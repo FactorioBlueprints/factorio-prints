@@ -3,7 +3,7 @@ import { useFilterByTags } from './useFilterByTags';
 import type { EnrichedBlueprintSummary } from '../schemas';
 
 export const useFilteredBlueprintSummaries = (
-	blueprintSummaries: EnrichedBlueprintSummary[] = []
+	blueprintSummaries: EnrichedBlueprintSummary[] = [],
 ): EnrichedBlueprintSummary[] =>
 {
 	// Filter by title first (usually faster)

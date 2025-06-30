@@ -4,10 +4,12 @@ import React from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { app } from '../base.js';
 
-const Intro: React.FC = () => {
+const Intro: React.FC = () =>
+{
 	const [user] = useAuthState(getAuth(app));
 
-	if (!isEmpty(user)) {
+	if (!isEmpty(user))
+	{
 		return null;
 	}
 

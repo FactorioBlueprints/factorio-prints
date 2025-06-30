@@ -9,39 +9,41 @@ import type { RawBlueprintSummary } from '../schemas';
 vi.mock('../api/firebase');
 
 const mockTagData = {
-	'blueprint1': true,
-	'blueprint2': true,
-	'blueprint3': true,
+	blueprint1: true,
+	blueprint2: true,
+	blueprint3: true,
 };
 
 const mockBlueprintSummary1: RawBlueprintSummary = {
-	title: 'Test Blueprint 1',
-	imgurId: 'img1',
-	imgurType: 'image/png',
+	title            : 'Test Blueprint 1',
+	imgurId          : 'img1',
+	imgurType        : 'image/png',
 	numberOfFavorites: 10,
-	lastUpdatedDate: 1000,
+	lastUpdatedDate  : 1000,
 };
 
 const mockBlueprintSummary2: RawBlueprintSummary = {
-	title: 'Test Blueprint 2',
-	imgurId: 'img2',
-	imgurType: 'image/jpeg',
+	title            : 'Test Blueprint 2',
+	imgurId          : 'img2',
+	imgurType        : 'image/jpeg',
 	numberOfFavorites: 20,
-	lastUpdatedDate: 2000,
+	lastUpdatedDate  : 2000,
 };
 
 const mockBlueprintSummary3: RawBlueprintSummary = {
-	title: 'Test Blueprint 3',
-	imgurId: 'img3',
-	imgurType: 'image/png',
+	title            : 'Test Blueprint 3',
+	imgurId          : 'img3',
+	imgurType        : 'image/png',
 	numberOfFavorites: 30,
-	lastUpdatedDate: 3000,
+	lastUpdatedDate  : 3000,
 };
 
-describe('useRawTagBlueprintSummaries', () => {
+describe('useRawTagBlueprintSummaries', () =>
+{
 	let queryClient: QueryClient;
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: {
@@ -53,8 +55,10 @@ describe('useRawTagBlueprintSummaries', () => {
 		vi.clearAllMocks();
 		vi.mocked(fetchByTagData).mockResolvedValue(mockTagData);
 		vi.mocked(fetchBlueprintSummary)
-			.mockImplementation((blueprintId: string) => {
-				switch (blueprintId) {
+			.mockImplementation((blueprintId: string) =>
+			{
+				switch (blueprintId)
+				{
 					case 'blueprint1':
 						return Promise.resolve(mockBlueprintSummary1);
 					case 'blueprint2':
@@ -70,22 +74,26 @@ describe('useRawTagBlueprintSummaries', () => {
 	const wrapper = ({ children }: { children: React.ReactNode }) =>
 		React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-	it('should throw error for tagId starting with slash', () => {
+	it('should throw error for tagId starting with slash', () =>
+	{
 		expect(() => renderHook(() => useRawTagBlueprintSummaries('/invalid-tag'), { wrapper }))
 			.toThrow('useRawTagBlueprintSummaries: tagId "/invalid-tag" should not start or end with a slash. The normalized tag id should be used for queries.');
 	});
 
-	it('should throw error for tagId ending with slash', () => {
+	it('should throw error for tagId ending with slash', () =>
+	{
 		expect(() => renderHook(() => useRawTagBlueprintSummaries('invalid-tag/'), { wrapper }))
 			.toThrow('useRawTagBlueprintSummaries: tagId "invalid-tag/" should not start or end with a slash. The normalized tag id should be used for queries.');
 	});
 
-	it('should throw error for tagId both starting and ending with slash', () => {
+	it('should throw error for tagId both starting and ending with slash', () =>
+	{
 		expect(() => renderHook(() => useRawTagBlueprintSummaries('/invalid-tag/'), { wrapper }))
 			.toThrow('useRawTagBlueprintSummaries: tagId "/invalid-tag/" should not start or end with a slash. The normalized tag id should be used for queries.');
 	});
 
-	it('should not fetch when tagId is empty', () => {
+	it('should not fetch when tagId is empty', () =>
+	{
 		const { result } = renderHook(() => useRawTagBlueprintSummaries(''), { wrapper });
 
 		expect(result.current.tagQuery.isLoading).toBe(false);
@@ -93,7 +101,8 @@ describe('useRawTagBlueprintSummaries', () => {
 		expect(fetchByTagData).not.toHaveBeenCalled();
 	});
 
-	it('should fetch tag data and blueprint summaries successfully', async () => {
+	it('should fetch tag data and blueprint summaries successfully', async () =>
+	{
 		const { result } = renderHook(() => useRawTagBlueprintSummaries('category/subcategory'), { wrapper });
 
 		// Initially loading tag data
@@ -124,7 +133,8 @@ describe('useRawTagBlueprintSummaries', () => {
 		expect(result.current.isSuccess).toBe(true);
 	});
 
-	it('should handle empty tag data', async () => {
+	it('should handle empty tag data', async () =>
+	{
 		vi.mocked(fetchByTagData).mockResolvedValue({});
 
 		const { result } = renderHook(() => useRawTagBlueprintSummaries('empty-tag'), { wrapper });
@@ -141,7 +151,8 @@ describe('useRawTagBlueprintSummaries', () => {
 		expect(fetchBlueprintSummary).not.toHaveBeenCalled();
 	});
 
-	it('should handle tag query error', async () => {
+	it('should handle tag query error', async () =>
+	{
 		const tagError = new Error('Failed to fetch tag data');
 		vi.mocked(fetchByTagData).mockRejectedValue(tagError);
 
@@ -158,7 +169,8 @@ describe('useRawTagBlueprintSummaries', () => {
 		expect(fetchBlueprintSummary).not.toHaveBeenCalled();
 	});
 
-	it('should handle blueprint query errors', async () => {
+	it('should handle blueprint query errors', async () =>
+	{
 		const blueprintError = new Error('Failed to fetch blueprint summary');
 		vi.mocked(fetchBlueprintSummary)
 			.mockResolvedValueOnce(mockBlueprintSummary1)
@@ -171,7 +183,8 @@ describe('useRawTagBlueprintSummaries', () => {
 		await waitFor(() => expect(result.current.tagQuery.isSuccess).toBe(true));
 
 		// Wait for blueprint queries to settle
-		await waitFor(() => {
+		await waitFor(() =>
+		{
 			const queries = Object.values(result.current.blueprintQueries);
 			return queries.every(q => !q.isLoading);
 		});
@@ -190,10 +203,12 @@ describe('useRawTagBlueprintSummaries', () => {
 		expect(result.current.isSuccess).toBe(false);
 	});
 
-	it('should not enable blueprint queries until tag query succeeds', async () => {
+	it('should not enable blueprint queries until tag query succeeds', async () =>
+	{
 		// Mock tag query to be slow
 		let resolveTagQuery: (value: Record<string, boolean>) => void;
-		const tagPromise = new Promise<Record<string, boolean>>((resolve) => {
+		const tagPromise = new Promise<Record<string, boolean>>((resolve) =>
+		{
 			resolveTagQuery = resolve;
 		});
 		vi.mocked(fetchByTagData).mockReturnValue(tagPromise);
@@ -215,7 +230,8 @@ describe('useRawTagBlueprintSummaries', () => {
 		await waitFor(() => expect(fetchBlueprintSummary).toHaveBeenCalled());
 	});
 
-	it('should use correct query keys for caching', async () => {
+	it('should use correct query keys for caching', async () =>
+	{
 		const { result } = renderHook(() => useRawTagBlueprintSummaries('cache-test-tag'), { wrapper });
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -230,7 +246,8 @@ describe('useRawTagBlueprintSummaries', () => {
 	});
 
 
-	it('should return correct structure with all expected properties', async () => {
+	it('should return correct structure with all expected properties', async () =>
+	{
 		const { result } = renderHook(() => useRawTagBlueprintSummaries('structure-test-tag'), { wrapper });
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));

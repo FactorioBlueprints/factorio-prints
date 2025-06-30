@@ -13,7 +13,8 @@ export const useEnrichedSummaries = (blueprintSummaries: SummaryWithKey[] | null
 			return [];
 		}
 
-		const enrichedSummaries = blueprintSummaries.map(summary => {
+		const enrichedSummaries = blueprintSummaries.map(summary =>
+		{
 			const { key, ...rawSummary } = summary;
 			return enrichBlueprintSummary(rawSummary as RawBlueprintSummary, key);
 		}).filter((summary): summary is EnrichedBlueprintSummary => summary !== null);

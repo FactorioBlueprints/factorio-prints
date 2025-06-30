@@ -15,13 +15,13 @@ type PageParam = {
  */
 export const useRawPaginatedBlueprintSummaries = (
 	pageSize = 60,
-	orderByField = 'lastUpdatedDate'
+	orderByField = 'lastUpdatedDate',
 ) =>
 {
 	return useInfiniteQuery<RawBlueprintSummaryPage, Error, RawBlueprintSummaryPage, any, PageParam>({
-		queryKey: ['rawPaginatedBlueprintSummaries', 'orderBy', orderByField],
+		queryKey        : ['rawPaginatedBlueprintSummaries', 'orderBy', orderByField],
 		initialPageParam: { lastKey: null, lastValue: null },
-		queryFn : async ({ pageParam }) =>
+		queryFn         : async ({ pageParam }) =>
 		{
 			const param = pageParam ?? { lastKey: null, lastValue: null };
 			return await fetchPaginatedSummaries(

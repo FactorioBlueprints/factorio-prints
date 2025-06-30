@@ -4,7 +4,7 @@ import type { RawPaginatedBlueprintSummaries, RawBlueprintSummary } from '../sch
 type SummaryWithKey = RawBlueprintSummary & { key: string };
 
 export const useFlattenedPaginatedSummaries = (
-	paginatedData: RawPaginatedBlueprintSummaries | null | undefined
+	paginatedData: RawPaginatedBlueprintSummaries | null | undefined,
 ): SummaryWithKey[] =>
 {
 	return useMemo(() =>

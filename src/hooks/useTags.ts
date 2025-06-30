@@ -44,10 +44,11 @@ export const useTags = () =>
 
 	const processedData = useMemo(() =>
 	{
-		if (!data) {
+		if (!data)
+		{
 			return {
 				tagHierarchy: {},
-				tags: [],
+				tags        : [],
 			};
 		}
 		const tags = buildTagOptions(data);

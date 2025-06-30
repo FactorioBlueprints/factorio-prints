@@ -1,12 +1,15 @@
+/// <reference lib="webworker" />
 // Kill switch service worker - unregisters itself and clears all caches
-declare const self: ServiceWorkerGlobalScope;
 
-self.addEventListener('install', (): void => {
+self.addEventListener('install', (): void =>
+{
 	self.skipWaiting();
 });
 
-self.addEventListener('activate', async (event: ExtendableEvent): Promise<void> => {
-	event.waitUntil((async (): Promise<void> => {
+self.addEventListener('activate', async (event: ExtendableEvent): Promise<void> =>
+{
+	event.waitUntil((async (): Promise<void> =>
+	{
 		const cacheNames: string[] = await caches.keys();
 		await Promise.all(cacheNames.map((name: string) => caches.delete(name)));
 

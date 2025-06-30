@@ -4,7 +4,6 @@ import flatMap from 'lodash/flatMap';
 import forOwn from 'lodash/forOwn';
 import { countBy } from 'lodash';
 import fpFlatMap from 'lodash/fp/flatMap';
-import flow from 'lodash/fp/flow';
 import fromPairs from 'lodash/fp/fromPairs';
 import fpMap from 'lodash/fp/map';
 import reject from 'lodash/fp/reject';
@@ -12,7 +11,6 @@ import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
-import identity from 'lodash/identity';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
@@ -43,7 +41,8 @@ const allBeltTypes = [
 	...slowBeltTypes,
 ];
 
-export const generateEntityHistogram = (parsedBlueprint: any): Array<[string, number]> => {
+export const generateEntityHistogram = (parsedBlueprint: any): Array<[string, number]> =>
+{
 	const entities: any[] = concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []);
 	const counts = countBy(entities, (entity: any) => entity.name);
 	const pairs = toPairs(counts) as Array<[string, number]>;

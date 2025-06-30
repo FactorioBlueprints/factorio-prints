@@ -11,7 +11,7 @@ import type { RawBlueprintSummary } from '../schemas';
  */
 const useRawBlueprintSummaries = (
 	blueprintsData: Record<string, boolean> | null | undefined,
-	blueprintsSuccess: boolean
+	blueprintsSuccess: boolean,
 ): {
 	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>>;
 	rawBlueprintSummaries: RawBlueprintSummary[];

@@ -37,7 +37,15 @@
       "src/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "eslint.config.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "tanstack-router.config.ts",
+    "test/**/*.ts",
+    "public/**/*.ts"
+  ],
   "exclude": ["src/**/*.gen.ts"],
   "references": []
 }

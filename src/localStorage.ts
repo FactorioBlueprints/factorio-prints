@@ -29,7 +29,7 @@ interface DebouncedFunction<T extends (...args: any[]) => any> {
 function debounce<T extends (...args: any[]) => any>(
 	func: T,
 	wait: number,
-	options: DebounceOptions = {}
+	options: DebounceOptions = {},
 ): DebouncedFunction<T>
 {
 	let lastArgs: Parameters<T> | undefined;
@@ -44,7 +44,8 @@ function debounce<T extends (...args: any[]) => any>(
 	const maxing = 'maxWait' in options;
 	maxWait = maxing ? Math.max(options.maxWait || 0, wait) : 0;
 
-	function invokeFunc(time: number): ReturnType<T> {
+	function invokeFunc(time: number): ReturnType<T>
+	{
 		const args = lastArgs;
 		const thisArg = lastThis;
 
@@ -54,15 +55,18 @@ function debounce<T extends (...args: any[]) => any>(
 		return result;
 	}
 
-	function startTimer(pendingFunc: () => void, wait: number): ReturnType<typeof setTimeout> {
+	function startTimer(pendingFunc: () => void, wait: number): ReturnType<typeof setTimeout>
+	{
 		return setTimeout(pendingFunc, wait);
 	}
 
-	function cancelTimer(id: ReturnType<typeof setTimeout>): void {
+	function cancelTimer(id: ReturnType<typeof setTimeout>): void
+	{
 		clearTimeout(id);
 	}
 
-	function shouldInvoke(time: number): boolean {
+	function shouldInvoke(time: number): boolean
+	{
 		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 
@@ -70,23 +74,27 @@ function debounce<T extends (...args: any[]) => any>(
 			|| timeSinceLastCall < 0 || (maxing && timeSinceLastInvoke >= maxWait));
 	}
 
-	function trailingEdge(time: number): ReturnType<T> {
+	function trailingEdge(time: number): ReturnType<T>
+	{
 		timerId = undefined;
 
-		if (trailing && lastArgs) {
+		if (trailing && lastArgs)
+		{
 			return invokeFunc(time);
 		}
 		lastArgs = lastThis = undefined;
 		return result;
 	}
 
-	function leadingEdge(time: number): ReturnType<T> {
+	function leadingEdge(time: number): ReturnType<T>
+	{
 		lastInvokeTime = time;
 		timerId = startTimer(timerExpired, wait);
 		return leading ? invokeFunc(time) : result;
 	}
 
-	function remainingWait(time: number): number {
+	function remainingWait(time: number): number
+	{
 		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 		const timeWaiting = wait - timeSinceLastCall;
@@ -96,10 +104,12 @@ function debounce<T extends (...args: any[]) => any>(
 			: timeWaiting;
 	}
 
-	function timerExpired(): void {
+	function timerExpired(): void
+	{
 		const time = Date.now();
 
-		if (shouldInvoke(time)) {
+		if (shouldInvoke(time))
+		{
 			trailingEdge(time);
 			return;
 		}
@@ -107,7 +117,8 @@ function debounce<T extends (...args: any[]) => any>(
 		timerId = startTimer(timerExpired, remainingWait(time));
 	}
 
-	function debounced(this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T> {
+	function debounced(this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T>
+	{
 		const time = Date.now();
 		const isInvoking = shouldInvoke(time);
 
@@ -115,34 +126,42 @@ function debounce<T extends (...args: any[]) => any>(
 		lastThis = this;
 		lastCallTime = time;
 
-		if (isInvoking) {
-			if (timerId === undefined) {
+		if (isInvoking)
+		{
+			if (timerId === undefined)
+			{
 				return leadingEdge(lastCallTime);
 			}
-			if (maxing) {
+			if (maxing)
+			{
 				timerId = startTimer(timerExpired, wait);
 				return invokeFunc(lastCallTime);
 			}
 		}
-		if (timerId === undefined) {
+		if (timerId === undefined)
+		{
 			timerId = startTimer(timerExpired, wait);
 		}
 		return result;
 	}
 
-	debounced.cancel = function(): void {
-		if (timerId !== undefined) {
+	debounced.cancel = function(): void
+	{
+		if (timerId !== undefined)
+		{
 			cancelTimer(timerId);
 		}
 		lastInvokeTime = 0;
 		lastArgs = lastCallTime = lastThis = timerId = undefined;
 	};
 
-	debounced.flush = function(): ReturnType<T> {
+	debounced.flush = function(): ReturnType<T>
+	{
 		return timerId === undefined ? result : trailingEdge(Date.now());
 	};
 
-	debounced.pending = function(): boolean {
+	debounced.pending = function(): boolean
+	{
 		return timerId !== undefined;
 	};
 
@@ -188,15 +207,15 @@ function getWorker()
 							// 📊 Log to Sentry for monitoring
 							Sentry.captureMessage('IndexedDB connection closing', {
 								level: 'info',
-								tags: {
+								tags : {
 									component: 'localStorage',
-									errorType: 'connection-closing'
+									errorType: 'connection-closing',
 								},
 								extra: {
-									errorMessage: error.message,
+									errorMessage : error.message,
 									operationType: e.data.type,
-									key: e.data.key
-								}
+									key          : e.data.key,
+								},
 							});
 							pendingOp.resolve(undefined);
 						}
@@ -261,7 +280,8 @@ async function workerOperation(type: string, key: string, data = null)
 		const timeoutDuration = 10000;
 		const startTime = Date.now();
 
-		setTimeout(() => {
+		setTimeout(() =>
+		{
 			if (pendingOperations.has(id))
 			{
 				pendingOperations.delete(id);
@@ -270,25 +290,26 @@ async function workerOperation(type: string, key: string, data = null)
 
 				Sentry.captureMessage('IndexedDB operation timeout', {
 					level: 'warning',
-					tags: {
-						component: 'localStorage',
-						errorType: 'timeout',
+					tags : {
+						component    : 'localStorage',
+						errorType    : 'timeout',
 						operationType: type,
-						database: 'FACTORIO_PRINTS_QUERY_CACHE'
+						database     : 'FACTORIO_PRINTS_QUERY_CACHE',
 					},
 					extra: {
-						operationType: type,
-						key: key,
-						timeout: timeoutDuration,
+						operationType : type,
+						key           : key,
+						timeout       : timeoutDuration,
 						actualDuration: duration,
-						userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined
-					}
+						userAgent     : typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+					},
 				});
 
-				if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
+				if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE)
+				{
 					console.warn('[IndexedDB] Query cache timeout - clearing cache');
 					del(key, indexedDbStore).catch(err =>
-						console.error('[IndexedDB] Failed to clear cache after timeout:', err)
+						console.error('[IndexedDB] Failed to clear cache after timeout:', err),
 					);
 				}
 
@@ -326,7 +347,8 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 	// and limits executions to once every 10 seconds maximum
 	const debouncedPersist = debounce(async (client: any) =>
 	{
-		try {
+		try
+		{
 			const dataSize = JSON.stringify(client).length;
 			const formattedSize = formatBytes(dataSize);
 			console.log(`[IndexedDB] Persisting client data of size: ${formattedSize}`);
@@ -334,106 +356,135 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 			await workerOperation('set', idbValidKey, client);
 
 			console.log('[IndexedDB] Persistence complete');
-		} catch (error) {
+		}
+		catch (error)
+		{
 			console.error('[IndexedDB] Error persisting to IndexedDB:', error);
 			throw error;
 		}
 	}, 2000, { maxWait: 10000 });
 
 	return {
-		persistClient: async (client: any) => {
+		persistClient: async (client: any) =>
+		{
 			// Use the debounced version for persistence
 			return debouncedPersist(client);
 		},
-		restoreClient: async () => {
-			try {
+		restoreClient: async () =>
+		{
+			try
+			{
 				const startTime = Date.now();
 				const result = await workerOperation('get', idbValidKey) as { data?: any } | undefined;
 				const duration = Date.now() - startTime;
 
-				if (result?.data) {
+				if (result?.data)
+				{
 					const dataSize = JSON.stringify(result.data).length;
 					const formattedSize = formatBytes(dataSize);
 					console.log(`[IndexedDB] Restored data size: ${formattedSize} in ${duration}ms`);
 
-					if (duration > 5000) {
+					if (duration > 5000)
+					{
 						Sentry.captureMessage('IndexedDB slow restore', {
 							level: 'info',
-							tags: {
+							tags : {
 								component: 'localStorage',
-								errorType: 'slow-restore'
+								errorType: 'slow-restore',
 							},
 							extra: {
-								duration: duration,
-								dataSize: dataSize,
-								formattedSize: formattedSize
-							}
+								duration     : duration,
+								dataSize     : dataSize,
+								formattedSize: formattedSize,
+							},
 						});
 					}
 				}
 
 				return result?.data;
-			} catch (error) {
+			}
+			catch (error)
+			{
 				console.error('[IndexedDB] Error restoring from IndexedDB:', error);
 
 				Sentry.captureException(error, {
 					tags: {
 						component: 'localStorage',
-						errorType: 'restore-error'
+						errorType: 'restore-error',
 					},
 					extra: {
-						key: idbValidKey
-					}
+						key: idbValidKey,
+					},
 				});
 
-				try {
+				try
+				{
 					await workerOperation('delete', idbValidKey);
 					console.log('[IndexedDB] Cleared cache after restore error');
-				} catch (deleteError) {
+				}
+				catch (deleteError)
+				{
 					console.error('[IndexedDB] Failed to clear cache:', deleteError);
 				}
 
 				return undefined;
 			}
 		},
-		removeClient: async () => {
-			try {
+		removeClient: async () =>
+		{
+			try
+			{
 				await workerOperation('delete', idbValidKey);
-			} catch (error) {
+			}
+			catch (error)
+			{
 				console.error('[IndexedDB] Error removing from IndexedDB:', error);
 			}
 		},
 	};
 }
 
-export const saveToStorage = (key: string, data: any): boolean => {
-	try {
+export const saveToStorage = (key: string, data: any): boolean =>
+{
+	try
+	{
 		const serializedData = JSON.stringify(data);
 		localStorage.setItem(key, serializedData);
 		return true;
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.error('Error saving to localStorage:', error);
 		return false;
 	}
 };
 
-export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null => {
-	try {
+export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null =>
+{
+	try
+	{
 		const serializedData = localStorage.getItem(key);
-		if (serializedData === null) {
+		if (serializedData === null)
+		{
 			return defaultValue;
 		}
 		return JSON.parse(serializedData) as T;
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.error('Error loading from localStorage:', error);
 		return defaultValue;
 	}
 };
 
-export const removeFromStorage = (key: string): void => {
-	try {
+export const removeFromStorage = (key: string): void =>
+{
+	try
+	{
 		localStorage.removeItem(key);
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.error('Error removing from localStorage:', error);
 	}
 };

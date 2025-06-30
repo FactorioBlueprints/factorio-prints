@@ -9,13 +9,17 @@ interface SignalID {
     quality?: Quality;
 }
 
-function getUrlType(type: SignalType) {
-    if (type === 'virtual') {
-        return 'virtual-signal';
-    } else if (type === 'planet') {
-        return 'space-location';
-    }
-    return type;
+function getUrlType(type: SignalType)
+{
+	if (type === 'virtual')
+	{
+		return 'virtual-signal';
+	}
+	else if (type === 'planet')
+	{
+		return 'space-location';
+	}
+	return type;
 }
 
 interface FactorioIconProps {
@@ -24,51 +28,55 @@ interface FactorioIconProps {
     size: 'small' | 'large';
 }
 
-function getQualityNode(icon: SignalID) {
-    if (!icon.quality) {
-        return null;
-    }
+function getQualityNode(icon: SignalID)
+{
+	if (!icon.quality)
+	{
+		return null;
+	}
 
-    return (
-        <img
-            loading="lazy"
-            className={styles.iconQuality}
-            src={`https://factorio-icon-cdn.pages.dev/quality/${icon.quality}.webp`}
-            alt={icon.quality}
-            title={`Quality: ${icon.quality}`}
-            data-testid="quality"
-        />
-    );
+	return (
+		<img
+			loading='lazy'
+			className={styles.iconQuality}
+			src={`https://factorio-icon-cdn.pages.dev/quality/${icon.quality}.webp`}
+			alt={icon.quality}
+			title={`Quality: ${icon.quality}`}
+			data-testid='quality'
+		/>
+	);
 }
 
-export const FactorioIcon = ({id, icon, size}: FactorioIconProps) => {
-    if (!icon) {
-        return null;
-    }
+export const FactorioIcon = ({id, icon, size}: FactorioIconProps) =>
+{
+	if (!icon)
+	{
+		return null;
+	}
 
-    const type = icon.type ?? 'item';
+	const type = icon.type ?? 'item';
 
-    const urlType = getUrlType(type);
+	const urlType = getUrlType(type);
 
-    const sizeClass = size === 'small' ? styles.smallSquare : styles.largeSquare;
+	const sizeClass = size === 'small' ? styles.smallSquare : styles.largeSquare;
 
-    const qualityNode = getQualityNode(icon);
+	const qualityNode = getQualityNode(icon);
 
-    return (
-        <div
-            data-testid="iconParent"
-            className={`${styles.iconParent} ${sizeClass}`}
-            id={id}
-        >
-            <img
-                data-testid="icon"
-                loading="lazy"
-                className={styles.icon}
-                src={`https://factorio-icon-cdn.pages.dev/${urlType}/${icon.name}.webp`}
-                alt={icon.name}
-                title={`${type}: ${icon.name}`}
-            />
-            {qualityNode}
-        </div>
-    );
+	return (
+		<div
+			data-testid='iconParent'
+			className={`${styles.iconParent} ${sizeClass}`}
+			id={id}
+		>
+			<img
+				data-testid='icon'
+				loading='lazy'
+				className={styles.icon}
+				src={`https://factorio-icon-cdn.pages.dev/${urlType}/${icon.name}.webp`}
+				alt={icon.name}
+				title={`${type}: ${icon.name}`}
+			/>
+			{qualityNode}
+		</div>
+	);
 };

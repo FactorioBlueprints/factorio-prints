@@ -2,14 +2,16 @@ import {
 	validateRawUserFavorites,
 	validateEnrichedUserFavorites,
 	type RawUserFavorites,
-	type EnrichedUserFavorites
+	type EnrichedUserFavorites,
 } from '../schemas';
 
-export const enrichUserFavorites = (rawUserFavorites: RawUserFavorites | null): EnrichedUserFavorites | null => {
-	if (!rawUserFavorites) {
+export const enrichUserFavorites = (rawUserFavorites: RawUserFavorites | null): EnrichedUserFavorites | null =>
+{
+	if (!rawUserFavorites)
+	{
 		return {
 			favoriteIds: {},
-			count: 0,
+			count      : 0,
 		};
 	}
 

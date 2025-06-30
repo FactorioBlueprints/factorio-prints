@@ -347,7 +347,7 @@ const Create: React.FC = () =>
 		// Use mutation hook with raw data
 		createBlueprintMutation.mutate({
 			formData: state.blueprint,
-			user: user!,
+			user    : user!,
 		}, {
 			onSuccess: () =>
 			{
@@ -374,7 +374,7 @@ const Create: React.FC = () =>
 		// Use mutation hook with raw data (force)
 		createBlueprintMutation.mutate({
 			formData: state.blueprint,
-			user: user!,
+			user    : user!,
 		}, {
 			onSuccess: () =>
 			{

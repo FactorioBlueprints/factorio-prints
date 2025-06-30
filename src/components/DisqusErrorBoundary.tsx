@@ -10,20 +10,25 @@ interface State {
 	hasError: boolean;
 }
 
-class DisqusErrorBoundary extends Component<Props, State> {
-	constructor(props: Props) {
+class DisqusErrorBoundary extends Component<Props, State>
+{
+	constructor(props: Props)
+	{
 		super(props);
 		this.state = { hasError: false };
 	}
 
-	static getDerivedStateFromError(): State {
+	static getDerivedStateFromError(): State
+	{
 		return { hasError: true };
 	}
 
-	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+	componentDidCatch(error: Error, errorInfo: React.ErrorInfo)
+	{
 		// Filter out cross-origin errors from Disqus
-		if (error.message?.includes('cross-origin frame') ||
-		    error.message?.includes('Blocked a frame')) {
+		if (error.message?.includes('cross-origin frame')
+		    || error.message?.includes('Blocked a frame'))
+		{
 			console.warn('Disqus cross-origin error caught and suppressed:', error.message);
 			// Don't send these errors to Sentry
 			return;
@@ -42,10 +47,12 @@ class DisqusErrorBoundary extends Component<Props, State> {
 		});
 	}
 
-	render() {
-		if (this.state.hasError) {
+	render()
+	{
+		if (this.state.hasError)
+		{
 			return this.props.fallback || (
-				<div className="alert alert-info">
+				<div className='alert alert-info'>
 					<p>Comments are temporarily unavailable.</p>
 				</div>
 			);

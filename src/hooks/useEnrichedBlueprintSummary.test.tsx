@@ -11,21 +11,21 @@ vi.mock('./useRawBlueprintSummary');
 vi.mock('../utils/enrichBlueprintSummary');
 
 // Helper function to create a partial UseQueryResult with defaults
-const createMockQueryResult = <T,>(overrides: Partial<UseQueryResult<T, Error>>): UseQueryResult<T, Error> => ({
-	data: undefined,
-	error: null,
-	isError: false,
-	isLoading: false,
-	isSuccess: false,
-	isPending: false,
-	status: 'pending',
-	fetchStatus: 'idle',
-	isFetching: false,
-	isStale: false,
-	isRefetching: false,
+const _createMockQueryResult = <T,>(overrides: Partial<UseQueryResult<T, Error>>): UseQueryResult<T, Error> => ({
+	data          : undefined,
+	error         : null,
+	isError       : false,
+	isLoading     : false,
+	isSuccess     : false,
+	isPending     : false,
+	status        : 'pending',
+	fetchStatus   : 'idle',
+	isFetching    : false,
+	isStale       : false,
+	isRefetching  : false,
 	isLoadingError: false,
 	isRefetchError: false,
-	refetch: vi.fn(),
+	refetch       : vi.fn(),
 	...overrides,
 } as UseQueryResult<T, Error>);
 

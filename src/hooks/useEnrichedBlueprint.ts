@@ -5,7 +5,7 @@ import type { EnrichedBlueprint, EnrichedBlueprintSummary } from '../schemas';
 
 export const useEnrichedBlueprint = (
 	blueprintId: string,
-	blueprintSummary: EnrichedBlueprintSummary | null
+	blueprintSummary: EnrichedBlueprintSummary | null,
 ) =>
 {
 	const rawBlueprintQuery = useRawBlueprint(blueprintId, blueprintSummary);
