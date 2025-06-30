@@ -1,9 +1,13 @@
 import React, { useEffect } from 'react';
 
-const GoogleAd = () =>
-{
-	useEffect(() =>
-	{
+declare global {
+	interface Window {
+		adsbygoogle: unknown[];
+	}
+}
+
+const GoogleAd: React.FC = () => {
+	useEffect(() => {
 		(window.adsbygoogle = window.adsbygoogle || []).push({});
 	}, []);
 
