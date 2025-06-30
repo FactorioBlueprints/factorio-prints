@@ -4,7 +4,7 @@ import {getDatabase, push, ref, serverTimestamp, update as dbUpdate} from 'fireb
 import {User}                                                        from 'firebase/auth';
 import {app}                                                         from '../base';
 import flatMap                                                       from 'lodash/flatMap';
-import {validateRawBlueprintSummary, validateRawPaginatedBlueprintSummaries} from '../schemas';
+import {validateRawBlueprintSummary, validateRawPaginatedBlueprintSummaries, validateRawUserBlueprints} from '../schemas';
 
 interface CreateBlueprintFormData {
 	title: string;
@@ -219,16 +219,14 @@ export const useCreateBlueprint = () =>
 			queryClient.setQueryData(summaryKey, blueprintSummary);
 
 			const userBlueprintsKey  = ['users', 'userId', authorId, 'blueprints'];
-			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey) as Record<string, boolean> | undefined;
+			const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
+			const userBlueprintsData = validateRawUserBlueprints(userBlueprintsDataRaw);
 
-			if (userBlueprintsData)
-			{
-				// Add the new blueprint to the user's blueprints object
-				queryClient.setQueryData(userBlueprintsKey, {
-					...userBlueprintsData,
-					[blueprintId]: true,
-				});
-			}
+			// Add the new blueprint to the user's blueprints object
+			queryClient.setQueryData(userBlueprintsKey, {
+				...userBlueprintsData,
+				[blueprintId]: true,
+			});
 
 			const availableTagsKey = ['tags'];
 			const availableTags = queryClient.getQueryData(availableTagsKey) || [];
@@ -238,10 +236,11 @@ export const useCreateBlueprint = () =>
 				availableTags.forEach(tag =>
 				{
 					const tagKey = ['byTag', tag];
-					const tagData = queryClient.getQueryData(tagKey);
+					const tagDataRaw = queryClient.getQueryData(tagKey);
 
-					if (tagData && typeof tagData === 'object')
+					if (tagDataRaw && typeof tagDataRaw === 'object')
 					{
+						const tagData = validateRawUserBlueprints(tagDataRaw);
 						const hasTag = (formData.tags || []).includes(tag);
 
 						if (hasTag)
@@ -253,7 +252,7 @@ export const useCreateBlueprint = () =>
 						}
 						else if (blueprintId in tagData)
 						{
-							const { [blueprintId]: _, ...rest } = tagData as Record<string, unknown>;
+							const { [blueprintId]: _, ...rest } = tagData;
 							queryClient.setQueryData(tagKey, rest);
 						}
 					}

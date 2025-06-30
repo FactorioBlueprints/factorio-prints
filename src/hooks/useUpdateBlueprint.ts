@@ -9,7 +9,7 @@ import {
 	update as dbUpdate,
 }                                                                  from 'firebase/database';
 import {app}                                                       from '../base';
-import {validateRawBlueprint, validateRawBlueprintSummary}         from '../schemas';
+import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserBlueprints}         from '../schemas';
 import type {RawBlueprint, ImgurImage}                             from '../schemas';
 
 interface UpdateBlueprintFormData {
@@ -112,11 +112,12 @@ export const useUpdateBlueprint = () =>
 			const unixTimestamp = now.getTime();
 
 			const blueprintKey = ['blueprints', 'blueprintId', blueprintId];
-			const existingBlueprint = queryClient.getQueryData(blueprintKey);
+			const existingBlueprintData = queryClient.getQueryData(blueprintKey);
+			const existingBlueprint = validateRawBlueprint(existingBlueprintData);
 
 			// Build the updated raw blueprint
 			const updatedBlueprint: Record<string, unknown> = {
-				...(existingBlueprint as Record<string, unknown>),
+				...existingBlueprint,
 				title              : variables.formData.title,
 				blueprintString    : variables.formData.blueprintString,
 				descriptionMarkdown: variables.formData.descriptionMarkdown,
@@ -147,44 +148,28 @@ export const useUpdateBlueprint = () =>
 				}
 			}
 
-			try
-			{
-				const validatedBlueprint = validateRawBlueprint(updatedBlueprint);
-				queryClient.setQueryData(blueprintKey, validatedBlueprint);
-			}
-			catch (error)
-			{
-				console.error('Failed to validate blueprint for cache update:', error);
-			}
+			const validatedBlueprint = validateRawBlueprint(updatedBlueprint);
+			queryClient.setQueryData(blueprintKey, validatedBlueprint);
 
 			const summaryKey = ['blueprintSummaries', 'blueprintId', blueprintId];
-			const existingSummary = queryClient.getQueryData(summaryKey);
+			const existingSummaryData = queryClient.getQueryData(summaryKey);
+			const existingSummary = validateRawBlueprintSummary(existingSummaryData);
 
-			if (existingSummary)
+			const updatedSummary: Record<string, unknown> = {
+				...existingSummary,
+				title          : variables.formData.title,
+				lastUpdatedDate: unixTimestamp,
+			};
+
+			const blueprintImage = updatedBlueprint.image as ImgurImage | undefined;
+			if (blueprintImage)
 			{
-				const updatedSummary: Record<string, unknown> = {
-					...(existingSummary as Record<string, unknown>),
-					title          : variables.formData.title,
-					lastUpdatedDate: unixTimestamp,
-				};
-
-				const blueprintImage = updatedBlueprint.image as ImgurImage | undefined;
-				if (blueprintImage)
-				{
-					updatedSummary.imgurId = blueprintImage.id;
-					updatedSummary.imgurType = blueprintImage.type;
-				}
-
-				try
-				{
-					const validatedSummary = validateRawBlueprintSummary(updatedSummary);
-					queryClient.setQueryData(summaryKey, validatedSummary);
-				}
-				catch (error)
-				{
-					console.error('Failed to validate summary for cache update:', error);
-				}
+				updatedSummary.imgurId = blueprintImage.id;
+				updatedSummary.imgurType = blueprintImage.type;
 			}
+
+			const validatedSummary = validateRawBlueprintSummary(updatedSummary);
+			queryClient.setQueryData(summaryKey, validatedSummary);
 
 			// Invalidate queries that depend on lastUpdatedDate ordering
 			const lastUpdatedDateKey = ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'];
@@ -194,22 +179,27 @@ export const useUpdateBlueprint = () =>
 			variables.availableTags.forEach(tag =>
 			{
 				const tagKey = ['byTag', tag];
-				const tagData = queryClient.getQueryData(tagKey) as Record<string, boolean> | undefined;
+				const tagDataRaw = queryClient.getQueryData(tagKey);
 
-				if (tagData && tagData[blueprintId])
+				if (tagDataRaw)
 				{
-					const { [blueprintId]: _, ...rest } = tagData;
-					queryClient.setQueryData(tagKey, rest);
+					const tagData = validateRawUserBlueprints(tagDataRaw);
+					if (tagData[blueprintId])
+					{
+						const { [blueprintId]: _, ...rest } = tagData;
+						queryClient.setQueryData(tagKey, rest);
+					}
 				}
 			});
 
 			variables.formData.tags.forEach(tag =>
 			{
 				const tagKey = ['byTag', tag];
-				const tagData = queryClient.getQueryData(tagKey) as Record<string, boolean> | undefined;
+				const tagDataRaw = queryClient.getQueryData(tagKey);
 
-				if (tagData)
+				if (tagDataRaw)
 				{
+					const tagData = validateRawUserBlueprints(tagDataRaw);
 					queryClient.setQueryData(tagKey, {
 						...tagData,
 						[blueprintId]: true,
@@ -251,14 +241,12 @@ export const useDeleteBlueprint = () =>
 			queryClient.invalidateQueries({ queryKey: lastUpdatedDateKey });
 
 			const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
-			const userBlueprintsData = queryClient.getQueryData(userBlueprintsKey) as Record<string, boolean> | undefined;
+			const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
+			const userBlueprintsData = validateRawUserBlueprints(userBlueprintsDataRaw);
 
-			if (userBlueprintsData)
-			{
-				// Create a new object without the deleted blueprint
-				const { [id]: _, ...updatedUserBlueprints } = userBlueprintsData;
-				queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
-			}
+			// Create a new object without the deleted blueprint
+			const { [id]: _, ...updatedUserBlueprints } = userBlueprintsData;
+			queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
 
 			// Invalidate user blueprint queries to ensure UI refreshes
 			queryClient.invalidateQueries({ queryKey: userBlueprintsKey });
@@ -266,12 +254,16 @@ export const useDeleteBlueprint = () =>
 			tags.forEach(tag =>
 			{
 				const tagKey = ['byTag', tag];
-				const tagData = queryClient.getQueryData(tagKey) as Record<string, boolean> | undefined;
+				const tagDataRaw = queryClient.getQueryData(tagKey);
 
-				if (tagData && tagData[id])
+				if (tagDataRaw)
 				{
-					const { [id]: _, ...rest } = tagData;
-					queryClient.setQueryData(tagKey, rest);
+					const tagData = validateRawUserBlueprints(tagDataRaw);
+					if (tagData[id])
+					{
+						const { [id]: _, ...rest } = tagData;
+						queryClient.setQueryData(tagKey, rest);
+					}
 				}
 			});
 
