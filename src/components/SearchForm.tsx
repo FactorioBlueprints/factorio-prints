@@ -8,11 +8,11 @@ import InputGroup         from 'react-bootstrap/InputGroup';
 
 import {searchParamsStore} from '../store/searchParamsStore';
 
-const SearchForm = () =>
+const SearchForm: React.FC = () =>
 {
 	const titleFilter = useStore(searchParamsStore, state => state.titleFilter);
 
-	const filterOnTitle = (title) =>
+	const filterOnTitle = (title: string): void =>
 	{
 		if (title === undefined)
 		{
@@ -28,15 +28,15 @@ const SearchForm = () =>
 		console.log('SearchForm updated titleFilter:', title);
 	};
 
-	const handleKeyDown = (event) =>
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void =>
 	{
 		if (event.key === 'Escape')
 		{
-			event.target.select();
+			event.currentTarget.select();
 		}
 	};
 
-	const handleSearchString = (event) =>
+	const handleSearchString = (event: React.ChangeEvent<HTMLInputElement>): void =>
 	{
 		event.preventDefault();
 
