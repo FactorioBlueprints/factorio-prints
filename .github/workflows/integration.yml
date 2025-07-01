@@ -10,26 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22.x"
-          cache: "npm"
+      - uses: jdx/mise-action@v2
 
-      - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
-      - run: npm run lint
+      - run: just lint-ci
 
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22.x"
-          cache: "npm"
+      - uses: jdx/mise-action@v2
 
-      - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
-      - run: npm run route:generate
-      - run: npm test
+      - run: just test-ci
 
   pre-commit:
     runs-on: ubuntu-latest
@@ -44,10 +35,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22.x"
-          cache: "npm"
+      - uses: jdx/mise-action@v2
 
-      - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
-      - run: npm run build
+      - run: just build-ci
