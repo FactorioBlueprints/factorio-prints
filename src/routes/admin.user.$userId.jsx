@@ -9,11 +9,9 @@ export const Route = createFileRoute('/admin/user/$userId')({
 
 function AdminUserViewComponent()
 {
-	const { userId } = Route.useParams();
-
 	return (
 		<ErrorBoundary>
-			<AdminUserView userId={userId} />
+			<AdminUserView />
 		</ErrorBoundary>
 	);
 }
