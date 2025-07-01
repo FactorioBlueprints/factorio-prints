@@ -64,7 +64,7 @@
     "@eslint/js": "^9.30.0",
     "@sentry/vite-plugin": "^3.5.0",
     "@tanstack/router-cli": "^1.123.0",
-    "@tanstack/router-vite-plugin": "^1.122.0",
+    "@tanstack/router-vite-plugin": "^1.123.2",
     "@types/atob": "^2.1.4",
     "@types/dompurify": "^3.2.0",
     "@types/lodash": "^4.17.19",
