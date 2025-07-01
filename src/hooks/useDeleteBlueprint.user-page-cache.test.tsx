@@ -101,22 +101,22 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 
 		// Simulate UserGrid having loaded data
 		queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
-			[blueprintId]    : true,
-			'blueprint-1'    : true,
-			'blueprint-2'    : true,
+			[blueprintId]: true,
+			'blueprint-1': true,
+			'blueprint-2': true,
 		});
 
 		// Simulate individual blueprint summaries being cached
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], {
-			title: 'To Be Deleted',
+			title  : 'To Be Deleted',
 			imgurId: 'test',
 		});
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'blueprint-1'], {
-			title: 'Blueprint 1',
+			title  : 'Blueprint 1',
 			imgurId: 'test1',
 		});
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'blueprint-2'], {
-			title: 'Blueprint 2',
+			title  : 'Blueprint 2',
 			imgurId: 'test2',
 		});
 
@@ -147,7 +147,6 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 
 		const blueprintId = 'shared-blueprint';
 		const authorId = 'original-author';
-		const viewerId = 'viewing-user';
 		const tags = ['shared'];
 
 		// Set up cache spies
@@ -155,14 +154,14 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 
 		// Original author has the blueprint
 		queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
-			[blueprintId]: true,
+			[blueprintId]    : true,
 			'other-blueprint': true,
 		});
 
 		// Viewer is looking at author's page
 		// This simulates the UserGrid component having fetched the author's blueprints
 		queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
-			[blueprintId]: true,
+			[blueprintId]    : true,
 			'other-blueprint': true,
 		});
 

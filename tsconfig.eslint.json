@@ -9,7 +9,9 @@
     "test/**/*.tsx",
     "test/**/*.js",
     "test/**/*.jsx",
-    "vite.config.js",
+    "vite.config.ts",
+    "eslint.config.ts",
+    "tanstack-router.config.ts",
     "vitest.config.ts"
   ]
 }
