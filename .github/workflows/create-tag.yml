@@ -1,0 +1,31 @@
+name: Create Deployment Tag
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed to fetch all tags
+
+      - name: Generate deployment tag
+        id: generate-tag
+        run: |
+          BASE_TAG="$(date +%Y.%m.%d)"
+          COUNT=1
+          DATE_TAG="$BASE_TAG.$COUNT"
+          while git tag -l "$DATE_TAG" | grep -q .; do
+              ((COUNT++))
+              DATE_TAG="$BASE_TAG.$COUNT"
+          done
+          echo "tag=$DATE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag "${{ steps.generate-tag.outputs.tag }}" HEAD
+          git push origin "${{ steps.generate-tag.outputs.tag }}"
