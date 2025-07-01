@@ -22,51 +22,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22.x"
-          cache: "npm"
-
-      - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
+      - uses: jdx/mise-action@v2
 
       - name: Run ESLint
-        run: npm run lint
+        run: just ci-lint
         continue-on-error: true
 
-      - uses: ataylorme/eslint-annotate-action@v3
+      - uses: ataylorme/eslint-annotate-action@2.2.0
 
   test:
-    name: Test (Node ${{ matrix.node-version }})
+    name: Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [19.x, 22.x]
-      # Don't cancel other matrix jobs if one fails
-      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
+      - uses: jdx/mise-action@v2
 
-      - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
-
-      - run: npm run route:generate
-      - run: npm test
+      - run: just test-ci
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22.x"
-          cache: "npm"
+      - uses: jdx/mise-action@v2
 
-      - run: npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
-      - run: npm run build
+      - run: just build-ci
 
       - name: Upload build artifacts
         if: success()
