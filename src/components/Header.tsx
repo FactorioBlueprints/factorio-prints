@@ -31,13 +31,14 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Link } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
 
 import { app } from '../base';
 import { useIsModerator } from '../hooks/useModerators';
 
 const Header: React.FC = () =>
 {
+	const router = useRouter();
 	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const moderatorQuery = useIsModerator(user?.uid);
 	const isModerator = moderatorQuery.data ?? false;
@@ -175,7 +176,12 @@ const Header: React.FC = () =>
 		<Navbar expand='lg' sticky='top' collapseOnSelect bg='warning'>
 			<Navbar.Brand>
 				<Link to='/'>
-					<FontAwesomeIcon icon={faCogs} size='lg' fixedWidth />
+					<FontAwesomeIcon
+						icon={faCogs}
+						size='lg'
+						fixedWidth
+						spin={router.state.isLoading || router.state.isTransitioning}
+					/>
 					{' Factorio Prints'}
 				</Link>
 			</Navbar.Brand>
