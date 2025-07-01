@@ -260,6 +260,9 @@ export const useDeleteBlueprint = () =>
 				queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
 			}
 
+			// Invalidate user blueprint queries to ensure UI refreshes
+			queryClient.invalidateQueries({ queryKey: userBlueprintsKey });
+
 			tags.forEach(tag =>
 			{
 				const tagKey = ['byTag', tag];
