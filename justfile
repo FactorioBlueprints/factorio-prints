@@ -11,7 +11,7 @@ dev: install
     npm run dev
 
 # `npm run lint:fix`
-lint-fix:
+lint-fix: install
     npm run lint:fix
 
 # `uv tool run pre-commit run`
@@ -23,7 +23,7 @@ build: install
     op run -- npm run build
 
 # `npm run test`
-test:
+test: install
     npm run test
 
 # Run install, build, test, lint, and pre-commit hooks in sequence
