@@ -22,7 +22,7 @@
     "@fortawesome/free-solid-svg-icons": "6.7.2",
     "@fortawesome/react-fontawesome": "0.2.2",
     "@popperjs/core": "2.11.8",
-    "@sentry/react": "^9.34.0",
+    "@sentry/react": "^9.35.0",
     "@tanstack/query-sync-storage-persister": "5.81.5",
     "@tanstack/react-form": "^1.12.4",
     "@tanstack/react-query": "^5.81.5",
