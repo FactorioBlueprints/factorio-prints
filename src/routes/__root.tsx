@@ -28,7 +28,7 @@ function Root()
 			const providerId = providerData && providerData.length && providerData[0].providerId;
 			const providerDisplayName = providerId ? providerData[0].displayName : undefined;
 
-			const buildUserInformation = (existingUser) =>
+			const buildUserInformation = (existingUser: any) =>
 			{
 				const existingUserInitialized = existingUser || {};
 				const displayName = existingUserInitialized.displayName || providerDisplayName;
