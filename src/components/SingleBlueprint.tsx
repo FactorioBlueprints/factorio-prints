@@ -73,6 +73,7 @@ import type {
 	BlueprintBookEntry,
 	RawBlueprintData,
 } from '../schemas';
+import {safeJsonStringify}            from '../utils/safeJsonStringify';
 import BlueprintImage                from './BlueprintImage';
 import BlueprintMarkdownDescription  from './BlueprintMarkdownDescription';
 import BlueprintTitle                from './BlueprintTitle';
@@ -745,7 +746,7 @@ function SingleBlueprint()
 									Json Representation
 								</Card.Header>
 								<Card.Body className='code'>
-									{JSON.stringify(blueprintData?.parsedData, null, 4)}
+									{safeJsonStringify(blueprintData?.parsedData, 4)}
 								</Card.Body>
 							</Card>
 						}
