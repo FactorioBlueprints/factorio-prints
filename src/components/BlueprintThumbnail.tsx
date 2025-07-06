@@ -52,7 +52,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 
 	const tooltip  = (
 		<Tooltip>
-			{title}
+			<span>{title}</span>
 		</Tooltip>
 	);
 
