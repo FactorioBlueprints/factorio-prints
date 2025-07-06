@@ -444,7 +444,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 	};
 }
 
-export const saveToStorage = (key: string, data: any): boolean =>
+export const saveToStorage = (key: string, data: any, retryWithoutBlueprintString = true): boolean =>
 {
 	try
 	{
@@ -454,6 +454,16 @@ export const saveToStorage = (key: string, data: any): boolean =>
 	}
 	catch (error)
 	{
+		if (error instanceof DOMException && error.name === 'QuotaExceededError' && retryWithoutBlueprintString)
+		{
+			if (data && typeof data === 'object' && 'blueprintString' in data)
+			{
+				const dataWithoutBlueprintString = { ...data };
+				delete dataWithoutBlueprintString.blueprintString;
+				return saveToStorage(key, dataWithoutBlueprintString, false);
+			}
+		}
+
 		console.error('Error saving to localStorage:', error);
 		return false;
 	}
