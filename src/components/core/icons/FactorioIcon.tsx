@@ -43,6 +43,10 @@ function getQualityNode(icon: SignalID)
 			alt={icon.quality}
 			title={`Quality: ${icon.quality}`}
 			data-testid='quality'
+			onError={(e) =>
+			{
+				e.currentTarget.style.display = 'none';
+			}}
 		/>
 	);
 }
@@ -75,6 +79,10 @@ export const FactorioIcon = ({id, icon, size}: FactorioIconProps) =>
 				src={`https://factorio-icon-cdn.pages.dev/${urlType}/${icon.name}.webp`}
 				alt={icon.name}
 				title={`${type}: ${icon.name}`}
+				onError={(e) =>
+				{
+					e.currentTarget.style.display = 'none';
+				}}
 			/>
 			{qualityNode}
 		</div>
