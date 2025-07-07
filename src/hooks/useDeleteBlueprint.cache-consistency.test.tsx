@@ -254,6 +254,13 @@ describe('useDeleteBlueprint cache consistency', () =>
 		// Set up cache spies to verify operations
 		const setQueryDataSpy = vi.spyOn(queryClient, 'setQueryData');
 
+		// Set up user blueprints cache
+		queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
+			[blueprintId]     : true,
+			'user-blueprint-1': true,
+			'user-blueprint-2': true,
+		});
+
 		// Set up different cache states for different tags
 		queryClient.setQueryData(['byTag', 'tag-with-cache'], {
 			[blueprintId]      : true,
@@ -277,6 +284,12 @@ describe('useDeleteBlueprint cache consistency', () =>
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
+
+		// Verify user blueprints cache was updated
+		expect(setQueryDataSpy).toHaveBeenCalledWith(['users', 'userId', authorId, 'blueprints'], {
+			'user-blueprint-1': true,
+			'user-blueprint-2': true,
+		});
 
 		// Verify only cached tag with data was updated using spy
 		expect(setQueryDataSpy).toHaveBeenCalledWith(['byTag', 'tag-with-cache'], {
