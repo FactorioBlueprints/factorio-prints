@@ -118,7 +118,24 @@ export const validate = <T>(data: unknown, schema: z.ZodSchema<T>, description: 
 	}
 	catch (error)
 	{
-		console.error('Schema validation failed', { description, data, error });
+		if (error instanceof z.ZodError)
+		{
+			const errorDetails = error.errors.map((e) => ({
+				path   : e.path.join('.'),
+				message: e.message,
+				code   : e.code,
+			}));
+			console.error('Schema validation failed', {
+				description,
+				errorCount: error.errors.length,
+				errors    : errorDetails,
+				dataType  : typeof data,
+				dataKeys  : data && typeof data === 'object' ? Object.keys(data) : undefined,
+			});
+			const errorMessage = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+			throw new Error(`Invalid ${description}: ${errorMessage}`);
+		}
+		console.error('Schema validation failed with unexpected error', { description, error: String(error) });
 		throw new Error(`Invalid ${description}: ${error instanceof Error ? error.message : 'Unknown error'}`);
 	}
 };
