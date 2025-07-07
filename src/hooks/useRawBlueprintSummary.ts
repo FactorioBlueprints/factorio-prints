@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchBlueprintSummary } from '../api/firebase';
+import { blueprintSummaryQuery } from '../queries/blueprintQueries';
 import type { RawBlueprintSummary } from '../schemas';
 
 /**
@@ -8,10 +8,8 @@ import type { RawBlueprintSummary } from '../schemas';
 export const useRawBlueprintSummary = (blueprintId: string | undefined) =>
 {
 	return useQuery<RawBlueprintSummary | null>({
-		queryKey : ['blueprintSummaries', 'blueprintId', blueprintId],
-		queryFn  : () => fetchBlueprintSummary(blueprintId!),
-		enabled  : Boolean(blueprintId),
-		staleTime: 1000 * 60 * 60 * 24,
+		...blueprintSummaryQuery(blueprintId!),
+		enabled: Boolean(blueprintId),
 	});
 };
 

@@ -1,45 +1,12 @@
 import {createSyncStoragePersister}                     from '@tanstack/query-sync-storage-persister';
-import {QueryCache, QueryClient, QueryClientProvider}   from '@tanstack/react-query';
+import {QueryClientProvider}                            from '@tanstack/react-query';
 import {ReactQueryDevtools}                             from '@tanstack/react-query-devtools';
 import {persistQueryClient}                             from '@tanstack/react-query-persist-client';
 import React, {useEffect}                               from 'react';
 import useBlueprintCacheSync                            from '../hooks/useBlueprintCacheSync';
 import {CACHE_BUSTER, createIDBPersister, STORAGE_KEYS} from '../localStorage';
+import {queryClient}                                    from './queryClient';
 
-const queryCache = new QueryCache({
-	onSuccess: (data: any, query) =>
-	{
-		if (query.queryKey[0] === 'rawPaginatedBlueprintSummaries' && data?.pages)
-		{
-			data.pages.forEach((page: any) =>
-			{
-				Object.entries(page.data).forEach(([blueprintId, summary]) =>
-				{
-					queryClient.setQueryData(
-						['blueprintSummaries', 'blueprintId', blueprintId],
-						summary,
-					);
-				});
-			});
-		}
-	},
-});
-
-const queryClient = new QueryClient({
-	queryCache,
-	defaultOptions: {
-		queries: {
-			staleTime           : 1000 * 60 * 60,
-			refetchOnWindowFocus: true,
-			refetchOnMount      : true,
-			retry               : 1,
-			gcTime              : Infinity,
-		},
-		mutations: {
-			retry: 1,
-		},
-	},
-});
 
 interface BlueprintCacheSyncProviderProps {
 	children: React.ReactNode;
