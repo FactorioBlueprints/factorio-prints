@@ -242,11 +242,15 @@ export const useDeleteBlueprint = () =>
 
 			const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
 			const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
-			const userBlueprintsData = validateRawUserBlueprints(userBlueprintsDataRaw);
 
-			// Create a new object without the deleted blueprint
-			const { [id]: _, ...updatedUserBlueprints } = userBlueprintsData;
-			queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
+			if (userBlueprintsDataRaw)
+			{
+				const userBlueprintsData = validateRawUserBlueprints(userBlueprintsDataRaw);
+
+				// Create a new object without the deleted blueprint
+				const { [id]: _, ...updatedUserBlueprints } = userBlueprintsData;
+				queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
+			}
 
 			// Invalidate user blueprint queries to ensure UI refreshes
 			queryClient.invalidateQueries({ queryKey: userBlueprintsKey });
