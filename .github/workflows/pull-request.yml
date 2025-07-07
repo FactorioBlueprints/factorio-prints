@@ -1,3 +1,5 @@
+# Jobs that run on pull_request, but not on merge_group. This is useful for jobs that post comments on Pull Requests, like ESLint annotations.
+
 on:
   pull_request:
 
@@ -6,16 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - uses: pre-commit/action@v3.0.1
-
-  eslint:
+  eslint-annotate:
     permissions:
       pull-requests: read
       checks: write
@@ -29,40 +22,6 @@ jobs:
         continue-on-error: true
 
       - uses: ataylorme/eslint-annotate-action@2.2.0
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-
-      - run: just test-ci
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-
-      - run: just build-ci
-
-      - name: Upload build artifacts
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 1
-
-  all-checks:
-    name: All checks
-    needs: [pre-commit, eslint, test, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: All checks passed
-        run: echo "All checks passed!"
 
   automerge-dependabot:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
