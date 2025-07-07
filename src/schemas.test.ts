@@ -1,4 +1,5 @@
 import {describe, expect, it, vi} from 'vitest';
+import { z } from 'zod';
 import {
 	validate,
 	validateEnrichedBlueprint,
@@ -62,6 +63,54 @@ describe('Schema validation', () =>
 				.toThrow('Invalid test data: Validation error');
 
 			expect(consoleSpy).toHaveBeenCalledTimes(1);
+
+			consoleSpy.mockRestore();
+		});
+
+		it('should handle ZodError with detailed error information', () =>
+		{
+			const zodError = {
+				errors: [
+					{
+						path   : ['field1', 'nested'],
+						message: 'Invalid type',
+						code   : 'invalid_type',
+					},
+					{
+						path   : ['field2'],
+						message: 'Required',
+						code   : 'required',
+					},
+				],
+			};
+			Object.setPrototypeOf(zodError, z.ZodError.prototype);
+
+			const mockSchema = {
+				parse: vi.fn(() =>
+				{
+					throw zodError;
+				}),
+			};
+
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() =>
+			{});
+
+			expect(() => validate({ test: 'invalid' }, mockSchema as any, 'test data'))
+				.toThrow('Invalid test data: field1.nested: Invalid type, field2: Required');
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				'Schema validation failed',
+				expect.objectContaining({
+					description: 'test data',
+					errorCount : 2,
+					errors     : [
+						{ path: 'field1.nested', message: 'Invalid type', code: 'invalid_type' },
+						{ path: 'field2', message: 'Required', code: 'required' },
+					],
+					dataType: 'object',
+					dataKeys: ['test'],
+				}),
+			);
 
 			consoleSpy.mockRestore();
 		});
@@ -766,8 +815,16 @@ describe('Schema validation', () =>
 						'Schema validation failed',
 						expect.objectContaining({
 							description: 'raw tags',
-							data       : invalidData,
-							error      : expect.any(Error),
+							errorCount : 1,
+							errors     : expect.arrayContaining([
+								expect.objectContaining({
+									path   : 'belt',
+									message: 'Expected array, received string',
+									code   : 'invalid_type',
+								}),
+							]),
+							dataType: 'object',
+							dataKeys: ['belt'],
 						}),
 					);
 
@@ -793,8 +850,26 @@ describe('Schema validation', () =>
 						'Schema validation failed',
 						expect.objectContaining({
 							description: 'enriched tags',
-							data       : invalidData,
-							error      : expect.any(Error),
+							errorCount : 3,
+							errors     : expect.arrayContaining([
+								expect.objectContaining({
+									path   : '0.category',
+									message: 'Required',
+									code   : 'invalid_type',
+								}),
+								expect.objectContaining({
+									path   : '0.name',
+									message: 'Required',
+									code   : 'invalid_type',
+								}),
+								expect.objectContaining({
+									path   : '0.label',
+									message: 'Required',
+									code   : 'invalid_type',
+								}),
+							]),
+							dataType: 'object',
+							dataKeys: ['0'],
 						}),
 					);
 
@@ -1201,8 +1276,16 @@ describe('Schema validation', () =>
 						'Schema validation failed',
 						expect.objectContaining({
 							description: 'raw user blueprints',
-							data       : invalidData,
-							error      : expect.any(Error),
+							errorCount : 1,
+							errors     : expect.arrayContaining([
+								expect.objectContaining({
+									path   : 'blueprint-1',
+									message: 'Expected boolean, received string',
+									code   : 'invalid_type',
+								}),
+							]),
+							dataType: 'object',
+							dataKeys: ['blueprint-1'],
 						}),
 					);
 
@@ -1226,8 +1309,16 @@ describe('Schema validation', () =>
 						'Schema validation failed',
 						expect.objectContaining({
 							description: 'enriched user favorites',
-							data       : invalidData,
-							error      : expect.any(Error),
+							errorCount : 1,
+							errors     : expect.arrayContaining([
+								expect.objectContaining({
+									path   : 'favoriteIds',
+									message: 'Required',
+									code   : 'invalid_type',
+								}),
+							]),
+							dataType: 'object',
+							dataKeys: ['count'],
 						}),
 					);
 
