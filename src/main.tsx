@@ -49,6 +49,14 @@ Sentry.init({
 		/localhost:\d{4}/,
 		'https://factorioprints.com',
 	],
+	// Filter out errors from browser extensions and other third-party sources
+	denyUrls: [
+		/chrome-extension:\/\//,
+		/moz-extension:\/\//,
+		/safari-extension:\/\//,
+		/edge:\/\//,
+		/extension:\/\//,
+	],
 	enabled         : true,
 	// Set maxBreadcrumbs to capture more console logs
 	maxBreadcrumbs  : 100,
