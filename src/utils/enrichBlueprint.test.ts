@@ -1,5 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import * as Sentry from '@sentry/react';
 import enrichBlueprint from './enrichBlueprint';
+
+vi.mock('@sentry/react', () => ({
+	captureMessage  : vi.fn(),
+	captureException: vi.fn(),
+}));
 
 describe('enrichBlueprint', () =>
 {
@@ -9,6 +15,8 @@ describe('enrichBlueprint', () =>
 
 	beforeEach(() =>
 	{
+		vi.clearAllMocks();
+
 		rawBlueprint = {
 			title              : 'Test Blueprint',
 			blueprintString    : validV15BlueprintString,
@@ -77,24 +85,57 @@ describe('enrichBlueprint', () =>
 		expect(result!.thumbnail).toBe('https://i.imgur.com/image-456l.jpeg');
 	});
 
-	it('throws error for malformed tag paths', () =>
+	it('skips malformed tag paths and reports to Sentry', () =>
 	{
 		const blueprintWithBadTags = {
 			...rawBlueprint,
-			tags: ['badTag'],
+			tags: ['badTag', '/valid/tag/', 'another-bad-tag/'],
 		};
-		expect(() => enrichBlueprint(blueprintWithBadTags, blueprintId))
-			.toThrow('Tag format error: "badTag" must have leading and trailing slashes');
+		const result = enrichBlueprint(blueprintWithBadTags, blueprintId);
+
+		expect(result).not.toBeNull();
+		expect(result!.tags).toEqual({
+			'/valid/tag/': true,
+		});
+
+		expect(Sentry.captureMessage).toHaveBeenCalledWith(
+			'Blueprint tag format issues detected',
+			expect.objectContaining({
+				level: 'info',
+				extra: expect.objectContaining({
+					issues: expect.arrayContaining([
+						{ type: 'invalid-format', tag: 'badTag' },
+						{ type: 'invalid-format', tag: 'another-bad-tag/' },
+					]),
+				}),
+			}),
+		);
 	});
 
-	it('throws error for URL-encoded tags', () =>
+	it('skips URL-encoded tags and reports to Sentry', () =>
 	{
 		const blueprintWithEncodedTags = {
 			...rawBlueprint,
-			tags: ['/category%20space/'],
+			tags: ['/category%20space/', '/valid/tag/'],
 		};
-		expect(() => enrichBlueprint(blueprintWithEncodedTags, blueprintId))
-			.toThrow('Tag contains URL encoding');
+		const result = enrichBlueprint(blueprintWithEncodedTags, blueprintId);
+
+		expect(result).not.toBeNull();
+		expect(result!.tags).toEqual({
+			'/valid/tag/': true,
+		});
+
+		expect(Sentry.captureMessage).toHaveBeenCalledWith(
+			'Blueprint tag format issues detected',
+			expect.objectContaining({
+				level: 'info',
+				extra: expect.objectContaining({
+					issues: expect.arrayContaining([
+						{ type: 'url-encoded', tag: '/category%20space/' },
+					]),
+				}),
+			}),
+		);
 	});
 
 	it('parses V15 blueprint string and returns parsed data', () =>
@@ -198,5 +239,100 @@ describe('enrichBlueprint', () =>
 		const result = enrichBlueprint(blueprintWithTable, blueprintId);
 		expect(result).not.toBeNull();
 		expect(result!.renderedDescription).toContain('class="table table-striped table-bordered"');
+	});
+
+	it('does not throw errors that would be caught by Sentry', () =>
+	{
+		const blueprintWithMultipleIssues = {
+			...rawBlueprint,
+			tags: ['invalid-tag', '/valid/tag/', 'missing-slash/', '/encoded%20tag/', null, undefined, 123],
+		};
+
+		expect(() => enrichBlueprint(blueprintWithMultipleIssues, blueprintId)).not.toThrow();
+
+		const result = enrichBlueprint(blueprintWithMultipleIssues, blueprintId);
+		expect(result).not.toBeNull();
+		expect(result!.tags).toEqual({
+			'/valid/tag/': true,
+		});
+	});
+
+	it('handles tags as object format by converting to empty array and reports to Sentry', () =>
+	{
+		const blueprintWithObjectTags = {
+			...rawBlueprint,
+			tags: {
+				'/valid/tag/'    : true,
+				'invalid-tag'    : true,
+				'/encoded%20tag/': true,
+				'/another/valid/': false,
+			} as any,
+		};
+
+		const result = enrichBlueprint(blueprintWithObjectTags, blueprintId);
+		expect(result).not.toBeNull();
+		expect(result!.tags).toEqual({}); // Empty tags since object format is converted to empty array
+
+		expect(Sentry.captureMessage).toHaveBeenCalledWith(
+			'Blueprint data corruption detected',
+			expect.objectContaining({
+				level: 'warning',
+				extra: expect.objectContaining({
+					issues: expect.objectContaining({
+						type      : 'non-array-tags',
+						actualType: 'object',
+					}),
+				}),
+			}),
+		);
+	});
+
+	it('reports non-string tags to Sentry with context', () =>
+	{
+		const blueprintWithBadTags = {
+			...rawBlueprint,
+			tags: ['valid-tag', null, undefined, 123, '/another/tag/'],
+		};
+
+		const result = enrichBlueprint(blueprintWithBadTags, blueprintId);
+		expect(result).not.toBeNull();
+
+		expect(Sentry.captureMessage).toHaveBeenCalledWith(
+			'Blueprint data corruption detected',
+			expect.objectContaining({
+				level: 'warning',
+				extra: expect.objectContaining({
+					issues: expect.objectContaining({
+						type : 'non-string-tags',
+						count: 3,
+						types: ['null', 'undefined', 'number'],
+					}),
+				}),
+			}),
+		);
+	});
+
+	it('reports tag format issues to Sentry', () =>
+	{
+		const blueprintWithFormatIssues = {
+			...rawBlueprint,
+			tags: ['missing-slashes', '/valid/tag/', '/encoded%20tag/'],
+		};
+
+		const result = enrichBlueprint(blueprintWithFormatIssues, blueprintId);
+		expect(result).not.toBeNull();
+
+		expect(Sentry.captureMessage).toHaveBeenCalledWith(
+			'Blueprint tag format issues detected',
+			expect.objectContaining({
+				level: 'info',
+				extra: expect.objectContaining({
+					issues: expect.arrayContaining([
+						{ type: 'invalid-format', tag: 'missing-slashes' },
+						{ type: 'url-encoded', tag: '/encoded%20tag/' },
+					]),
+				}),
+			}),
+		);
 	});
 });

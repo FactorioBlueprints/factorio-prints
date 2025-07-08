@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
+import * as Sentry from '@sentry/react';
 import Blueprint from '../Blueprint';
 import buildImageUrl from '../helpers/buildImageUrl';
 import { validateRawBlueprint, validateEnrichedBlueprint, type RawBlueprint, type EnrichedBlueprint } from '../schemas';
@@ -26,6 +27,49 @@ export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: 
 {
 	if (!rawBlueprint) return null;
 
+	const reportToSentry = (message: string, level: 'warning' | 'info', issues: any) =>
+	{
+		Sentry.captureMessage(message, {
+			level,
+			tags: {
+				component : 'enrichBlueprint',
+				blueprintId,
+				issueTypes: Array.isArray(issues) ? [...new Set(issues.map((i: any) => i.type))].join(',') : issues,
+			},
+			extra: {
+				blueprintId,
+				blueprintTitle: rawBlueprint.title || 'Untitled',
+				blueprintUrl  : `https://factorioprints.com/view/${blueprintId}`,
+				authorId      : rawBlueprint.author?.userId,
+				authorName    : rawBlueprint.author?.displayName,
+				issues,
+			},
+		});
+	};
+
+	if (rawBlueprint.tags && !Array.isArray(rawBlueprint.tags))
+	{
+		reportToSentry('Blueprint data corruption detected', 'warning', {
+			type      : 'non-array-tags',
+			actualType: typeof rawBlueprint.tags,
+			sampleData: JSON.stringify(rawBlueprint.tags).substring(0, 200),
+		});
+		rawBlueprint.tags = [];
+	}
+	else if (Array.isArray(rawBlueprint.tags))
+	{
+		const nonStringTags = rawBlueprint.tags.filter(tag => typeof tag !== 'string');
+		if (nonStringTags.length > 0)
+		{
+			reportToSentry('Blueprint data corruption detected', 'warning', {
+				type : 'non-string-tags',
+				count: nonStringTags.length,
+				types: nonStringTags.map(t => t === null ? 'null' : typeof t),
+			});
+			rawBlueprint.tags = rawBlueprint.tags.filter(tag => typeof tag === 'string');
+		}
+	}
+
 	validateRawBlueprint(rawBlueprint);
 
 	let thumbnail: string | null = null;
@@ -38,45 +82,30 @@ export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: 
 
 	const processedTags: Record<string, boolean> = {};
 	const rawTags = rawBlueprint.tags || [];
+	const tagFormatIssues: Array<{type: string, tag: string}> = [];
 
 	if (Array.isArray(rawTags))
 	{
-		rawTags.forEach((tagPath: string) =>
+		rawTags.forEach((tag: string) =>
 		{
-			if (!tagPath.startsWith('/') || !tagPath.endsWith('/'))
+			if (!tag.startsWith('/') || !tag.endsWith('/'))
 			{
-				throw new Error(`Tag format error: "${tagPath}" must have leading and trailing slashes`);
+				tagFormatIssues.push({ type: 'invalid-format', tag });
 			}
-
-			const decodedTag = decodeURIComponent(tagPath);
-			if (decodedTag !== tagPath)
+			else if (decodeURIComponent(tag) !== tag)
 			{
-				throw new Error(`Tag contains URL encoding: "${tagPath}" vs decoded "${decodedTag}"`);
+				tagFormatIssues.push({ type: 'url-encoded', tag });
 			}
-
-			processedTags[tagPath] = true;
+			else
+			{
+				processedTags[tag] = true;
+			}
 		});
 	}
-	else
+
+	if (tagFormatIssues.length > 0)
 	{
-		Object.entries(rawTags).forEach(([tagKey, tagValue]) =>
-		{
-			if (typeof tagKey === 'string' && tagValue === true)
-			{
-				if (!tagKey.startsWith('/') || !tagKey.endsWith('/'))
-				{
-					throw new Error(`Tag key format error: "${tagKey}" must have leading and trailing slashes`);
-				}
-
-				const decodedKey = decodeURIComponent(tagKey);
-				if (decodedKey !== tagKey)
-				{
-					throw new Error(`Tag contains URL encoding: "${tagKey}" vs decoded "${decodedKey}"`);
-				}
-
-				processedTags[tagKey] = true;
-			}
-		});
+		reportToSentry('Blueprint tag format issues detected', 'info', tagFormatIssues);
 	}
 
 	let parsedData: any = null;
