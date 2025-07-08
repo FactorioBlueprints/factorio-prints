@@ -808,7 +808,6 @@ function SingleBlueprint()
 														})
 													}
 													<td>
-														{/* Old 0.14 blueprint books could have empty slots */}
 														{eachBlueprint.blueprint ? eachBlueprint.blueprint.label : 'Empty slot in book'}
 													</td>
 												</tr>

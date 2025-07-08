@@ -297,10 +297,6 @@ const Create: React.FC = () =>
 			return submissionWarnings;
 		}
 
-		if (blueprint.isV14())
-		{
-			submissionWarnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
-		}
 
 		if (blueprint.isBlueprint() && v15Decoded && isEmpty(v15Decoded.blueprint.label))
 		{

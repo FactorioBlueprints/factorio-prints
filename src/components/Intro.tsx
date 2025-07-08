@@ -33,20 +33,6 @@ const Intro: React.FC = () =>
 				</a>
 				{']'}
 			</p>
-			<p className='lead'>
-				{'There is also limited support for the 0.14 blueprint mods '}
-				<a href='https://mods.factorio.com/mods/DaveMcW/blueprint-string'>
-					Blueprint String
-				</a>
-				{', '}
-				<a href='https://mods.factorio.com/mods/Choumiko/Foreman'>
-					{'Foreman'}
-				</a>
-				{', and '}
-				<a href='https://mods.factorio.com/mods/killkrog/KBlueprints'>
-					{'Killkrog\'s Blueprint Manager'}
-				</a>
-			</p>
 		</div>
 	);
 };
