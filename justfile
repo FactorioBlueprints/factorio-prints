@@ -8,7 +8,7 @@ install:
 
 # `npm ci` for CI
 install-ci:
-    npm ci --ignore-engines --ignore-platform --ignore-scripts
+    npm ci --ignore-scripts
 
 # Generate routes
 route-generate: install
