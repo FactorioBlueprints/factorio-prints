@@ -25,7 +25,7 @@ import { useForm } from '@tanstack/react-form';
 import { z } from 'zod';
 
 import {app}                                    from '../base';
-import Blueprint, { type V15DecodedObject, type ConvertedBlueprint } from '../Blueprint';
+import Blueprint, { type V15DecodedObject } from '../Blueprint';
 import noImageAvailable                         from '../gif/No_available_image.gif';
 import buildImageUrl                            from '../helpers/buildImageUrl';
 import generateTagSuggestions                   from '../helpers/generateTagSuggestions';
@@ -97,7 +97,7 @@ interface UiState {
 	uploadProgressPercent: number;
 	deletionModalVisible: boolean;
 	parsedBlueprint: Blueprint | null;
-	v15Decoded: V15DecodedObject | ConvertedBlueprint | null;
+	v15Decoded: V15DecodedObject | null;
 	submissionWarnings: string[];
 }
 
@@ -317,10 +317,6 @@ function EditBlueprintWrapper()
 				return warnings;
 			}
 
-			if (blueprint.isV14())
-			{
-				warnings.push('Blueprint is in 0.14 format. Consider upgrading to the latest version.');
-			}
 
 			if (blueprint.isBlueprint() && uiState.v15Decoded && 'blueprint' in uiState.v15Decoded && isEmpty(uiState.v15Decoded.blueprint?.label))
 			{
