@@ -10,7 +10,7 @@ import {
 	validateRawBlueprintSummary,
 	validateRawBlueprintSummaryPage,
 } from '../schemas';
-import { formatDistance } from 'date-fns';
+import { formatDistance, format } from 'date-fns';
 
 
 /**
@@ -133,12 +133,12 @@ export const fetchBlueprint = async (blueprintId: string, blueprintSummary: Enri
 				const cdnDate = new Date(cdnLastUpdated);
 				const summaryDate = new Date(summaryLastUpdated);
 				const timeDiff = formatDistance(cdnDate, summaryDate);
-				console.log(`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${cdnLastUpdated}, Summary: ${summaryLastUpdated})`);
+				console.log(`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`);
 			}
 			else
 			{
 				// One or both dates are missing
-				console.log(`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated}, Summary: ${summaryLastUpdated})`);
+				console.log(`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`);
 			}
 		}
 
