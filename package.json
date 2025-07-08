@@ -29,7 +29,7 @@
     "@tanstack/react-query-devtools": "^5.81.5",
     "@tanstack/react-query-persist-client": "5.81.5",
     "@tanstack/react-router": "^1.125.6",
-    "@tanstack/react-store": "^0.7.0",
+    "@tanstack/react-store": "^0.7.3",
     "@tanstack/zod-form-adapter": "^0.42.1",
     "atob": "2.1.2",
     "axios": "1.10.0",
