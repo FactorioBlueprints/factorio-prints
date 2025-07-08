@@ -344,6 +344,7 @@ export const blueprintBookSchema = z.object({
 	blueprints  : z.array(blueprintBookEntrySchema),
 	item        : z.string().optional(),
 	label       : z.string().optional(),
+	description : z.string().optional(),
 	active_index: z.number().optional(),
 	version     : z.number().optional(),
 }).passthrough(); // Allow additional properties

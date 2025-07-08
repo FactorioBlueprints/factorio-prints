@@ -36,6 +36,7 @@ interface SingleBlueprint {
 		tiles?: BlueprintTile[];
 		item: string;
 		label?: string;
+		description?: string;
 		version: number;
 		[key: string]: unknown;
 	};
@@ -48,6 +49,7 @@ interface BlueprintBookEntry {
 		tiles?: BlueprintTile[];
 		item: string;
 		label?: string;
+		description?: string;
 		version: number;
 		[key: string]: unknown;
 	} | null;
@@ -59,6 +61,7 @@ interface BlueprintBook {
 		blueprints: BlueprintBookEntry[];
 		item: string;
 		label?: string;
+		description?: string;
 		active_index: number;
 		version: number;
 		[key: string]: unknown;
@@ -83,6 +86,7 @@ interface V15DecodedObject {
 		tiles?: BlueprintTile[];
 		item?: string;
 		label?: string;
+		description?: string;
 		version?: number;
 		[key: string]: unknown;
 	};
@@ -90,6 +94,7 @@ interface V15DecodedObject {
 		blueprints: BlueprintBookEntry[];
 		item?: string;
 		label?: string;
+		description?: string;
 		active_index?: number;
 		version?: number;
 		[key: string]: unknown;
