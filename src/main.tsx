@@ -1,7 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { StrictMode } from 'react';
-import { HelmetProvider } from 'react-helmet-async';
 import * as Sentry from "@sentry/react";
 
 import './css/style.css';
@@ -141,10 +140,8 @@ const root = createRoot(container);
 
 root.render(
 	<StrictMode>
-		<HelmetProvider>
-			<QueryProvider>
-				<Router />
-			</QueryProvider>
-		</HelmetProvider>
+		<QueryProvider>
+			<Router />
+		</QueryProvider>
 	</StrictMode>,
 );

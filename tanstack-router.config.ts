@@ -1,4 +1,4 @@
-import type { Config } from '@tanstack/router-plugin/vite'
+import type { Config } from '@tanstack/router-vite-plugin'
 
 const config: Partial<Config> = {
 	routesDirectory   : './src/routes',

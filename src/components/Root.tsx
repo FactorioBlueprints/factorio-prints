@@ -2,7 +2,7 @@ import { getAuth, User } from 'firebase/auth';
 import { getDatabase, ref, runTransaction } from 'firebase/database';
 import React, { useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet';
 import { Outlet } from '@tanstack/react-router';
 
 import { app } from '../base';

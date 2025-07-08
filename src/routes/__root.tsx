@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from '@tanstack/react-router';
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, runTransaction } from 'firebase/database';
 import { useEffect } from 'react';

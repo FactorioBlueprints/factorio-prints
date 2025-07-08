@@ -15,7 +15,7 @@ just precommit \
 	&& git pushf origin HEAD:factorio-prints.com \
 	&& git pushf origin HEAD:factorio-prints.com \
 	&& git tag "$DATE_TAG" HEAD -f \
-	&& npm install --ignore-scripts --legacy-peer-deps \
+	&& npm install --ignore-scripts \
 	&& op run -- npm run build \
 	&& firebase deploy \
 	&& git push origin "$DATE_TAG" -f
