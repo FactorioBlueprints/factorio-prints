@@ -36,7 +36,7 @@
     "bootstrap": "5.3.7",
     "classnames": "2.5.1",
     "date-fns": "^4.1.0",
-    "disqus-react": "1.1.6",
+    "disqus-react": "1.1.7",
     "dompurify": "^3.2.5",
     "fflate": "^0.8.2",
     "firebase": "11.10.0",
