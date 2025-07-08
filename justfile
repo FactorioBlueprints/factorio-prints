@@ -36,7 +36,7 @@ lint-ci: install-ci
 
 # ESLint with JSON output for CI annotations
 ci-lint: install-ci
-    npx eslint . --format json --output-file eslint_report.json || true
+    npx eslint . --format json --output-file eslint_report.json
 
 # `npm run test`
 test: route-generate
