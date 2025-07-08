@@ -51,7 +51,7 @@ import {
 }                                from 'react-firebase-hooks/auth';
 import {
 	Helmet,
-}                                from 'react-helmet-async';
+}                                from 'react-helmet';
 import {
 	useCopyToClipboard,
 }                                from 'usehooks-ts';

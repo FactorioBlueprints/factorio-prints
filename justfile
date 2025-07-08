@@ -4,11 +4,11 @@ default:
 
 # `npm install`
 install:
-    npm install --ignore-scripts --legacy-peer-deps
+    npm install --ignore-scripts
 
 # `npm ci` for CI
 install-ci:
-    npm ci --ignore-engines --ignore-platform --ignore-scripts --legacy-peer-deps
+    npm ci --ignore-engines --ignore-platform --ignore-scripts
 
 # Generate routes
 route-generate: install
