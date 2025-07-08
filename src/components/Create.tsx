@@ -27,6 +27,7 @@ import Select                                    from 'react-select';
 
 import {app}                  from '../base';
 import Blueprint              from '../Blueprint';
+import { parseVersion3 }       from '../parsing/blueprintParser';
 import noImageAvailable       from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import {useCreateBlueprint}   from '../hooks/useCreateBlueprint';
@@ -50,6 +51,8 @@ interface CreateState {
 	uploadProgressBarVisible: boolean;
 	uploadProgressPercent: number;
 	blueprint: BlueprintFormData;
+	blueprintPasted: boolean;
+	blueprintValidationError: string | null;
 }
 
 interface SelectOption {
@@ -100,6 +103,8 @@ const initialState: CreateState = {
 		blueprintString    : '',
 		imageUrl           : '',
 	},
+	blueprintPasted         : false,
+	blueprintValidationError: null,
 };
 
 const Create: React.FC = () =>
@@ -145,8 +150,9 @@ const Create: React.FC = () =>
 
 			setState(prevState => ({
 				...prevState,
-				blueprint: newBlueprint,
+				blueprint      : newBlueprint,
 				renderedMarkdown,
+				blueprintPasted: !!parsedBp && !!decoded,
 			}));
 
 			setParsedBlueprint(parsedBp);
@@ -217,6 +223,93 @@ const Create: React.FC = () =>
 				...prevState.blueprint,
 				[name]: value,
 			},
+		}));
+	}, [parseBlueprint]);
+
+	const handleBlueprintPaste = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) =>
+	{
+		const value = event.target.value.trim();
+
+		if (!value)
+		{
+			setState(prevState => ({
+				...prevState,
+				blueprint: {
+					...prevState.blueprint,
+					blueprintString: '',
+				},
+				blueprintPasted         : false,
+				blueprintValidationError: null,
+			}));
+			return;
+		}
+
+		const newParsedBlueprint = parseBlueprint(value);
+		const newV15Decoded = newParsedBlueprint ? newParsedBlueprint.getV15Decoded() : null;
+
+		setParsedBlueprint(newParsedBlueprint);
+		setV15Decoded(newV15Decoded);
+
+		// Check if the blueprint is valid
+		if (!newParsedBlueprint || !newV15Decoded)
+		{
+			setState(prevState => ({
+				...prevState,
+				blueprint: {
+					...prevState.blueprint,
+					blueprintString: value,
+				},
+				blueprintPasted         : false,
+				blueprintValidationError: 'Invalid blueprint string. Please paste a valid Factorio blueprint.',
+			}));
+			return;
+		}
+
+		// Extract title and description from blueprint if available
+		let extractedTitle = '';
+		let extractedDescription = '';
+
+		if (newParsedBlueprint.isBlueprint() && newV15Decoded.blueprint)
+		{
+			extractedTitle = newV15Decoded.blueprint.label || '';
+			extractedDescription = newV15Decoded.blueprint.description || '';
+		}
+		else if (newParsedBlueprint.isBook() && newV15Decoded.blueprint_book)
+		{
+			extractedTitle = newV15Decoded.blueprint_book.label || '';
+			extractedDescription = newV15Decoded.blueprint_book.description || '';
+		}
+
+		// Extract version tag
+		const version = newV15Decoded.blueprint?.version || newV15Decoded.blueprint_book?.version;
+		let versionTag: string | undefined;
+		if (version)
+		{
+			// Use parseVersion3 to get major.minor.patch format, then extract major.minor
+			const fullVersion = parseVersion3(version);
+			if (fullVersion && !fullVersion.startsWith('Invalid'))
+			{
+				const versionParts = fullVersion.split('.');
+				versionTag = `/version/${versionParts[0]},${versionParts[1]}/`;
+			}
+		}
+
+		setState(prevState => ({
+			...prevState,
+			blueprint: {
+				...prevState.blueprint,
+				blueprintString    : value,
+				title              : prevState.blueprint.title || extractedTitle,
+				descriptionMarkdown: prevState.blueprint.descriptionMarkdown || extractedDescription,
+				tags               : versionTag && !prevState.blueprint.tags?.includes(versionTag)
+					? [...(prevState.blueprint.tags || []), versionTag]
+					: prevState.blueprint.tags,
+			},
+			blueprintPasted         : true,
+			blueprintValidationError: null,
+			renderedMarkdown        : prevState.blueprint.descriptionMarkdown || extractedDescription
+				? DOMPurify.sanitize(md.render(prevState.blueprint.descriptionMarkdown || extractedDescription))
+				: '',
 		}));
 	}, [parseBlueprint]);
 
@@ -382,7 +475,7 @@ const Create: React.FC = () =>
 
 	const handleCancel = useCallback(() =>
 	{
-		removeFromStorage('factorio-blueprint-create-form');
+		removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 		navigate({ to: '/blueprints', from: '/create' });
 	}, [navigate]);
 
@@ -571,149 +664,160 @@ const Create: React.FC = () =>
 					<Form className='w-100'>
 						<Form.Group as={Row} className='mb-3'>
 							<Form.Label column sm='2'>
-								{'Title'}
-							</Form.Label>
-							<Col sm={10}>
-								<FormControl
-									autoFocus
-									type='text'
-									name='title'
-									placeholder='Title'
-									value={blueprint.title}
-									onChange={handleChange}
-								/>
-							</Col>
-						</Form.Group>
-
-						<Form.Group as={Row} className='mb-3'>
-							<Form.Label column sm='2'>
-								{'Description '}
-								<a href='https://guides.github.com/features/mastering-markdown/'>
-									{'[Tutorial]'}
-								</a>
-							</Form.Label>
-							<Col sm={10}>
-								<FormControl
-									as='textarea'
-									placeholder='Description (plain text or *GitHub Flavored Markdown*)'
-									value={blueprint.descriptionMarkdown}
-									onChange={handleDescriptionChanged}
-									style={{minHeight: 200}}
-								/>
-							</Col>
-						</Form.Group>
-
-						<Form.Group as={Row} className='mb-3'>
-							<Form.Label column sm='2'>
-								{'Description (Preview)'}
-							</Form.Label>
-							<Col sm={10}>
-								<Card>
-									<div
-										style={{minHeight: 200, padding: '1rem'}}
-										dangerouslySetInnerHTML={{__html: state.renderedMarkdown}}
-									/>
-								</Card>
-							</Col>
-						</Form.Group>
-
-						<Form.Group as={Row} className='mb-3'>
-							<Form.Label column sm='2'>
 								{'Blueprint String'}
 							</Form.Label>
 							<Col sm={10}>
 								<FormControl
+									autoFocus
 									className='blueprintString'
 									as='textarea'
 									name='blueprintString'
-									placeholder='Blueprint String'
+									placeholder='Paste your Factorio blueprint string here'
 									value={blueprint.blueprintString}
-									onChange={handleChange}
+									onChange={handleBlueprintPaste}
+									style={{minHeight: 150}}
 								/>
+								{state.blueprintValidationError && (
+									<Alert variant='danger' className='mt-2'>
+										{state.blueprintValidationError}
+									</Alert>
+								)}
 							</Col>
 						</Form.Group>
 
-						{
-							unusedTagSuggestions.length > 0
-							&& <Form.Group as={Row} className='mb-3'>
-								<Form.Label column sm='2'>
-									{'Tag Suggestions'}
-								</Form.Label>
-								<Col sm={10}>
+						{state.blueprintPasted && (
+							<>
+								<Form.Group as={Row} className='mb-3'>
+									<Form.Label column sm='2'>
+										{'Title'}
+									</Form.Label>
+									<Col sm={10}>
+										<FormControl
+											type='text'
+											name='title'
+											placeholder='Title'
+											value={blueprint.title}
+											onChange={handleChange}
+										/>
+									</Col>
+								</Form.Group>
+
+								<Form.Group as={Row} className='mb-3'>
+									<Form.Label column sm='2'>
+										{'Description '}
+										<a href='https://guides.github.com/features/mastering-markdown/'>
+											{'[Tutorial]'}
+										</a>
+									</Form.Label>
+									<Col sm={10}>
+										<FormControl
+											as='textarea'
+											placeholder='Description (plain text or *GitHub Flavored Markdown*)'
+											value={blueprint.descriptionMarkdown}
+											onChange={handleDescriptionChanged}
+											style={{minHeight: 200}}
+										/>
+									</Col>
+								</Form.Group>
+
+								<Form.Group as={Row} className='mb-3'>
+									<Form.Label column sm='2'>
+										{'Description (Preview)'}
+									</Form.Label>
+									<Col sm={10}>
+										<Card>
+											<div
+												style={{minHeight: 200, padding: '1rem'}}
+												dangerouslySetInnerHTML={{__html: state.renderedMarkdown}}
+											/>
+										</Card>
+									</Col>
+								</Form.Group>
+
+								{
+									unusedTagSuggestions.length > 0
+									&& <Form.Group as={Row} className='mb-3'>
+										<Form.Label column sm='2'>
+											{'Tag Suggestions'}
+										</Form.Label>
+										<Col sm={10}>
+											<ButtonToolbar>
+												{
+													unusedTagSuggestions.map(tagSuggestion => (
+														<TagSuggestionButton
+															key={tagSuggestion}
+															tagSuggestion={tagSuggestion}
+															addTag={addTag}
+														/>
+													))
+												}
+											</ButtonToolbar>
+										</Col>
+									</Form.Group>
+								}
+
+								<Form.Group as={Row} className='mb-3'>
+									<Form.Label column sm='2'>
+										{'Tags'}
+									</Form.Label>
+									<Col sm={10}>
+										<Select
+											value={(state.blueprint.tags || []).map(value => ({value, label: value}))}
+											options={tags.map(value => ({value, label: value}))}
+											onChange={handleTagSelection}
+											isMulti
+											placeholder='Select at least one tag'
+											isLoading={tagsLoading}
+										/>
+									</Col>
+								</Form.Group>
+
+								<Form.Group as={Row} className='mb-3'>
+									<Form.Label column sm='2'>
+										{'Imgur URL'}
+									</Form.Label>
+									<Col sm={10}>
+										<FormControl
+											type='text'
+											name='imageUrl'
+											placeholder='https://imgur.com/kRua41d'
+											value={blueprint.imageUrl}
+											onChange={handleChange}
+										/>
+									</Col>
+								</Form.Group>
+
+								{renderPreview()}
+							</>
+						)}
+
+						{state.blueprintPasted && (
+							<Form.Group as={Row} className='mb-3'>
+								<Col sm={{span: 10, offset: 2}}>
 									<ButtonToolbar>
-										{
-											unusedTagSuggestions.map(tagSuggestion => (
-												<TagSuggestionButton
-													key={tagSuggestion}
-													tagSuggestion={tagSuggestion}
-													addTag={addTag}
-												/>
-											))
-										}
+										<Button
+											type='button'
+											variant='warning'
+											size='lg'
+											onClick={handleCreateBlueprint}
+											disabled={createBlueprintMutation.isPending}
+										>
+											<FontAwesomeIcon icon={faSave} size='lg' />
+											{createBlueprintMutation.isPending ? ' Saving...' : ' Save'}
+										</Button>
+										<Button
+											type='button'
+											size='lg'
+											onClick={handleCancel}
+											disabled={createBlueprintMutation.isPending}
+										>
+											<FontAwesomeIcon icon={faBan} size='lg' />
+											{' Cancel'}
+										</Button>
 									</ButtonToolbar>
 								</Col>
 							</Form.Group>
-						}
-
-						<Form.Group as={Row} className='mb-3'>
-							<Form.Label column sm='2'>
-								{'Tags'}
-							</Form.Label>
-							<Col sm={10}>
-								<Select
-									value={(state.blueprint.tags || []).map(value => ({value, label: value}))}
-									options={tags.map(value => ({value, label: value}))}
-									onChange={handleTagSelection}
-									isMulti
-									placeholder='Select at least one tag'
-									isLoading={tagsLoading}
-								/>
-							</Col>
-						</Form.Group>
-
-						<Form.Group as={Row} className='mb-3'>
-							<Form.Label column sm='2'>
-								{'Imgur URL'}
-							</Form.Label>
-							<Col sm={10}>
-								<FormControl
-									autoFocus
-									type='text'
-									name='imageUrl'
-									placeholder='https://imgur.com/kRua41d'
-									value={blueprint.imageUrl}
-									onChange={handleChange}
-								/>
-							</Col>
-						</Form.Group>
-
-						{renderPreview()}
-
-						<Form.Group as={Row} className='mb-3'>
-							<Col sm={{span: 10, offset: 2}}>
-								<ButtonToolbar>
-									<Button
-										type='button'
-										variant='warning'
-										size='lg'
-										onClick={handleCreateBlueprint}
-										disabled={createBlueprintMutation.isPending}
-									>
-										<FontAwesomeIcon icon={faSave} size='lg' />
-										{createBlueprintMutation.isPending ? ' Saving...' : ' Save'}
-									</Button>
-									<Button
-										type='button'
-										size='lg'
-										onClick={handleCancel}
-										disabled={createBlueprintMutation.isPending}
-									>
-										<FontAwesomeIcon icon={faBan} size='lg' />
-										{' Cancel'}
-									</Button>
-								</ButtonToolbar>
-							</Col>
-						</Form.Group>
+						)}
 					</Form>
 				</Row>
 			</Container>
