@@ -45,6 +45,10 @@ input[type=button].twitter,
 button.google,
 input[type=button].google {
   color: #fff;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 button.github,
 input[type=button].github {

@@ -1,7 +1,8 @@
 import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
+import {faGoogle, faGithub} from '@fortawesome/free-brands-svg-icons';
 import {FontAwesomeIcon}            from '@fortawesome/react-fontawesome';
 
-import {getAuth, User}                           from 'firebase/auth';
+import {getAuth, User, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, AuthProvider} from 'firebase/auth';
 import update                                    from 'immutability-helper';
 import difference                                from 'lodash/difference';
 import isEmpty                                   from 'lodash/isEmpty';
@@ -115,12 +116,42 @@ const Create: React.FC = () =>
 	const [parsedBlueprint, setParsedBlueprint] = useState<Blueprint | null>(null);
 	const [v15Decoded, setV15Decoded] = useState<any>(null);
 
-	// Get all tags using the query hook
+	const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+	const [pendingSubmission, setPendingSubmission] = useState(false);
+
 	const { data: tagsData, isLoading: tagsLoading } = useTags();
 	const tags = tagsData?.tags || [];
 
-	// Create blueprint mutation
 	const createBlueprintMutation = useCreateBlueprint();
+	const googleProvider = useState(() =>
+	{
+		const provider = new GoogleAuthProvider();
+		provider.setCustomParameters({prompt: 'consent select_account'});
+		return provider;
+	})[0];
+
+	const githubProvider = useState(() =>
+	{
+		const provider = new GithubAuthProvider();
+		provider.setCustomParameters({allow_signup: 'true'});
+		return provider;
+	})[0];
+
+	const authenticate = useCallback((provider: AuthProvider) =>
+	{
+		signInWithPopup(getAuth(app), provider)
+			.then(() =>
+			{
+				setShowAuthPrompt(false);
+			})
+			.catch(error =>
+			{
+				if (error.code !== 'auth/popup-closed-by-user')
+				{
+					console.error({error});
+				}
+			});
+	}, []);
 
 	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null =>
 	{
@@ -408,9 +439,55 @@ const Create: React.FC = () =>
 		return submissionWarnings;
 	}, [state.blueprint, v15Decoded, someHaveNoName]);
 
+	useEffect(() =>
+	{
+		if (user && pendingSubmission)
+		{
+			setPendingSubmission(false);
+
+			const submissionErrors = validateInputs();
+			if (submissionErrors.length > 0)
+			{
+				setState(prevState => ({
+					...prevState,
+					submissionErrors,
+				}));
+				return;
+			}
+
+			const submissionWarnings = validateWarnings();
+			if (submissionWarnings.length > 0)
+			{
+				setState(prevState => ({
+					...prevState,
+					submissionWarnings,
+				}));
+				return;
+			}
+
+			createBlueprintMutation.mutate({
+				formData: state.blueprint,
+				user    : user,
+			}, {
+				onSuccess: () =>
+				{
+					setState(initialState);
+					removeFromStorage(STORAGE_KEYS.CREATE_FORM);
+				},
+			});
+		}
+	}, [user, pendingSubmission, createBlueprintMutation, state.blueprint, validateInputs, validateWarnings]);
+
 	const handleCreateBlueprint = useCallback((event: React.FormEvent) =>
 	{
 		event.preventDefault();
+
+		if (!user)
+		{
+			setPendingSubmission(true);
+			setShowAuthPrompt(true);
+			return;
+		}
 
 		const submissionErrors = validateInputs();
 
@@ -433,7 +510,6 @@ const Create: React.FC = () =>
 			return;
 		}
 
-		// Use mutation hook with raw data
 		createBlueprintMutation.mutate({
 			formData: state.blueprint,
 			user    : user!,
@@ -444,11 +520,18 @@ const Create: React.FC = () =>
 				removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 			},
 		});
-	}, [validateInputs, validateWarnings, createBlueprintMutation, state.blueprint, user]);
+	}, [createBlueprintMutation, state.blueprint, user, validateInputs, validateWarnings]);
 
 	const handleForceCreateBlueprint = useCallback((event: React.MouseEvent) =>
 	{
 		event.preventDefault();
+
+		if (!user)
+		{
+			setPendingSubmission(true);
+			setShowAuthPrompt(true);
+			return;
+		}
 
 		const submissionErrors = validateInputs();
 		if (submissionErrors.length > 0)
@@ -460,7 +543,6 @@ const Create: React.FC = () =>
 			return;
 		}
 
-		// Use mutation hook with raw data (force)
 		createBlueprintMutation.mutate({
 			formData: state.blueprint,
 			user    : user!,
@@ -471,7 +553,7 @@ const Create: React.FC = () =>
 				removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 			},
 		});
-	}, [validateInputs, createBlueprintMutation, state.blueprint, user]);
+	}, [createBlueprintMutation, state.blueprint, user, validateInputs]);
 
 	const handleCancel = useCallback(() =>
 	{
@@ -539,20 +621,6 @@ const Create: React.FC = () =>
 		);
 	}, [state.blueprint]);
 
-	if (!user)
-	{
-		return (
-			<div className='p-5 rounded-lg jumbotron'>
-				<h1 className='display-4'>
-					{'Create a Blueprint'}
-				</h1>
-				<p className='lead'>
-					{'Please log in with Google or GitHub in order to add a Blueprint.'}
-				</p>
-			</div>
-		);
-	}
-
 	const {blueprint} = state;
 	const allTagSuggestions = generateTagSuggestions(
 		state.blueprint.title,
@@ -563,6 +631,42 @@ const Create: React.FC = () =>
 
 	return (
 		<>
+			<Modal show={showAuthPrompt} onHide={() =>
+			{
+				setShowAuthPrompt(false);
+				setPendingSubmission(false);
+			}}>
+				<Modal.Header closeButton>
+					<Modal.Title>
+						Sign in to Save Blueprint
+					</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<p className='mb-4'>
+						Please sign in with Google or GitHub to save your blueprint. Your blueprint data will be preserved.
+					</p>
+					<div className='d-flex flex-column'>
+						<Button
+							type='button'
+							className='google w-100 mb-2'
+							style={{ marginLeft: 0, marginRight: 0 }}
+							onClick={() => authenticate(googleProvider)}
+						>
+							<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
+							{' Log in with Google'}
+						</Button>
+						<Button
+							type='button'
+							className='github w-100'
+							style={{ marginLeft: 0, marginRight: 0 }}
+							onClick={() => authenticate(githubProvider)}
+						>
+							<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
+							{' Log in with GitHub'}
+						</Button>
+					</div>
+				</Modal.Body>
+			</Modal>
 			<Modal show={state.uploadProgressBarVisible}>
 				<Modal.Header>
 					<Modal.Title>

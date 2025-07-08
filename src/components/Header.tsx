@@ -159,14 +159,16 @@ const Header: React.FC = () =>
 
 		return (
 			<NavDropdown title={title} style={{minWidth: '210px'}}>
-				<Button type='button' className='google w-100' onClick={() => authenticate(googleProvider)}>
-					<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
-					{' Log in with Google'}
-				</Button>
-				<Button type='button' className='github w-100' onClick={() => authenticate(githubProvider)}>
-					<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
-					{' Log in with GitHub'}
-				</Button>
+				<div className='p-2'>
+					<Button type='button' className='google w-100 mb-2' onClick={() => authenticate(googleProvider)}>
+						<FontAwesomeIcon icon={faGoogle} size='lg' fixedWidth />
+						{' Log in with Google'}
+					</Button>
+					<Button type='button' className='github w-100' onClick={() => authenticate(githubProvider)}>
+						<FontAwesomeIcon icon={faGithub} size='lg' fixedWidth />
+						{' Log in with GitHub'}
+					</Button>
+				</div>
 			</NavDropdown>
 		);
 	};
