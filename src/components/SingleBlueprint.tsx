@@ -870,14 +870,18 @@ function SingleBlueprint()
 						}
 					</Col>
 				</Row>
-				<Row className='w-100'>
-					<DisqusErrorBoundary>
-						<Disqus.DiscussionEmbed
-							shortname='factorio-blueprints'
-							config={disqusConfig}
-						/>
-					</DisqusErrorBoundary>
-				</Row>
+				{blueprintData && (
+					<Row className='w-100'>
+						<DisqusErrorBoundary>
+							<div id='disqus_thread' style={{ minHeight: '100px' }}>
+								<Disqus.DiscussionEmbed
+									shortname='factorio-blueprints'
+									config={disqusConfig}
+								/>
+							</div>
+						</DisqusErrorBoundary>
+					</Row>
+				)}
 			</Container>
 		</>
 	);
