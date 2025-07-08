@@ -20,11 +20,19 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
 
-      - run: just lint-ci
+      - run: just ci-lint
+        continue-on-error: true
+
+      - uses: ataylorme/eslint-annotate-action@2.2.0
+        if: always()
 
   test:
     runs-on: ubuntu-latest

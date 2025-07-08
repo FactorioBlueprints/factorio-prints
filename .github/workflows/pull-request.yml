@@ -8,21 +8,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  eslint-annotate:
-    permissions:
-      pull-requests: read
-      checks: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
-
-      - name: Run ESLint
-        run: just ci-lint
-        continue-on-error: true
-
-      - uses: ataylorme/eslint-annotate-action@2.2.0
-
   automerge-dependabot:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
