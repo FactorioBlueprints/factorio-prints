@@ -30,10 +30,22 @@ function Root()
 
 			const buildUserInformation = (existingUser: any) =>
 			{
-				const existingUserInitialized = existingUser || {};
-				const displayName = existingUserInitialized.displayName || providerDisplayName;
+				// Firebase transactions pass null when no data exists
+				if (existingUser === null)
+				{
+					return {
+						displayName: providerDisplayName,
+						providerDisplayName,
+						photoURL,
+						email,
+						emailVerified,
+						providerId,
+					};
+				}
+
+				const displayName = existingUser.displayName || providerDisplayName;
 				return {
-					...existingUserInitialized,
+					...existingUser,
 					displayName,
 					providerDisplayName,
 					photoURL,

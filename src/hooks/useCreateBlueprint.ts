@@ -220,7 +220,9 @@ export const useCreateBlueprint = () =>
 
 			const userBlueprintsKey  = ['users', 'userId', authorId, 'blueprints'];
 			const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
-			const userBlueprintsData = validateRawUserBlueprints(userBlueprintsDataRaw);
+			const userBlueprintsData = userBlueprintsDataRaw
+				? validateRawUserBlueprints(userBlueprintsDataRaw)
+				: {};
 
 			// Add the new blueprint to the user's blueprints object
 			queryClient.setQueryData(userBlueprintsKey, {
