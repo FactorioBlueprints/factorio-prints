@@ -24,7 +24,7 @@
     "@popperjs/core": "2.11.8",
     "@sentry/react": "^9.35.0",
     "@tanstack/query-sync-storage-persister": "5.81.5",
-    "@tanstack/react-form": "^1.12.4",
+    "@tanstack/react-form": "^1.14.1",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.81.5",
     "@tanstack/react-query-persist-client": "5.81.5",
