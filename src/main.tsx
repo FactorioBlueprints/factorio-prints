@@ -74,6 +74,26 @@ Sentry.init({
 			}
 		}
 
+		// Filter out Chrome extension errors
+		if (event.exception?.values?.[0]?.stacktrace?.frames)
+		{
+			const frames = event.exception.values[0].stacktrace.frames;
+			const hasExtensionFrame = frames.some(frame =>
+				frame.filename && (
+					frame.filename.includes('chrome-extension://')
+					|| frame.filename.includes('moz-extension://')
+					|| frame.filename.includes('extension://')
+					|| frame.filename.includes('safari-extension://')
+					|| frame.filename.includes('edge://')
+					|| frame.filename.includes('chrome://')
+				),
+			);
+			if (hasExtensionFrame)
+			{
+				return null; // Don't send browser extension errors to Sentry
+			}
+		}
+
 		if (import.meta.env.DEV)
 		{
 			// Use console.log instead of console.error to avoid triggering Sentry again
@@ -131,6 +151,25 @@ window.addEventListener('error', function(e: ErrorEvent)
 		if (import.meta.env.DEV)
 		{
 			console.warn('Third-party script error suppressed:', e.error?.message, 'from', e.filename);
+		}
+		// Prevent the error from being reported to Sentry
+		e.preventDefault();
+		return true;
+	}
+
+	// Handle browser extension errors
+	if (e.filename && (
+		e.filename.includes('chrome-extension://')
+		|| e.filename.includes('moz-extension://')
+		|| e.filename.includes('extension://')
+		|| e.filename.includes('safari-extension://')
+		|| e.filename.includes('edge://')
+		|| e.filename.includes('chrome://')
+	))
+	{
+		if (import.meta.env.DEV)
+		{
+			console.warn('Browser extension error suppressed:', e.error?.message, 'from', e.filename);
 		}
 		// Prevent the error from being reported to Sentry
 		e.preventDefault();
