@@ -41,6 +41,8 @@ import type {BlueprintBook} from '../schemas';
 import NoMatch from './NoMatch';
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
+import {RichText} from './core/text/RichText';
+import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 
 const md = new MarkdownIt({
 	html: true,
@@ -219,6 +221,16 @@ function EditBlueprintWrapper() {
 			form.reset(defaultValues);
 			setCurrentTags(defaultValues.tags);
 			setFormInitialized(true);
+
+			// Initialize rendered markdown
+			if (defaultValues.descriptionMarkdown) {
+				const html = md.render(defaultValues.descriptionMarkdown);
+				const renderedMarkdown = sanitizeHtml(html);
+				setUiState((prev) => ({
+					...prev,
+					renderedMarkdown,
+				}));
+			}
 		}
 	}, [allDataLoaded, defaultValues, form, formInitialized]);
 
@@ -428,7 +440,9 @@ function EditBlueprintWrapper() {
 								target.src = noImageAvailable;
 							}}
 						/>
-						<Card.Title className="truncate">{form.state.values.title}</Card.Title>
+						<Card.Title className="truncate">
+							<RichText text={form.state.values.title} />
+						</Card.Title>
 					</Card>
 				</Col>
 			</Form.Group>
@@ -474,7 +488,9 @@ function EditBlueprintWrapper() {
 								target.src = noImageAvailable;
 							}}
 						/>
-						<Card.Title className="truncate">{form.state.values.title}</Card.Title>
+						<Card.Title className="truncate">
+							<RichText text={form.state.values.title} />
+						</Card.Title>
 					</Card>
 				</Col>
 			</Form.Group>
@@ -699,7 +715,13 @@ function EditBlueprintWrapper() {
 						</Alert>
 					)}
 				</Row>
-				<PageHeader title={`Editing: ${form.state.values.title}`} />
+				<PageHeader
+					title={
+						<>
+							Editing: <RichText text={form.state.values.title} />
+						</>
+					}
+				/>
 				<Row>
 					<form
 						className="w-100"
@@ -731,6 +753,14 @@ function EditBlueprintWrapper() {
 											onBlur={field.handleBlur}
 											onChange={(e) => field.handleChange(e.target.value)}
 										/>
+										{field.state.value && (
+											<div className="mt-2 p-2 border rounded">
+												<small className="text-muted">Preview:</small>
+												<div className="mt-1">
+													<RichText text={field.state.value} />
+												</div>
+											</div>
+										)}
 										{field.state.meta.errors?.length > 0 && (
 											<div className="text-danger mt-1">
 												{field.state.meta.errors
@@ -800,10 +830,9 @@ function EditBlueprintWrapper() {
 										</Form.Label>
 										<Col sm={10}>
 											<Card>
-												<div
-													style={{minHeight: 200, padding: '1rem'}}
-													dangerouslySetInnerHTML={{__html: uiState.renderedMarkdown}}
-												/>
+												<div style={{minHeight: 200, padding: '1rem'}}>
+													<MarkdownWithRichText markdown={field.state.value || ''} />
+												</div>
 											</Card>
 										</Col>
 									</Form.Group>

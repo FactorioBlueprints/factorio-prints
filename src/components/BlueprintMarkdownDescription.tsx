@@ -1,16 +1,14 @@
 import {faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import React from 'react';
+import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 
 interface BlueprintMarkdownDescriptionProps {
-	renderedMarkdown?: string;
+	markdown?: string;
 	isLoading: boolean;
 }
 
-const BlueprintMarkdownDescription: React.FC<BlueprintMarkdownDescriptionProps> = ({
-	renderedMarkdown = '',
-	isLoading,
-}) => {
+const BlueprintMarkdownDescription: React.FC<BlueprintMarkdownDescriptionProps> = ({markdown, isLoading}) => {
 	if (isLoading) {
 		return (
 			<FontAwesomeIcon
@@ -20,12 +18,17 @@ const BlueprintMarkdownDescription: React.FC<BlueprintMarkdownDescriptionProps> 
 		);
 	}
 
+	if (!markdown) {
+		return null;
+	}
+
 	return (
 		<div
 			className="markdown-content"
 			style={{padding: '0.5rem'}}
-			dangerouslySetInnerHTML={{__html: renderedMarkdown}}
-		/>
+		>
+			<MarkdownWithRichText markdown={markdown} />
+		</div>
 	);
 };
 
