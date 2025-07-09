@@ -22,6 +22,7 @@ interface FactorioIconProps {
 	id?: string;
 	icon?: SignalID;
 	size: 'small' | 'large';
+	inline?: boolean;
 }
 
 function getQualityNode(icon: SignalID) {
@@ -75,6 +76,20 @@ export const FactorioIcon = ({id, icon, size}: FactorioIconProps) => {
 				}}
 			/>
 			{qualityNode}
+		</div>
+	);
+};
+
+interface PlaceholderProps {
+	size: string;
+}
+
+export const Placeholder = ({size}: PlaceholderProps) => {
+	const sizeClass = size === 'small' ? styles.smallSquare : styles.largeSquare;
+
+	return (
+		<div className={`${styles.iconParent} ${sizeClass}`}>
+			<div className={styles.icon} />
 		</div>
 	);
 };

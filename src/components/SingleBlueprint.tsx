@@ -64,6 +64,12 @@ import FavoriteCount from './FavoriteCount';
 import TagBadge from './TagBadge';
 import DisqusErrorBoundary from './DisqusErrorBoundary';
 import {FactorioIcon, type SignalType, type Quality} from './core/icons/FactorioIcon';
+import {BasicInfoPanel} from './blueprint/panels/info/BasicInfoPanel';
+import {BlueprintInfoPanels} from './blueprint/panels/BlueprintInfoPanels';
+import {ParametersPanel} from './blueprint/panels/parameters/ParametersPanel';
+import {BlueprintTree} from './blueprint/tree';
+import {findNodeByPath, buildNode} from './blueprint/tree';
+import {RichText} from './core/text/RichText';
 
 interface ReconcileResult {
 	blueprintId: string;
@@ -127,7 +133,10 @@ function SingleBlueprint() {
 
 	const tagsData = Object.keys(blueprintData?.tags || {});
 
-	const blueprintWrapper = blueprintData?.parsedData ? new BlueprintWrapper(blueprintData?.parsedData) : null;
+	const blueprintWrapper = React.useMemo(
+		() => (blueprintData?.parsedData ? new BlueprintWrapper(blueprintData?.parsedData) : null),
+		[blueprintData?.parsedData],
+	);
 
 	const {data: isModerator = false} = useIsModerator(user?.uid);
 
@@ -135,6 +144,35 @@ function SingleBlueprint() {
 
 	const [showBlueprint, setShowBlueprint] = useState(false);
 	const [showJson, setShowJson] = useState(false);
+	const [selectedBlueprintPath, setSelectedBlueprintPath] = useState('');
+
+	// Extract selected blueprint from book if a path is selected
+	const selectedBlueprint = React.useMemo(() => {
+		if (!blueprintWrapper || !selectedBlueprintPath) return blueprintWrapper;
+		if (blueprintWrapper.getType() !== 'blueprint-book') return blueprintWrapper;
+
+		// Build the tree structure
+		const rootNode = buildNode(blueprintData?.parsedData, '');
+
+		// Find the selected node
+		const selectedNode = findNodeByPath(rootNode, selectedBlueprintPath);
+		if (selectedNode?.blueprint) {
+			return new BlueprintWrapper(selectedNode.blueprint as any);
+		}
+
+		return blueprintWrapper;
+	}, [blueprintWrapper, selectedBlueprintPath, blueprintData?.parsedData]);
+
+	// Get the parsed data for the selected blueprint
+	const selectedBlueprintData = React.useMemo(() => {
+		if (!selectedBlueprintPath || !blueprintData?.parsedData) return blueprintData?.parsedData;
+
+		// Find the selected node
+		const rootNode = buildNode(blueprintData?.parsedData, '');
+		const selectedNode = findNodeByPath(rootNode, selectedBlueprintPath);
+
+		return selectedNode?.blueprint || blueprintData?.parsedData;
+	}, [selectedBlueprintPath, blueprintData?.parsedData]);
 
 	const [copiedText, copyToClipboard] = useCopyToClipboard();
 
@@ -543,7 +581,15 @@ function SingleBlueprint() {
 								</tbody>
 							</Table>
 						</Card>
-						{blueprintWrapper && blueprintWrapper.getType() === 'blueprint' && (
+						{/* Add BlueprintTree for blueprint books */}
+						{blueprintWrapper && blueprintWrapper.getType() === 'blueprint-book' && (
+							<BlueprintTree
+								rootBlueprint={blueprintData?.parsedData}
+								selectedPath={selectedBlueprintPath}
+								onSelect={setSelectedBlueprintPath}
+							/>
+						)}
+						{selectedBlueprint && selectedBlueprint.getType() === 'blueprint' && (
 							<Card>
 								<Card.Header>Requirements</Card.Header>
 								<Table
@@ -610,7 +656,7 @@ function SingleBlueprint() {
 								</Table>
 							</Card>
 						)}
-						{blueprintWrapper && blueprintWrapper.getType() === 'blueprint' && (
+						{selectedBlueprint && selectedBlueprint.getType() === 'blueprint' && (
 							<Card border="secondary">
 								<Card.Header>Extra Info</Card.Header>
 								<Table
@@ -628,7 +674,14 @@ function SingleBlueprint() {
 									<tbody>
 										<tr>
 											<td colSpan={2}>
-												{(blueprintData?.parsedData as RawBlueprintData).blueprint?.label}
+												{(blueprintData?.parsedData as RawBlueprintData).blueprint?.label && (
+													<RichText
+														text={
+															(blueprintData?.parsedData as RawBlueprintData).blueprint
+																?.label || ''
+														}
+													/>
+												)}
 											</td>
 										</tr>
 										{((blueprintData?.parsedData as RawBlueprintData).blueprint?.icons || [])
@@ -671,6 +724,7 @@ function SingleBlueprint() {
 							<Card.Body>
 								<BlueprintMarkdownDescription
 									renderedMarkdown={blueprintData?.renderedDescription}
+									rawMarkdown={blueprintData?.descriptionMarkdown}
 									isLoading={blueprintIsLoading}
 								/>
 
@@ -700,6 +754,20 @@ function SingleBlueprint() {
 								</Button>
 							</Card.Body>
 						</Card>
+						{/* Add BlueprintTree for blueprint books */}
+						{blueprintWrapper?.getType() === 'blueprint-book' && (
+							<BlueprintTree
+								rootBlueprint={blueprintData?.parsedData}
+								selectedPath={selectedBlueprintPath}
+								onSelect={setSelectedBlueprintPath}
+							/>
+						)}
+						{/* Add BasicInfoPanel for blueprint information */}
+						<BasicInfoPanel blueprint={selectedBlueprintData} />
+						{/* Add BlueprintInfoPanels to show type-specific content */}
+						<BlueprintInfoPanels blueprint={selectedBlueprintData} />
+						{/* Add ParametersPanel for parameterized blueprints */}
+						<ParametersPanel blueprintString={selectedBlueprintData} />
 						{showBlueprint && (
 							<Card>
 								<Card.Header>Blueprint String</Card.Header>
@@ -746,7 +814,15 @@ function SingleBlueprint() {
 										<tr>
 											<td colSpan={4}>{'Book'}</td>
 											<td>
-												{(blueprintData?.parsedData as RawBlueprintData).blueprint_book?.label}
+												{(blueprintData?.parsedData as RawBlueprintData).blueprint_book
+													?.label && (
+													<RichText
+														text={
+															(blueprintData?.parsedData as RawBlueprintData)
+																.blueprint_book?.label || ''
+														}
+													/>
+												)}
 											</td>
 										</tr>
 										{(blueprintData?.parsedData as RawBlueprintData).blueprint_book?.blueprints.map(
@@ -796,9 +872,13 @@ function SingleBlueprint() {
 														);
 													})}
 													<td>
-														{eachBlueprint.blueprint
-															? eachBlueprint.blueprint.label
-															: 'Empty slot in book'}
+														{eachBlueprint.blueprint?.label ? (
+															<RichText text={eachBlueprint.blueprint.label} />
+														) : eachBlueprint.blueprint ? (
+															''
+														) : (
+															'Empty slot in book'
+														)}
 													</td>
 												</tr>
 											),
