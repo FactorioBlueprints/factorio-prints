@@ -1,45 +1,4 @@
-// Blueprint wrapper data structure interfaces
-interface BlueprintIcon {
-	signal: {
-		name: string;
-		type: string;
-	};
-	index: number;
-}
-
-interface BlueprintContent {
-	label?: string;
-	description?: string;
-	version?: number;
-	icons?: BlueprintIcon[];
-	[key: string]: unknown;
-}
-
-interface BlueprintData {
-	blueprint?: BlueprintContent;
-	blueprint_book?: BlueprintContent;
-	upgrade_planner?: {
-		settings?: {
-			description?: string;
-			icons?: BlueprintIcon[];
-			[key: string]: unknown;
-		};
-		label?: string;
-		version?: number;
-		[key: string]: unknown;
-	};
-	deconstruction_planner?: {
-		settings?: {
-			description?: string;
-			icons?: BlueprintIcon[];
-			[key: string]: unknown;
-		};
-		label?: string;
-		version?: number;
-		[key: string]: unknown;
-	};
-	[key: string]: unknown;
-}
+import type {BlueprintIcon, BlueprintContent, RawBlueprintData} from '../schemas';
 
 interface BlueprintInfo {
 	type: 'blueprint' | 'blueprint-book' | 'upgrade-planner' | 'deconstruction-planner';
@@ -51,9 +10,9 @@ interface BlueprintInfo {
 }
 
 export class BlueprintWrapper {
-	private data: BlueprintData;
+	private data: RawBlueprintData;
 
-	constructor(blueprint: BlueprintData) {
+	constructor(blueprint: RawBlueprintData) {
 		this.data = blueprint;
 	}
 
@@ -97,10 +56,12 @@ export class BlueprintWrapper {
 			return this.data.blueprint_book.description;
 		}
 		if (this.data.upgrade_planner) {
-			return this.data.upgrade_planner.settings?.description;
+			const settings = this.data.upgrade_planner.settings as any;
+			return settings?.description;
 		}
 		if (this.data.deconstruction_planner) {
-			return this.data.deconstruction_planner.settings?.description;
+			const settings = this.data.deconstruction_planner.settings as any;
+			return settings?.description;
 		}
 		throw new Error('Invalid blueprint: no content found');
 	}
@@ -110,13 +71,16 @@ export class BlueprintWrapper {
 			return this.data.blueprint.icons ?? [];
 		}
 		if (this.data.blueprint_book) {
-			return this.data.blueprint_book.icons ?? [];
+			const book = this.data.blueprint_book as any;
+			return book.icons ?? [];
 		}
 		if (this.data.upgrade_planner) {
-			return this.data.upgrade_planner.settings?.icons ?? [];
+			const settings = this.data.upgrade_planner.settings as any;
+			return settings?.icons ?? [];
 		}
 		if (this.data.deconstruction_planner) {
-			return this.data.deconstruction_planner.settings?.icons ?? [];
+			const settings = this.data.deconstruction_planner.settings as any;
+			return settings?.icons ?? [];
 		}
 		throw new Error('Invalid blueprint: no content found');
 	}
@@ -125,7 +89,7 @@ export class BlueprintWrapper {
 		return this.getContent().version;
 	}
 
-	getRawData(): BlueprintData {
+	getRawData(): RawBlueprintData {
 		return this.data;
 	}
 }

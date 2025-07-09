@@ -24,7 +24,6 @@ import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
-import range from 'lodash/range';
 import React, {useCallback, useEffect, useState} from 'react';
 import Badge from 'react-bootstrap/Badge';
 import Button from 'react-bootstrap/Button';
@@ -64,6 +63,10 @@ import FavoriteCount from './FavoriteCount';
 import TagBadge from './TagBadge';
 import DisqusErrorBoundary from './DisqusErrorBoundary';
 import {FactorioIcon, type SignalType, type Quality} from './core/icons/FactorioIcon';
+import {BasicInfoPanel} from './blueprint/panels/info/BasicInfoPanel';
+import {ExtraInfoPanel} from './blueprint/panels/info/ExtraInfoPanel';
+import {ParametersPanel} from './blueprint/panels/parameters/ParametersPanel';
+import {RichText} from './core/text/RichText';
 
 interface ReconcileResult {
 	blueprintId: string;
@@ -127,7 +130,10 @@ function SingleBlueprint() {
 
 	const tagsData = Object.keys(blueprintData?.tags || {});
 
-	const blueprintWrapper = blueprintData?.parsedData ? new BlueprintWrapper(blueprintData?.parsedData) : null;
+	const blueprintWrapper = React.useMemo(
+		() => (blueprintData?.parsedData ? new BlueprintWrapper(blueprintData?.parsedData) : null),
+		[blueprintData?.parsedData],
+	);
 
 	const {data: isModerator = false} = useIsModerator(user?.uid);
 
@@ -265,26 +271,6 @@ function SingleBlueprint() {
 		});
 
 		return flow(toPairs, sortBy(1), reverse)(result) as unknown as [string, number][];
-	}, []);
-
-	const getBookEntry = useCallback((eachBlueprint: BlueprintBookEntry): BlueprintContent | undefined => {
-		if (eachBlueprint.blueprint) {
-			return eachBlueprint.blueprint;
-		}
-
-		if ('upgrade_planner' in eachBlueprint && eachBlueprint.upgrade_planner) {
-			return eachBlueprint.upgrade_planner as BlueprintContent;
-		}
-
-		if ('deconstruction_planner' in eachBlueprint && eachBlueprint.deconstruction_planner) {
-			return eachBlueprint.deconstruction_planner as BlueprintContent;
-		}
-
-		if ('blueprint_book' in eachBlueprint && eachBlueprint.blueprint_book) {
-			return eachBlueprint.blueprint_book as BlueprintContent;
-		}
-
-		return undefined;
 	}, []);
 
 	const renderEditButton = useCallback(
@@ -470,7 +456,7 @@ function SingleBlueprint() {
 							</Card>
 						)}
 						<Card>
-							<Card.Header>Info</Card.Header>
+							<Card.Header>Post Info</Card.Header>
 							<Table
 								bordered
 								hover
@@ -610,67 +596,13 @@ function SingleBlueprint() {
 								</Table>
 							</Card>
 						)}
-						{blueprintWrapper && blueprintWrapper.getType() === 'blueprint' && (
-							<Card border="secondary">
-								<Card.Header>Extra Info</Card.Header>
-								<Table
-									bordered
-									hover
-								>
-									<colgroup>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col span={1} />
-									</colgroup>
-
-									<tbody>
-										<tr>
-											<td colSpan={2}>
-												{(blueprintData?.parsedData as RawBlueprintData).blueprint?.label}
-											</td>
-										</tr>
-										{((blueprintData?.parsedData as RawBlueprintData).blueprint?.icons || [])
-											.filter((icon) => icon !== null)
-											.map((icon) => {
-												const iconObj = icon as BlueprintIcon;
-												const iconName =
-													('name' in iconObj
-														? String(iconObj.name)
-														: String(iconObj.signal?.name || '')) || '';
-												return (
-													<tr key={(icon as BlueprintIcon).index}>
-														<td className={`icon icon-${iconName}`}>
-															{iconObj.signal ? (
-																<div style={{width: '32px', height: '32px'}}>
-																	<FactorioIcon
-																		icon={{
-																			name: iconObj.signal.name,
-																			type: (iconObj.signal.type ||
-																				'item') as SignalType,
-																			quality: iconObj.signal.quality as Quality,
-																		}}
-																		size="small"
-																	/>
-																</div>
-															) : null}
-														</td>
-														<td>{String(iconName)}</td>
-													</tr>
-												);
-											})}
-									</tbody>
-								</Table>
-							</Card>
-						)}
 					</Col>
 					<Col md={8}>
 						<Card>
 							<Card.Header>Details</Card.Header>
 							<Card.Body>
 								<BlueprintMarkdownDescription
-									renderedMarkdown={blueprintData?.renderedDescription}
+									markdown={blueprintData?.descriptionMarkdown}
 									isLoading={blueprintIsLoading}
 								/>
 
@@ -700,6 +632,12 @@ function SingleBlueprint() {
 								</Button>
 							</Card.Body>
 						</Card>
+						{/* Add BasicInfoPanel for blueprint information */}
+						<BasicInfoPanel blueprint={blueprintData?.parsedData} />
+						{/* Add ExtraInfoPanel for blueprint details */}
+						<ExtraInfoPanel blueprint={blueprintData?.parsedData} />
+						{/* Add ParametersPanel for parameterized blueprints */}
+						<ParametersPanel blueprintString={blueprintData?.parsedData} />
 						{showBlueprint && (
 							<Card>
 								<Card.Header>Blueprint String</Card.Header>
@@ -714,97 +652,6 @@ function SingleBlueprint() {
 								<Card.Body className="code">
 									{safeJsonStringify(blueprintData?.parsedData, 4)}
 								</Card.Body>
-							</Card>
-						)}
-						{blueprintWrapper && blueprintWrapper.getType() === 'blueprint-book' && (
-							<Card>
-								<Card.Header>Extra Info</Card.Header>
-								<Table
-									bordered
-									hover
-								>
-									<colgroup>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col span={1} />
-									</colgroup>
-									<tbody>
-										<tr>
-											<td colSpan={4}>{'Book'}</td>
-											<td>
-												{(blueprintData?.parsedData as RawBlueprintData).blueprint_book?.label}
-											</td>
-										</tr>
-										{(blueprintData?.parsedData as RawBlueprintData).blueprint_book?.blueprints.map(
-											(eachBlueprint, blueprintIndex) => (
-												<tr key={blueprintIndex}>
-													{range(4).map((iconIndex) => {
-														const entry = getBookEntry(eachBlueprint);
-														if (
-															entry &&
-															entry.icons &&
-															entry.icons.length > iconIndex &&
-															entry.icons[iconIndex] !== null
-														) {
-															const icon = entry.icons[iconIndex] as BlueprintIcon;
-
-															const iconName =
-																('name' in icon
-																	? String(icon.name)
-																	: String(icon.signal?.name || '')) || '';
-															return (
-																<td
-																	className={`icon icon-${iconName}`}
-																	key={iconIndex}
-																>
-																	{icon.signal ? (
-																		<div style={{width: '32px', height: '32px'}}>
-																			<FactorioIcon
-																				icon={{
-																					name: icon.signal.name,
-																					type: (icon.signal.type ||
-																						'item') as SignalType,
-																					quality: icon.signal
-																						.quality as Quality,
-																				}}
-																				size="small"
-																			/>
-																		</div>
-																	) : null}
-																</td>
-															);
-														}
-														return (
-															<td
-																className="icon"
-																key={iconIndex}
-															/>
-														);
-													})}
-													<td>
-														{eachBlueprint.blueprint
-															? eachBlueprint.blueprint.label
-															: 'Empty slot in book'}
-													</td>
-												</tr>
-											),
-										)}
-									</tbody>
-								</Table>
 							</Card>
 						)}
 						{blueprintWrapper && blueprintWrapper.getType() === 'upgrade-planner' && (
