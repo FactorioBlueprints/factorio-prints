@@ -110,7 +110,7 @@ export type RawTagIndex = z.infer<typeof rawTagIndexSchema>;
 export type EnrichedTag = z.infer<typeof enrichedTagSchema>;
 export type EnrichedTags = z.infer<typeof enrichedTagsSchema>;
 
-export const validate = <T>(data: unknown, schema: z.ZodSchema<T>, description: string): T =>
+export const validate = <T>(data: unknown, schema: z.ZodSchema<T>, description: string, options?: { silent?: boolean }): T =>
 {
 	try
 	{
@@ -125,17 +125,27 @@ export const validate = <T>(data: unknown, schema: z.ZodSchema<T>, description: 
 				message: e.message,
 				code   : e.code,
 			}));
-			console.error('Schema validation failed', {
-				description,
-				errorCount: error.errors.length,
-				errors    : errorDetails,
-				dataType  : typeof data,
-				dataKeys  : data && typeof data === 'object' ? Object.keys(data) : undefined,
-			});
+
+			if (!options?.silent)
+			{
+				console.error('Schema validation failed', {
+					description,
+					errorCount: error.errors.length,
+					errors    : errorDetails,
+					dataType  : typeof data,
+					dataKeys  : data && typeof data === 'object' ? Object.keys(data) : undefined,
+				});
+			}
+
 			const errorMessage = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
 			throw new Error(`Invalid ${description}: ${errorMessage}`);
 		}
-		console.error('Schema validation failed with unexpected error', { description, error: String(error) });
+
+		if (!options?.silent)
+		{
+			console.error('Schema validation failed with unexpected error', { description, error: String(error) });
+		}
+
 		throw new Error(`Invalid ${description}: ${error instanceof Error ? error.message : 'Unknown error'}`);
 	}
 };
@@ -148,6 +158,18 @@ export const validateRawBlueprintSummary = (data: unknown): RawBlueprintSummary 
 export const validateRawBlueprint = (data: unknown): RawBlueprint =>
 {
 	const parsed = validate(data, rawBlueprintSchema, 'raw blueprint');
+	// Ensure defaults are applied
+	return {
+		...parsed,
+		numberOfFavorites: parsed.numberOfFavorites ?? 0,
+		tags             : parsed.tags ?? [],
+		favorites        : parsed.favorites ?? {},
+	};
+};
+
+export const validateRawBlueprintSilent = (data: unknown): RawBlueprint =>
+{
+	const parsed = validate(data, rawBlueprintSchema, 'raw blueprint', { silent: true });
 	// Ensure defaults are applied
 	return {
 		...parsed,
@@ -383,4 +405,9 @@ export type RawBlueprintData = z.infer<typeof rawBlueprintDataSchema>;
 export const validateRawBlueprintData = (data: unknown): RawBlueprintData =>
 {
 	return validate(data, rawBlueprintDataSchema, 'raw blueprint data');
+};
+
+export const validateRawBlueprintDataSilent = (data: unknown): RawBlueprintData =>
+{
+	return validate(data, rawBlueprintDataSchema, 'raw blueprint data', { silent: true });
 };

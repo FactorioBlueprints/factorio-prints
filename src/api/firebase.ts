@@ -7,6 +7,7 @@ import {
 	RawBlueprintSummaryPage,
 	RawUser,
 	validateRawBlueprint,
+	validateRawBlueprintSilent,
 	validateRawBlueprintSummary,
 	validateRawBlueprintSummaryPage,
 } from '../schemas';
@@ -66,12 +67,40 @@ export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintS
 			return null;
 		}
 
-		const data = await response.json();
-		return validateRawBlueprint(data);
+		let data;
+		try
+		{
+			data = await response.json();
+		}
+		catch (jsonError)
+		{
+			console.warn('CDN blueprint JSON parsing failed:', {
+				blueprintKey: blueprintSummary.key,
+				errorMessage: jsonError instanceof Error ? jsonError.message : 'Invalid JSON',
+			});
+			return null;
+		}
+
+		// Basic data integrity checks
+		if (!data || typeof data !== 'object')
+		{
+			console.warn('CDN blueprint data integrity check failed:', {
+				blueprintKey: blueprintSummary.key,
+				dataType    : typeof data,
+				isNull      : data === null,
+			});
+			return null;
+		}
+
+		return validateRawBlueprintSilent(data);
 	}
 	catch (error)
 	{
-		console.warn('Error fetching blueprint from CDN:', error);
+		// Schema validation errors are expected for CDN data - just log a warning
+		console.warn('CDN blueprint validation failed:', {
+			blueprintKey: blueprintSummary.key,
+			errorMessage: error instanceof Error ? error.message : 'Unknown error',
+		});
 		return null;
 	}
 };

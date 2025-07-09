@@ -1,4 +1,4 @@
-import { deserializeBlueprintNoThrow } from './parsing/blueprintParser';
+import { deserializeBlueprintSilentNoThrow } from './parsing/blueprintParser';
 
 // Blueprint data structure interfaces
 interface BlueprintIcon {
@@ -141,7 +141,7 @@ class Blueprint
 	{
 		if (this.isV15())
 		{
-			return deserializeBlueprintNoThrow(this.encodedText) as V15DecodedObject;
+			return deserializeBlueprintSilentNoThrow(this.encodedText) as V15DecodedObject;
 		}
 
 		return undefined;
