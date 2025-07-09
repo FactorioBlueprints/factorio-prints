@@ -390,7 +390,7 @@ const Create: React.FC = () =>
 		const badRegex = /^https:\/\/imgur\.com\/(a|gallery)\/[a-zA-Z0-9]+$/;
 		if (badRegex.test(blueprint.imageUrl))
 		{
-			submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id}. Click on the "Copy Link" button on the Imgur image page.');
+			submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.');
 		}
 		else
 		{
@@ -398,7 +398,7 @@ const Create: React.FC = () =>
 			const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
 			if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl))
 			{
-				submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}');
+				submissionErrors.push('Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.');
 			}
 		}
 

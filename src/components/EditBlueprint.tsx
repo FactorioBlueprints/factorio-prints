@@ -84,7 +84,7 @@ const blueprintFormSchema = z.object({
 				}
 				return !url || goodRegex1.test(url) || goodRegex2.test(url);
 			},
-			{ message: 'Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}' },
+			{ message: 'Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.' },
 		),
 	tags: z.array(z.string()),
 });
