@@ -57,7 +57,7 @@ Sentry.init({
 		/edge:\/\//,
 		/extension:\/\//,
 	],
-	enabled         : true,
+	enabled         : !(window.location.hostname === 'localhost' && window.location.port === '3000'),
 	// Set maxBreadcrumbs to capture more console logs
 	maxBreadcrumbs  : 100,
 	// Attach stack traces to messages
