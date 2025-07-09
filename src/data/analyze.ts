@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-const fs = require('fs');
+import fs from 'fs';
 
 // Read both files
 const file1Content: string = fs.readFileSync('entitiesWithIcons-old.js', 'utf8');

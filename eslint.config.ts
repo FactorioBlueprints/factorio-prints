@@ -67,18 +67,19 @@ const config: Linter.Config[] = [
 				'warn',
 				{ allowConstantExport: true },
 			],
-			'brace-style'             : ['error', 'allman'],
+			// Formatting rules - some handled by Biome, some by ESLint
+			'brace-style'             : 'off',
 			'implicit-arrow-linebreak': 'off',
-			'padded-blocks'           : ['error', 'never'],
-			'jsx-quotes'              : ['error', 'prefer-single'],
-			'quote-props'             : ['error', 'consistent-as-needed', {numbers: true}],
+			'padded-blocks'           : 'off',
+			'jsx-quotes'              : 'off', // Conflicts with Biome's jsxQuoteStyle: double
+			'quote-props'             : 'off', // Conflicts with Biome's quoteProperties: asNeeded
 			'eqeqeq'                  : ['error', 'smart'],
 			'one-var'                 : ['error', 'never'],
-			'comma-dangle'            : ['error', 'always-multiline'],
-			'object-property-newline' : ['error', {allowMultiplePropertiesPerLine: true}],
-			'operator-linebreak'      : ['error', 'before'],
-			'indent'                  : ['error', 'tab', {SwitchCase: 1}],
-			'key-spacing'             : ['error', {align: 'colon'}],
+			'comma-dangle'            : 'off', // Conflicts with Biome's trailingCommas: all
+			'object-property-newline' : 'off',
+			'operator-linebreak'      : 'off',
+			'indent'                  : 'off',
+			'key-spacing'             : 'off',
 			'no-multi-spaces'         : 'off',
 			'no-tabs'                 : 'off',
 			'react/no-array-index-key': 'off',
@@ -106,27 +107,28 @@ const config: Linter.Config[] = [
 			'react-refresh'     : reactRefresh,
 		},
 		rules: {
-			...js.configs.recommended.rules,
+			...tseslint.configs.recommended.rules,
 			...reactHooks.configs.recommended.rules,
 			'react-hooks/exhaustive-deps'         : 'error',
 			'@typescript-eslint/no-unused-vars'   : ['error', { varsIgnorePattern: '^[A-Z_]' }],
-			'no-unused-vars'                      : 'off',
+			'@typescript-eslint/no-explicit-any'  : 'off', // TODO: Consider enabling this later
 			'react-refresh/only-export-components': [
 				'warn',
 				{ allowConstantExport: true },
 			],
-			'brace-style'             : ['error', 'allman'],
+			// Formatting rules - some handled by Biome, some by ESLint
+			'brace-style'             : 'off',
 			'implicit-arrow-linebreak': 'off',
-			'padded-blocks'           : ['error', 'never'],
-			'jsx-quotes'              : ['error', 'prefer-single'],
-			'quote-props'             : ['error', 'consistent-as-needed', {numbers: true}],
+			'padded-blocks'           : 'off',
+			'jsx-quotes'              : 'off', // Conflicts with Biome's jsxQuoteStyle: double
+			'quote-props'             : 'off', // Conflicts with Biome's quoteProperties: asNeeded
 			'eqeqeq'                  : ['error', 'smart'],
 			'one-var'                 : ['error', 'never'],
-			'comma-dangle'            : ['error', 'always-multiline'],
-			'object-property-newline' : ['error', {allowMultiplePropertiesPerLine: true}],
-			'operator-linebreak'      : ['error', 'before'],
-			'indent'                  : ['error', 'tab', {SwitchCase: 1}],
-			'key-spacing'             : ['error', {align: 'colon'}],
+			'comma-dangle'            : 'off', // Conflicts with Biome's trailingCommas: all
+			'object-property-newline' : 'off',
+			'operator-linebreak'      : 'off',
+			'indent'                  : 'off',
+			'key-spacing'             : 'off',
 			'no-multi-spaces'         : 'off',
 			'no-tabs'                 : 'off',
 			'react/no-array-index-key': 'off',
