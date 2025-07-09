@@ -50,9 +50,6 @@ import {
 	useAuthState,
 }                                from 'react-firebase-hooks/auth';
 import {
-	Helmet,
-}                                from 'react-helmet';
-import {
 	useCopyToClipboard,
 }                                from 'usehooks-ts';
 
@@ -437,11 +434,7 @@ function SingleBlueprint()
 	{
 		return (
 			<>
-				<Helmet>
-					<title>
-						Factorio Prints: Blueprint Not Found
-					</title>
-				</Helmet>
+				<title>Factorio Prints: Blueprint Not Found</title>
 				<div className='p-5 rounded-lg jumbotron'>
 					<h1 className='display-4'>
 						Blueprint Not Found
@@ -474,11 +467,7 @@ function SingleBlueprint()
 
 	return (
 		<>
-			<Helmet>
-				<title>
-					{blueprintIsLoading ? "Factorio Prints: Loading..." : `Factorio Prints: ${(blueprintData?.title)}`}
-				</title>
-			</Helmet>
+			<title>{blueprintIsLoading ? "Factorio Prints: Loading..." : `Factorio Prints: ${(blueprintData?.title)}`}</title>
 			<Container>
 				<Row>
 					<Col md={9}>

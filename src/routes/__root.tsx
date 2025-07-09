@@ -1,6 +1,5 @@
 import React from 'react';
 import { Outlet } from '@tanstack/react-router';
-import { Helmet } from 'react-helmet';
 import { getAuth } from 'firebase/auth';
 import { getDatabase, ref, runTransaction } from 'firebase/database';
 import { useEffect } from 'react';
@@ -62,9 +61,7 @@ function Root()
 
 	return (
 		<>
-			<Helmet>
-				<title>Factorio Prints</title>
-			</Helmet>
+			<title>Factorio Prints</title>
 			<ErrorBoundary>
 				<div>
 					<Header />

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import { useRouter } from '@tanstack/react-router';
 
 const NoMatch: React.FC = () =>
@@ -9,11 +8,7 @@ const NoMatch: React.FC = () =>
 
 	return (
 		<>
-			<Helmet>
-				<title>
-					Factorio Prints: 404
-				</title>
-			</Helmet>
+			<title>Factorio Prints: 404</title>
 			<div className='p-5 rounded-lg jumbotron'>
 				<h1 className='display-4'>
 					404
