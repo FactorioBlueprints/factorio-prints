@@ -25,12 +25,29 @@ export function deserializeBlueprint(blueprintData: string): RawBlueprintData {
 	}
 
 	const base64String = blueprintData.slice(1);
-	const bytes = Uint8Array.from(atob(base64String), (c: string) => c.charCodeAt(0));
 
-	const decompressedBytes = unzlibSync(bytes);
+	let bytes: Uint8Array;
+	try {
+		bytes = Uint8Array.from(atob(base64String), (c: string) => c.charCodeAt(0));
+	} catch (error) {
+		throw new BlueprintError('Invalid base64 data', {cause: error as Error});
+	}
+
+	let decompressedBytes: Uint8Array;
+	try {
+		decompressedBytes = unzlibSync(bytes);
+	} catch (error) {
+		throw new BlueprintError('Failed to decompress blueprint data', {cause: error as Error});
+	}
+
 	const decompressedStr = new TextDecoder().decode(decompressedBytes);
 
-	const parsedData = JSON.parse(decompressedStr.trim());
+	let parsedData: unknown;
+	try {
+		parsedData = JSON.parse(decompressedStr.trim());
+	} catch (error) {
+		throw new BlueprintError('Invalid JSON in blueprint data', {cause: error as Error});
+	}
 
 	// Validate the parsed data using Zod schema
 	const result = validateRawBlueprintData(parsedData);
