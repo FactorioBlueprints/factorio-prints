@@ -1,9 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {render, screen, fireEvent} from '@testing-library/react';
+import {vi, describe, it, expect, beforeEach} from 'vitest';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import SingleTagSelector from './SingleTagSelector';
-import { useTags } from '../hooks/useTags';
+import {useTags} from '../hooks/useTags';
 
 // Mock the router
 const mockNavigate = vi.fn();
@@ -27,25 +27,20 @@ vi.mock('react-select', () => ({
 		isSearchable,
 		closeMenuOnSelect,
 		isMulti,
-	}: any) =>
-	{
-		const handleChange = (event: any) =>
-		{
+	}: any) => {
+		const handleChange = (event: any) => {
 			const selectedValue = event.target.value;
 			const selectedOption = options.find((opt: any) => opt.value === selectedValue);
-			if (selectedOption && onChange)
-			{
+			if (selectedOption && onChange) {
 				onChange(selectedOption);
 			}
 		};
 
 		// Find the matching option if value is provided
 		let selectValue = '';
-		if (value)
-		{
+		if (value) {
 			// The value passed has normalized tag, but options have full path
-			const matchingOption = options.find((opt: any) =>
-			{
+			const matchingOption = options.find((opt: any) => {
 				const normalizedOptionValue = opt.value.replace(/^\/|\/$/g, '');
 				return normalizedOptionValue === value.value;
 			});
@@ -53,22 +48,28 @@ vi.mock('react-select', () => ({
 		}
 
 		return (
-			<div data-testid='react-select' className={className}>
+			<div
+				data-testid="react-select"
+				className={className}
+			>
 				<select
-					data-testid='tag-select'
+					data-testid="tag-select"
 					value={selectValue}
 					onChange={handleChange}
 					disabled={isLoading}
 				>
-					<option value=''>{placeholder}</option>
+					<option value="">{placeholder}</option>
 					{options.map((option: any) => (
-						<option key={option.value} value={option.value}>
+						<option
+							key={option.value}
+							value={option.value}
+						>
 							{option.label}
 						</option>
 					))}
 				</select>
-				{isLoading && <div data-testid='select-loading'>Loading...</div>}
-				<div data-testid='select-props'>
+				{isLoading && <div data-testid="select-loading">Loading...</div>}
+				<div data-testid="select-props">
 					{JSON.stringify({
 						isClearable,
 						isSearchable,
@@ -90,12 +91,10 @@ const mockTagsData = {
 	tags: ['/category1/tag1/', '/category1/tag2/', '/category2/tag3/', '/category2/tag4/'],
 };
 
-describe('SingleTagSelector', () =>
-{
+describe('SingleTagSelector', () => {
 	let queryClient: QueryClient;
 
-	beforeEach(() =>
-	{
+	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: {
@@ -107,35 +106,33 @@ describe('SingleTagSelector', () =>
 		vi.clearAllMocks();
 	});
 
-	const wrapper = ({ children }: { children: React.ReactNode }) => (
+	const wrapper = ({children}: {children: React.ReactNode}) => (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 
-	it('should render with loading state', () =>
-	{
+	it('should render with loading state', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : null,
+			data: null,
 			isLoading: true,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		expect(screen.getByTestId('tag-select')).toBeDisabled();
 		expect(screen.getByTestId('select-loading')).toBeInTheDocument();
 	});
 
-	it('should render with tag options when data is loaded', () =>
-	{
+	it('should render with tag options when data is loaded', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select).not.toBeDisabled();
@@ -149,87 +146,82 @@ describe('SingleTagSelector', () =>
 		expect(options[4]).toHaveTextContent('› category2 › tag4 ›');
 	});
 
-	it('should display current tag as selected', () =>
-	{
+	it('should display current tag as selected', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
+		render(<SingleTagSelector currentTag="category1/tag1" />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('/category1/tag1/');
 	});
 
-	it('should normalize current tag by removing leading/trailing slashes', () =>
-	{
+	it('should normalize current tag by removing leading/trailing slashes', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector currentTag='/category1/tag1/' />, { wrapper });
+		render(<SingleTagSelector currentTag="/category1/tag1/" />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('/category1/tag1/');
 	});
 
-	it('should navigate to correct route when tag is selected', () =>
-	{
+	it('should navigate to correct route when tag is selected', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
+		render(<SingleTagSelector currentTag="category1/tag1" />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 
 		// Select a different tag
-		fireEvent.change(select, { target: { value: '/category2/tag3/' } });
+		fireEvent.change(select, {target: {value: '/category2/tag3/'}});
 
 		expect(mockNavigate).toHaveBeenCalledWith({
-			to    : '/tagged/$category/$name',
-			params: { category: 'category2', name: 'tag3' },
+			to: '/tagged/$category/$name',
+			params: {category: 'category2', name: 'tag3'},
 		});
 	});
 
-	it('should not navigate when selecting the same tag', () =>
-	{
+	it('should not navigate when selecting the same tag', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
+		render(<SingleTagSelector currentTag="category1/tag1" />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 
 		// Select the same tag
-		fireEvent.change(select, { target: { value: '/category1/tag1/' } });
+		fireEvent.change(select, {target: {value: '/category1/tag1/'}});
 
 		expect(mockNavigate).not.toHaveBeenCalled();
 	});
 
-	it('should handle empty tags data', () =>
-	{
+	it('should handle empty tags data', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : { tagHierarchy: {}, tags: [] },
+			data: {tagHierarchy: {}, tags: []},
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select).not.toBeDisabled();
@@ -240,16 +232,15 @@ describe('SingleTagSelector', () =>
 		expect(options[0].value).toBe('');
 	});
 
-	it('should handle null tags data', () =>
-	{
+	it('should handle null tags data', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : null,
+			data: null,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select).not.toBeDisabled();
@@ -260,90 +251,82 @@ describe('SingleTagSelector', () =>
 		expect(options[0].value).toBe('');
 	});
 
-	it('should log error for invalid tag format', () =>
-	{
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() =>
-		{});
+	it('should log error for invalid tag format', () => {
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 		vi.mocked(useTags).mockReturnValue({
 			data: {
-				tagHierarchy: { invalid: ['tag'] },
-				tags        : ['invalidtag'], // Tag without proper format
+				tagHierarchy: {invalid: ['tag']},
+				tags: ['invalidtag'], // Tag without proper format
 			},
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
-		fireEvent.change(select, { target: { value: 'invalidtag' } });
+		fireEvent.change(select, {target: {value: 'invalidtag'}});
 
-		expect(consoleSpy).toHaveBeenCalledWith(
-			'Invalid tag format: "invalidtag" should have exactly one slash',
-		);
+		expect(consoleSpy).toHaveBeenCalledWith('Invalid tag format: "invalidtag" should have exactly one slash');
 		expect(mockNavigate).not.toHaveBeenCalled();
 
 		consoleSpy.mockRestore();
 	});
 
-	it('should render with correct Select props', () =>
-	{
+	it('should render with correct Select props', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector currentTag='category1/tag1' />, { wrapper });
+		render(<SingleTagSelector currentTag="category1/tag1" />, {wrapper});
 
 		const selectProps = JSON.parse(screen.getByTestId('select-props').textContent || '{}');
 
 		expect(selectProps).toEqual({
-			isClearable      : false,
-			isSearchable     : true,
+			isClearable: false,
+			isSearchable: true,
 			closeMenuOnSelect: true,
-			isMulti          : false,
-			hasValue         : true,
+			isMulti: false,
+			hasValue: true,
 		});
 	});
 
-	it('should show placeholder when no tag is selected', () =>
-	{
+	it('should show placeholder when no tag is selected', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		expect(screen.getByText('Select or search for a tag')).toBeInTheDocument();
 	});
 
-	it('should handle tag with multiple slashes correctly', () =>
-	{
+	it('should handle tag with multiple slashes correctly', () => {
 		vi.mocked(useTags).mockReturnValue({
 			data: {
-				tagHierarchy: { 'category/subcategory': ['tag'] },
-				tags        : ['/category/subcategory/tag/'],
+				tagHierarchy: {'category/subcategory': ['tag']},
+				tags: ['/category/subcategory/tag/'],
 			},
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 
 		// This should log an error as it has more than one slash
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() =>
-		{});
-		fireEvent.change(select, { target: { value: '/category/subcategory/tag/' } });
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		fireEvent.change(select, {target: {value: '/category/subcategory/tag/'}});
 
 		expect(consoleSpy).toHaveBeenCalledWith(
 			'Invalid tag format: "category/subcategory/tag" should have exactly one slash',
@@ -353,16 +336,15 @@ describe('SingleTagSelector', () =>
 		consoleSpy.mockRestore();
 	});
 
-	it('should handle undefined currentTag prop', () =>
-	{
+	it('should handle undefined currentTag prop', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector currentTag={undefined} />, { wrapper });
+		render(<SingleTagSelector currentTag={undefined} />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('');
@@ -371,16 +353,15 @@ describe('SingleTagSelector', () =>
 		expect(selectProps.hasValue).toBe(false);
 	});
 
-	it('should handle empty string currentTag', () =>
-	{
+	it('should handle empty string currentTag', () => {
 		vi.mocked(useTags).mockReturnValue({
-			data     : mockTagsData,
+			data: mockTagsData,
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector currentTag='' />, { wrapper });
+		render(<SingleTagSelector currentTag="" />, {wrapper});
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		expect(select.value).toBe('');
@@ -389,25 +370,21 @@ describe('SingleTagSelector', () =>
 		expect(selectProps.hasValue).toBe(false);
 	});
 
-	it('should format tag values correctly in options', () =>
-	{
+	it('should format tag values correctly in options', () => {
 		vi.mocked(useTags).mockReturnValue({
 			data: {
 				tagHierarchy: {
-					'category-with-dash'      : ['tag-with-dash'],
-					'category_with_underscore': ['tag_with_underscore'],
+					'category-with-dash': ['tag-with-dash'],
+					category_with_underscore: ['tag_with_underscore'],
 				},
-				tags: [
-					'/category-with-dash/tag-with-dash/',
-					'/category_with_underscore/tag_with_underscore/',
-				],
+				tags: ['/category-with-dash/tag-with-dash/', '/category_with_underscore/tag_with_underscore/'],
 			},
 			isLoading: false,
-			isError  : false,
-			error    : null,
+			isError: false,
+			error: null,
 		} as any);
 
-		render(<SingleTagSelector />, { wrapper });
+		render(<SingleTagSelector />, {wrapper});
 
 		// Check that dashes and underscores are preserved but slashes are replaced
 		const options = screen.getAllByRole('option');

@@ -8,15 +8,18 @@ interface LoadingIndicatorProps {
 	message?: string;
 }
 
-const LoadingIndicator = ({ isLoading, message = 'Loading...' }: LoadingIndicatorProps) =>
-{
+const LoadingIndicator = ({isLoading, message = 'Loading...'}: LoadingIndicatorProps) => {
 	if (!isLoading) return null;
 
 	return (
-		<Row className='justify-content-center my-5'>
-			<div className='text-center'>
-				<FontAwesomeIcon icon={faCog} spin size='3x' />
-				<h3 className='mt-3'>{message}</h3>
+		<Row className="justify-content-center my-5">
+			<div className="text-center">
+				<FontAwesomeIcon
+					icon={faCog}
+					spin
+					size="3x"
+				/>
+				<h3 className="mt-3">{message}</h3>
 			</div>
 		</Row>
 	);

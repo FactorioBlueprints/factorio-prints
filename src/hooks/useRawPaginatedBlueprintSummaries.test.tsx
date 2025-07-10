@@ -1,8 +1,8 @@
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fetchPaginatedSummaries } from '../api/firebase';
-import { useRawPaginatedBlueprintSummaries } from './useRawPaginatedBlueprintSummaries';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import {renderHook, waitFor} from '@testing-library/react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {fetchPaginatedSummaries} from '../api/firebase';
+import {useRawPaginatedBlueprintSummaries} from './useRawPaginatedBlueprintSummaries';
+import {vi, describe, it, expect, beforeEach} from 'vitest';
 import React from 'react';
 
 vi.mock('../api/firebase');
@@ -10,31 +10,29 @@ vi.mock('../api/firebase');
 const fakeRawData = {
 	data: {
 		blueprint1: {
-			title            : 'Test Blueprint 1',
-			imgurId          : 'img1',
-			imgurType        : 'image/png',
+			title: 'Test Blueprint 1',
+			imgurId: 'img1',
+			imgurType: 'image/png',
 			numberOfFavorites: 10,
-			lastUpdatedDate  : 1000,
+			lastUpdatedDate: 1000,
 		},
 		blueprint2: {
-			title            : 'Test Blueprint 2',
-			imgurId          : 'img2',
-			imgurType        : 'image/jpeg',
+			title: 'Test Blueprint 2',
+			imgurId: 'img2',
+			imgurType: 'image/jpeg',
 			numberOfFavorites: 20,
-			lastUpdatedDate  : 2000,
+			lastUpdatedDate: 2000,
 		},
 	},
-	hasMore  : true,
-	lastKey  : 'blueprint1',
+	hasMore: true,
+	lastKey: 'blueprint1',
 	lastValue: 1000,
 };
 
-describe('useRawPaginatedBlueprintSummaries', () =>
-{
+describe('useRawPaginatedBlueprintSummaries', () => {
 	let queryClient: QueryClient;
 
-	beforeEach(() =>
-	{
+	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: {
@@ -48,15 +46,12 @@ describe('useRawPaginatedBlueprintSummaries', () =>
 		vi.mocked(fetchPaginatedSummaries).mockResolvedValue(fakeRawData);
 	});
 
-	const wrapper = ({ children }: { children: React.ReactNode }) => (
-		<QueryClientProvider client={queryClient}>
-			{children}
-		</QueryClientProvider>
+	const wrapper = ({children}: {children: React.ReactNode}) => (
+		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 
-	it('should fetch and return raw paginated blueprint summaries', async () =>
-	{
-		const { result } = renderHook(() => useRawPaginatedBlueprintSummaries(), { wrapper });
+	it('should fetch and return raw paginated blueprint summaries', async () => {
+		const {result} = renderHook(() => useRawPaginatedBlueprintSummaries(), {wrapper});
 
 		expect(result.current.isLoading).toBeTruthy();
 
@@ -90,52 +85,45 @@ describe('useRawPaginatedBlueprintSummaries', () =>
 		expect(cachedSummary2).toEqual(fakeRawData.data.blueprint2);
 	});
 
-	it('should fetch the next page when fetchNextPage is called', async () =>
-	{
+	it('should fetch the next page when fetchNextPage is called', async () => {
 		const fakeSecondPageData = {
 			data: {
 				blueprint3: {
-					title            : 'Test Blueprint 3',
-					imgurId          : 'img3',
-					imgurType        : 'image/png',
+					title: 'Test Blueprint 3',
+					imgurId: 'img3',
+					imgurType: 'image/png',
 					numberOfFavorites: 30,
-					lastUpdatedDate  : 3000,
+					lastUpdatedDate: 3000,
 				},
 			},
-			hasMore  : false,
-			lastKey  : null,
+			hasMore: false,
+			lastKey: null,
 			lastValue: null,
 		};
 
-		vi.mocked(fetchPaginatedSummaries)
-			.mockResolvedValueOnce(fakeRawData)
-			.mockResolvedValueOnce(fakeSecondPageData);
+		vi.mocked(fetchPaginatedSummaries).mockResolvedValueOnce(fakeRawData).mockResolvedValueOnce(fakeSecondPageData);
 
 		const customData = {
-			pages     : [fakeRawData, fakeSecondPageData],
-			pageParams: [null, { lastKey: 'blueprint1', lastValue: 1000 }],
+			pages: [fakeRawData, fakeSecondPageData],
+			pageParams: [null, {lastKey: 'blueprint1', lastValue: 1000}],
 		};
 
 		const fakeResult = {
-			data              : customData,
-			isLoading         : false,
+			data: customData,
+			isLoading: false,
 			isFetchingNextPage: false,
-			hasNextPage       : false,
+			hasNextPage: false,
 		};
 
-		const { result } = renderHook(() => fakeResult, { wrapper });
+		const {result} = renderHook(() => fakeResult, {wrapper});
 
 		expect(result.current.data.pages).toHaveLength(2);
 		expect(result.current.data.pages[0]).toEqual(fakeRawData);
 		expect(result.current.data.pages[1]).toEqual(fakeSecondPageData);
 	});
 
-	it('should use custom pageSize and orderByField if provided', async () =>
-	{
-		const { result } = renderHook(
-			() => useRawPaginatedBlueprintSummaries(30, 'numberOfFavorites'),
-			{ wrapper },
-		);
+	it('should use custom pageSize and orderByField if provided', async () => {
+		const {result} = renderHook(() => useRawPaginatedBlueprintSummaries(30, 'numberOfFavorites'), {wrapper});
 
 		await waitFor(() => expect(result.current.isLoading).toBeFalsy());
 

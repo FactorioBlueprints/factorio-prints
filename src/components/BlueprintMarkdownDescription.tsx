@@ -7,14 +7,26 @@ interface BlueprintMarkdownDescriptionProps {
 	isLoading: boolean;
 }
 
-const BlueprintMarkdownDescription: React.FC<BlueprintMarkdownDescriptionProps> = ({ renderedMarkdown = '', isLoading }) =>
-{
-	if (isLoading)
-	{
-		return <FontAwesomeIcon icon={faCog} spin />;
+const BlueprintMarkdownDescription: React.FC<BlueprintMarkdownDescriptionProps> = ({
+	renderedMarkdown = '',
+	isLoading,
+}) => {
+	if (isLoading) {
+		return (
+			<FontAwesomeIcon
+				icon={faCog}
+				spin
+			/>
+		);
 	}
 
-	return <div className='markdown-content' style={{padding: '0.5rem'}} dangerouslySetInnerHTML={{__html: renderedMarkdown}} />;
+	return (
+		<div
+			className="markdown-content"
+			style={{padding: '0.5rem'}}
+			dangerouslySetInnerHTML={{__html: renderedMarkdown}}
+		/>
+	);
 };
 
 export default BlueprintMarkdownDescription;

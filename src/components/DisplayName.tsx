@@ -14,31 +14,38 @@ interface DisplayNameProps {
 	externalIsLoading?: boolean;
 }
 
-const DisplayName: React.FC<DisplayNameProps> = ({ userId, withLink = true, externalIsLoading = false }) =>
-{
+const DisplayName: React.FC<DisplayNameProps> = ({userId, withLink = true, externalIsLoading = false}) => {
 	const [currentUser] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const isYou = currentUser && currentUser.uid === userId;
 
-	const {
-		data: displayName,
-		isLoading: nameIsLoading,
-	} = useUserDisplayName(userId);
+	const {data: displayName, isLoading: nameIsLoading} = useUserDisplayName(userId);
 
 	const isLoading = nameIsLoading || externalIsLoading || !userId;
 
-	if (isLoading)
-	{
-		return <FontAwesomeIcon icon={faCog} spin />;
+	if (isLoading) {
+		return (
+			<FontAwesomeIcon
+				icon={faCog}
+				spin
+			/>
+		);
 	}
 
 	const nameStyle = isYou ? 'text-warning' : '';
 	const youText = isYou ? ' (You)' : '';
-	const content = <span className={nameStyle}>{displayName}{youText}</span>;
+	const content = (
+		<span className={nameStyle}>
+			{displayName}
+			{youText}
+		</span>
+	);
 
-	if (withLink)
-	{
+	if (withLink) {
 		return (
-			<Link to='/user/$userId' params={{ userId }}>
+			<Link
+				to="/user/$userId"
+				params={{userId}}
+			>
 				{content}
 			</Link>
 		);

@@ -1,28 +1,24 @@
-import {faChevronDown, faCog}        from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon}             from '@fortawesome/react-fontawesome';
-import React                         from 'react';
-import Button                        from 'react-bootstrap/Button';
-import Col                           from 'react-bootstrap/Col';
-import Container                     from 'react-bootstrap/Container';
-import Row                           from 'react-bootstrap/Row';
+import {faChevronDown, faCog} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import React from 'react';
+import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
 import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
-import {useEnrichedPaginatedSummaries}    from '../hooks/useEnrichedPaginatedSummaries';
+import {useEnrichedPaginatedSummaries} from '../hooks/useEnrichedPaginatedSummaries';
 import useFlattenedEnrichedPaginatedSummaries from '../hooks/useFlattenedEnrichedPaginatedSummaries';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
-import PageHeader         from './PageHeader';
-import SearchForm         from './SearchForm';
-import TagForm            from './TagForm';
+import PageHeader from './PageHeader';
+import SearchForm from './SearchForm';
+import TagForm from './TagForm';
 
-const BlueprintGrid: React.FC = () =>
-{
-	const {
-		data,
-		isLoading,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useEnrichedPaginatedSummaries(60, 'lastUpdatedDate');
+const BlueprintGrid: React.FC = () => {
+	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useEnrichedPaginatedSummaries(
+		60,
+		'lastUpdatedDate',
+	);
 
 	const flattenedSummaries = useFlattenedEnrichedPaginatedSummaries(data);
 
@@ -30,12 +26,14 @@ const BlueprintGrid: React.FC = () =>
 
 	const blueprintSummaries = filteredSummaries;
 
-	if (isLoading)
-	{
+	if (isLoading) {
 		return (
-			<div className='p-5 rounded-lg jumbotron'>
-				<h1 className='display-4'>
-					<FontAwesomeIcon icon={faCog} spin />
+			<div className="p-5 rounded-lg jumbotron">
+				<h1 className="display-4">
+					<FontAwesomeIcon
+						icon={faCog}
+						spin
+					/>
 					{' Loading data'}
 				</h1>
 			</div>
@@ -44,29 +42,34 @@ const BlueprintGrid: React.FC = () =>
 
 	return (
 		<Container fluid>
-			<PageHeader title='Most Recent' />
-			<Row className='search-row'>
+			<PageHeader title="Most Recent" />
+			<Row className="search-row">
 				<SearchForm />
 				<TagForm />
 			</Row>
-			<Row className='blueprint-grid-row justify-content-center'>
-				{
-					blueprintSummaries.map(blueprintSummary =>
-						<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />)
-				}
+			<Row className="blueprint-grid-row justify-content-center">
+				{blueprintSummaries.map((blueprintSummary) => (
+					<BlueprintThumbnail
+						key={blueprintSummary.key}
+						blueprintSummary={blueprintSummary}
+					/>
+				))}
 			</Row>
 			{hasNextPage && (
-				<Row className='text-center my-4'>
+				<Row className="text-center my-4">
 					<Col>
 						<Button
 							onClick={() => fetchNextPage()}
 							disabled={isFetchingNextPage}
-							variant='primary'
-							size='lg'
+							variant="primary"
+							size="lg"
 						>
 							{isFetchingNextPage ? (
 								<>
-									<FontAwesomeIcon icon={faCog} spin />
+									<FontAwesomeIcon
+										icon={faCog}
+										spin
+									/>
 									{' Loading more...'}
 								</>
 							) : (

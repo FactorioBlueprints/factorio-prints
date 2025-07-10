@@ -13,8 +13,7 @@ import useEnrichedBlueprintSummaries from './useEnrichedBlueprintSummaries';
 const useBlueprintSummaries = (
 	blueprintsData: Record<string, boolean> | null | undefined,
 	blueprintsSuccess: boolean,
-) =>
-{
+) => {
 	// Simply pass through to the new implementation
 	return useEnrichedBlueprintSummaries(blueprintsData, blueprintsSuccess);
 };

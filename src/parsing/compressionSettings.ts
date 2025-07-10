@@ -5,5 +5,5 @@ export interface CompressionSettings {
 
 export const DEFAULT_COMPRESSION_SETTINGS: CompressionSettings = {
 	level: 5,
-	mem  : 2,
+	mem: 2,
 };

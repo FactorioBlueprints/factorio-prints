@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import { useRawPaginatedBlueprintSummaries } from './useRawPaginatedBlueprintSummaries';
-import { enrichPaginatedBlueprintSummaries } from '../utils/enrichPaginatedBlueprintSummaries';
-import { validateEnrichedPaginatedBlueprintSummaries } from '../schemas';
-import type { RawPaginatedBlueprintSummaries, EnrichedPaginatedBlueprintSummaries } from '../schemas';
+import {useMemo} from 'react';
+import {useRawPaginatedBlueprintSummaries} from './useRawPaginatedBlueprintSummaries';
+import {enrichPaginatedBlueprintSummaries} from '../utils/enrichPaginatedBlueprintSummaries';
+import {validateEnrichedPaginatedBlueprintSummaries} from '../schemas';
+import type {RawPaginatedBlueprintSummaries, EnrichedPaginatedBlueprintSummaries} from '../schemas';
 
 /**
  * Hook to fetch and enrich paginated blueprint summaries
@@ -10,15 +10,10 @@ import type { RawPaginatedBlueprintSummaries, EnrichedPaginatedBlueprintSummarie
  * @param orderByField - The field to order the results by
  * @returns React Query result with enriched paginated blueprint summaries
  */
-export const useEnrichedPaginatedBlueprintSummaries = (
-	pageSize = 60,
-	orderByField = 'lastUpdatedDate',
-) =>
-{
+export const useEnrichedPaginatedBlueprintSummaries = (pageSize = 60, orderByField = 'lastUpdatedDate') => {
 	const rawPaginatedQuery = useRawPaginatedBlueprintSummaries(pageSize, orderByField);
 
-	const enrichedData = useMemo(() =>
-	{
+	const enrichedData = useMemo(() => {
 		if (!rawPaginatedQuery.data) return null;
 
 		// Enrich the raw data
@@ -28,14 +23,11 @@ export const useEnrichedPaginatedBlueprintSummaries = (
 		console.log('Enriched paginated data before validation:', JSON.stringify(enriched));
 
 		// Strict validation to catch any issues
-		try
-		{
+		try {
 			const validated = validateEnrichedPaginatedBlueprintSummaries(enriched);
 			console.log('Validated enriched paginated data:', JSON.stringify(validated));
 			return validated ?? null;
-		}
-		catch (error)
-		{
+		} catch (error) {
 			console.error('Validation error in enriched paginated data:', error);
 			throw error; // Re-throw to bubble up the error
 		}

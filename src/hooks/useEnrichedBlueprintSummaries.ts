@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import {useMemo} from 'react';
 import useRawBlueprintSummaries from './useRawBlueprintSummaries';
-import { enrichBlueprintSummary } from '../utils/enrichBlueprintSummary';
-import type { UseQueryResult } from '@tanstack/react-query';
-import type { RawBlueprintSummary, EnrichedBlueprintSummary } from '../schemas';
+import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
+import type {UseQueryResult} from '@tanstack/react-query';
+import type {RawBlueprintSummary, EnrichedBlueprintSummary} from '../schemas';
 
 /**
  * Hook to fetch and enrich multiple blueprint summaries by their IDs
@@ -17,12 +17,10 @@ const useEnrichedBlueprintSummaries = (
 	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>>;
 	blueprintSummaries: (EnrichedBlueprintSummary | null)[];
 	rawBlueprintSummaries: RawBlueprintSummary[];
-} =>
-{
-	const { queriesByKey, rawBlueprintSummaries } = useRawBlueprintSummaries(blueprintsData, blueprintsSuccess);
+} => {
+	const {queriesByKey, rawBlueprintSummaries} = useRawBlueprintSummaries(blueprintsData, blueprintsSuccess);
 
-	const blueprintSummaries = useMemo(() =>
-	{
+	const blueprintSummaries = useMemo(() => {
 		// Create an array of enriched blueprint summaries
 		return Object.entries(queriesByKey)
 			.filter(([, query]) => query.isSuccess && query.data)

@@ -1,6 +1,6 @@
-import React, { ErrorInfo, ReactNode } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle, faRedo } from '@fortawesome/free-solid-svg-icons';
+import React, {ErrorInfo, ReactNode} from 'react';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faExclamationTriangle, faRedo} from '@fortawesome/free-solid-svg-icons';
 
 interface ErrorBoundaryProps {
 	children: ReactNode;
@@ -12,45 +12,40 @@ interface ErrorBoundaryState {
 	errorInfo: ErrorInfo | null;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState>
-{
-	constructor(props: ErrorBoundaryProps)
-	{
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+	constructor(props: ErrorBoundaryProps) {
 		super(props);
-		this.state = { hasError: false, error: null, errorInfo: null };
+		this.state = {hasError: false, error: null, errorInfo: null};
 	}
 
-	static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState>
-	{
-		return { hasError: true, error };
+	static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+		return {hasError: true, error};
 	}
 
-	componentDidCatch(error: Error, errorInfo: ErrorInfo): void
-	{
-		this.setState({ error, errorInfo });
+	componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+		this.setState({error, errorInfo});
 		console.error('ErrorBoundary caught an error:', error, errorInfo);
 	}
 
-	render(): ReactNode
-	{
-		if (this.state.hasError)
-		{
+	render(): ReactNode {
+		if (this.state.hasError) {
 			return (
-				<div className='p-5 rounded-lg jumbotron'>
-					<h2 className='display-4 text-warning'>
+				<div className="p-5 rounded-lg jumbotron">
+					<h2 className="display-4 text-warning">
 						<FontAwesomeIcon icon={faExclamationTriangle} /> Something went wrong
 					</h2>
-					<details className='mt-3 lead'>
-						<summary className='btn btn-secondary'>View error details</summary>
-						<p className='mt-3 text-danger'>{this.state.error?.toString()}</p>
-						<pre className='mt-3 p-3 bg-dark text-light rounded' style={{ whiteSpace: 'pre-wrap' }}>
-							<code>
-								{this.state.errorInfo?.componentStack}
-							</code>
+					<details className="mt-3 lead">
+						<summary className="btn btn-secondary">View error details</summary>
+						<p className="mt-3 text-danger">{this.state.error?.toString()}</p>
+						<pre
+							className="mt-3 p-3 bg-dark text-light rounded"
+							style={{whiteSpace: 'pre-wrap'}}
+						>
+							<code>{this.state.errorInfo?.componentStack}</code>
 						</pre>
 					</details>
 					<button
-						className='btn btn-warning mt-3'
+						className="btn btn-warning mt-3"
 						onClick={() => window.location.reload()}
 					>
 						<FontAwesomeIcon icon={faRedo} /> Reload Page
