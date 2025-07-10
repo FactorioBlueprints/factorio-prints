@@ -1,7 +1,7 @@
-import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { fetchPaginatedSummaries } from '../api/firebase';
-import type { RawBlueprintSummaryPage } from '../schemas';
+import {useInfiniteQuery, useQueryClient, type InfiniteData} from '@tanstack/react-query';
+import {useEffect} from 'react';
+import {fetchPaginatedSummaries} from '../api/firebase';
+import type {RawBlueprintSummaryPage} from '../schemas';
 
 type PageParam = {
 	lastKey: string | null;
@@ -14,43 +14,38 @@ type PageParam = {
  * @param orderByField - Field to order results by (default: 'lastUpdatedDate')
  * @returns Infinite query result with raw paginated blueprint summaries
  */
-export const useRawPaginatedSummaries = (pageSize = 60, orderByField = 'lastUpdatedDate') =>
-{
+export const useRawPaginatedSummaries = (pageSize = 60, orderByField = 'lastUpdatedDate') => {
 	const queryClient = useQueryClient();
 
-	const result = useInfiniteQuery<RawBlueprintSummaryPage, Error, InfiniteData<RawBlueprintSummaryPage>, readonly unknown[], PageParam>({
+	const result = useInfiniteQuery<
+		RawBlueprintSummaryPage,
+		Error,
+		InfiniteData<RawBlueprintSummaryPage>,
+		readonly unknown[],
+		PageParam
+	>({
 		queryKey: ['blueprintSummaries', 'orderByField', orderByField],
-		queryFn : async ({ pageParam = { lastKey: null, lastValue: null } }) =>
-		{
+		queryFn: async ({pageParam = {lastKey: null, lastValue: null}}) => {
 			return fetchPaginatedSummaries(pageSize, pageParam.lastKey, pageParam.lastValue, orderByField);
 		},
-		getNextPageParam: (lastPage) =>
-		{
-			if (!lastPage.hasMore)
-			{
+		getNextPageParam: (lastPage) => {
+			if (!lastPage.hasMore) {
 				return undefined;
 			}
 			return {
-				lastKey  : lastPage.lastKey,
+				lastKey: lastPage.lastKey,
 				lastValue: lastPage.lastValue,
 			};
 		},
-		initialPageParam: { lastKey: null, lastValue: null },
+		initialPageParam: {lastKey: null, lastValue: null},
 	});
 
 	// Set individual blueprint summaries in cache for cross-query consistency
-	useEffect(() =>
-	{
-		if (result.data)
-		{
-			result.data.pages.forEach(page =>
-			{
-				Object.entries(page.data).forEach(([blueprintId, summary]) =>
-				{
-					queryClient.setQueryData(
-						['blueprintSummaries', 'blueprintId', blueprintId],
-						summary,
-					);
+	useEffect(() => {
+		if (result.data) {
+			result.data.pages.forEach((page) => {
+				Object.entries(page.data).forEach(([blueprintId, summary]) => {
+					queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], summary);
 				});
 			});
 		}

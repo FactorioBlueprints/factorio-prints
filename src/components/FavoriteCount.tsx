@@ -7,11 +7,14 @@ interface FavoriteCountProps {
 	isLoading: boolean;
 }
 
-const FavoriteCount: React.FC<FavoriteCountProps> = ({ count, isLoading }) =>
-{
-	if (isLoading)
-	{
-		return <FontAwesomeIcon icon={faCog} spin />;
+const FavoriteCount: React.FC<FavoriteCountProps> = ({count, isLoading}) => {
+	if (isLoading) {
+		return (
+			<FontAwesomeIcon
+				icon={faCog}
+				spin
+			/>
+		);
 	}
 
 	return <>{count}</>;

@@ -1,16 +1,15 @@
 import React from 'react';
-import { createRouter, RouterProvider } from '@tanstack/react-router';
+import {createRouter, RouterProvider} from '@tanstack/react-router';
 import * as Sentry from '@sentry/react';
-import { routeTree } from './routeTree.gen';
+import {routeTree} from './routeTree.gen';
 
 // Create the router instance with type assertion to work around strictNullChecks requirement
 // TODO: Remove this assertion once strictNullChecks is enabled project-wide
 const router = createRouter({
 	routeTree,
-	defaultPreload         : 'intent',
+	defaultPreload: 'intent',
 	defaultPreloadStaleTime: 0,
-	defaultOnError         : (error: Error) =>
-	{
+	defaultOnError: (error: Error) => {
 		Sentry.captureException(error);
 	},
 } as any);
@@ -22,7 +21,6 @@ declare module '@tanstack/react-router' {
 	}
 }
 
-export function Router(): React.ReactElement
-{
+export function Router(): React.ReactElement {
 	return <RouterProvider router={router} />;
 }

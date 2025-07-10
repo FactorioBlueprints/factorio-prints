@@ -1,26 +1,33 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { StrictMode } from 'react';
-import * as Sentry from "@sentry/react";
+import {createRoot} from 'react-dom/client';
+import {StrictMode} from 'react';
+import * as Sentry from '@sentry/react';
 
 import './css/style.css';
 import QueryProvider from './providers/QueryProvider';
-import { Router } from './router';
+import {Router} from './router';
 
 Sentry.init({
-	dsn           : "https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704",
+	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
 	// Setting this option to true will send default PII data to Sentry.
 	// For example, automatic IP address collection on events
 	sendDefaultPii: true,
 	// Set release version to match the build
-	release       : import.meta.env.VITE_APP_VERSION || '0.1.0',
-	integrations  : [
+	release: import.meta.env.VITE_APP_VERSION || '0.1.0',
+	integrations: [
 		Sentry.browserTracingIntegration(),
 		Sentry.replayIntegration({
 			maskAllInputs: false,
 			blockAllMedia: false,
-			maskAllText  : false,
-			ignore       : ['[id^="dsq-"]', '.disqus-thread', '#disqus_thread', 'iframe[src*="disqus.com"]', 'iframe[name*="dsq-"]', 'iframe[title*="Disqus"]'],
+			maskAllText: false,
+			ignore: [
+				'[id^="dsq-"]',
+				'.disqus-thread',
+				'#disqus_thread',
+				'iframe[src*="disqus.com"]',
+				'iframe[name*="dsq-"]',
+				'iframe[title*="Disqus"]',
+			],
 		}),
 		Sentry.captureConsoleIntegration({
 			levels: ['error', 'warn', 'info', 'debug'],
@@ -28,88 +35,69 @@ Sentry.init({
 		Sentry.contextLinesIntegration(),
 		Sentry.breadcrumbsIntegration({
 			console: true,
-			dom    : true,
-			fetch  : true,
+			dom: true,
+			fetch: true,
 			history: true,
-			sentry : true,
-			xhr    : true,
+			sentry: true,
+			xhr: true,
 		}),
 	],
 	// Tracing
-	tracesSampleRate        : 1.0, //  Capture 100% of the transactions
+	tracesSampleRate: 1.0, //  Capture 100% of the transactions
 	// Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
-	tracePropagationTargets : ["localhost", /^https:\/\/yourserver\.io\/api/],
+	tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
 	// Session Replay
 	replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
 	replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
 	// Allow localhost URLs
-	allowUrls               : [
-		'http://localhost',
-		'https://localhost',
-		/localhost:\d{4}/,
-		'https://factorioprints.com',
-	],
+	allowUrls: ['http://localhost', 'https://localhost', /localhost:\d{4}/, 'https://factorioprints.com'],
 	// Filter out errors from browser extensions and other third-party sources
-	denyUrls: [
-		/chrome-extension:\/\//,
-		/moz-extension:\/\//,
-		/safari-extension:\/\//,
-		/edge:\/\//,
-		/extension:\/\//,
-	],
-	enabled         : !(window.location.hostname === 'localhost' && window.location.port === '3000'),
+	denyUrls: [/chrome-extension:\/\//, /moz-extension:\/\//, /safari-extension:\/\//, /edge:\/\//, /extension:\/\//],
+	enabled: !(window.location.hostname === 'localhost' && window.location.port === '3000'),
 	// Set maxBreadcrumbs to capture more console logs
-	maxBreadcrumbs  : 100,
+	maxBreadcrumbs: 100,
 	// Attach stack traces to messages
 	attachStacktrace: true,
-	beforeSend      : (event, hint) =>
-	{
+	beforeSend: (event, hint) => {
 		// Filter out Disqus errors
 		const error = hint.originalException;
-		if (error && error instanceof Error)
-		{
-			if (error.stack && (error.stack.includes('embed.js') || error.stack.includes('disqus')))
-			{
+		if (error && error instanceof Error) {
+			if (error.stack && (error.stack.includes('embed.js') || error.stack.includes('disqus'))) {
 				return null; // Don't send to Sentry
 			}
 		}
 
 		// Filter out Chrome extension errors
-		if (event.exception?.values?.[0]?.stacktrace?.frames)
-		{
+		if (event.exception?.values?.[0]?.stacktrace?.frames) {
 			const frames = event.exception.values[0].stacktrace.frames;
-			const hasExtensionFrame = frames.some(frame =>
-				frame.filename && (
-					frame.filename.includes('chrome-extension://')
-					|| frame.filename.includes('moz-extension://')
-					|| frame.filename.includes('extension://')
-					|| frame.filename.includes('safari-extension://')
-					|| frame.filename.includes('edge://')
-					|| frame.filename.includes('chrome://')
-				),
+			const hasExtensionFrame = frames.some(
+				(frame) =>
+					frame.filename &&
+					(frame.filename.includes('chrome-extension://') ||
+						frame.filename.includes('moz-extension://') ||
+						frame.filename.includes('extension://') ||
+						frame.filename.includes('safari-extension://') ||
+						frame.filename.includes('edge://') ||
+						frame.filename.includes('chrome://')),
 			);
-			if (hasExtensionFrame)
-			{
+			if (hasExtensionFrame) {
 				return null; // Don't send browser extension errors to Sentry
 			}
 		}
 
-		if (import.meta.env.DEV)
-		{
+		if (import.meta.env.DEV) {
 			// Use console.log instead of console.error to avoid triggering Sentry again
 			console.log('Sentry Error:', hint.originalException || hint.syntheticException);
 		}
 		return event;
 	},
-	beforeBreadcrumb: (breadcrumb) =>
-	{
+	beforeBreadcrumb: (breadcrumb) => {
 		return breadcrumb;
 	},
 });
 
 // Add Vite's preload error handler for module loading failures
-window.addEventListener('vite:preloadError', (event) =>
-{
+window.addEventListener('vite:preloadError', (event) => {
 	console.error('Vite preload error detected, reloading page...', event.payload);
 	Sentry.captureException(event.payload, {
 		tags: {
@@ -124,62 +112,60 @@ window.addEventListener('vite:preloadError', (event) =>
 });
 
 // Add global error handler for images
-window.addEventListener('error', function(e: ErrorEvent)
-{
-	const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
-	if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME'))
-	{
-		// In development, log the error for debugging
-		if (import.meta.env.DEV)
-		{
-			console.log('Image/iframe load error:', target.src);
+window.addEventListener(
+	'error',
+	function (e: ErrorEvent) {
+		const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
+		if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME')) {
+			// In development, log the error for debugging
+			if (import.meta.env.DEV) {
+				console.log('Image/iframe load error:', target.src);
+			}
+			// Prevent the error from bubbling up
+			e.preventDefault();
+			return true;
 		}
-		// Prevent the error from bubbling up
-		e.preventDefault();
-		return true;
-	}
 
-	// Handle third-party script errors (like Google Ads embed.js)
-	if (e.filename && (
-		e.filename.includes('embed.js')
-		|| e.filename.includes('disqus')
-		|| e.filename.includes('googlesyndication')
-		|| e.filename.includes('googletagmanager')
-		|| e.filename.includes('adsbygoogle')
-	))
-	{
-		if (import.meta.env.DEV)
-		{
-			console.warn('Third-party script error suppressed:', e.error?.message, 'from', e.filename);
+		// Handle third-party script errors (like Google Ads embed.js)
+		if (
+			e.filename &&
+			(e.filename.includes('embed.js') ||
+				e.filename.includes('disqus') ||
+				e.filename.includes('googlesyndication') ||
+				e.filename.includes('googletagmanager') ||
+				e.filename.includes('adsbygoogle'))
+		) {
+			if (import.meta.env.DEV) {
+				console.warn('Third-party script error suppressed:', e.error?.message, 'from', e.filename);
+			}
+			// Prevent the error from being reported to Sentry
+			e.preventDefault();
+			return true;
 		}
-		// Prevent the error from being reported to Sentry
-		e.preventDefault();
-		return true;
-	}
 
-	// Handle browser extension errors
-	if (e.filename && (
-		e.filename.includes('chrome-extension://')
-		|| e.filename.includes('moz-extension://')
-		|| e.filename.includes('extension://')
-		|| e.filename.includes('safari-extension://')
-		|| e.filename.includes('edge://')
-		|| e.filename.includes('chrome://')
-	))
-	{
-		if (import.meta.env.DEV)
-		{
-			console.warn('Browser extension error suppressed:', e.error?.message, 'from', e.filename);
+		// Handle browser extension errors
+		if (
+			e.filename &&
+			(e.filename.includes('chrome-extension://') ||
+				e.filename.includes('moz-extension://') ||
+				e.filename.includes('extension://') ||
+				e.filename.includes('safari-extension://') ||
+				e.filename.includes('edge://') ||
+				e.filename.includes('chrome://'))
+		) {
+			if (import.meta.env.DEV) {
+				console.warn('Browser extension error suppressed:', e.error?.message, 'from', e.filename);
+			}
+			// Prevent the error from being reported to Sentry
+			e.preventDefault();
+			return true;
 		}
-		// Prevent the error from being reported to Sentry
-		e.preventDefault();
-		return true;
-	}
-}, true);
+	},
+	true,
+);
 
 const container = document.getElementById('root');
-if (!container)
-{
+if (!container) {
 	throw new Error('Root element not found');
 }
 

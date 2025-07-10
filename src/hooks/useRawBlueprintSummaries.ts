@@ -1,7 +1,7 @@
-import { useQueries, UseQueryResult } from '@tanstack/react-query';
-import { useMemo } from 'react';
-import { fetchBlueprintSummary } from '../api/firebase';
-import type { RawBlueprintSummary } from '../schemas';
+import {useQueries, UseQueryResult} from '@tanstack/react-query';
+import {useMemo} from 'react';
+import {fetchBlueprintSummary} from '../api/firebase';
+import type {RawBlueprintSummary} from '../schemas';
 
 /**
  * Hook to fetch multiple raw blueprint summaries by their IDs
@@ -15,31 +15,27 @@ const useRawBlueprintSummaries = (
 ): {
 	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>>;
 	rawBlueprintSummaries: RawBlueprintSummary[];
-} =>
-{
+} => {
 	const blueprintIds = Object.keys(blueprintsData || {});
 
 	const queryResults = useQueries({
-		queries: blueprintIds.map(blueprintId => ({
-			queryKey : ['blueprintSummaries', 'blueprintId', blueprintId],
-			queryFn  : () => fetchBlueprintSummary(blueprintId),
-			enabled  : !!blueprintId && blueprintsSuccess,
+		queries: blueprintIds.map((blueprintId) => ({
+			queryKey: ['blueprintSummaries', 'blueprintId', blueprintId],
+			queryFn: () => fetchBlueprintSummary(blueprintId),
+			enabled: !!blueprintId && blueprintsSuccess,
 			staleTime: 1000 * 60 * 60 * 24,
 		})),
 	});
 
-	const queriesByKey = useMemo(() =>
-	{
+	const queriesByKey = useMemo(() => {
 		const resultMap: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>> = {};
-		for (let i = 0; i < blueprintIds.length; i++)
-		{
+		for (let i = 0; i < blueprintIds.length; i++) {
 			resultMap[blueprintIds[i]] = queryResults[i];
 		}
 		return resultMap;
 	}, [blueprintIds, queryResults]);
 
-	const rawBlueprintSummaries = useMemo(() =>
-	{
+	const rawBlueprintSummaries = useMemo(() => {
 		return Object.entries(queriesByKey)
 			.filter(([, query]) => query.isSuccess && query.data !== null && query.data !== undefined)
 			.map(([, query]) => query.data as RawBlueprintSummary);

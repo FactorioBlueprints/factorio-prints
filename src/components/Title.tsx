@@ -9,9 +9,14 @@ interface TitleProps {
 	className?: string;
 }
 
-const Title: React.FC<TitleProps> = props => (
+const Title: React.FC<TitleProps> = (props) => (
 	<div>
-		<FontAwesomeIcon icon={props.icon} size='lg' fixedWidth className={props.className} />
+		<FontAwesomeIcon
+			icon={props.icon}
+			size="lg"
+			fixedWidth
+			className={props.className}
+		/>
 		{` ${props.text}`}
 	</div>
 );

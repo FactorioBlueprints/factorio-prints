@@ -1,15 +1,15 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {render, screen} from '@testing-library/react';
+import {vi, describe, it, expect, beforeEach} from 'vitest';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import SingleTagGrid from './SingleTagGrid';
-import { useEnrichedTagBlueprintSummaries } from '../hooks/useEnrichedTagBlueprintSummaries';
-import { useFilterByTitle } from '../hooks/useFilterByTitle';
-import type { EnrichedBlueprintSummary } from '../schemas';
+import {useEnrichedTagBlueprintSummaries} from '../hooks/useEnrichedTagBlueprintSummaries';
+import {useFilterByTitle} from '../hooks/useFilterByTitle';
+import type {EnrichedBlueprintSummary} from '../schemas';
 
 // Mock the router params
 vi.mock('@tanstack/react-router', () => ({
-	useParams  : vi.fn(() => ({ tag: 'test/tag' })),
+	useParams: vi.fn(() => ({tag: 'test/tag'})),
 	useNavigate: vi.fn(() => vi.fn()),
 }));
 
@@ -19,80 +19,79 @@ vi.mock('../hooks/useFilterByTitle');
 
 // Mock the components
 vi.mock('./BlueprintThumbnail', () => ({
-	default: ({ blueprintSummary }: { blueprintSummary: EnrichedBlueprintSummary }) => (
-		<div data-testid={`blueprint-thumbnail-${blueprintSummary.key}`}>
-			{blueprintSummary.title}
-		</div>
+	default: ({blueprintSummary}: {blueprintSummary: EnrichedBlueprintSummary}) => (
+		<div data-testid={`blueprint-thumbnail-${blueprintSummary.key}`}>{blueprintSummary.title}</div>
 	),
 }));
 
 vi.mock('./PageHeader', () => ({
-	default: ({ title }: { title: string }) => <div data-testid='page-header'>{title}</div>,
+	default: ({title}: {title: string}) => <div data-testid="page-header">{title}</div>,
 }));
 
 vi.mock('./SearchForm', () => ({
-	default: () => <div data-testid='search-form'>Search Form</div>,
+	default: () => <div data-testid="search-form">Search Form</div>,
 }));
 
 vi.mock('./SingleTagSelector', () => ({
-	default: ({ currentTag }: { currentTag: string }) => (
-		<div data-testid='single-tag-selector' data-current-tag={currentTag}>
+	default: ({currentTag}: {currentTag: string}) => (
+		<div
+			data-testid="single-tag-selector"
+			data-current-tag={currentTag}
+		>
 			Tag Selector
 		</div>
 	),
 }));
 
 vi.mock('./grid/LoadingIndicator', () => ({
-	default: ({ isLoading, message }: { isLoading: boolean; message: string }) =>
-		isLoading ? <div data-testid='loading-indicator'>{message}</div> : null,
+	default: ({isLoading, message}: {isLoading: boolean; message: string}) =>
+		isLoading ? <div data-testid="loading-indicator">{message}</div> : null,
 }));
 
 vi.mock('./grid/ErrorDisplay', () => ({
-	default: ({ error, message }: { error: any; message: string }) =>
-		error ? <div data-testid='error-display'>{message}</div> : null,
+	default: ({error, message}: {error: any; message: string}) =>
+		error ? <div data-testid="error-display">{message}</div> : null,
 }));
 
 vi.mock('./grid/EmptyResults', () => ({
-	default: ({ isEmpty, children }: { isEmpty: boolean; children: React.ReactNode }) =>
-		isEmpty ? <div data-testid='empty-results'>{children}</div> : null,
+	default: ({isEmpty, children}: {isEmpty: boolean; children: React.ReactNode}) =>
+		isEmpty ? <div data-testid="empty-results">{children}</div> : null,
 }));
 
 const mockEnrichedBlueprintSummary1: EnrichedBlueprintSummary = {
-	key              : 'blueprint1',
-	title            : 'Test Blueprint 1',
-	lastUpdatedDate  : 1000,
-	thumbnail        : 'https://i.imgur.com/img1b.png',
+	key: 'blueprint1',
+	title: 'Test Blueprint 1',
+	lastUpdatedDate: 1000,
+	thumbnail: 'https://i.imgur.com/img1b.png',
 	numberOfFavorites: 10,
-	imgurId          : 'img1',
-	imgurType        : 'image/png',
+	imgurId: 'img1',
+	imgurType: 'image/png',
 };
 
 const mockEnrichedBlueprintSummary2: EnrichedBlueprintSummary = {
-	key              : 'blueprint2',
-	title            : 'Test Blueprint 2',
-	lastUpdatedDate  : 2000,
-	thumbnail        : 'https://i.imgur.com/img2b.jpeg',
+	key: 'blueprint2',
+	title: 'Test Blueprint 2',
+	lastUpdatedDate: 2000,
+	thumbnail: 'https://i.imgur.com/img2b.jpeg',
 	numberOfFavorites: 20,
-	imgurId          : 'img2',
-	imgurType        : 'image/jpeg',
+	imgurId: 'img2',
+	imgurType: 'image/jpeg',
 };
 
 const mockEnrichedBlueprintSummary3: EnrichedBlueprintSummary = {
-	key              : 'blueprint3',
-	title            : 'Test Blueprint 3',
-	lastUpdatedDate  : 500,
-	thumbnail        : 'https://i.imgur.com/img3b.png',
+	key: 'blueprint3',
+	title: 'Test Blueprint 3',
+	lastUpdatedDate: 500,
+	thumbnail: 'https://i.imgur.com/img3b.png',
 	numberOfFavorites: 5,
-	imgurId          : 'img3',
-	imgurType        : 'image/png',
+	imgurId: 'img3',
+	imgurType: 'image/png',
 };
 
-describe('SingleTagGrid', () =>
-{
+describe('SingleTagGrid', () => {
 	let queryClient: QueryClient;
 
-	beforeEach(() =>
-	{
+	beforeEach(() => {
 		queryClient = new QueryClient({
 			defaultOptions: {
 				queries: {
@@ -107,46 +106,42 @@ describe('SingleTagGrid', () =>
 		vi.mocked(useFilterByTitle).mockImplementation((blueprints) => blueprints || []);
 	});
 
-	const wrapper = ({ children }: { children: React.ReactNode }) => (
+	const wrapper = ({children}: {children: React.ReactNode}) => (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 
-	it('should render loading state', () =>
-	{
+	it('should render loading state', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: false, error: null },
+			tagQuery: {isSuccess: false, error: null},
 			blueprintQueries: {},
-			isLoading       : true,
-			isError         : false,
-			isSuccess       : false,
-			blueprintIds    : [],
+			isLoading: true,
+			isError: false,
+			isSuccess: false,
+			blueprintIds: [],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		expect(screen.getByTestId('loading-indicator')).toBeInTheDocument();
-		expect(screen.getByTestId('loading-indicator')).toHaveTextContent(
-			'Loading blueprints for tag: test › tag...',
-		);
+		expect(screen.getByTestId('loading-indicator')).toHaveTextContent('Loading blueprints for tag: test › tag...');
 	});
 
-	it('should render error state when tag query fails', () =>
-	{
+	it('should render error state when tag query fails', () => {
 		const mockError = new Error('Failed to load tag');
 		const mockResult = {
-			tagQuery        : { isSuccess: false, error: mockError },
+			tagQuery: {isSuccess: false, error: mockError},
 			blueprintQueries: {},
-			isLoading       : false,
-			isError         : true,
-			isSuccess       : false,
-			blueprintIds    : [],
+			isLoading: false,
+			isError: true,
+			isSuccess: false,
+			blueprintIds: [],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		expect(screen.getByTestId('error-display')).toBeInTheDocument();
 		expect(screen.getByTestId('error-display')).toHaveTextContent(
@@ -154,53 +149,51 @@ describe('SingleTagGrid', () =>
 		);
 	});
 
-	it('should render empty state when no blueprints found', () =>
-	{
+	it('should render empty state when no blueprints found', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {},
-			isLoading       : false,
-			isError         : false,
-			isSuccess       : true,
-			blueprintIds    : [],
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
+			blueprintIds: [],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		expect(screen.getByTestId('empty-results')).toBeInTheDocument();
 		expect(screen.getByText('No blueprints found with the tag "test › tag".')).toBeInTheDocument();
 		expect(screen.getByText(/The URL format for tag browsing is:/)).toBeInTheDocument();
 	});
 
-	it('should render blueprints when data is loaded successfully', () =>
-	{
+	it('should render blueprints when data is loaded successfully', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {
 				blueprint1: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary1,
+					data: mockEnrichedBlueprintSummary1,
 				},
 				blueprint2: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary2,
+					data: mockEnrichedBlueprintSummary2,
 				},
 				blueprint3: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary3,
+					data: mockEnrichedBlueprintSummary3,
 				},
 			},
-			isLoading   : false,
-			isError     : false,
-			isSuccess   : true,
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		// Check that blueprints are rendered
 		expect(screen.getByTestId('blueprint-thumbnail-blueprint1')).toBeInTheDocument();
@@ -213,33 +206,32 @@ describe('SingleTagGrid', () =>
 		expect(screen.getByText('Test Blueprint 3')).toBeInTheDocument();
 	});
 
-	it('should sort blueprints by lastUpdatedDate in descending order', () =>
-	{
+	it('should sort blueprints by lastUpdatedDate in descending order', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {
 				blueprint1: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary1, // lastUpdatedDate: 1000
+					data: mockEnrichedBlueprintSummary1, // lastUpdatedDate: 1000
 				},
 				blueprint2: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary2, // lastUpdatedDate: 2000
+					data: mockEnrichedBlueprintSummary2, // lastUpdatedDate: 2000
 				},
 				blueprint3: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary3, // lastUpdatedDate: 500
+					data: mockEnrichedBlueprintSummary3, // lastUpdatedDate: 500
 				},
 			},
-			isLoading   : false,
-			isError     : false,
-			isSuccess   : true,
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		const thumbnails = screen.getAllByTestId(/blueprint-thumbnail-/);
 
@@ -250,34 +242,33 @@ describe('SingleTagGrid', () =>
 		expect(thumbnails[2]).toHaveAttribute('data-testid', 'blueprint-thumbnail-blueprint3');
 	});
 
-	it('should filter out unsuccessful blueprint queries', () =>
-	{
+	it('should filter out unsuccessful blueprint queries', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {
 				blueprint1: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary1,
+					data: mockEnrichedBlueprintSummary1,
 				},
 				blueprint2: {
 					isSuccess: false,
-					data     : null,
-					error    : new Error('Failed to load'),
+					data: null,
+					error: new Error('Failed to load'),
 				},
 				blueprint3: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary3,
+					data: mockEnrichedBlueprintSummary3,
 				},
 			},
-			isLoading   : false,
-			isError     : false,
-			isSuccess   : true,
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		// Only successful blueprints should be rendered
 		expect(screen.getByTestId('blueprint-thumbnail-blueprint1')).toBeInTheDocument();
@@ -285,23 +276,22 @@ describe('SingleTagGrid', () =>
 		expect(screen.getByTestId('blueprint-thumbnail-blueprint3')).toBeInTheDocument();
 	});
 
-	it('should apply title filter correctly', () =>
-	{
+	it('should apply title filter correctly', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {
 				blueprint1: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary1,
+					data: mockEnrichedBlueprintSummary1,
 				},
 				blueprint2: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary2,
+					data: mockEnrichedBlueprintSummary2,
 				},
 			},
-			isLoading   : false,
-			isError     : false,
-			isSuccess   : true,
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
 			blueprintIds: ['blueprint1', 'blueprint2'],
 		} as any;
 
@@ -310,27 +300,26 @@ describe('SingleTagGrid', () =>
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		// Only filtered blueprint should be rendered
 		expect(screen.getByTestId('blueprint-thumbnail-blueprint1')).toBeInTheDocument();
 		expect(screen.queryByTestId('blueprint-thumbnail-blueprint2')).not.toBeInTheDocument();
 	});
 
-	it('should render page header with formatted tag', () =>
-	{
+	it('should render page header with formatted tag', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {},
-			isLoading       : false,
-			isError         : false,
-			isSuccess       : true,
-			blueprintIds    : [],
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
+			blueprintIds: [],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		const pageHeader = screen.getByTestId('page-header');
 		expect(pageHeader).toBeInTheDocument();
@@ -338,56 +327,51 @@ describe('SingleTagGrid', () =>
 		expect(pageHeader).toHaveTextContent('test › tag');
 	});
 
-	it('should render search form and tag selector', () =>
-	{
+	it('should render search form and tag selector', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {},
-			isLoading       : false,
-			isError         : false,
-			isSuccess       : true,
-			blueprintIds    : [],
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
+			blueprintIds: [],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		expect(screen.getByTestId('search-form')).toBeInTheDocument();
 		expect(screen.getByTestId('single-tag-selector')).toBeInTheDocument();
-		expect(screen.getByTestId('single-tag-selector')).toHaveAttribute(
-			'data-current-tag',
-			'test/tag',
-		);
+		expect(screen.getByTestId('single-tag-selector')).toHaveAttribute('data-current-tag', 'test/tag');
 	});
 
-	it('should handle blueprints with null or undefined data', () =>
-	{
+	it('should handle blueprints with null or undefined data', () => {
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {
 				blueprint1: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary1,
+					data: mockEnrichedBlueprintSummary1,
 				},
 				blueprint2: {
 					isSuccess: true,
-					data     : null,
+					data: null,
 				},
 				blueprint3: {
 					isSuccess: true,
-					data     : undefined as any,
+					data: undefined as any,
 				},
 			},
-			isLoading   : false,
-			isError     : false,
-			isSuccess   : true,
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
 			blueprintIds: ['blueprint1', 'blueprint2', 'blueprint3'],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		// Only blueprint with data should be rendered
 		expect(screen.getByTestId('blueprint-thumbnail-blueprint1')).toBeInTheDocument();
@@ -395,34 +379,33 @@ describe('SingleTagGrid', () =>
 		expect(screen.queryByTestId('blueprint-thumbnail-blueprint3')).not.toBeInTheDocument();
 	});
 
-	it('should handle blueprints without lastUpdatedDate', () =>
-	{
+	it('should handle blueprints without lastUpdatedDate', () => {
 		const blueprintWithoutDate = {
 			...mockEnrichedBlueprintSummary1,
 			lastUpdatedDate: null,
 		} as any;
 
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {
 				blueprint1: {
 					isSuccess: true,
-					data     : blueprintWithoutDate,
+					data: blueprintWithoutDate,
 				},
 				blueprint2: {
 					isSuccess: true,
-					data     : mockEnrichedBlueprintSummary2,
+					data: mockEnrichedBlueprintSummary2,
 				},
 			},
-			isLoading   : false,
-			isError     : false,
-			isSuccess   : true,
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
 			blueprintIds: ['blueprint1', 'blueprint2'],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		const thumbnails = screen.getAllByTestId(/blueprint-thumbnail-/);
 
@@ -431,24 +414,23 @@ describe('SingleTagGrid', () =>
 		expect(thumbnails[1]).toHaveAttribute('data-testid', 'blueprint-thumbnail-blueprint1');
 	});
 
-	it('should handle empty tag parameter', async () =>
-	{
+	it('should handle empty tag parameter', async () => {
 		// Override the useParams mock for this test
-		const { useParams } = await import('@tanstack/react-router');
-		vi.mocked(useParams).mockReturnValue({ tag: '' });
+		const {useParams} = await import('@tanstack/react-router');
+		vi.mocked(useParams).mockReturnValue({tag: ''});
 
 		const mockResult = {
-			tagQuery        : { isSuccess: true, error: null },
+			tagQuery: {isSuccess: true, error: null},
 			blueprintQueries: {},
-			isLoading       : false,
-			isError         : false,
-			isSuccess       : true,
-			blueprintIds    : [],
+			isLoading: false,
+			isError: false,
+			isSuccess: true,
+			blueprintIds: [],
 		} as any;
 
 		vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
 
-		render(<SingleTagGrid />, { wrapper });
+		render(<SingleTagGrid />, {wrapper});
 
 		// Should still render but with empty tag
 		expect(screen.getByTestId('page-header')).toBeInTheDocument();

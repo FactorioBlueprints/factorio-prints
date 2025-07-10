@@ -1,12 +1,12 @@
 import React from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import {createFileRoute} from '@tanstack/react-router';
 import SingleBlueprint from '../components/SingleBlueprint';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { queryClient } from '../providers/queryClient';
-import { blueprintSummaryQuery, blueprintQuery } from '../queries/blueprintQueries';
-import { enrichBlueprintSummary } from '../utils/enrichBlueprintSummary';
+import {queryClient} from '../providers/queryClient';
+import {blueprintSummaryQuery, blueprintQuery} from '../queries/blueprintQueries';
+import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
 import enrichBlueprint from '../utils/enrichBlueprint';
-import type { EnrichedBlueprintSummary, EnrichedBlueprint } from '../schemas';
+import type {EnrichedBlueprintSummary, EnrichedBlueprint} from '../schemas';
 
 export interface LoaderData {
 	blueprintSummary: EnrichedBlueprintSummary | null;
@@ -15,29 +15,26 @@ export interface LoaderData {
 
 export const Route = createFileRoute('/view/$blueprintId')({
 	component: ViewBlueprintComponent,
-	loader   : async ({ params }): Promise<LoaderData> =>
-	{
-		const { blueprintId } = params;
+	loader: async ({params}): Promise<LoaderData> => {
+		const {blueprintId} = params;
 
 		// First fetch the blueprint summary
 		const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
 
-		if (!summaryData)
-		{
+		if (!summaryData) {
 			return {
 				blueprintSummary: null,
-				blueprintData   : null,
+				blueprintData: null,
 			};
 		}
 
 		// Enrich the summary
 		const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
 
-		if (!enrichedSummary)
-		{
+		if (!enrichedSummary) {
 			return {
 				blueprintSummary: null,
-				blueprintData   : null,
+				blueprintData: null,
 			};
 		}
 
@@ -48,13 +45,12 @@ export const Route = createFileRoute('/view/$blueprintId')({
 
 		return {
 			blueprintSummary: enrichedSummary,
-			blueprintData   : enrichedBlueprint,
+			blueprintData: enrichedBlueprint,
 		};
 	},
 });
 
-function ViewBlueprintComponent()
-{
+function ViewBlueprintComponent() {
 	return (
 		<ErrorBoundary>
 			<SingleBlueprint />

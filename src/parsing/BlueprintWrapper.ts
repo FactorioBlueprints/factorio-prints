@@ -50,30 +50,26 @@ interface BlueprintInfo {
 	version?: number;
 }
 
-export class BlueprintWrapper
-{
+export class BlueprintWrapper {
 	private data: BlueprintData;
 
-	constructor(blueprint: BlueprintData)
-	{
+	constructor(blueprint: BlueprintData) {
 		this.data = blueprint;
 	}
 
-	getInfo(): BlueprintInfo
-	{
+	getInfo(): BlueprintInfo {
 		const content = this.getContent();
 		return {
-			type       : this.getType(),
+			type: this.getType(),
 			content,
-			label      : content.label,
+			label: content.label,
 			description: this.getDescription(),
-			icons      : this.getIcons(),
-			version    : content.version,
+			icons: this.getIcons(),
+			version: content.version,
 		};
 	}
 
-	getType(): 'blueprint' | 'blueprint-book' | 'upgrade-planner' | 'deconstruction-planner'
-	{
+	getType(): 'blueprint' | 'blueprint-book' | 'upgrade-planner' | 'deconstruction-planner' {
 		if (this.data.blueprint) return 'blueprint';
 		if (this.data.blueprint_book) return 'blueprint-book';
 		if (this.data.upgrade_planner) return 'upgrade-planner';
@@ -81,8 +77,7 @@ export class BlueprintWrapper
 		throw new Error('Invalid blueprint: no recognized type found');
 	}
 
-	getContent(): BlueprintContent
-	{
+	getContent(): BlueprintContent {
 		if (this.data.blueprint) return this.data.blueprint;
 		if (this.data.blueprint_book) return this.data.blueprint_book;
 		if (this.data.upgrade_planner) return this.data.upgrade_planner;
@@ -90,60 +85,47 @@ export class BlueprintWrapper
 		throw new Error('Invalid blueprint: no content found');
 	}
 
-	getLabel(): string | undefined
-	{
+	getLabel(): string | undefined {
 		return this.getContent().label;
 	}
 
-	getDescription(): string | undefined
-	{
-		if (this.data.blueprint)
-		{
+	getDescription(): string | undefined {
+		if (this.data.blueprint) {
 			return this.data.blueprint.description;
 		}
-		if (this.data.blueprint_book)
-		{
+		if (this.data.blueprint_book) {
 			return this.data.blueprint_book.description;
 		}
-		if (this.data.upgrade_planner)
-		{
+		if (this.data.upgrade_planner) {
 			return this.data.upgrade_planner.settings?.description;
 		}
-		if (this.data.deconstruction_planner)
-		{
+		if (this.data.deconstruction_planner) {
 			return this.data.deconstruction_planner.settings?.description;
 		}
 		throw new Error('Invalid blueprint: no content found');
 	}
 
-	getIcons(): BlueprintIcon[]
-	{
-		if (this.data.blueprint)
-		{
+	getIcons(): BlueprintIcon[] {
+		if (this.data.blueprint) {
 			return this.data.blueprint.icons ?? [];
 		}
-		if (this.data.blueprint_book)
-		{
+		if (this.data.blueprint_book) {
 			return this.data.blueprint_book.icons ?? [];
 		}
-		if (this.data.upgrade_planner)
-		{
+		if (this.data.upgrade_planner) {
 			return this.data.upgrade_planner.settings?.icons ?? [];
 		}
-		if (this.data.deconstruction_planner)
-		{
+		if (this.data.deconstruction_planner) {
 			return this.data.deconstruction_planner.settings?.icons ?? [];
 		}
 		throw new Error('Invalid blueprint: no content found');
 	}
 
-	getVersion(): number | undefined
-	{
+	getVersion(): number | undefined {
 		return this.getContent().version;
 	}
 
-	getRawData(): BlueprintData
-	{
+	getRawData(): BlueprintData {
 		return this.data;
 	}
 }

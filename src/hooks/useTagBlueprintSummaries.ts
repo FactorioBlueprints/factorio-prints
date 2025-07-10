@@ -1,4 +1,4 @@
-import { useEnrichedTagBlueprintSummaries } from './useEnrichedTagBlueprintSummaries';
+import {useEnrichedTagBlueprintSummaries} from './useEnrichedTagBlueprintSummaries';
 
 /**
  * Hook to fetch tag data and then load all blueprints associated with that tag

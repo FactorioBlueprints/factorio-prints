@@ -1,9 +1,9 @@
-import {useStore}       from '@tanstack/react-store';
+import {useStore} from '@tanstack/react-store';
 import React, {useMemo} from 'react';
-import Col              from 'react-bootstrap/Col';
+import Col from 'react-bootstrap/Col';
 import Select, {MultiValue} from 'react-select';
 
-import {useTags}           from '../hooks/useTags';
+import {useTags} from '../hooks/useTags';
 import {searchParamsStore} from '../store/searchParamsStore';
 
 interface TagOption {
@@ -11,31 +11,27 @@ interface TagOption {
 	label: string;
 }
 
-const TagForm: React.FC = () =>
-{
-	const { data: tagsData, isLoading: tagsLoading } = useTags();
+const TagForm: React.FC = () => {
+	const {data: tagsData, isLoading: tagsLoading} = useTags();
 
-	const filteredTags = useStore(searchParamsStore, state => state.filteredTags);
-	const selectedOptions = filteredTags.map(value => ({ value, label: value }));
+	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
+	const selectedOptions = filteredTags.map((value) => ({value, label: value}));
 
-	const handleTagSelection = (selectedTags: MultiValue<TagOption>) =>
-	{
-		if (selectedTags === undefined)
-		{
+	const handleTagSelection = (selectedTags: MultiValue<TagOption>) => {
+		if (selectedTags === undefined) {
 			console.error('selectedTags is undefined in handleTagSelection');
 			throw new Error('selectedTags is undefined in handleTagSelection');
 		}
 
-		const tagValues = selectedTags ? [...selectedTags].map(tag => tag.value) : [];
-		searchParamsStore.setState(state => ({ ...state, filteredTags: tagValues }));
+		const tagValues = selectedTags ? [...selectedTags].map((tag) => tag.value) : [];
+		searchParamsStore.setState((state) => ({...state, filteredTags: tagValues}));
 
 		console.log('TagForm updated filteredTags:', tagValues);
 	};
 
-	const options = useMemo(() =>
-	{
+	const options = useMemo(() => {
 		const tags = tagsData?.tags || [];
-		return tags.map(value => ({
+		return tags.map((value) => ({
 			value,
 			label: value,
 		}));
@@ -48,8 +44,8 @@ const TagForm: React.FC = () =>
 				options={options}
 				onChange={handleTagSelection}
 				isMulti
-				placeholder='search tags'
-				className='tag-form'
+				placeholder="search tags"
+				className="tag-form"
 				isLoading={tagsLoading}
 				isClearable={true}
 				isSearchable={true}

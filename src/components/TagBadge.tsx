@@ -1,15 +1,13 @@
 import React from 'react';
 import Badge from 'react-bootstrap/Badge';
-import { Link } from '@tanstack/react-router';
+import {Link} from '@tanstack/react-router';
 
 interface TagBadgeProps {
 	tag: string;
 }
 
-const TagBadge: React.FC<TagBadgeProps> = ({ tag }) =>
-{
-	if (!tag.startsWith('/') || !tag.endsWith('/'))
-	{
+const TagBadge: React.FC<TagBadgeProps> = ({tag}) => {
+	if (!tag.startsWith('/') || !tag.endsWith('/')) {
 		throw new Error(`TagBadge: tag "${tag}" must have leading and trailing slashes`);
 	}
 
@@ -17,8 +15,7 @@ const TagBadge: React.FC<TagBadgeProps> = ({ tag }) =>
 
 	const parts = normalizedTag.split('/');
 
-	if (parts.length !== 2)
-	{
+	if (parts.length !== 2) {
 		throw new Error(`TagBadge: normalized tag "${normalizedTag}" should have exactly one slash`);
 	}
 
@@ -27,12 +24,15 @@ const TagBadge: React.FC<TagBadgeProps> = ({ tag }) =>
 	return (
 		<Link
 			key={tag}
-			to='/tagged/$category/$name'
-			params={{ category, name }}
-			className='m-1'
-			from='/'
+			to="/tagged/$category/$name"
+			params={{category, name}}
+			className="m-1"
+			from="/"
 		>
-			<Badge bg='warning' text='light'>
+			<Badge
+				bg="warning"
+				text="light"
+			>
 				{tag}
 			</Badge>
 		</Link>

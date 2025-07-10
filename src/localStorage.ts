@@ -1,4 +1,4 @@
-import { createStore, get, set, del } from 'idb-keyval';
+import {createStore, get, set, del} from 'idb-keyval';
 import * as Sentry from '@sentry/react';
 
 export const STORAGE_KEYS = {
@@ -30,8 +30,7 @@ function debounce<T extends (...args: any[]) => any>(
 	func: T,
 	wait: number,
 	options: DebounceOptions = {},
-): DebouncedFunction<T>
-{
+): DebouncedFunction<T> {
 	let lastArgs: Parameters<T> | undefined;
 	let lastThis: ThisParameterType<T> | undefined;
 	let maxWait: number;
@@ -44,8 +43,7 @@ function debounce<T extends (...args: any[]) => any>(
 	const maxing = 'maxWait' in options;
 	maxWait = maxing ? Math.max(options.maxWait || 0, wait) : 0;
 
-	function invokeFunc(time: number): ReturnType<T>
-	{
+	function invokeFunc(time: number): ReturnType<T> {
 		const args = lastArgs;
 		const thisArg = lastThis;
 
@@ -55,61 +53,54 @@ function debounce<T extends (...args: any[]) => any>(
 		return result;
 	}
 
-	function startTimer(pendingFunc: () => void, wait: number): ReturnType<typeof setTimeout>
-	{
+	function startTimer(pendingFunc: () => void, wait: number): ReturnType<typeof setTimeout> {
 		return setTimeout(pendingFunc, wait);
 	}
 
-	function cancelTimer(id: ReturnType<typeof setTimeout>): void
-	{
+	function cancelTimer(id: ReturnType<typeof setTimeout>): void {
 		clearTimeout(id);
 	}
 
-	function shouldInvoke(time: number): boolean
-	{
+	function shouldInvoke(time: number): boolean {
 		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 
-		return (lastCallTime === undefined || timeSinceLastCall >= wait
-			|| timeSinceLastCall < 0 || (maxing && timeSinceLastInvoke >= maxWait));
+		return (
+			lastCallTime === undefined ||
+			timeSinceLastCall >= wait ||
+			timeSinceLastCall < 0 ||
+			(maxing && timeSinceLastInvoke >= maxWait)
+		);
 	}
 
-	function trailingEdge(time: number): ReturnType<T>
-	{
+	function trailingEdge(time: number): ReturnType<T> {
 		timerId = undefined;
 
-		if (trailing && lastArgs)
-		{
+		if (trailing && lastArgs) {
 			return invokeFunc(time);
 		}
 		lastArgs = lastThis = undefined;
 		return result;
 	}
 
-	function leadingEdge(time: number): ReturnType<T>
-	{
+	function leadingEdge(time: number): ReturnType<T> {
 		lastInvokeTime = time;
 		timerId = startTimer(timerExpired, wait);
 		return leading ? invokeFunc(time) : result;
 	}
 
-	function remainingWait(time: number): number
-	{
+	function remainingWait(time: number): number {
 		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 		const timeWaiting = wait - timeSinceLastCall;
 
-		return maxing
-			? Math.min(timeWaiting, maxWait - timeSinceLastInvoke)
-			: timeWaiting;
+		return maxing ? Math.min(timeWaiting, maxWait - timeSinceLastInvoke) : timeWaiting;
 	}
 
-	function timerExpired(): void
-	{
+	function timerExpired(): void {
 		const time = Date.now();
 
-		if (shouldInvoke(time))
-		{
+		if (shouldInvoke(time)) {
 			trailingEdge(time);
 			return;
 		}
@@ -117,8 +108,7 @@ function debounce<T extends (...args: any[]) => any>(
 		timerId = startTimer(timerExpired, remainingWait(time));
 	}
 
-	function debounced(this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T>
-	{
+	function debounced(this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T> {
 		const time = Date.now();
 		const isInvoking = shouldInvoke(time);
 
@@ -126,101 +116,82 @@ function debounce<T extends (...args: any[]) => any>(
 		lastThis = this; // eslint-disable-line @typescript-eslint/no-this-alias
 		lastCallTime = time;
 
-		if (isInvoking)
-		{
-			if (timerId === undefined)
-			{
+		if (isInvoking) {
+			if (timerId === undefined) {
 				return leadingEdge(lastCallTime);
 			}
-			if (maxing)
-			{
+			if (maxing) {
 				timerId = startTimer(timerExpired, wait);
 				return invokeFunc(lastCallTime);
 			}
 		}
-		if (timerId === undefined)
-		{
+		if (timerId === undefined) {
 			timerId = startTimer(timerExpired, wait);
 		}
 		return result;
 	}
 
-	debounced.cancel = function(): void
-	{
-		if (timerId !== undefined)
-		{
+	debounced.cancel = function (): void {
+		if (timerId !== undefined) {
 			cancelTimer(timerId);
 		}
 		lastInvokeTime = 0;
 		lastArgs = lastCallTime = lastThis = timerId = undefined;
 	};
 
-	debounced.flush = function(): ReturnType<T>
-	{
+	debounced.flush = function (): ReturnType<T> {
 		return timerId === undefined ? result : trailingEdge(Date.now());
 	};
 
-	debounced.pending = function(): boolean
-	{
+	debounced.pending = function (): boolean {
 		return timerId !== undefined;
 	};
 
 	return debounced;
 }
 
-
 let worker: Worker | undefined;
 let operationCounter = 0;
 const pendingOperations = new Map();
 
-function getWorker()
-{
-	if (!worker)
-	{
-		try
-		{
-			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), { type: 'module' });
+function getWorker() {
+	if (!worker) {
+		try {
+			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
 
-			worker.onerror = (error) =>
-			{
+			worker.onerror = (error) => {
 				console.error('[IndexedDB Worker] Failed to initialize worker:', error);
 				worker = undefined;
 			};
 
-			worker.onmessage = (e) =>
-			{
-				const { id, result, error, success } = e.data;
+			worker.onmessage = (e) => {
+				const {id, result, error, success} = e.data;
 				const pendingOp = pendingOperations.get(id);
 
-				if (pendingOp)
-				{
-					if (success)
-					{
+				if (pendingOp) {
+					if (success) {
 						pendingOp.resolve(result);
-					}
-					else
-					{
+					} else {
 						// 🛡️ Handle connection closing errors gracefully
-						if (error?.isConnectionClosing)
-						{
-							console.warn('[IndexedDB] Operation failed due to closing connection, resolving with undefined');
+						if (error?.isConnectionClosing) {
+							console.warn(
+								'[IndexedDB] Operation failed due to closing connection, resolving with undefined',
+							);
 							// 📊 Log to Sentry for monitoring
 							Sentry.captureMessage('IndexedDB connection closing', {
 								level: 'info',
-								tags : {
+								tags: {
 									component: 'localStorage',
 									errorType: 'connection-closing',
 								},
 								extra: {
-									errorMessage : error.message,
+									errorMessage: error.message,
 									operationType: e.data.type,
-									key          : e.data.key,
+									key: e.data.key,
 								},
 							});
 							pendingOp.resolve(undefined);
-						}
-						else
-						{
+						} else {
 							pendingOp.reject(new Error(error.message));
 						}
 					}
@@ -230,15 +201,13 @@ function getWorker()
 
 			// Initialize store in worker
 			worker.postMessage({
-				type       : 'init',
+				type: 'init',
 				storeConfig: {
-					dbName   : 'factorio-prints-db',
+					dbName: 'factorio-prints-db',
 					storeName: 'query-cache-store',
 				},
 			});
-		}
-		catch (error)
-		{
+		} catch (error) {
 			console.error('[IndexedDB Worker] Failed to create worker:', error);
 			worker = undefined;
 		}
@@ -247,90 +216,77 @@ function getWorker()
 	return worker;
 }
 
-async function workerOperation(type: string, key: string, data = null)
-{
+async function workerOperation(type: string, key: string, data = null) {
 	const worker = getWorker();
 
 	// Fallback to direct idb-keyval if worker fails
-	if (!worker)
-	{
-		switch (type)
-		{
+	if (!worker) {
+		switch (type) {
 			case 'set':
 				await set(key, data, indexedDbStore);
-				return { success: true };
+				return {success: true};
 			case 'get':
-				return { data: await get(key, indexedDbStore) };
+				return {data: await get(key, indexedDbStore)};
 			case 'delete':
 				await del(key, indexedDbStore);
-				return { success: true };
+				return {success: true};
 			default:
 				throw new Error('Unknown operation type');
 		}
 	}
 
-	return new Promise((resolve, reject) =>
-	{
+	return new Promise((resolve, reject) => {
 		const id = operationCounter++;
 
-		pendingOperations.set(id, { resolve, reject });
+		pendingOperations.set(id, {resolve, reject});
 
-		worker.postMessage({ type, key, data, id });
+		worker.postMessage({type, key, data, id});
 
 		const timeoutDuration = 10000;
 		const startTime = Date.now();
 
-		setTimeout(() =>
-		{
-			if (pendingOperations.has(id))
-			{
+		setTimeout(() => {
+			if (pendingOperations.has(id)) {
 				pendingOperations.delete(id);
 				const duration = Date.now() - startTime;
 				console.warn('[IndexedDB] Operation timed out:', type, key, `after ${duration}ms`);
 
 				Sentry.captureMessage('IndexedDB operation timeout', {
 					level: 'warning',
-					tags : {
-						component    : 'localStorage',
-						errorType    : 'timeout',
+					tags: {
+						component: 'localStorage',
+						errorType: 'timeout',
 						operationType: type,
-						database     : 'FACTORIO_PRINTS_QUERY_CACHE',
+						database: 'FACTORIO_PRINTS_QUERY_CACHE',
 					},
 					extra: {
-						operationType : type,
-						key           : key,
-						timeout       : timeoutDuration,
+						operationType: type,
+						key: key,
+						timeout: timeoutDuration,
 						actualDuration: duration,
-						userAgent     : typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+						userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
 					},
 				});
 
-				if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE)
-				{
+				if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
 					console.warn('[IndexedDB] Query cache timeout - clearing cache');
-					del(key, indexedDbStore).catch(err =>
+					del(key, indexedDbStore).catch((err) =>
 						console.error('[IndexedDB] Failed to clear cache after timeout:', err),
 					);
 				}
 
-				resolve(type === 'get' ? { data: undefined } : { success: false });
+				resolve(type === 'get' ? {data: undefined} : {success: false});
 			}
 		}, timeoutDuration);
 	});
 }
 
-function formatBytes(bytes: number)
-{
-	if (bytes > 1024 * 1024)
-	{
+function formatBytes(bytes: number) {
+	if (bytes > 1024 * 1024) {
 		return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-	}
-	else if (bytes > 1024)
-	{
+	} else if (bytes > 1024) {
 		return `${(bytes / 1024).toFixed(2)} KB`;
-	}
-	else
-	{
+	} else {
 		return `${bytes} bytes`;
 	}
 }
@@ -341,60 +297,54 @@ interface Persister {
 	removeClient: () => Promise<void>;
 }
 
-export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister
-{
+export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister {
 	// Create a debounced persist function that waits 2 seconds after changes
 	// and limits executions to once every 10 seconds maximum
-	const debouncedPersist = debounce(async (client: any) =>
-	{
-		try
-		{
-			const dataSize = JSON.stringify(client).length;
-			const formattedSize = formatBytes(dataSize);
-			console.log(`[IndexedDB] Persisting client data of size: ${formattedSize}`);
+	const debouncedPersist = debounce(
+		async (client: any) => {
+			try {
+				const dataSize = JSON.stringify(client).length;
+				const formattedSize = formatBytes(dataSize);
+				console.log(`[IndexedDB] Persisting client data of size: ${formattedSize}`);
 
-			await workerOperation('set', idbValidKey, client);
+				await workerOperation('set', idbValidKey, client);
 
-			console.log('[IndexedDB] Persistence complete');
-		}
-		catch (error)
-		{
-			console.error('[IndexedDB] Error persisting to IndexedDB:', error);
-			throw error;
-		}
-	}, 2000, { maxWait: 10000 });
+				console.log('[IndexedDB] Persistence complete');
+			} catch (error) {
+				console.error('[IndexedDB] Error persisting to IndexedDB:', error);
+				throw error;
+			}
+		},
+		2000,
+		{maxWait: 10000},
+	);
 
 	return {
-		persistClient: async (client: any) =>
-		{
+		persistClient: async (client: any) => {
 			// Use the debounced version for persistence
 			return debouncedPersist(client);
 		},
-		restoreClient: async () =>
-		{
-			try
-			{
+		restoreClient: async () => {
+			try {
 				const startTime = Date.now();
-				const result = await workerOperation('get', idbValidKey) as { data?: any } | undefined;
+				const result = (await workerOperation('get', idbValidKey)) as {data?: any} | undefined;
 				const duration = Date.now() - startTime;
 
-				if (result?.data)
-				{
+				if (result?.data) {
 					const dataSize = JSON.stringify(result.data).length;
 					const formattedSize = formatBytes(dataSize);
 					console.log(`[IndexedDB] Restored data size: ${formattedSize} in ${duration}ms`);
 
-					if (duration > 5000)
-					{
+					if (duration > 5000) {
 						Sentry.captureMessage('IndexedDB slow restore', {
 							level: 'info',
-							tags : {
+							tags: {
 								component: 'localStorage',
 								errorType: 'slow-restore',
 							},
 							extra: {
-								duration     : duration,
-								dataSize     : dataSize,
+								duration: duration,
+								dataSize: dataSize,
 								formattedSize: formattedSize,
 							},
 						});
@@ -402,9 +352,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				}
 
 				return result?.data;
-			}
-			catch (error)
-			{
+			} catch (error) {
 				console.error('[IndexedDB] Error restoring from IndexedDB:', error);
 
 				Sentry.captureException(error, {
@@ -417,48 +365,35 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					},
 				});
 
-				try
-				{
+				try {
 					await workerOperation('delete', idbValidKey);
 					console.log('[IndexedDB] Cleared cache after restore error');
-				}
-				catch (deleteError)
-				{
+				} catch (deleteError) {
 					console.error('[IndexedDB] Failed to clear cache:', deleteError);
 				}
 
 				return undefined;
 			}
 		},
-		removeClient: async () =>
-		{
-			try
-			{
+		removeClient: async () => {
+			try {
 				await workerOperation('delete', idbValidKey);
-			}
-			catch (error)
-			{
+			} catch (error) {
 				console.error('[IndexedDB] Error removing from IndexedDB:', error);
 			}
 		},
 	};
 }
 
-export const saveToStorage = (key: string, data: any, retryWithoutBlueprintString = true): boolean =>
-{
-	try
-	{
+export const saveToStorage = (key: string, data: any, retryWithoutBlueprintString = true): boolean => {
+	try {
 		const serializedData = JSON.stringify(data);
 		localStorage.setItem(key, serializedData);
 		return true;
-	}
-	catch (error)
-	{
-		if (error instanceof DOMException && error.name === 'QuotaExceededError' && retryWithoutBlueprintString)
-		{
-			if (data && typeof data === 'object' && 'blueprintString' in data)
-			{
-				const dataWithoutBlueprintString = { ...data };
+	} catch (error) {
+		if (error instanceof DOMException && error.name === 'QuotaExceededError' && retryWithoutBlueprintString) {
+			if (data && typeof data === 'object' && 'blueprintString' in data) {
+				const dataWithoutBlueprintString = {...data};
 				delete dataWithoutBlueprintString.blueprintString;
 				return saveToStorage(key, dataWithoutBlueprintString, false);
 			}
@@ -469,32 +404,23 @@ export const saveToStorage = (key: string, data: any, retryWithoutBlueprintStrin
 	}
 };
 
-export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null =>
-{
-	try
-	{
+export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null => {
+	try {
 		const serializedData = localStorage.getItem(key);
-		if (serializedData === null)
-		{
+		if (serializedData === null) {
 			return defaultValue;
 		}
 		return JSON.parse(serializedData) as T;
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error loading from localStorage:', error);
 		return defaultValue;
 	}
 };
 
-export const removeFromStorage = (key: string): void =>
-{
-	try
-	{
+export const removeFromStorage = (key: string): void => {
+	try {
 		localStorage.removeItem(key);
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error removing from localStorage:', error);
 	}
 };

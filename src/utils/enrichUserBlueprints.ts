@@ -5,13 +5,11 @@ import {
 	type EnrichedUserBlueprints,
 } from '../schemas';
 
-export const enrichUserBlueprints = (rawUserBlueprints: RawUserBlueprints | null): EnrichedUserBlueprints | null =>
-{
-	if (!rawUserBlueprints)
-	{
+export const enrichUserBlueprints = (rawUserBlueprints: RawUserBlueprints | null): EnrichedUserBlueprints | null => {
+	if (!rawUserBlueprints) {
 		return {
 			blueprintIds: {},
-			count       : 0,
+			count: 0,
 		};
 	}
 

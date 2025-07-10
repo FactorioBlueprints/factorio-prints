@@ -4,57 +4,48 @@ export type SignalType = 'item' | 'entity' | 'recipe' | 'virtual' | 'fluid' | 't
 export type Quality = 'normal' | 'uncommon' | 'rare' | 'epic' | 'legendary' | undefined;
 
 interface SignalID {
-    name: string;
-    type?: SignalType;
-    quality?: Quality;
+	name: string;
+	type?: SignalType;
+	quality?: Quality;
 }
 
-function getUrlType(type: SignalType)
-{
-	if (type === 'virtual')
-	{
+function getUrlType(type: SignalType) {
+	if (type === 'virtual') {
 		return 'virtual-signal';
-	}
-	else if (type === 'planet')
-	{
+	} else if (type === 'planet') {
 		return 'space-location';
 	}
 	return type;
 }
 
 interface FactorioIconProps {
-    id?: string;
-    icon?: SignalID;
-    size: 'small' | 'large';
+	id?: string;
+	icon?: SignalID;
+	size: 'small' | 'large';
 }
 
-function getQualityNode(icon: SignalID)
-{
-	if (!icon.quality)
-	{
+function getQualityNode(icon: SignalID) {
+	if (!icon.quality) {
 		return null;
 	}
 
 	return (
 		<img
-			loading='lazy'
+			loading="lazy"
 			className={styles.iconQuality}
 			src={`https://factorio-icon-cdn.pages.dev/quality/${icon.quality}.webp`}
 			alt={icon.quality}
 			title={`Quality: ${icon.quality}`}
-			data-testid='quality'
-			onError={(e) =>
-			{
+			data-testid="quality"
+			onError={(e) => {
 				e.currentTarget.style.display = 'none';
 			}}
 		/>
 	);
 }
 
-export const FactorioIcon = ({id, icon, size}: FactorioIconProps) =>
-{
-	if (!icon)
-	{
+export const FactorioIcon = ({id, icon, size}: FactorioIconProps) => {
+	if (!icon) {
 		return null;
 	}
 
@@ -68,19 +59,18 @@ export const FactorioIcon = ({id, icon, size}: FactorioIconProps) =>
 
 	return (
 		<div
-			data-testid='iconParent'
+			data-testid="iconParent"
 			className={`${styles.iconParent} ${sizeClass}`}
 			id={id}
 		>
 			<img
-				data-testid='icon'
-				loading='lazy'
+				data-testid="icon"
+				loading="lazy"
 				className={styles.icon}
 				src={`https://factorio-icon-cdn.pages.dev/${urlType}/${icon.name}.webp`}
 				alt={icon.name}
 				title={`${type}: ${icon.name}`}
-				onError={(e) =>
-				{
+				onError={(e) => {
 					e.currentTarget.style.display = 'none';
 				}}
 			/>

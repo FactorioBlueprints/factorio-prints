@@ -1,5 +1,5 @@
 import {endAt, get, getDatabase, limitToLast, orderByChild, query, ref, update as dbUpdate} from 'firebase/database';
-import {app}                                                                                from '../base';
+import {app} from '../base';
 import {
 	RawBlueprint,
 	RawBlueprintSummary,
@@ -10,8 +10,7 @@ import {
 	validateRawBlueprintSummary,
 	validateRawBlueprintSummaryPage,
 } from '../schemas';
-import { formatDistance, format } from 'date-fns';
-
+import {formatDistance, format} from 'date-fns';
 
 /**
  * Transforms a blueprint key to its CDN URL format.
@@ -19,8 +18,7 @@ import { formatDistance, format } from 'date-fns';
  * @param blueprintKey - The blueprint key (e.g., "-KnQ865j-qQ21WoUPbd3")
  * @returns The CDN URL (e.g., "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json")
  */
-export const getBlueprintCdnUrl = (blueprintKey: string): string =>
-{
+export const getBlueprintCdnUrl = (blueprintKey: string): string => {
 	const prefix = blueprintKey.slice(0, 3);
 	const suffix = blueprintKey.slice(3);
 	return `https://factorio-blueprint-firebase-cdn.pages.dev/${prefix}/${suffix}.json`;
@@ -32,13 +30,12 @@ export const getBlueprintCdnUrl = (blueprintKey: string): string =>
  * @param blueprintSummary - The blueprint summary containing the blueprint key
  * @returns The blueprint data from CDN or null if fetch fails
  */
-export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintSummary): Promise<RawBlueprint | null> =>
-{
-	try
-	{
+export const fetchBlueprintFromCdn = async (
+	blueprintSummary: EnrichedBlueprintSummary,
+): Promise<RawBlueprint | null> => {
+	try {
 		const blueprintKey = blueprintSummary.key;
-		if (!blueprintKey)
-		{
+		if (!blueprintKey) {
 			console.error('Blueprint summary missing key');
 			return null;
 		}
@@ -46,31 +43,26 @@ export const fetchBlueprintFromCdn = async (blueprintSummary: EnrichedBlueprintS
 		const cdnUrl = getBlueprintCdnUrl(blueprintKey);
 		let response: Response;
 
-		try
-		{
+		try {
 			response = await fetch(cdnUrl);
-		}
-		catch
-		{
+		} catch {
 			// Network errors are expected for CDN - don't let them bubble to Sentry
 			return null;
 		}
 
-		if (!response.ok)
-		{
+		if (!response.ok) {
 			// Only log non-404 and non-network errors, as both are expected for CDN
-			if (response.status !== 404 && response.status !== 0)
-			{
-				console.warn(`CDN fetch failed for blueprint ${blueprintKey}: ${response.status} ${response.statusText}`);
+			if (response.status !== 404 && response.status !== 0) {
+				console.warn(
+					`CDN fetch failed for blueprint ${blueprintKey}: ${response.status} ${response.statusText}`,
+				);
 			}
 			return null;
 		}
 
 		const data = await response.json();
 		return validateRawBlueprint(data);
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.warn('Error fetching blueprint from CDN:', error);
 		return null;
 	}
@@ -106,39 +98,38 @@ interface UserReconcileResult {
 	reconciled: boolean;
 }
 
-export const fetchBlueprint = async (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary): Promise<RawBlueprint | null> =>
-{
-	try
-	{
+export const fetchBlueprint = async (
+	blueprintId: string,
+	blueprintSummary: EnrichedBlueprintSummary,
+): Promise<RawBlueprint | null> => {
+	try {
 		// Extract lastUpdatedDate from blueprintSummary
 		const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
 
 		// Attempt to fetch from CDN first
 		const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
 
-		if (cdnBlueprint)
-		{
+		if (cdnBlueprint) {
 			// CDN fetch succeeded - compare lastUpdatedDate values
 			const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-			if (cdnLastUpdated === summaryLastUpdated)
-			{
+			if (cdnLastUpdated === summaryLastUpdated) {
 				// Dates match - use CDN data
 				console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
 				return cdnBlueprint;
-			}
-			else if (cdnLastUpdated && summaryLastUpdated)
-			{
+			} else if (cdnLastUpdated && summaryLastUpdated) {
 				// Dates don't match - CDN data is stale
 				const cdnDate = new Date(cdnLastUpdated);
 				const summaryDate = new Date(summaryLastUpdated);
 				const timeDiff = formatDistance(cdnDate, summaryDate);
-				console.log(`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`);
-			}
-			else
-			{
+				console.log(
+					`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
+				);
+			} else {
 				// One or both dates are missing
-				console.log(`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`);
+				console.log(
+					`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`,
+				);
 			}
 		}
 
@@ -146,209 +137,164 @@ export const fetchBlueprint = async (blueprintId: string, blueprintSummary: Enri
 		const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/`);
 		const snapshot = await get(blueprintRef);
 
-		if (!snapshot.exists())
-		{
+		if (!snapshot.exists()) {
 			console.log(`Blueprint ${blueprintId} not found in Firebase`);
 			return null;
 		}
 
 		console.log(`Blueprint ${blueprintId} fetched from Firebase`);
 		return validateRawBlueprint(snapshot.val());
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching blueprint:', error);
 		throw error;
 	}
 };
 
-export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]> =>
-{
-	try
-	{
+export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]> => {
+	try {
 		const tagsRef = ref(getDatabase(app), `/blueprints/${blueprintId}/tags/`);
 		const snapshot = await get(tagsRef);
 		return snapshot.exists() ? snapshot.val() : [];
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching blueprint tags:', error);
 		throw error;
 	}
 };
 
-export const fetchTags = async (): Promise<Record<string, string[]>> =>
-{
-	try
-	{
+export const fetchTags = async (): Promise<Record<string, string[]>> => {
+	try {
 		const tagsRef = ref(getDatabase(app), '/tags/');
 		const snapshot = await get(tagsRef);
 
-		if (!snapshot.exists())
-		{
+		if (!snapshot.exists()) {
 			return {};
 		}
 
 		return snapshot.val();
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching tags:', error);
 		throw error;
 	}
 };
 
-export const fetchByTagData = async (tagId: string): Promise<Record<string, boolean>> =>
-{
-	if (!tagId)
-	{
-		console.error("fetchTagData called with null or empty tagId");
+export const fetchByTagData = async (tagId: string): Promise<Record<string, boolean>> => {
+	if (!tagId) {
+		console.error('fetchTagData called with null or empty tagId');
 		return {};
 	}
 
-	if (tagId.startsWith('/') || tagId.endsWith('/'))
-	{
-		throw new Error(`fetchByTagData: tagId "${tagId}" should not start or end with a slash. The normalized tag id should be used for database queries.`);
+	if (tagId.startsWith('/') || tagId.endsWith('/')) {
+		throw new Error(
+			`fetchByTagData: tagId "${tagId}" should not start or end with a slash. The normalized tag id should be used for database queries.`,
+		);
 	}
 
-	try
-	{
+	try {
 		const snapshot = await get(ref(getDatabase(app), `/byTag/${tagId}`));
 		return snapshot.val() || {};
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching tag data:', error);
 		throw error;
 	}
 };
 
-export const fetchModerator = async (userId: string): Promise<boolean> =>
-{
-	try
-	{
+export const fetchModerator = async (userId: string): Promise<boolean> => {
+	try {
 		const moderatorRef = ref(getDatabase(app), `/moderators/${userId}`);
 		const snapshot = await get(moderatorRef);
 
 		return Boolean(snapshot.val());
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching moderator status:', error);
 		throw error;
 	}
 };
 
-export const fetchUserDisplayName = async (userId: string): Promise<string | null> =>
-{
-	try
-	{
+export const fetchUserDisplayName = async (userId: string): Promise<string | null> => {
+	try {
 		const userRef = ref(getDatabase(app), `/users/${userId}/displayName`);
 		const snapshot = await get(userRef);
 
 		return snapshot.val();
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching user display name:', error);
 		throw error;
 	}
 };
 
-export const fetchUserBlueprints = async (userId: string): Promise<Record<string, boolean>> =>
-{
-	try
-	{
+export const fetchUserBlueprints = async (userId: string): Promise<Record<string, boolean>> => {
+	try {
 		const snapshot = await get(ref(getDatabase(app), `/users/${userId}/blueprints`));
 		return snapshot.val() || {};
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching user blueprints:', error);
 		throw error;
 	}
 };
 
-export const fetchUserFavorites = async (userId: string): Promise<Record<string, boolean>> =>
-{
-	try
-	{
+export const fetchUserFavorites = async (userId: string): Promise<Record<string, boolean>> => {
+	try {
 		const snapshot = await get(ref(getDatabase(app), `/users/${userId}/favorites`));
 		return snapshot.val() || {};
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching user favorites:', error);
 		throw error;
 	}
 };
 
-export const fetchUser = async (userId: string): Promise<RawUser | null> =>
-{
-	try
-	{
+export const fetchUser = async (userId: string): Promise<RawUser | null> => {
+	try {
 		const userRef = ref(getDatabase(app), `/users/${userId}`);
 		const snapshot = await get(userRef);
 
-		if (!snapshot.exists())
-		{
+		if (!snapshot.exists()) {
 			return null;
 		}
 
 		const userData = snapshot.val();
 		return {
-			id         : userId,
+			id: userId,
 			displayName: userData.displayName || undefined,
-			email      : userData.email || undefined,
-			favorites  : userData.favorites || {},
-			blueprints : userData.blueprints || {},
+			email: userData.email || undefined,
+			favorites: userData.favorites || {},
+			blueprints: userData.blueprints || {},
 		};
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching user:', error);
 		throw error;
 	}
 };
 
-export const fetchAllUsers = async (): Promise<UserData[]> =>
-{
-	try
-	{
+export const fetchAllUsers = async (): Promise<UserData[]> => {
+	try {
 		const usersRef = ref(getDatabase(app), '/users/');
 		const snapshot = await get(usersRef);
 
-		if (!snapshot.exists())
-		{
+		if (!snapshot.exists()) {
 			return [];
 		}
 
 		const usersData: UserData[] = [];
-		snapshot.forEach((childSnapshot) =>
-		{
+		snapshot.forEach((childSnapshot) => {
 			const userData = childSnapshot.val();
 			usersData.push({
-				id             : childSnapshot.key,
+				id: childSnapshot.key,
 				...userData,
-				email          : userData.email || undefined,
-				favoritesCount : userData.favorites ? Object.keys(userData.favorites).length : 0,
+				email: userData.email || undefined,
+				favoritesCount: userData.favorites ? Object.keys(userData.favorites).length : 0,
 				blueprintsCount: userData.blueprints ? Object.keys(userData.blueprints).length : 0,
 			});
 		});
 
 		return usersData.sort((a, b) => b.favoritesCount - a.favoritesCount);
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching all users:', error);
 		throw error;
 	}
 };
 
-export const reconcileFavoritesCount = async (blueprintId: string): Promise<ReconcileResult> =>
-{
-	try
-	{
+export const reconcileFavoritesCount = async (blueprintId: string): Promise<ReconcileResult> => {
+	try {
 		const favoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites`);
 		const favoritesSnapshot = await get(favoritesRef);
 		const favorites = favoritesSnapshot.exists() ? favoritesSnapshot.val() : {};
@@ -365,10 +311,9 @@ export const reconcileFavoritesCount = async (blueprintId: string): Promise<Reco
 
 		const hasDiscrepancy = actualCount !== currentBlueprintCount || actualCount !== currentSummaryCount;
 
-		if (hasDiscrepancy)
-		{
+		if (hasDiscrepancy) {
 			const updates = {
-				[`/blueprints/${blueprintId}/numberOfFavorites`]        : actualCount,
+				[`/blueprints/${blueprintId}/numberOfFavorites`]: actualCount,
 				[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
 			};
 
@@ -379,23 +324,19 @@ export const reconcileFavoritesCount = async (blueprintId: string): Promise<Reco
 			blueprintId,
 			actualCount,
 			previousBlueprintCount: currentBlueprintCount,
-			previousSummaryCount  : currentSummaryCount,
+			previousSummaryCount: currentSummaryCount,
 			hasDiscrepancy,
-			reconciled            : hasDiscrepancy,
+			reconciled: hasDiscrepancy,
 		};
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error reconciling favorites count:', error);
 		throw error;
 	}
 };
 
 // TODO 2025-04-12: Move this out of firebase.js, and refactor it to use react query hooks from the hooks/ dir. The problem with the current implementation is that it performs many queries but doesn't cache anything. /users/${userId}/favorites already has a hook useUserFavorites in useUser. But `/blueprints/${blueprintId}/favorites/${userId}` doesn't have a hook or a mutation yet, so we need to add them.
-export const reconcileUserFavorites = async (userId: string): Promise<UserReconcileResult> =>
-{
-	try
-	{
+export const reconcileUserFavorites = async (userId: string): Promise<UserReconcileResult> => {
+	try {
 		const userFavoritesRef = ref(getDatabase(app), `/users/${userId}/favorites`);
 		const userFavoritesSnapshot = await get(userFavoritesRef);
 		const userFavorites = userFavoritesSnapshot.exists() ? userFavoritesSnapshot.val() : {};
@@ -407,21 +348,18 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
 		}> = [];
 		const updates: Record<string, boolean> = {};
 
-		for (const blueprintId of Object.keys(userFavorites))
-		{
-			if (!userFavorites[blueprintId])
-			{
+		for (const blueprintId of Object.keys(userFavorites)) {
+			if (!userFavorites[blueprintId]) {
 				continue;
 			}
 
 			const blueprintFavoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites/${userId}`);
 			const blueprintFavoriteSnapshot = await get(blueprintFavoritesRef);
 
-			if (!blueprintFavoriteSnapshot.exists() || !blueprintFavoriteSnapshot.val())
-			{
+			if (!blueprintFavoriteSnapshot.exists() || !blueprintFavoriteSnapshot.val()) {
 				discrepancies.push({
 					blueprintId,
-					issue: "User favorite not found in blueprint favorites",
+					issue: 'User favorite not found in blueprint favorites',
 					fixed: true,
 				});
 
@@ -434,8 +372,7 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
 			}
 		}
 
-		if (Object.keys(updates).length > 0)
-		{
+		if (Object.keys(updates).length > 0) {
 			await dbUpdate(ref(getDatabase(app)), updates);
 		}
 
@@ -445,24 +382,21 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
 			totalFixed: discrepancies.length,
 			reconciled: discrepancies.length > 0,
 		};
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error reconciling user favorites:', error);
 		throw error;
 	}
 };
 
-export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: string): Promise<boolean> =>
-{
-	try
-	{
+export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: string): Promise<boolean> => {
+	try {
 		const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}`);
 		const summarySnapshot = await get(summaryRef);
 
-		if (summarySnapshot.exists())
-		{
-			console.error(`Attempted to clean up a valid blueprint ${blueprintId} from user ${userId}'s favorites. This is a bug and should be investigated.`);
+		if (summarySnapshot.exists()) {
+			console.error(
+				`Attempted to clean up a valid blueprint ${blueprintId} from user ${userId}'s favorites. This is a bug and should be investigated.`,
+			);
 			return false;
 		}
 
@@ -473,54 +407,50 @@ export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: st
 		await dbUpdate(ref(getDatabase(app)), updates);
 
 		return true;
-	}
-	catch (error)
-	{
-		console.error(`Error cleaning up invalid user favorite for userId=${userId}, blueprintId=${blueprintId}:`, error);
+	} catch (error) {
+		console.error(
+			`Error cleaning up invalid user favorite for userId=${userId}, blueprintId=${blueprintId}:`,
+			error,
+		);
 		return false;
 	}
 };
 
-export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlueprintSummary | null> =>
-{
-	try
-	{
+export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlueprintSummary | null> => {
+	try {
 		const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}`);
 		const snapshot = await get(summaryRef);
 
-		if (!snapshot.exists())
-		{
+		if (!snapshot.exists()) {
 			return null;
 		}
 
 		return validateRawBlueprintSummary(snapshot.val());
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching blueprint summary:', error);
 		throw error;
 	}
 };
 
-export const fetchPaginatedSummaries = async (pageSize = 60, lastKey: string | null = null, lastValue: any = null, orderByField = 'lastUpdatedDate'): Promise<RawBlueprintSummaryPage> =>
-{
-	try
-	{
+export const fetchPaginatedSummaries = async (
+	pageSize = 60,
+	lastKey: string | null = null,
+	lastValue: any = null,
+	orderByField = 'lastUpdatedDate',
+): Promise<RawBlueprintSummaryPage> => {
+	try {
 		let summariesQuery;
 		let nextLastKey: string | null = null;
 		let nextLastValue: number | null = null;
 
-		if (lastKey && lastValue)
-		{
+		if (lastKey && lastValue) {
 			summariesQuery = query(
 				ref(getDatabase(app), '/blueprintSummaries/'),
 				orderByChild(orderByField),
 				endAt(lastValue, lastKey),
 				limitToLast(pageSize + 1),
 			);
-		}
-		else
-		{
+		} else {
 			summariesQuery = query(
 				ref(getDatabase(app), '/blueprintSummaries/'),
 				orderByChild(orderByField),
@@ -530,19 +460,17 @@ export const fetchPaginatedSummaries = async (pageSize = 60, lastKey: string | n
 
 		const snapshot = await get(summariesQuery);
 
-		if (!snapshot.exists())
-		{
+		if (!snapshot.exists()) {
 			return validateRawBlueprintSummaryPage({
-				data     : {},
-				hasMore  : false,
-				lastKey  : null,
+				data: {},
+				hasMore: false,
+				lastKey: null,
 				lastValue: null,
 			});
 		}
 
 		const entries: Array<[string, any]> = [];
-		snapshot.forEach((childSnapshot) =>
-		{
+		snapshot.forEach((childSnapshot) => {
 			entries.push([childSnapshot.key, childSnapshot.val()]);
 		});
 
@@ -552,12 +480,10 @@ export const fetchPaginatedSummaries = async (pageSize = 60, lastKey: string | n
 
 		const hasMore = entries.length > pageSize;
 
-		if (hasMore)
-		{
+		if (hasMore) {
 			// Remove the extra item used for pagination detection
 			const removedEntry = entries.pop();
-			if (removedEntry)
-			{
+			if (removedEntry) {
 				nextLastKey = removedEntry[0];
 				nextLastValue = removedEntry[1][orderByField];
 			}
@@ -565,20 +491,17 @@ export const fetchPaginatedSummaries = async (pageSize = 60, lastKey: string | n
 
 		// Build the data object from the reversed entries
 		const data: Record<string, RawBlueprintSummary> = {};
-		entries.forEach(([key, value]) =>
-		{
+		entries.forEach(([key, value]) => {
 			data[key] = value;
 		});
 
 		return validateRawBlueprintSummaryPage({
 			data,
 			hasMore,
-			lastKey  : nextLastKey,
+			lastKey: nextLastKey,
 			lastValue: nextLastValue,
 		});
-	}
-	catch (error)
-	{
+	} catch (error) {
 		console.error('Error fetching paginated summaries:', error);
 		throw error;
 	}

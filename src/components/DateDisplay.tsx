@@ -8,20 +8,17 @@ interface DateDisplayProps {
 	isLoading: boolean;
 }
 
-const DateDisplay: React.FC<DateDisplayProps> = ({ date, isLoading }) =>
-{
-	if (isLoading)
-	{
-		return <FontAwesomeIcon icon={faCog} spin />;
+const DateDisplay: React.FC<DateDisplayProps> = ({date, isLoading}) => {
+	if (isLoading) {
+		return (
+			<FontAwesomeIcon
+				icon={faCog}
+				spin
+			/>
+		);
 	}
 
-	return (
-		<span
-			title={moment(date).format('dddd, MMMM Do YYYY, h:mm:ss a')}
-		>
-			{moment(date).fromNow()}
-		</span>
-	);
+	return <span title={moment(date).format('dddd, MMMM Do YYYY, h:mm:ss a')}>{moment(date).fromNow()}</span>;
 };
 
 export default React.memo(DateDisplay);

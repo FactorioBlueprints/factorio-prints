@@ -1,90 +1,90 @@
 {
-  "database": {
-    "rules": "database.rules.json"
-  },
-  "hosting": {
-    "public": "dist",
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "SAMEORIGIN"
-          },
-          {
-            "key": "Referrer-Policy",
-            "value": "strict-origin-when-cross-origin"
-          }
-        ]
-      },
-      {
-        "source": "**/*.@(jpg|jpeg|gif|png|svg|ico)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=2419200"
-          }
-        ]
-      },
-      {
-        "source": "/sw.ts",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=0, no-cache, no-store, must-revalidate"
-          },
-          {
-            "key": "Service-Worker-Allowed",
-            "value": "/"
-          }
-        ]
-      },
-      {
-        "source": "/service-worker.ts",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=0, no-cache, no-store, must-revalidate"
-          },
-          {
-            "key": "Service-Worker-Allowed",
-            "value": "/"
-          }
-        ]
-      },
-      {
-        "source": "/serviceWorker.ts",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=0, no-cache, no-store, must-revalidate"
-          },
-          {
-            "key": "Service-Worker-Allowed",
-            "value": "/"
-          }
-        ]
-      },
-      {
-        "source": "**/*.@(js|css|html|json)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=0, no-cache, no-store, must-revalidate"
-          }
-        ]
-      }
-    ]
-  }
+	"database": {
+		"rules": "database.rules.json"
+	},
+	"hosting": {
+		"public": "dist",
+		"rewrites": [
+			{
+				"source": "**",
+				"destination": "/index.html"
+			}
+		],
+		"headers": [
+			{
+				"source": "**",
+				"headers": [
+					{
+						"key": "X-Content-Type-Options",
+						"value": "nosniff"
+					},
+					{
+						"key": "X-Frame-Options",
+						"value": "SAMEORIGIN"
+					},
+					{
+						"key": "Referrer-Policy",
+						"value": "strict-origin-when-cross-origin"
+					}
+				]
+			},
+			{
+				"source": "**/*.@(jpg|jpeg|gif|png|svg|ico)",
+				"headers": [
+					{
+						"key": "Cache-Control",
+						"value": "max-age=2419200"
+					}
+				]
+			},
+			{
+				"source": "/sw.ts",
+				"headers": [
+					{
+						"key": "Cache-Control",
+						"value": "max-age=0, no-cache, no-store, must-revalidate"
+					},
+					{
+						"key": "Service-Worker-Allowed",
+						"value": "/"
+					}
+				]
+			},
+			{
+				"source": "/service-worker.ts",
+				"headers": [
+					{
+						"key": "Cache-Control",
+						"value": "max-age=0, no-cache, no-store, must-revalidate"
+					},
+					{
+						"key": "Service-Worker-Allowed",
+						"value": "/"
+					}
+				]
+			},
+			{
+				"source": "/serviceWorker.ts",
+				"headers": [
+					{
+						"key": "Cache-Control",
+						"value": "max-age=0, no-cache, no-store, must-revalidate"
+					},
+					{
+						"key": "Service-Worker-Allowed",
+						"value": "/"
+					}
+				]
+			},
+			{
+				"source": "**/*.@(js|css|html|json)",
+				"headers": [
+					{
+						"key": "Cache-Control",
+						"value": "max-age=0, no-cache, no-store, must-revalidate"
+					}
+				]
+			}
+		]
+	}
 }

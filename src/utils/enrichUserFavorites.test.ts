@@ -1,10 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { enrichUserFavorites } from './enrichUserFavorites';
+import {describe, expect, it} from 'vitest';
+import {enrichUserFavorites} from './enrichUserFavorites';
 
-describe('enrichUserFavorites', () =>
-{
-	it('should enrich user favorites data with count', () =>
-	{
+describe('enrichUserFavorites', () => {
+	it('should enrich user favorites data with count', () => {
 		const rawUserFavorites = {
 			'blueprint-1': true,
 			'blueprint-2': false,
@@ -25,30 +23,27 @@ describe('enrichUserFavorites', () =>
 		});
 	});
 
-	it('should handle null input', () =>
-	{
+	it('should handle null input', () => {
 		const result = enrichUserFavorites(null);
 
 		expect(result).toEqual({
 			favoriteIds: {},
-			count      : 0,
+			count: 0,
 		});
 	});
 
-	it('should handle empty favorites object', () =>
-	{
+	it('should handle empty favorites object', () => {
 		const rawUserFavorites = {};
 
 		const result = enrichUserFavorites(rawUserFavorites);
 
 		expect(result).toEqual({
 			favoriteIds: {},
-			count      : 0,
+			count: 0,
 		});
 	});
 
-	it('should count only true values', () =>
-	{
+	it('should count only true values', () => {
 		const rawUserFavorites = {
 			'blueprint-1': true,
 			'blueprint-2': false,
@@ -64,8 +59,7 @@ describe('enrichUserFavorites', () =>
 		expect(result?.favoriteIds).toEqual(rawUserFavorites);
 	});
 
-	it('should handle all false values', () =>
-	{
+	it('should handle all false values', () => {
 		const rawUserFavorites = {
 			'blueprint-1': false,
 			'blueprint-2': false,
@@ -84,8 +78,7 @@ describe('enrichUserFavorites', () =>
 		});
 	});
 
-	it('should handle real-world blueprint IDs', () =>
-	{
+	it('should handle real-world blueprint IDs', () => {
 		const rawUserFavorites = {
 			'-KnQ865j-qQ21WoUPbd3': true,
 			'-L_jADWYOzVoz7tNRFf0': false,

@@ -1,17 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {renderHook} from '@testing-library/react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import React from 'react';
 import useRawBlueprintSummaries from './useRawBlueprintSummaries';
-import { fetchBlueprintSummary } from '../api/firebase';
-import { validateRawBlueprintSummary } from '../schemas';
+import {fetchBlueprintSummary} from '../api/firebase';
+import {validateRawBlueprintSummary} from '../schemas';
 
 // Mock dependencies
 vi.mock('../api/firebase');
 vi.mock('../schemas');
 
-const createWrapper = () =>
-{
+const createWrapper = () => {
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
@@ -19,15 +18,12 @@ const createWrapper = () =>
 			},
 		},
 	});
-	return ({ children }: { children: React.ReactNode }) => (
-		<QueryClientProvider client={queryClient}>
-			{children}
-		</QueryClientProvider>
+	return ({children}: {children: React.ReactNode}) => (
+		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 };
 
-describe('useRawBlueprintSummaries', () =>
-{
+describe('useRawBlueprintSummaries', () => {
 	const mockBlueprintsData = {
 		'blueprint-1': true,
 		'blueprint-2': true,
@@ -36,45 +32,40 @@ describe('useRawBlueprintSummaries', () =>
 
 	const mockSummaries = {
 		'blueprint-1': {
-			title            : 'Blueprint 1',
-			imgurId          : 'img1',
-			imgurType        : 'image/png',
+			title: 'Blueprint 1',
+			imgurId: 'img1',
+			imgurType: 'image/png',
 			numberOfFavorites: 5,
 		},
 		'blueprint-2': {
-			title            : 'Blueprint 2',
-			imgurId          : 'img2',
-			imgurType        : 'image/png',
+			title: 'Blueprint 2',
+			imgurId: 'img2',
+			imgurType: 'image/png',
 			numberOfFavorites: 10,
 		},
 		'blueprint-3': {
-			title            : 'Blueprint 3',
-			imgurId          : 'img3',
-			imgurType        : 'image/png',
+			title: 'Blueprint 3',
+			imgurId: 'img3',
+			imgurType: 'image/png',
 			numberOfFavorites: 15,
 		},
 	};
 
-	beforeEach(() =>
-	{
+	beforeEach(() => {
 		// Set up mock implementations
-		vi.mocked(fetchBlueprintSummary).mockImplementation((blueprintId: any) =>
-		{
+		vi.mocked(fetchBlueprintSummary).mockImplementation((blueprintId: any) => {
 			return Promise.resolve((mockSummaries as any)[blueprintId]);
 		});
 		vi.mocked(validateRawBlueprintSummary).mockImplementation((data: any) => data);
 	});
 
-	afterEach(() =>
-	{
+	afterEach(() => {
 		vi.resetAllMocks();
 	});
 
-	it('should fetch all blueprint summaries when blueprintsSuccess is true', async () =>
-	{
+	it('should fetch all blueprint summaries when blueprintsSuccess is true', async () => {
 		// Create a custom wrapper that sets up mock data
-		const customWrapper = () =>
-		{
+		const customWrapper = () => {
 			const queryClient = new QueryClient({
 				defaultOptions: {
 					queries: {
@@ -85,22 +76,16 @@ describe('useRawBlueprintSummaries', () =>
 
 			// Prefill the query cache with mock data
 			const blueprintIds = Object.keys(mockBlueprintsData);
-			blueprintIds.forEach(id =>
-			{
-				queryClient.setQueryData(
-					['blueprintSummaries', 'blueprintId', id],
-					(mockSummaries as any)[id],
-				);
+			blueprintIds.forEach((id) => {
+				queryClient.setQueryData(['blueprintSummaries', 'blueprintId', id], (mockSummaries as any)[id]);
 			});
 
-			return ({ children }: { children: React.ReactNode }) => (
-				<QueryClientProvider client={queryClient}>
-					{children}
-				</QueryClientProvider>
+			return ({children}: {children: React.ReactNode}) => (
+				<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 			);
 		};
 
-		const { result } = renderHook(() => useRawBlueprintSummaries(mockBlueprintsData, true), {
+		const {result} = renderHook(() => useRawBlueprintSummaries(mockBlueprintsData, true), {
 			wrapper: customWrapper(),
 		});
 
@@ -122,8 +107,7 @@ describe('useRawBlueprintSummaries', () =>
 		expect(result.current.rawBlueprintSummaries).toContainEqual(mockSummaries['blueprint-3']);
 	});
 
-	it('should not fetch any blueprint summaries when blueprintsSuccess is false', () =>
-	{
+	it('should not fetch any blueprint summaries when blueprintsSuccess is false', () => {
 		renderHook(() => useRawBlueprintSummaries(mockBlueprintsData, false), {
 			wrapper: createWrapper(),
 		});
@@ -132,9 +116,8 @@ describe('useRawBlueprintSummaries', () =>
 		expect(fetchBlueprintSummary).not.toHaveBeenCalled();
 	});
 
-	it('should handle empty blueprintsData', async () =>
-	{
-		const { result } = renderHook(() => useRawBlueprintSummaries({}, true), {
+	it('should handle empty blueprintsData', async () => {
+		const {result} = renderHook(() => useRawBlueprintSummaries({}, true), {
 			wrapper: createWrapper(),
 		});
 
@@ -144,9 +127,8 @@ describe('useRawBlueprintSummaries', () =>
 		expect(fetchBlueprintSummary).not.toHaveBeenCalled();
 	});
 
-	it('should handle null blueprintsData', async () =>
-	{
-		const { result } = renderHook(() => useRawBlueprintSummaries(null, true), {
+	it('should handle null blueprintsData', async () => {
+		const {result} = renderHook(() => useRawBlueprintSummaries(null, true), {
 			wrapper: createWrapper(),
 		});
 
@@ -156,42 +138,37 @@ describe('useRawBlueprintSummaries', () =>
 		expect(fetchBlueprintSummary).not.toHaveBeenCalled();
 	});
 
-	it('should handle errors from the API', async () =>
-	{
+	it('should handle errors from the API', async () => {
 		// Using a direct mock implementation for this test
 
 		// Modify the hook implementation for this test
-		const mockUseRawBlueprintSummaries = () =>
-		{
+		const mockUseRawBlueprintSummaries = () => {
 			const queriesByKey = {
 				'blueprint-1': {
 					isSuccess: true,
-					data     : mockSummaries['blueprint-1'],
-					error    : null,
+					data: mockSummaries['blueprint-1'],
+					error: null,
 				},
 				'blueprint-2': {
 					isError: true,
-					data   : null,
-					error  : new Error('API error'),
+					data: null,
+					error: new Error('API error'),
 				},
 				'blueprint-3': {
 					isSuccess: true,
-					data     : mockSummaries['blueprint-3'],
-					error    : null,
+					data: mockSummaries['blueprint-3'],
+					error: null,
 				},
 			};
 
 			// Match the behavior of our hook
-			const rawBlueprintSummaries = [
-				mockSummaries['blueprint-1'],
-				mockSummaries['blueprint-3'],
-			];
+			const rawBlueprintSummaries = [mockSummaries['blueprint-1'], mockSummaries['blueprint-3']];
 
-			return { queriesByKey, rawBlueprintSummaries };
+			return {queriesByKey, rawBlueprintSummaries};
 		};
 
 		// Use our mock implementation directly
-		const { result } = renderHook(() => mockUseRawBlueprintSummaries());
+		const {result} = renderHook(() => mockUseRawBlueprintSummaries());
 
 		// Verify the structure
 		expect(Object.keys(result.current.queriesByKey)).toHaveLength(3);
@@ -206,40 +183,35 @@ describe('useRawBlueprintSummaries', () =>
 		expect(result.current.rawBlueprintSummaries).toContainEqual(mockSummaries['blueprint-3']);
 	});
 
-	it('should handle validation errors', async () =>
-	{
+	it('should handle validation errors', async () => {
 		// Modify the hook implementation for this test
-		const mockUseRawBlueprintSummaries = () =>
-		{
+		const mockUseRawBlueprintSummaries = () => {
 			const queriesByKey = {
 				'blueprint-1': {
 					isSuccess: true,
-					data     : mockSummaries['blueprint-1'],
-					error    : null,
+					data: mockSummaries['blueprint-1'],
+					error: null,
 				},
 				'blueprint-2': {
 					isSuccess: true,
-					data     : mockSummaries['blueprint-2'],
-					error    : null,
+					data: mockSummaries['blueprint-2'],
+					error: null,
 				},
 				'blueprint-3': {
 					isError: true,
-					data   : null,
-					error  : new Error('Validation error'),
+					data: null,
+					error: new Error('Validation error'),
 				},
 			};
 
 			// Match the behavior of our hook
-			const rawBlueprintSummaries = [
-				mockSummaries['blueprint-1'],
-				mockSummaries['blueprint-2'],
-			];
+			const rawBlueprintSummaries = [mockSummaries['blueprint-1'], mockSummaries['blueprint-2']];
 
-			return { queriesByKey, rawBlueprintSummaries };
+			return {queriesByKey, rawBlueprintSummaries};
 		};
 
 		// Use our mock implementation directly
-		const { result } = renderHook(() => mockUseRawBlueprintSummaries());
+		const {result} = renderHook(() => mockUseRawBlueprintSummaries());
 
 		// Verify the structure
 		expect(Object.keys(result.current.queriesByKey)).toHaveLength(3);

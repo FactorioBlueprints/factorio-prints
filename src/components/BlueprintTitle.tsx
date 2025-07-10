@@ -7,11 +7,16 @@ interface BlueprintTitleProps {
 	isLoading: boolean;
 }
 
-const BlueprintTitle: React.FC<BlueprintTitleProps> = ({ title, isLoading }) =>
-{
-	if (isLoading)
-	{
-		return <h1><FontAwesomeIcon icon={faCog} spin /></h1>;
+const BlueprintTitle: React.FC<BlueprintTitleProps> = ({title, isLoading}) => {
+	if (isLoading) {
+		return (
+			<h1>
+				<FontAwesomeIcon
+					icon={faCog}
+					spin
+				/>
+			</h1>
+		);
 	}
 
 	return <h1>{title}</h1>;

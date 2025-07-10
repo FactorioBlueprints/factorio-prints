@@ -1,4 +1,4 @@
-import { deserializeBlueprintNoThrow } from './parsing/blueprintParser';
+import {deserializeBlueprintNoThrow} from './parsing/blueprintParser';
 
 // Blueprint data structure interfaces
 interface BlueprintIcon {
@@ -16,7 +16,7 @@ interface BlueprintEntity {
 		x: number;
 		y: number;
 	};
-	items?: Record<string, number>[] | { item: string; count: number }[];
+	items?: Record<string, number>[] | {item: string; count: number}[];
 	[key: string]: unknown;
 }
 
@@ -115,42 +115,34 @@ type DecodedObject = V15DecodedObject | undefined;
 // Type for converted objects
 type ConvertedBlueprint = SingleBlueprint | BlueprintBook;
 
-class Blueprint
-{
+class Blueprint {
 	private encodedText: string;
 	private cachedDecodedObject: DecodedObject = undefined;
 
-	constructor(encodedText: string)
-	{
+	constructor(encodedText: string) {
 		// TODO 2025-04-22: Assert that encodedText is truthy
 		this.encodedText = encodedText;
 	}
 
 	isV15 = (): boolean => this.encodedText.startsWith('0');
 
-	get decodedObject(): DecodedObject
-	{
-		if (this.cachedDecodedObject == null)
-		{
+	get decodedObject(): DecodedObject {
+		if (this.cachedDecodedObject == null) {
 			this.cachedDecodedObject = this.convertEncodedTextToObject();
 		}
 		return this.cachedDecodedObject;
 	}
 
-	private convertEncodedTextToObject = (): DecodedObject =>
-	{
-		if (this.isV15())
-		{
+	private convertEncodedTextToObject = (): DecodedObject => {
+		if (this.isV15()) {
 			return deserializeBlueprintNoThrow(this.encodedText) as V15DecodedObject;
 		}
 
 		return undefined;
 	};
 
-	isBook = (): boolean =>
-	{
-		if (this.isV15())
-		{
+	isBook = (): boolean => {
+		if (this.isV15()) {
 			const decoded = this.decodedObject as V15DecodedObject;
 			return decoded?.blueprint_book !== undefined;
 		}
@@ -158,10 +150,8 @@ class Blueprint
 		return false;
 	};
 
-	isBlueprint = (): boolean =>
-	{
-		if (this.isV15())
-		{
+	isBlueprint = (): boolean => {
+		if (this.isV15()) {
 			const decoded = this.decodedObject as V15DecodedObject;
 			return decoded?.blueprint !== undefined;
 		}
@@ -169,10 +159,8 @@ class Blueprint
 		return false;
 	};
 
-	isUpgradePlanner = (): boolean =>
-	{
-		if (this.isV15())
-		{
+	isUpgradePlanner = (): boolean => {
+		if (this.isV15()) {
 			const decoded = this.decodedObject as V15DecodedObject;
 			return decoded?.upgrade_planner !== undefined;
 		}
@@ -180,23 +168,18 @@ class Blueprint
 		return false;
 	};
 
-	getV15Decoded = (): V15DecodedObject | null =>
-	{
-		try
-		{
-			if (this.isV15())
-			{
+	getV15Decoded = (): V15DecodedObject | null => {
+		try {
+			if (this.isV15()) {
 				return this.decodedObject as V15DecodedObject;
 			}
 
 			return null;
-		}
-		catch
-		{
+		} catch {
 			return null;
 		}
 	};
 }
 
 export default Blueprint;
-export type { V15DecodedObject };
+export type {V15DecodedObject};

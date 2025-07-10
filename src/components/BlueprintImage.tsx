@@ -11,29 +11,36 @@ interface BlueprintImageProps {
 	isLoading: boolean;
 }
 
-const BlueprintImage: React.FC<BlueprintImageProps> = ({ image, thumbnail, isLoading }) =>
-{
-	if (isLoading)
-	{
+const BlueprintImage: React.FC<BlueprintImageProps> = ({image, thumbnail, isLoading}) => {
+	if (isLoading) {
 		return (
-			<div className='d-flex justify-content-center'>
-				<FontAwesomeIcon icon={faCog} spin size='3x' className='my-4' />
+			<div className="d-flex justify-content-center">
+				<FontAwesomeIcon
+					icon={faCog}
+					spin
+					size="3x"
+					className="my-4"
+				/>
 			</div>
 		);
 	}
 
-	if (!image?.id || !thumbnail)
-	{
+	if (!image?.id || !thumbnail) {
 		return null;
 	}
 
 	return (
 		<a
 			href={`http://imgur.com/${image.id}`}
-			target='_blank'
-			rel='noopener noreferrer'
+			target="_blank"
+			rel="noopener noreferrer"
 		>
-			<Image thumbnail className='border-warning' src={thumbnail} referrerPolicy='no-referrer' />
+			<Image
+				thumbnail
+				className="border-warning"
+				src={thumbnail}
+				referrerPolicy="no-referrer"
+			/>
 		</a>
 	);
 };

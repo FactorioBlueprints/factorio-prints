@@ -1,16 +1,16 @@
 import React from 'react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
-import { update as dbUpdate } from 'firebase/database';
-import { useDeleteBlueprint } from './useUpdateBlueprint';
+import {vi, describe, it, expect, beforeEach} from 'vitest';
+import {renderHook, waitFor} from '@testing-library/react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {useNavigate} from '@tanstack/react-router';
+import {update as dbUpdate} from 'firebase/database';
+import {useDeleteBlueprint} from './useUpdateBlueprint';
 
 // Mock Firebase
 vi.mock('firebase/database', () => ({
 	getDatabase: vi.fn(),
-	ref        : vi.fn(),
-	update     : vi.fn(),
+	ref: vi.fn(),
+	update: vi.fn(),
 }));
 
 // Mock router
@@ -23,22 +23,20 @@ vi.mock('../base', () => ({
 	app: {},
 }));
 
-describe('useDeleteBlueprint user page cache invalidation', () =>
-{
+describe('useDeleteBlueprint user page cache invalidation', () => {
 	let queryClient: QueryClient;
-	let wrapper: ({ children }: { children: React.ReactNode }) => React.JSX.Element;
+	let wrapper: ({children}: {children: React.ReactNode}) => React.JSX.Element;
 	let navigateMock: any;
 
-	beforeEach(() =>
-	{
+	beforeEach(() => {
 		vi.clearAllMocks();
 		queryClient = new QueryClient({
 			defaultOptions: {
-				queries  : { retry: false },
-				mutations: { retry: false },
+				queries: {retry: false},
+				mutations: {retry: false},
 			},
 		});
-		wrapper = ({ children }: { children: React.ReactNode }) => (
+		wrapper = ({children}: {children: React.ReactNode}) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 
@@ -46,8 +44,7 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
-	it('should invalidate user blueprint queries when a blueprint is deleted', async () =>
-	{
+	it('should invalidate user blueprint queries when a blueprint is deleted', async () => {
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'test-blueprint-id';
@@ -61,12 +58,12 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 		const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
 		queryClient.setQueryData(userBlueprintsKey, {
 			'other-blueprint-1': true,
-			[blueprintId]      : true,
+			[blueprintId]: true,
 			'other-blueprint-2': true,
 		});
 
 		// Execute deletion
-		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
+		const {result} = renderHook(() => useDeleteBlueprint(), {wrapper});
 
 		result.current.mutate({
 			id: blueprintId,
@@ -88,8 +85,7 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 		});
 	});
 
-	it('should ensure UserGrid component refreshes data after blueprint deletion', async () =>
-	{
+	it('should ensure UserGrid component refreshes data after blueprint deletion', async () => {
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'grid-test-blueprint';
@@ -108,20 +104,20 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 
 		// Simulate individual blueprint summaries being cached
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], {
-			title  : 'To Be Deleted',
+			title: 'To Be Deleted',
 			imgurId: 'test',
 		});
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'blueprint-1'], {
-			title  : 'Blueprint 1',
+			title: 'Blueprint 1',
 			imgurId: 'test1',
 		});
 		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'blueprint-2'], {
-			title  : 'Blueprint 2',
+			title: 'Blueprint 2',
 			imgurId: 'test2',
 		});
 
 		// Execute deletion
-		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
+		const {result} = renderHook(() => useDeleteBlueprint(), {wrapper});
 
 		result.current.mutate({
 			id: blueprintId,
@@ -141,8 +137,7 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 		expect(queryClient.getQueryData(['blueprintSummaries', 'blueprintId', blueprintId])).toBeUndefined();
 	});
 
-	it('should handle cross-user blueprint display consistency', async () =>
-	{
+	it('should handle cross-user blueprint display consistency', async () => {
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = 'shared-blueprint';
@@ -154,19 +149,19 @@ describe('useDeleteBlueprint user page cache invalidation', () =>
 
 		// Original author has the blueprint
 		queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
-			[blueprintId]    : true,
+			[blueprintId]: true,
 			'other-blueprint': true,
 		});
 
 		// Viewer is looking at author's page
 		// This simulates the UserGrid component having fetched the author's blueprints
 		queryClient.setQueryData(['users', 'userId', authorId, 'blueprints'], {
-			[blueprintId]    : true,
+			[blueprintId]: true,
 			'other-blueprint': true,
 		});
 
 		// Execute deletion
-		const { result } = renderHook(() => useDeleteBlueprint(), { wrapper });
+		const {result} = renderHook(() => useDeleteBlueprint(), {wrapper});
 
 		result.current.mutate({
 			id: blueprintId,

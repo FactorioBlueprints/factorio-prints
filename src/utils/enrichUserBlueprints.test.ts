@@ -1,10 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { enrichUserBlueprints } from './enrichUserBlueprints';
+import {describe, expect, it} from 'vitest';
+import {enrichUserBlueprints} from './enrichUserBlueprints';
 
-describe('enrichUserBlueprints', () =>
-{
-	it('should enrich user blueprints data with count', () =>
-	{
+describe('enrichUserBlueprints', () => {
+	it('should enrich user blueprints data with count', () => {
 		const rawUserBlueprints = {
 			'blueprint-1': true,
 			'blueprint-2': false,
@@ -25,30 +23,27 @@ describe('enrichUserBlueprints', () =>
 		});
 	});
 
-	it('should handle null input', () =>
-	{
+	it('should handle null input', () => {
 		const result = enrichUserBlueprints(null);
 
 		expect(result).toEqual({
 			blueprintIds: {},
-			count       : 0,
+			count: 0,
 		});
 	});
 
-	it('should handle empty blueprints object', () =>
-	{
+	it('should handle empty blueprints object', () => {
 		const rawUserBlueprints = {};
 
 		const result = enrichUserBlueprints(rawUserBlueprints);
 
 		expect(result).toEqual({
 			blueprintIds: {},
-			count       : 0,
+			count: 0,
 		});
 	});
 
-	it('should count only true values', () =>
-	{
+	it('should count only true values', () => {
 		const rawUserBlueprints = {
 			'blueprint-1': true,
 			'blueprint-2': false,
@@ -64,8 +59,7 @@ describe('enrichUserBlueprints', () =>
 		expect(result?.blueprintIds).toEqual(rawUserBlueprints);
 	});
 
-	it('should handle all false values', () =>
-	{
+	it('should handle all false values', () => {
 		const rawUserBlueprints = {
 			'blueprint-1': false,
 			'blueprint-2': false,
@@ -84,8 +78,7 @@ describe('enrichUserBlueprints', () =>
 		});
 	});
 
-	it('should handle real-world blueprint IDs', () =>
-	{
+	it('should handle real-world blueprint IDs', () => {
 		const rawUserBlueprints = {
 			'-KnQ865j-qQ21WoUPbd3': true,
 			'-L_jADWYOzVoz7tNRFf0': true,

@@ -1,10 +1,10 @@
-import { getAuth, User } from 'firebase/auth';
-import { getDatabase, ref, runTransaction } from 'firebase/database';
-import React, { useEffect } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { Outlet } from '@tanstack/react-router';
+import {getAuth, User} from 'firebase/auth';
+import {getDatabase, ref, runTransaction} from 'firebase/database';
+import React, {useEffect} from 'react';
+import {useAuthState} from 'react-firebase-hooks/auth';
+import {Outlet} from '@tanstack/react-router';
 
-import { app } from '../base';
+import {app} from '../base';
 import ErrorBoundary from './ErrorBoundary';
 import Header from './Header';
 
@@ -17,22 +17,18 @@ interface UserData {
 	providerId?: string | null;
 }
 
-const Root: React.FC = () =>
-{
+const Root: React.FC = () => {
 	const [user] = useAuthState(getAuth(app));
 
 	// Update user profile in the database when auth state changes
-	useEffect(() =>
-	{
-		if (user)
-		{
-			const { uid, email, photoURL, emailVerified, providerData } = user;
+	useEffect(() => {
+		if (user) {
+			const {uid, email, photoURL, emailVerified, providerData} = user;
 
 			const providerId = providerData && providerData.length > 0 ? providerData[0].providerId : null;
 			const providerDisplayName = providerId && providerData ? providerData[0].displayName : undefined;
 
-			const buildUserInformation = (existingUser: UserData | null): UserData =>
-			{
+			const buildUserInformation = (existingUser: UserData | null): UserData => {
 				const existingUserInitialized = existingUser || {};
 				const displayName = existingUserInitialized.displayName || providerDisplayName;
 				return {

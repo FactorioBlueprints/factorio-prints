@@ -1,13 +1,13 @@
-import { faTags } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faTags} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import React from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import { useParams } from '@tanstack/react-router';
+import {useParams} from '@tanstack/react-router';
 
-import { useEnrichedTagBlueprintSummaries } from '../hooks/useEnrichedTagBlueprintSummaries';
-import { useFilterByTitle } from '../hooks/useFilterByTitle';
-import type { EnrichedBlueprintSummary } from '../schemas';
+import {useEnrichedTagBlueprintSummaries} from '../hooks/useEnrichedTagBlueprintSummaries';
+import {useFilterByTitle} from '../hooks/useFilterByTitle';
+import type {EnrichedBlueprintSummary} from '../schemas';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import EmptyResults from './grid/EmptyResults';
@@ -17,17 +17,11 @@ import PageHeader from './PageHeader';
 import SearchForm from './SearchForm';
 import SingleTagSelector from './SingleTagSelector';
 
-const SingleTagGrid: React.FC = () =>
-{
-	const { tag } = useParams({ strict: false });
+const SingleTagGrid: React.FC = () => {
+	const {tag} = useParams({strict: false});
 	const tagId = tag || '';
 
-	const {
-		tagQuery,
-		blueprintQueries,
-		isLoading,
-		isError,
-	} = useEnrichedTagBlueprintSummaries(tagId);
+	const {tagQuery, blueprintQueries, isLoading, isError} = useEnrichedTagBlueprintSummaries(tagId);
 
 	const blueprintSummaries: EnrichedBlueprintSummary[] = Object.entries(blueprintQueries)
 		.filter(([, query]) => query.isSuccess && query.data)
@@ -36,12 +30,13 @@ const SingleTagGrid: React.FC = () =>
 
 	const filteredBlueprints = useFilterByTitle(blueprintSummaries);
 
-	const sortedBlueprints = [...filteredBlueprints].sort((a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary): number =>
-	{
-		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
-		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-		return dateB.getTime() - dateA.getTime();
-	});
+	const sortedBlueprints = [...filteredBlueprints].sort(
+		(a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary): number => {
+			const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
+			const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
+			return dateB.getTime() - dateA.getTime();
+		},
+	);
 
 	const formattedTag = tagId.replace(/\//g, ' › ') || '';
 
@@ -50,11 +45,17 @@ const SingleTagGrid: React.FC = () =>
 
 	return (
 		<Container fluid>
-			<PageHeader title={
-				<>
-					<FontAwesomeIcon icon={faTags} className='text-primary' /> {formattedTag}
-				</>
-			} />
+			<PageHeader
+				title={
+					<>
+						<FontAwesomeIcon
+							icon={faTags}
+							className="text-primary"
+						/>{' '}
+						{formattedTag}
+					</>
+				}
+			/>
 			<Row>
 				<SearchForm />
 				<SingleTagSelector currentTag={tagId} />
@@ -75,13 +76,20 @@ const SingleTagGrid: React.FC = () =>
 				filteredTags={[]}
 			>
 				<p>No blueprints found with the tag "{formattedTag}".</p>
-				<p><small>The URL format for tag browsing is: <code>/tagged/category/name</code></small></p>
+				<p>
+					<small>
+						The URL format for tag browsing is: <code>/tagged/category/name</code>
+					</small>
+				</p>
 			</EmptyResults>
 
-			<Row className='blueprint-grid-row justify-content-center'>
-				{sortedBlueprints.map(blueprintSummary =>
-					<BlueprintThumbnail key={blueprintSummary.key} blueprintSummary={blueprintSummary} />,
-				)}
+			<Row className="blueprint-grid-row justify-content-center">
+				{sortedBlueprints.map((blueprintSummary) => (
+					<BlueprintThumbnail
+						key={blueprintSummary.key}
+						blueprintSummary={blueprintSummary}
+					/>
+				))}
 			</Row>
 		</Container>
 	);
