@@ -42,7 +42,7 @@ export const rawBlueprintSchema = z
 		authorId: z.string().optional(),
 		author: blueprintAuthorSchema,
 		image: imgurImageSchema,
-		favorites: z.record(z.boolean()).optional().default({}),
+		favorites: z.record(z.string(), z.boolean()).optional().default({}),
 		fileName: z.string().optional(),
 	})
 	.strict();
@@ -60,7 +60,7 @@ export const enrichedBlueprintSchema = rawBlueprintSchema
 		thumbnail: z.string().nullable(),
 		renderedDescription: z.string(),
 		parsedData: z.any().nullable(),
-		tags: z.record(z.boolean()),
+		tags: z.record(z.string(), z.boolean()),
 	})
 	.strict();
 
@@ -137,19 +137,19 @@ export const validate = <T>(data: unknown, schema: z.ZodSchema<T>, description: 
 		return schema.parse(data);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			const errorDetails = error.errors.map((e) => ({
+			const errorDetails = error.issues.map((e) => ({
 				path: e.path.join('.'),
 				message: e.message,
 				code: e.code,
 			}));
 			console.error('Schema validation failed', {
 				description,
-				errorCount: error.errors.length,
+				errorCount: error.issues.length,
 				errors: errorDetails,
 				dataType: typeof data,
 				dataKeys: data && typeof data === 'object' ? Object.keys(data) : undefined,
 			});
-			const errorMessage = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+			const errorMessage = error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
 			throw new Error(`Invalid ${description}: ${errorMessage}`);
 		}
 		console.error('Schema validation failed with unexpected error', {description, error: String(error)});

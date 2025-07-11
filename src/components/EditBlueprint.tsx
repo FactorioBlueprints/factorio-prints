@@ -187,7 +187,7 @@ function EditBlueprintWrapper() {
 				blueprintFormSchema.parse(value);
 			} catch (error) {
 				if (error instanceof z.ZodError) {
-					console.error('Validation errors:', error.errors);
+					console.error('Validation errors:', error.issues);
 					return;
 				}
 			}

@@ -32,7 +32,6 @@
 		"@tanstack/react-query-persist-client": "5.82.0",
 		"@tanstack/react-router": "^1.127.0",
 		"@tanstack/react-store": "^0.7.0",
-		"@tanstack/zod-form-adapter": "^0.42.1",
 		"atob": "2.1.2",
 		"axios": "1.10.0",
 		"bootstrap": "5.3.7",
@@ -56,7 +55,7 @@
 		"react-firebase-hooks": "5.1.1",
 		"react-select": "5.10.1",
 		"usehooks-ts": "3.1.1",
-		"zod": "^3.25.76"
+		"zod": "^4.0.5"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.1.1",
