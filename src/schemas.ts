@@ -351,6 +351,7 @@ export const blueprintContentSchema = z
 		entities: z.array(blueprintEntitySchema).optional(),
 		tiles: z.array(blueprintTileSchema).optional(),
 		item: z.string().optional(),
+		parameters: z.array(z.any()).optional(),
 	})
 	.passthrough(); // Allow additional properties
 

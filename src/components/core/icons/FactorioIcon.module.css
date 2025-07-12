@@ -35,3 +35,18 @@
 	bottom: -3px;
 	right: -3px;
 }
+
+.inline {
+	display: inline-block;
+	vertical-align: middle;
+	margin: 0 2px;
+}
+
+.iconQualityInline {
+	position: absolute;
+	bottom: -1px;
+	right: -1px;
+	width: 12px;
+	height: 12px;
+	z-index: 1;
+}

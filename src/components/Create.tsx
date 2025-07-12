@@ -36,6 +36,8 @@ import {useTags} from '../hooks/useTags';
 
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
+import {RichText} from './core/text/RichText';
+import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 
 interface BlueprintFormData {
 	title: string;
@@ -578,7 +580,9 @@ const Create: React.FC = () => {
 								e.currentTarget.src = noImageAvailable;
 							}}
 						/>
-						<Card.Title className="truncate">{state.blueprint.title}</Card.Title>
+						<Card.Title className="truncate">
+							<RichText text={state.blueprint.title} />
+						</Card.Title>
 					</Card>
 				</Col>
 			</Form.Group>
@@ -789,6 +793,14 @@ const Create: React.FC = () => {
 											value={blueprint.title}
 											onChange={handleChange}
 										/>
+										{blueprint.title && (
+											<div className="mt-2 p-2 border rounded">
+												<small className="text-muted">Preview:</small>
+												<div className="mt-1">
+													<RichText text={blueprint.title} />
+												</div>
+											</div>
+										)}
 									</Col>
 								</Form.Group>
 
@@ -828,10 +840,9 @@ const Create: React.FC = () => {
 									</Form.Label>
 									<Col sm={10}>
 										<Card>
-											<div
-												style={{minHeight: 200, padding: '1rem'}}
-												dangerouslySetInnerHTML={{__html: state.renderedMarkdown}}
-											/>
+											<div style={{minHeight: 200, padding: '1rem'}}>
+												<MarkdownWithRichText markdown={blueprint.descriptionMarkdown || ''} />
+											</div>
 										</Card>
 									</Col>
 								</Form.Group>
