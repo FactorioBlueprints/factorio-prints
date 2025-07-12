@@ -15,12 +15,7 @@ npm install -g \
 	firebase-tools@latest \
 	create-react-app@latest \
 	react-scripts@latest \
-	antlr4@latest \
-	eslint@latest \
-	eslint-plugin-babel@latest \
-	eslint-plugin-lodash@latest \
-	eslint-plugin-no-loops@latest \
-	eslint-plugin-promise@latest
+	antlr4@latest
 ```
 
 Run the dev build:

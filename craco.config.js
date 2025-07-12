@@ -1,9 +1,6 @@
 const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 
 module.exports = {
-    eslint: {
-        mode: "file"
-    },
     webpack: {
         configure: (webpackConfig) => {
             // Only add Sentry plugin if auth token is available

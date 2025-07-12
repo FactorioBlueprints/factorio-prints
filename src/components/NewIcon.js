@@ -1,32 +1,29 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
-import PropTypes          from 'prop-types';
-import React              from 'react';
+import PropTypes from 'prop-types';
+import React from 'react';
 
 NewIcon.propTypes = forbidExtraProps({
 	iconName: PropTypes.string,
 	iconType: PropTypes.string,
 });
 
-function NewIcon({iconName, iconType})
-{
-	if (iconType === 'virtual')
-	{
+function NewIcon({iconName, iconType}) {
+	if (iconType === 'virtual') {
 		iconType = 'virtual-signal';
 	}
-	if (iconType === undefined)
-	{
+	if (iconType === undefined) {
 		iconType = 'item';
 	}
 	const iconClass = `icon-${iconName}`;
-	const iconSrc   = `/icons/${iconType}/${iconName}.png`;
+	const iconSrc = `/icons/${iconType}/${iconName}.png`;
 
 	return (
 		<span className={`icon item-icon ${iconClass}`}>
-			{/* eslint-disable-next-line */}
 			<img
-				height='32px'
-				width='32px'
+				height="32px"
+				width="32px"
 				src={iconSrc}
+				alt={`${iconName} icon`}
 			/>
 		</span>
 	);
