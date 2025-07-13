@@ -1,5 +1,4 @@
-export default interface Tag
-{
-	category: string,
-	name: string,
+export default interface Tag {
+	category: string;
+	name: string;
 }

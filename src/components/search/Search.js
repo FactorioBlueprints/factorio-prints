@@ -1,12 +1,11 @@
 import React, {useState} from 'react';
-import Col               from 'react-bootstrap/Col';
-import Container         from 'react-bootstrap/Container';
-import Row               from 'react-bootstrap/Row';
-import SearchQuery       from './SearchQuery';
-import SearchResults     from './SearchResults';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import SearchQuery from './SearchQuery';
+import SearchResults from './SearchResults';
 
-function Search()
-{
+function Search() {
 	const [searchState, setSearchState] = useState();
 
 	return (

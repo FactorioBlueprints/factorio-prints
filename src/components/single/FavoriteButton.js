@@ -1,45 +1,44 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {forbidExtraProps}            from 'airbnb-prop-types';
-import axios                         from 'axios';
+import {forbidExtraProps} from 'airbnb-prop-types';
+import axios from 'axios';
 
 import {getDatabase, ref, update} from 'firebase/database';
 
-import PropTypes           from 'prop-types';
+import PropTypes from 'prop-types';
 import React, {useContext} from 'react';
-import Button              from 'react-bootstrap/Button';
+import Button from 'react-bootstrap/Button';
 
 import {app} from '../../base';
 
-import UserContext   from '../../context/userContext';
+import UserContext from '../../context/userContext';
 import useIsFavorite from '../../hooks/useIsFavorite';
 
 import FavoriteIcon from './FavoriteIcon';
 
-async function postIsFavorite(blueprintKey, isFavorite, user)
-{
-	const url     = `${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`;
-	const body    = null;
+async function postIsFavorite(blueprintKey, isFavorite, user) {
+	const url = `${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`;
+	const body = null;
 	const idToken = user === undefined ? undefined : await user.getIdToken();
-	const config  = {
+	const config = {
 		headers: {
 			Authorization: `Bearer ${idToken}`,
 			'content-type': 'application/json',
 		},
-		params : {
+		params: {
 			isFavorite,
 		},
 	};
-	let put       = axios.put(url, body, config);
+	const put = axios.put(url, body, config);
 
-	const {uid}                = user;
+	const {uid} = user;
 
-	const wasFavorite          = !isFavorite;
+	const wasFavorite = !isFavorite;
 
 	console.log('postIsFavorite', {blueprintKey, isFavorite, user, uid, wasFavorite});
 
 	const updates = {
-		[`/blueprints/${blueprintKey}/favorites/${uid}`]         : wasFavorite ? null : true,
-		[`/users/${uid}/favorites/${blueprintKey}`]              : wasFavorite ? null : true,
+		[`/blueprints/${blueprintKey}/favorites/${uid}`]: wasFavorite ? null : true,
+		[`/users/${uid}/favorites/${blueprintKey}`]: wasFavorite ? null : true,
 	};
 
 	const database = getDatabase(app);
@@ -49,10 +48,9 @@ async function postIsFavorite(blueprintKey, isFavorite, user)
 	return put;
 }
 
-function FavoriteButton({blueprintKey})
-{
-	const queryClient  = useQueryClient();
-	const {user}         = useContext(UserContext);
+function FavoriteButton({blueprintKey}) {
+	const queryClient = useQueryClient();
+	const {user} = useContext(UserContext);
 	const queryEnabled = user !== undefined;
 
 	// TODO: Switch to the other favorites hook
@@ -60,9 +58,8 @@ function FavoriteButton({blueprintKey})
 
 	const toggleFavoriteMutation = useMutation({
 		mutationFn: () => postIsFavorite(blueprintKey, !isFavorite, user),
-		enabled  : queryEnabled,
-		onSuccess: () =>
-		{
+		enabled: queryEnabled,
+		onSuccess: () => {
 			queryClient.invalidateQueries(['api/my/favorites/', user.uid]);
 			queryClient.invalidateQueries(['api/my/favorite/', blueprintKey, user.uid]);
 			queryClient.invalidateQueries(['/api/my/favoriteBlueprints/page', user.email]);
@@ -74,10 +71,9 @@ function FavoriteButton({blueprintKey})
 
 	return (
 		<Button
-			size='lg'
+			size="lg"
 			disabled={!buttonEnabled}
-			onClick={() =>
-			{
+			onClick={() => {
 				toggleFavoriteMutation.mutate({
 					blueprintKey,
 					isFavorite: !isFavorite,
