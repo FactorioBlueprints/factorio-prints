@@ -61,7 +61,7 @@
 		"@biomejs/biome": "2.1.1",
 		"@eslint/js": "^9.30.0",
 		"@sentry/vite-plugin": "^3.5.0",
-		"@tanstack/router-cli": "^1.127.0",
+		"@tanstack/router-cli": "^1.127.5",
 		"@tanstack/router-vite-plugin": "^1.127.0",
 		"@testing-library/dom": "^10.4.0",
 		"@testing-library/jest-dom": "^6.6.3",
