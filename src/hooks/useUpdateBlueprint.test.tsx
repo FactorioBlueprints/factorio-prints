@@ -105,7 +105,6 @@ describe('useUpdateBlueprint', () => {
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/view/$blueprintId',
 			params: {blueprintId: 'blueprint123'},
-			from: '/edit/$blueprintId',
 		});
 	});
 

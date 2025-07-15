@@ -204,7 +204,7 @@ function SingleBlueprint() {
 	}, []);
 
 	const handleTransitionToEdit = useCallback(() => {
-		navigate({to: '/edit/$blueprintId', params: {blueprintId}, from: '/view/$blueprintId'});
+		navigate({to: '/edit/$blueprintId', params: {blueprintId}});
 	}, [navigate, blueprintId]);
 
 	const handleReconcileFavorites = useCallback(() => {
