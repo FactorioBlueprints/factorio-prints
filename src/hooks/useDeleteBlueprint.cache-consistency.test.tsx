@@ -170,7 +170,6 @@ describe('useDeleteBlueprint cache consistency', () => {
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/user/$userId',
 			params: {userId: authorId},
-			from: '/edit/$blueprintId',
 		});
 	});
 

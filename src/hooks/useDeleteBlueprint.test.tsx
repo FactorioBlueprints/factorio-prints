@@ -221,7 +221,6 @@ describe('useDeleteBlueprint', () => {
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/user/$userId',
 			params: {userId: 'test-author'},
-			from: '/edit/$blueprintId',
 		});
 	});
 
@@ -261,7 +260,6 @@ describe('useDeleteBlueprint', () => {
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/user/$userId',
 			params: {userId: 'test-author'},
-			from: '/edit/$blueprintId',
 		});
 	});
 
@@ -283,7 +281,6 @@ describe('useDeleteBlueprint', () => {
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/user/$userId',
 			params: {userId: 'test-author'},
-			from: '/edit/$blueprintId',
 		});
 	});
 

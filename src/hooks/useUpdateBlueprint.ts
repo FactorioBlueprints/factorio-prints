@@ -184,7 +184,7 @@ export const useUpdateBlueprint = () => {
 				}
 			});
 
-			navigate({to: '/view/$blueprintId', params: {blueprintId}, from: '/edit/$blueprintId'});
+			navigate({to: '/view/$blueprintId', params: {blueprintId}});
 		},
 	});
 };
@@ -244,7 +244,7 @@ export const useDeleteBlueprint = () => {
 			queryClient.removeQueries({queryKey: ['blueprints', 'blueprintId', id]});
 			queryClient.removeQueries({queryKey: ['blueprintSummaries', 'blueprintId', id]});
 
-			navigate({to: '/user/$userId', params: {userId: authorId}, from: '/edit/$blueprintId'});
+			navigate({to: '/user/$userId', params: {userId: authorId}});
 		},
 	});
 };
