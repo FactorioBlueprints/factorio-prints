@@ -67,6 +67,19 @@ Sentry.init({
 			}
 		}
 
+		// Filter out cross-origin CSS access errors from Sentry replay
+		if (error && error instanceof Error && error.message) {
+			if (
+				error.message.includes("Cannot get CSS styles from text's parentNode") ||
+				error.message.includes(
+					'SecurityError: CSSStyleSheet.cssRules getter: Not allowed to access cross-origin stylesheet',
+				) ||
+				error.message.includes('cross-origin stylesheet')
+			) {
+				return null; // Don't send cross-origin CSS errors to Sentry
+			}
+		}
+
 		// Filter out Chrome extension errors
 		if (event.exception?.values?.[0]?.stacktrace?.frames) {
 			const frames = event.exception.values[0].stacktrace.frames;
