@@ -2,6 +2,7 @@ import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
 import { faCheck, faEdit, faHeart, faPlusSquare, faSync } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { UseMutationResult } from "@tanstack/react-query";
+import type { JSX } from "react";
 import { useCallback } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -20,6 +21,7 @@ interface BlueprintActionsProps {
   favoriteMutation: any;
   collectionMutation: any;
   reconcileMutation: UseMutationResult<ReconcileResult, unknown, string, unknown>;
+  renderPlaygroundButton: () => JSX.Element;
 }
 
 export function BlueprintActions({
@@ -35,6 +37,7 @@ export function BlueprintActions({
   favoriteMutation,
   collectionMutation,
   reconcileMutation,
+  renderPlaygroundButton,
 }: BlueprintActionsProps) {
   const renderEditButton = useCallback(
     () => (
@@ -117,8 +120,9 @@ export function BlueprintActions({
   }, [onReconcile, reconcileMutation]);
 
   return (
-    <Col md={3} className="d-flex align-items-center justify-content-end">
-      <div className="d-flex gap-2 flex-wrap">
+    <Col xs={12} className="d-flex justify-content-end mt-3">
+      <div className="d-flex justify-content-end gap-2 flex-wrap">
+        {renderPlaygroundButton()}
         {(isOwner || isModerator) && renderEditButton()}
         {renderCollectionButton()}
         {!isOwner && renderFavoriteButton()}
