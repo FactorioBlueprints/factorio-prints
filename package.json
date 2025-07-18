@@ -73,7 +73,7 @@
 		"@types/node": "^24.0.14",
 		"@types/react": "^19.1.8",
 		"@types/react-dom": "^19.1.5",
-		"@types/serviceworker": "^0.0.142",
+		"@types/serviceworker": "^0.0.143",
 		"@typescript-eslint/eslint-plugin": "^8.37.0",
 		"@typescript-eslint/parser": "^8.36.0",
 		"@vitejs/plugin-react": "^4.6.0",
