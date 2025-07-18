@@ -25,6 +25,74 @@ export const getBlueprintCdnUrl = (blueprintKey: string): string => {
 };
 
 /**
+ * Gets the CDN watermark URL.
+ *
+ * @returns The CDN watermark URL
+ */
+export const getCdnWatermarkUrl = (): string => {
+	return 'https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt';
+};
+
+let cachedWatermark: {
+	date: Date | null;
+	fetchedAt: number;
+} | null = null;
+
+const WATERMARK_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Export for testing purposes
+export const clearWatermarkCache = () => {
+	cachedWatermark = null;
+};
+
+/**
+ * Fetches the CDN watermark date.
+ *
+ * @returns The watermark date or null if fetch fails
+ */
+export const fetchCdnWatermark = async (): Promise<Date | null> => {
+	// Check cache
+	if (cachedWatermark && Date.now() - cachedWatermark.fetchedAt < WATERMARK_CACHE_TTL) {
+		return cachedWatermark.date;
+	}
+
+	try {
+		const watermarkUrl = getCdnWatermarkUrl();
+		let response: Response;
+
+		try {
+			response = await fetch(watermarkUrl);
+		} catch {
+			// Network errors are expected - don't let them bubble to Sentry
+			cachedWatermark = {date: null, fetchedAt: Date.now()};
+			return null;
+		}
+
+		if (!response.ok) {
+			console.warn(`CDN watermark fetch failed: ${response.status} ${response.statusText}`);
+			cachedWatermark = {date: null, fetchedAt: Date.now()};
+			return null;
+		}
+
+		const dateString = await response.text();
+		const watermarkDate = new Date(dateString.trim());
+
+		if (isNaN(watermarkDate.getTime())) {
+			console.warn('Invalid watermark date format:', dateString);
+			cachedWatermark = {date: null, fetchedAt: Date.now()};
+			return null;
+		}
+
+		cachedWatermark = {date: watermarkDate, fetchedAt: Date.now()};
+		return watermarkDate;
+	} catch (error) {
+		console.warn('Error fetching CDN watermark:', error);
+		cachedWatermark = {date: null, fetchedAt: Date.now()};
+		return null;
+	}
+};
+
+/**
  * Fetches blueprint data from the CDN.
  *
  * @param blueprintSummary - The blueprint summary containing the blueprint key
@@ -106,23 +174,64 @@ export const fetchBlueprint = async (
 		// Extract lastUpdatedDate from blueprintSummary
 		const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
 
-		// Attempt to fetch from CDN first
-		const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
+		// First check the CDN watermark
+		const watermarkDate = await fetchCdnWatermark();
 
-		if (cdnBlueprint) {
-			// CDN fetch succeeded - compare lastUpdatedDate values
-			const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
+		// If we have both watermark and summary dates, check if CDN could have the data
+		if (watermarkDate && summaryLastUpdated) {
+			const summaryDate = new Date(summaryLastUpdated);
 
-			if (cdnLastUpdated === summaryLastUpdated) {
-				// Dates match - use CDN data
-				console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
-				return cdnBlueprint;
+			// If the blueprint is newer than the watermark, skip CDN entirely
+			if (summaryDate > watermarkDate) {
+				const timeDiff = formatDistance(watermarkDate, summaryDate);
+				console.log(
+					`Blueprint ${blueprintId} is newer than CDN watermark by ${timeDiff}, skipping CDN (Blueprint: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Watermark: ${format(watermarkDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
+				);
+			} else {
+				// Blueprint might be in CDN, attempt to fetch
+				const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
+
+				if (cdnBlueprint) {
+					// CDN fetch succeeded - compare lastUpdatedDate values
+					const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
+
+					if (cdnLastUpdated === summaryLastUpdated) {
+						// Dates match - use CDN data
+						console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
+						return cdnBlueprint;
+					} else if (cdnLastUpdated && summaryLastUpdated) {
+						// Dates don't match - CDN data is stale
+						const cdnDate = new Date(cdnLastUpdated);
+						const timeDiff = formatDistance(cdnDate, summaryDate);
+						console.log(
+							`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
+						);
+					} else {
+						// One or both dates are missing
+						console.log(
+							`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`,
+						);
+					}
+				}
 			}
+		} else {
+			// No watermark or no summary date - try CDN anyway
+			const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
+
+			if (cdnBlueprint) {
+				// CDN fetch succeeded - compare lastUpdatedDate values
+				const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
+
+				if (cdnLastUpdated === summaryLastUpdated) {
+					// Dates match - use CDN data
+					console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
+					return cdnBlueprint;
+				}
 			if (cdnLastUpdated && summaryLastUpdated) {
-				// Dates don't match - check if CDN data is stale
-				const cdnDate = new Date(cdnLastUpdated);
-				const summaryDate = new Date(summaryLastUpdated);
-				const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
+					// Dates don't match - check if CDN data is stale
+					const cdnDate = new Date(cdnLastUpdated);
+					const summaryDate = new Date(summaryLastUpdated);
+					const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
 				const timeDiff = formatDistance(cdnDate, summaryDate);
 
 				if (timeDifferenceMs < 1000) {
@@ -133,18 +242,19 @@ export const fetchBlueprint = async (
 					return cdnBlueprint;
 				}
 				// CDN data is stale by more than 1 second
-				console.log(
-					`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
-				);
-			} else {
-				// One or both dates are missing
-				console.log(
-					`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`,
-				);
+					console.log(
+						`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
+					);
+				} else {
+					// One or both dates are missing
+					console.log(
+						`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`,
+					);
+				}
 			}
 		}
 
-		// Fall back to Firebase if CDN failed or data was stale
+		// Fall back to Firebase if CDN was skipped, failed, or data was stale
 		const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/`);
 		const snapshot = await get(blueprintRef);
 

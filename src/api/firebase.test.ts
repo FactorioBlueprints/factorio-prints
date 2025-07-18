@@ -1,3 +1,13 @@
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {
+	fetchPaginatedSummaries,
+	getBlueprintCdnUrl,
+	fetchBlueprintFromCdn,
+	getCdnWatermarkUrl,
+	fetchCdnWatermark,
+	fetchBlueprint,
+	clearWatermarkCache,
+} from './firebase';
 import {get} from 'firebase/database';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import type {EnrichedBlueprintSummary, RawBlueprint} from '../schemas';
@@ -238,6 +248,239 @@ describe('firebase API', () => {
 			expect(consoleWarnSpy).toHaveBeenCalledWith('Error fetching blueprint from CDN:', expect.any(Error));
 
 			consoleWarnSpy.mockRestore();
+		});
+	});
+
+	describe('getCdnWatermarkUrl', () => {
+		it('should return the correct watermark URL', () => {
+			const expectedUrl = 'https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt';
+			expect(getCdnWatermarkUrl()).toBe(expectedUrl);
+		});
+	});
+
+	describe('fetchCdnWatermark', () => {
+		beforeEach(() => {
+			globalThis.fetch = vi.fn();
+			clearWatermarkCache();
+		});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+			clearWatermarkCache();
+		});
+
+		it('should fetch and parse watermark date successfully', async () => {
+			const mockDate = '2025-05-25T04:18:36Z';
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+				ok: true,
+				text: async () => mockDate,
+			} as unknown as Response);
+
+			const result = await fetchCdnWatermark();
+
+			expect(globalThis.fetch).toHaveBeenCalledWith(
+				'https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt',
+			);
+			expect(result).toBeInstanceOf(Date);
+			expect(result?.toISOString()).toBe('2025-05-25T04:18:36.000Z');
+		});
+
+		it('should handle network errors gracefully', async () => {
+			vi.mocked(globalThis.fetch).mockRejectedValueOnce(new Error('Network error'));
+
+			const result = await fetchCdnWatermark();
+
+			expect(result).toBeNull();
+		});
+
+		it('should handle non-ok responses', async () => {
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+				ok: false,
+				status: 404,
+				statusText: 'Not Found',
+			} as unknown as Response);
+
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+			const result = await fetchCdnWatermark();
+
+			expect(result).toBeNull();
+			expect(consoleWarnSpy).toHaveBeenCalledWith('CDN watermark fetch failed: 404 Not Found');
+
+			consoleWarnSpy.mockRestore();
+		});
+
+		it('should handle invalid date formats', async () => {
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+				ok: true,
+				text: async () => 'not-a-valid-date',
+			} as unknown as Response);
+
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+			const result = await fetchCdnWatermark();
+
+			expect(result).toBeNull();
+			expect(consoleWarnSpy).toHaveBeenCalledWith('Invalid watermark date format:', 'not-a-valid-date');
+
+			consoleWarnSpy.mockRestore();
+		});
+
+		it('should trim whitespace from date string', async () => {
+			const mockDate = '  2025-05-25T04:18:36Z\n';
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+				ok: true,
+				text: async () => mockDate,
+			} as unknown as Response);
+
+			const result = await fetchCdnWatermark();
+
+			expect(result).toBeInstanceOf(Date);
+			expect(result?.toISOString()).toBe('2025-05-25T04:18:36.000Z');
+		});
+	});
+
+	describe('fetchBlueprint with watermark', () => {
+		const mockBlueprintId = '-KnQ865j-qQ21WoUPbd3';
+		const mockBlueprintSummary: EnrichedBlueprintSummary = {
+			key: mockBlueprintId,
+			title: 'Test Blueprint',
+			lastUpdatedDate: 1727000000000, // 2024-09-22
+			imgurId: 'test123',
+			imgurType: 'image/png',
+			numberOfFavorites: 0,
+			thumbnail: null,
+		};
+
+		const mockBlueprint: RawBlueprint = {
+			title: 'Test Blueprint',
+			lastUpdatedDate: 1727000000000,
+			createdDate: 1727000000000,
+			blueprintString: 'some-blueprint-string',
+			descriptionMarkdown: 'Test description',
+			author: {
+				userId: 'test-user-id',
+				displayName: 'Test User',
+			},
+			image: {
+				id: 'test123',
+				type: 'image/png',
+			},
+			numberOfFavorites: 0,
+			tags: [],
+			favorites: {},
+		};
+
+		beforeEach(() => {
+			globalThis.fetch = vi.fn();
+			vi.clearAllMocks();
+			clearWatermarkCache();
+		});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+			clearWatermarkCache();
+		});
+
+		it('should skip CDN when blueprint is newer than watermark', async () => {
+			// Watermark is older than blueprint
+			const watermarkDate = '2024-05-25T04:18:36Z';
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+				ok: true,
+				text: async () => watermarkDate,
+			} as unknown as Response);
+
+			// Mock Firebase response
+			const mockSnapshot = {
+				exists: () => true,
+				val: () => mockBlueprint,
+			};
+			vi.mocked(get).mockResolvedValue(mockSnapshot as any);
+
+			const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+			const result = await fetchBlueprint(mockBlueprintId, mockBlueprintSummary);
+
+			// Should fetch watermark
+			expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+			expect(globalThis.fetch).toHaveBeenCalledWith(
+				'https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt',
+			);
+
+			// Should NOT fetch from CDN
+			expect(globalThis.fetch).not.toHaveBeenCalledWith(
+				'https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json',
+			);
+
+			// Should fetch from Firebase
+			expect(get).toHaveBeenCalled();
+			expect(result).toEqual(mockBlueprint);
+
+			// Check log message
+			expect(consoleLogSpy).toHaveBeenCalledWith(
+				expect.stringContaining('Blueprint -KnQ865j-qQ21WoUPbd3 is newer than CDN watermark'),
+			);
+
+			consoleLogSpy.mockRestore();
+		});
+
+		it('should try CDN when blueprint is older than watermark', async () => {
+			// Watermark is newer than blueprint
+			const watermarkDate = '2025-05-25T04:18:36Z';
+			vi.mocked(globalThis.fetch)
+				.mockResolvedValueOnce({
+					ok: true,
+					text: async () => watermarkDate,
+				} as unknown as Response)
+				.mockResolvedValueOnce({
+					ok: true,
+					json: async () => mockBlueprint,
+				} as unknown as Response);
+
+			const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+			const result = await fetchBlueprint(mockBlueprintId, mockBlueprintSummary);
+
+			// Should fetch watermark and CDN
+			expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+			expect(globalThis.fetch).toHaveBeenNthCalledWith(
+				1,
+				'https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt',
+			);
+			expect(globalThis.fetch).toHaveBeenNthCalledWith(
+				2,
+				'https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json',
+			);
+
+			// Should NOT fetch from Firebase since CDN had matching data
+			expect(get).not.toHaveBeenCalled();
+			expect(result).toEqual(mockBlueprint);
+
+			// Check log message
+			expect(consoleLogSpy).toHaveBeenCalledWith('Blueprint -KnQ865j-qQ21WoUPbd3 fetched from CDN (dates match)');
+
+			consoleLogSpy.mockRestore();
+		});
+
+		it('should try CDN when watermark fetch fails', async () => {
+			// Watermark fetch fails
+			vi.mocked(globalThis.fetch)
+				.mockRejectedValueOnce(new Error('Network error'))
+				.mockResolvedValueOnce({
+					ok: true,
+					json: async () => mockBlueprint,
+				} as unknown as Response);
+
+			const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+			const result = await fetchBlueprint(mockBlueprintId, mockBlueprintSummary);
+
+			// Should try to fetch watermark and CDN
+			expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+			expect(result).toEqual(mockBlueprint);
+			expect(consoleLogSpy).toHaveBeenCalledWith('Blueprint -KnQ865j-qQ21WoUPbd3 fetched from CDN (dates match)');
+
+			consoleLogSpy.mockRestore();
 		});
 	});
 
