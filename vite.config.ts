@@ -20,19 +20,21 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
 			autoCodeSplitting : false,
 		}),
 		react(),
-		mode === 'production' && process.env.SENTRY_AUTH_TOKEN && sentryVitePlugin({
-			org      : process.env.SENTRY_ORG,
-			project  : process.env.SENTRY_PROJECT,
-			authToken: process.env.SENTRY_AUTH_TOKEN,
-			release  : {
-				name: version,
-			},
-			sourcemaps: {
-				assets                  : './dist/**',
-				filesToDeleteAfterUpload: ['./dist/**/*.map'],
-			},
-		}),
-	].filter(Boolean),
+		...(mode === 'production' && process.env.SENTRY_AUTH_TOKEN
+			? [sentryVitePlugin({
+				org      : process.env.SENTRY_ORG,
+				project  : process.env.SENTRY_PROJECT,
+				authToken: process.env.SENTRY_AUTH_TOKEN,
+				release  : {
+					name: version,
+				},
+				sourcemaps: {
+					assets                  : './dist/**',
+					filesToDeleteAfterUpload: ['./dist/**/*.map'],
+				},
+			})]
+			: []),
+	],
 	build: {
 		sourcemap    : true,
 		rollupOptions: {
