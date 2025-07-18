@@ -15,10 +15,8 @@ import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
 const MostFavoritedGrid: React.FC = () => {
-	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useEnrichedPaginatedSummaries(
-		60,
-		'numberOfFavorites',
-	);
+	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData} =
+		useEnrichedPaginatedSummaries(60, 'numberOfFavorites');
 
 	const flattenedSummaries = useFlattenedEnrichedPaginatedSummaries(data);
 	const filteredSummaries = useFilteredBlueprintSummaries(flattenedSummaries);
@@ -58,7 +56,7 @@ const MostFavoritedGrid: React.FC = () => {
 					<Col>
 						<Button
 							onClick={() => fetchNextPage()}
-							disabled={isFetchingNextPage}
+							disabled={isFetchingNextPage || isPlaceholderData}
 							variant="primary"
 							size="lg"
 						>

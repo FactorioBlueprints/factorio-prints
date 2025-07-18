@@ -1,4 +1,4 @@
-import {useInfiniteQuery, useQueryClient, type InfiniteData} from '@tanstack/react-query';
+import {useInfiniteQuery, useQueryClient, keepPreviousData, type InfiniteData} from '@tanstack/react-query';
 import {useEffect} from 'react';
 import {fetchPaginatedSummaries} from '../api/firebase';
 import type {RawBlueprintSummaryPage} from '../schemas';
@@ -24,7 +24,7 @@ export const useRawPaginatedSummaries = (pageSize = 60, orderByField = 'lastUpda
 		readonly unknown[],
 		PageParam
 	>({
-		queryKey: ['blueprintSummaries', 'orderByField', orderByField],
+		queryKey: ['blueprintSummaries', 'orderByField', orderByField, 'pageSize', pageSize],
 		queryFn: async ({pageParam = {lastKey: null, lastValue: null}}) => {
 			return fetchPaginatedSummaries(pageSize, pageParam.lastKey, pageParam.lastValue, orderByField);
 		},
@@ -38,6 +38,7 @@ export const useRawPaginatedSummaries = (pageSize = 60, orderByField = 'lastUpda
 			};
 		},
 		initialPageParam: {lastKey: null, lastValue: null},
+		placeholderData: keepPreviousData,
 	});
 
 	// Set individual blueprint summaries in cache for cross-query consistency
