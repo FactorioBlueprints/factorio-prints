@@ -1,6 +1,9 @@
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { getAuth, User } from "firebase/auth";
 import React, { useCallback, useEffect, useOptimistic } from "react";
+import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -135,6 +138,25 @@ function SingleBlueprint() {
   // Use the custom hook for histograms
   const { entityHistogram, itemHistogram } = useBlueprintHistograms(blueprintData?.parsedData);
 
+  const renderPlaygroundButton = useCallback(() => {
+    const currentUrl = `https://factorioprints.com/view/${blueprintId}`;
+    const playgroundUrl = `https://factorio-blueprint-playground.pages.dev/?pasted=${encodeURIComponent(currentUrl)}`;
+
+    return (
+      <Button
+        size="lg"
+        as="a"
+        href={playgroundUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open in Factorio Blueprint Playground"
+      >
+        <FontAwesomeIcon icon={faExternalLinkAlt} />
+        {" Open in Playground"}
+      </Button>
+    );
+  }, [blueprintId]);
+
   const error = summaryError || blueprintError;
   const isDeleted = summaryIsSuccess && !blueprintSummary;
 
@@ -152,7 +174,7 @@ function SingleBlueprint() {
           : `Factorio Prints: ${blueprintData?.title}`}
       </title>
       <Row>
-        <Col md={9}>
+        <Col xs={12}>
           <div className="d-flex mt-4">
             <BlueprintTitle title={blueprintData?.title} isLoading={blueprintIsLoading} />
           </div>
@@ -170,6 +192,7 @@ function SingleBlueprint() {
           favoriteMutation={favoriteBlueprintMutation}
           collectionMutation={collectionMutation}
           reconcileMutation={reconcileFavoritesMutation}
+          renderPlaygroundButton={renderPlaygroundButton}
         />
       </Row>
       <Row>
