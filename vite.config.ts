@@ -20,20 +20,18 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
 			autoCodeSplitting : false,
 		}),
 		react(),
-		...(mode === 'production' && process.env.SENTRY_AUTH_TOKEN
-			? [sentryVitePlugin({
-				org      : process.env.SENTRY_ORG,
-				project  : process.env.SENTRY_PROJECT,
-				authToken: process.env.SENTRY_AUTH_TOKEN,
-				release  : {
-					name: version,
-				},
-				sourcemaps: {
-					assets                  : './dist/**',
-					filesToDeleteAfterUpload: ['./dist/**/*.map'],
-				},
-			})]
-			: []),
+		...(mode === 'production' && process.env.SENTRY_AUTH_TOKEN ? [sentryVitePlugin({
+			org      : process.env.SENTRY_ORG,
+			project  : process.env.SENTRY_PROJECT,
+			authToken: process.env.SENTRY_AUTH_TOKEN,
+			release  : {
+				name: version,
+			},
+			sourcemaps: {
+				assets                  : './dist/**',
+				filesToDeleteAfterUpload: ['./dist/**/*.map'],
+			},
+		})] : []),
 	],
 	build: {
 		sourcemap    : true,
@@ -61,7 +59,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
 	test: {
 		globals    : true,
 		environment: 'jsdom',
-		setupFiles : ['./src/setupTests.js'],
+		setupFiles : ['./src/setupTests.ts'],
 		exclude    : ['.llm/**', 'node_modules/**'],
 	},
 }))
