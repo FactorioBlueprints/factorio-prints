@@ -15,10 +15,8 @@ import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
 const BlueprintGrid: React.FC = () => {
-	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage} = useEnrichedPaginatedSummaries(
-		60,
-		'lastUpdatedDate',
-	);
+	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData} =
+		useEnrichedPaginatedSummaries(60, 'lastUpdatedDate');
 
 	const flattenedSummaries = useFlattenedEnrichedPaginatedSummaries(data);
 
@@ -60,7 +58,7 @@ const BlueprintGrid: React.FC = () => {
 					<Col>
 						<Button
 							onClick={() => fetchNextPage()}
-							disabled={isFetchingNextPage}
+							disabled={isFetchingNextPage || isPlaceholderData}
 							variant="primary"
 							size="lg"
 						>
