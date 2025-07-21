@@ -58,7 +58,7 @@
 		"zod": "^4.0.5"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.1.1",
+		"@biomejs/biome": "2.1.2",
 		"@eslint/js": "^9.30.0",
 		"@sentry/vite-plugin": "^3.6.0",
 		"@tanstack/router-cli": "^1.128.0",
