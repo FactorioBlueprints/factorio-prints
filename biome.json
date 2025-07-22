@@ -35,17 +35,5 @@
 			"quoteStyle": "single",
 			"attributePosition": "multiline"
 		}
-	},
-	"overrides": [
-		{
-			"includes": ["test/**/*"],
-			"linter": {
-				"rules": {
-					"suspicious": {
-						"noExplicitAny": "off"
-					}
-				}
-			}
-		}
-	]
+	}
 }
