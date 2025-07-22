@@ -1,20 +1,4 @@
-import {faHeart as regularHeart} from '@fortawesome/free-regular-svg-icons';
-import {
-	faCalendar,
-	faCheck,
-	faClipboard,
-	faClock,
-	faEdit,
-	faHeart,
-	faSync,
-	faToggleOff,
-	faToggleOn,
-	faUser,
-} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {Link, useNavigate, useParams} from '@tanstack/react-router';
-import {Route as ViewBlueprintIdRoute} from '../routes/view.$blueprintId';
-import Disqus from 'disqus-react';
+import {useNavigate, useParams} from '@tanstack/react-router';
 import {getAuth, User} from 'firebase/auth';
 import flatMap from 'lodash/flatMap';
 import forOwn from 'lodash/forOwn';
@@ -24,63 +8,34 @@ import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
-import React, {useCallback, useEffect, useState} from 'react';
-import Badge from 'react-bootstrap/Badge';
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
+import React, {useCallback, useEffect} from 'react';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import Table from 'react-bootstrap/Table';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {useCopyToClipboard} from 'usehooks-ts';
-
 import {app} from '../base';
-import entitiesWithIcons from '../data/entitiesWithIcons';
+import {useIsFavorite} from '../hooks/useBlueprintFavorite';
 import {useEnrichedBlueprint} from '../hooks/useEnrichedBlueprint';
 import {useEnrichedBlueprintSummary} from '../hooks/useEnrichedBlueprintSummary';
-import {useIsFavorite} from '../hooks/useBlueprintFavorite';
 import {useIsModerator} from '../hooks/useModerators';
 import useReconcileFavoritesMutation from '../hooks/useReconcileFavorites';
 import useToggleFavoriteMutation from '../hooks/useToggleFavoriteMutation';
 import {BlueprintWrapper} from '../parsing/BlueprintWrapper';
-import type {
-	BlueprintEntity,
-	BlueprintTile,
-	BlueprintContent,
-	BlueprintIcon,
-	BlueprintBookEntry,
-	RawBlueprintData,
-} from '../schemas';
-import {safeJsonStringify} from '../utils/safeJsonStringify';
+import {Route as ViewBlueprintIdRoute} from '../routes/view.$blueprintId';
+import type {BlueprintContent, BlueprintEntity, BlueprintTile} from '../schemas';
 import BlueprintImage from './BlueprintImage';
-import BlueprintMarkdownDescription from './BlueprintMarkdownDescription';
 import BlueprintTitle from './BlueprintTitle';
-import DateDisplay from './DateDisplay';
-
-import DisplayName from './DisplayName';
-import FavoriteCount from './FavoriteCount';
-import TagBadge from './TagBadge';
-import DisqusErrorBoundary from './DisqusErrorBoundary';
-import {FactorioIcon, type SignalType, type Quality} from './core/icons/FactorioIcon';
 import {BasicInfoPanel} from './blueprint/panels/info/BasicInfoPanel';
 import {ExtraInfoPanel} from './blueprint/panels/info/ExtraInfoPanel';
 import {ParametersPanel} from './blueprint/panels/parameters/ParametersPanel';
-import {RichText} from './core/text/RichText';
-
-interface ReconcileResult {
-	blueprintId: string;
-	actualCount: number;
-	previousBlueprintCount: number;
-	previousSummaryCount: number;
-	hasDiscrepancy: boolean;
-	reconciled: boolean;
-}
-
-interface EntityHistogramItem {
-	name: string;
-	count: number;
-}
+import {BlueprintActions} from './single/BlueprintActions';
+import {BlueprintNotFound} from './single/BlueprintNotFound';
+import {CommentsSection} from './single/CommentsSection';
+import {DetailsCard} from './single/DetailsCard';
+import {PostInfoCard} from './single/PostInfoCard';
+import {RequirementsCard} from './single/RequirementsCard';
+import {TagsCard} from './single/TagsCard';
+import {UpgradePlannerCard} from './single/UpgradePlannerCard';
 
 interface ItemData {
 	item?: string;
@@ -91,12 +46,6 @@ interface ItemData {
 	items?: {
 		in_inventory?: any[];
 	};
-}
-
-interface DisqusConfig {
-	url: string;
-	identifier: string;
-	title?: string;
 }
 
 declare global {
@@ -139,11 +88,6 @@ function SingleBlueprint() {
 
 	const {data: isFavorite, isSuccess: favoriteIsSuccess} = useIsFavorite(user?.uid, blueprintId);
 
-	const [showBlueprint, setShowBlueprint] = useState(false);
-	const [showJson, setShowJson] = useState(false);
-
-	const [copiedText, copyToClipboard] = useCopyToClipboard();
-
 	const initialLoadRef = React.useRef(true);
 
 	// Scroll to top on initial data load
@@ -153,35 +97,6 @@ function SingleBlueprint() {
 			initialLoadRef.current = false;
 		}
 	}, [blueprintIsSuccess]);
-
-	const hideButton = useCallback(
-		(text: string) => (
-			<>
-				<FontAwesomeIcon
-					icon={faToggleOn}
-					size="lg"
-					fixedWidth
-					className="text-success"
-				/>
-				{` ${text}`}
-			</>
-		),
-		[],
-	);
-
-	const showButton = useCallback(
-		(text: string) => (
-			<>
-				<FontAwesomeIcon
-					icon={faToggleOff}
-					size="lg"
-					fixedWidth
-				/>
-				{` ${text}`}
-			</>
-		),
-		[],
-	);
 
 	const favoriteBlueprintMutation = useToggleFavoriteMutation();
 	const reconcileFavoritesMutation = useReconcileFavoritesMutation();
@@ -200,14 +115,6 @@ function SingleBlueprint() {
 			numberOfFavorites: blueprintData.numberOfFavorites || 0,
 		});
 	}, [user, isFavorite, favoriteIsSuccess, blueprintId, blueprintData, favoriteBlueprintMutation]);
-
-	const handleShowHideBase64 = useCallback(() => {
-		setShowBlueprint((prevState) => !prevState);
-	}, []);
-
-	const handleShowHideJson = useCallback(() => {
-		setShowJson((prevState) => !prevState);
-	}, []);
 
 	const handleTransitionToEdit = useCallback(() => {
 		navigate({to: '/edit/$blueprintId', params: {blueprintId}});
@@ -273,79 +180,6 @@ function SingleBlueprint() {
 		return flow(toPairs, sortBy(1), reverse)(result) as unknown as [string, number][];
 	}, []);
 
-	const renderEditButton = useCallback(
-		() => (
-			<Button
-				size="lg"
-				onClick={handleTransitionToEdit}
-			>
-				<FontAwesomeIcon icon={faEdit} />
-				{' Edit'}
-			</Button>
-		),
-		[handleTransitionToEdit],
-	);
-
-	const renderFavoriteButton = useCallback(() => {
-		if (!user) {
-			return <div />;
-		}
-
-		const heart = isFavorite ? faHeart : regularHeart;
-		const iconClass = isFavorite ? 'text-warning' : 'text-default';
-
-		return (
-			<Button
-				size="lg"
-				onClick={handleFavorite}
-				disabled={favoriteBlueprintMutation.isPending}
-			>
-				{/*// TODO 2025-04-22: Change the icon to a spinning cog if isPending*/}
-				<FontAwesomeIcon
-					icon={heart}
-					className={iconClass}
-				/>
-				{' Favorite'}
-			</Button>
-		);
-	}, [user, isFavorite, handleFavorite, favoriteBlueprintMutation.isPending]);
-
-	const renderReconcileButton = useCallback(() => {
-		const {data: reconcileResult, isPending, isSuccess} = reconcileFavoritesMutation;
-		const typedResult = reconcileResult as ReconcileResult | undefined;
-		const buttonText = isPending
-			? ' Reconciling...'
-			: isSuccess && typedResult?.hasDiscrepancy
-				? ` Fixed (${typedResult.actualCount} favorites)`
-				: isSuccess && !typedResult?.hasDiscrepancy
-					? ' No issues found'
-					: ' Reconcile Favorites';
-
-		const buttonVariant = isSuccess ? (typedResult?.hasDiscrepancy ? 'success' : 'info') : 'secondary';
-
-		const tooltipText = isSuccess
-			? typedResult?.hasDiscrepancy
-				? `Fixed: ${typedResult.previousBlueprintCount} → ${typedResult.actualCount} favorites`
-				: 'No discrepancy detected'
-			: 'Reconcile favorites count';
-
-		return (
-			<Button
-				size="lg"
-				variant={buttonVariant}
-				onClick={handleReconcileFavorites}
-				disabled={isPending}
-				title={tooltipText}
-			>
-				<FontAwesomeIcon
-					icon={faSync}
-					spin={isPending}
-				/>
-				{buttonText}
-			</Button>
-		);
-	}, [handleReconcileFavorites, reconcileFavoritesMutation]);
-
 	const memoizedEntityHistogram = React.useMemo(() => {
 		return blueprintData?.parsedData?.blueprint ? entityHistogram(blueprintData.parsedData.blueprint) : [];
 	}, [blueprintData?.parsedData, entityHistogram]);
@@ -374,38 +208,14 @@ function SingleBlueprint() {
 
 	if (error || isDeleted) {
 		return (
-			<>
-				<title>Factorio Prints: Blueprint Not Found</title>
-				<div className="p-5 rounded-lg jumbotron">
-					<h1 className="display-4">Blueprint Not Found</h1>
-					<p>The blueprint you're looking for could not be found.</p>
-					{error && (
-						<div className="alert alert-danger">
-							<strong>Error:</strong> {error.message || 'An unknown error occurred'}
-						</div>
-					)}
-					{isDeleted && (
-						<div className="alert alert-info">
-							This blueprint has been deleted or is no longer available.
-						</div>
-					)}
-					<Link
-						to="/"
-						className="btn btn-primary"
-					>
-						Return to Home
-					</Link>
-				</div>
-			</>
+			<BlueprintNotFound
+				error={error}
+				isDeleted={isDeleted}
+			/>
 		);
 	}
 
 	const isOwner = user && user.uid === blueprintData?.author?.userId;
-	const disqusConfig: DisqusConfig = {
-		url: `https://factorioprints.com/view/${blueprintId}`,
-		identifier: blueprintId,
-		title: blueprintData?.title,
-	};
 
 	return (
 		<>
@@ -422,16 +232,17 @@ function SingleBlueprint() {
 							/>
 						</div>
 					</Col>
-					<Col
-						md={3}
-						className="d-flex align-items-center justify-content-end"
-					>
-						<div className="d-flex gap-2 flex-wrap">
-							{(isOwner || isModerator) && renderEditButton()}
-							{!isOwner && renderFavoriteButton()}
-							{isModerator && renderReconcileButton()}
-						</div>
-					</Col>
+					<BlueprintActions
+						isOwner={isOwner || false}
+						isModerator={isModerator}
+						user={user}
+						isFavorite={isFavorite || false}
+						onEdit={handleTransitionToEdit}
+						onFavorite={handleFavorite}
+						onReconcile={handleReconcileFavorites}
+						favoriteMutation={favoriteBlueprintMutation}
+						reconcileMutation={reconcileFavoritesMutation}
+					/>
 				</Row>
 				<Row>
 					<Col md={4}>
@@ -440,294 +251,41 @@ function SingleBlueprint() {
 							thumbnail={blueprintData?.thumbnail}
 							isLoading={blueprintIsLoading}
 						/>
-						{tagsData && tagsData.length > 0 && (
-							<Card>
-								<Card.Header>Tags</Card.Header>
-								<Card.Body>
-									<h4>
-										{flatMap(tagsData, (tag) => (
-											<TagBadge
-												key={tag}
-												tag={tag}
-											/>
-										))}
-									</h4>
-								</Card.Body>
-							</Card>
-						)}
-						<Card>
-							<Card.Header>Post Info</Card.Header>
-							<Table
-								bordered
-								hover
-							>
-								<tbody>
-									<tr>
-										<td>
-											<FontAwesomeIcon
-												icon={faUser}
-												size="lg"
-												fixedWidth
-											/>
-											{' Author'}
-										</td>
-										<td>
-											<DisplayName
-												userId={blueprintData?.author?.userId}
-												externalIsLoading={blueprintIsLoading}
-											/>
-										</td>
-									</tr>
-									<tr>
-										<td>
-											<FontAwesomeIcon
-												icon={faCalendar}
-												size="lg"
-												fixedWidth
-											/>
-											{' Created'}
-										</td>
-										<td>
-											<DateDisplay
-												date={blueprintData?.createdDate}
-												isLoading={blueprintIsLoading}
-											/>
-										</td>
-									</tr>
-									<tr>
-										<td>
-											<FontAwesomeIcon
-												icon={faClock}
-												size="lg"
-												fixedWidth
-											/>
-											{' Last Updated'}
-										</td>
-										<td>
-											<DateDisplay
-												date={blueprintData?.lastUpdatedDate}
-												isLoading={blueprintIsLoading}
-											/>
-										</td>
-									</tr>
-									<tr>
-										<td>
-											<FontAwesomeIcon
-												icon={faHeart}
-												size="lg"
-												fixedWidth
-											/>
-											{' Favorites'}
-										</td>
-										<td>
-											<FavoriteCount
-												count={blueprintData?.numberOfFavorites}
-												isLoading={blueprintIsLoading}
-											/>
-										</td>
-									</tr>
-								</tbody>
-							</Table>
-						</Card>
-						{blueprintWrapper && blueprintWrapper.getType() === 'blueprint' && (
-							<Card>
-								<Card.Header>Requirements</Card.Header>
-								<Table
-									bordered
-									hover
-								>
-									<colgroup>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col span={1} />
-									</colgroup>
-
-									<tbody>
-										{memoizedEntityHistogram.map((pair) => {
-											if (typeof pair[0] === 'object' || typeof pair[1] === 'object') {
-												return null;
-											}
-											return (
-												<tr key={pair[0]}>
-													<td className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}>
-														{(entitiesWithIcons as any)[pair[0]] ? (
-															<FactorioIcon
-																icon={{name: pair[0], type: 'item'}}
-																size="small"
-															/>
-														) : (
-															''
-														)}
-													</td>
-													<td className="number">{pair[1]}</td>
-													<td>{pair[0]}</td>
-												</tr>
-											);
-										})}
-										{memoizedItemHistogram.map((pair) => {
-											// Skip rendering if key or value is not a primitive to prevent [object Object]
-											if (typeof pair[0] === 'object' || typeof pair[1] === 'object') {
-												return null;
-											}
-											return (
-												<tr key={pair[0]}>
-													<td className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}>
-														{(entitiesWithIcons as any)[pair[0]] ? (
-															<FactorioIcon
-																icon={{name: pair[0], type: 'item'}}
-																size="small"
-															/>
-														) : (
-															''
-														)}
-													</td>
-													<td className="number">{pair[1]}</td>
-													<td>{pair[0]}</td>
-												</tr>
-											);
-										})}
-									</tbody>
-								</Table>
-							</Card>
-						)}
+						<TagsCard tags={tagsData} />
+						<PostInfoCard
+							authorUserId={blueprintData?.author?.userId}
+							createdDate={blueprintData?.createdDate}
+							lastUpdatedDate={blueprintData?.lastUpdatedDate}
+							numberOfFavorites={blueprintData?.numberOfFavorites}
+							isLoading={blueprintIsLoading}
+						/>
+						<RequirementsCard
+							blueprintWrapper={blueprintWrapper}
+							entityHistogram={memoizedEntityHistogram}
+							itemHistogram={memoizedItemHistogram}
+						/>
 					</Col>
 					<Col md={8}>
-						<Card>
-							<Card.Header>Details</Card.Header>
-							<Card.Body>
-								<BlueprintMarkdownDescription
-									markdown={blueprintData?.descriptionMarkdown}
-									isLoading={blueprintIsLoading}
-								/>
-
-								<Button
-									type="button"
-									variant="warning"
-									onClick={() => copyToClipboard(blueprintData?.blueprintString || '')}
-								>
-									<FontAwesomeIcon
-										icon={copiedText ? faCheck : faClipboard}
-										size="lg"
-										fixedWidth
-									/>
-									{' Copy to Clipboard'}
-								</Button>
-								<Button
-									type="button"
-									onClick={handleShowHideBase64}
-								>
-									{showBlueprint ? hideButton('Hide Blueprint') : showButton('Show Blueprint')}
-								</Button>
-								<Button
-									type="button"
-									onClick={handleShowHideJson}
-								>
-									{showJson ? hideButton('Hide Json') : showButton('Show Json')}
-								</Button>
-							</Card.Body>
-						</Card>
-						{/* Add BasicInfoPanel for blueprint information */}
+						<DetailsCard
+							descriptionMarkdown={blueprintData?.descriptionMarkdown}
+							blueprintString={blueprintData?.blueprintString}
+							parsedData={blueprintData?.parsedData}
+							isLoading={blueprintIsLoading}
+						/>
 						<BasicInfoPanel blueprint={blueprintData?.parsedData} />
-						{/* Add ExtraInfoPanel for blueprint details */}
 						<ExtraInfoPanel blueprint={blueprintData?.parsedData} />
-						{/* Add ParametersPanel for parameterized blueprints */}
 						<ParametersPanel blueprintString={blueprintData?.parsedData} />
-						{showBlueprint && (
-							<Card>
-								<Card.Header>Blueprint String</Card.Header>
-								<Card.Body>
-									<div className="blueprintString">{blueprintData?.blueprintString}</div>
-								</Card.Body>
-							</Card>
-						)}
-						{showJson && (
-							<Card>
-								<Card.Header>Json Representation</Card.Header>
-								<Card.Body className="code">
-									{safeJsonStringify(blueprintData?.parsedData, 4)}
-								</Card.Body>
-							</Card>
-						)}
-						{blueprintWrapper && blueprintWrapper.getType() === 'upgrade-planner' && (
-							<Card>
-								<Card.Header>Upgrade Planner</Card.Header>
-								<Table
-									bordered
-									hover
-								>
-									<colgroup>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col
-											span={1}
-											style={{width: '1%'}}
-										/>
-										<col span={1} />
-									</colgroup>
-									<tbody>
-										{(
-											(blueprintData?.parsedData as RawBlueprintData).upgrade_planner
-												?.settings as any
-										)?.mappers?.map(({from, to, index}: any) => (
-											<tr key={index}>
-												<td className={`icon icon-${from.name}`}>
-													{(entitiesWithIcons as any)[from.name] ? (
-														<FactorioIcon
-															icon={{
-																name: from.name,
-																type: from.type || 'item',
-																quality: from.quality,
-															}}
-															size="small"
-														/>
-													) : (
-														''
-													)}
-												</td>
-												<td className={`icon icon-${to.name}`}>
-													{(entitiesWithIcons as any)[to.name] ? (
-														<FactorioIcon
-															icon={{
-																name: to.name,
-																type: to.type || 'item',
-																quality: to.quality,
-															}}
-															size="small"
-														/>
-													) : (
-														''
-													)}
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</Table>
-							</Card>
-						)}
+						<UpgradePlannerCard
+							blueprintWrapper={blueprintWrapper}
+							parsedData={blueprintData?.parsedData}
+						/>
 					</Col>
 				</Row>
 				{blueprintData && (
-					<Row className="w-100">
-						<DisqusErrorBoundary>
-							<div
-								id="disqus_thread"
-								style={{minHeight: '100px'}}
-							>
-								<Disqus.DiscussionEmbed
-									shortname="factorio-blueprints"
-									config={disqusConfig}
-								/>
-							</div>
-						</DisqusErrorBoundary>
-					</Row>
+					<CommentsSection
+						blueprintId={blueprintId}
+						blueprintTitle={blueprintData?.title}
+					/>
 				)}
 			</Container>
 		</>

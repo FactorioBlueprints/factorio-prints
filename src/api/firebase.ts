@@ -78,7 +78,7 @@ export interface UserData {
 	blueprintsCount: number;
 }
 
-interface ReconcileResult {
+export interface ReconcileResult {
 	blueprintId: string;
 	actualCount: number;
 	previousBlueprintCount: number;
