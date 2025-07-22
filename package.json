@@ -70,7 +70,7 @@
 		"@types/dompurify": "^3.2.0",
 		"@types/lodash": "^4.17.20",
 		"@types/markdown-it": "^14.1.2",
-		"@types/node": "^24.0.15",
+		"@types/node": "^24.1.0",
 		"@types/react": "^19.1.8",
 		"@types/react-dom": "^19.1.5",
 		"@types/serviceworker": "^0.0.145",
