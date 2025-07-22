@@ -23,11 +23,6 @@ vi.mock('../base', () => ({
 	app: {},
 }));
 
-// Mock schemas
-vi.mock('../schemas', () => ({
-	validateRawUserBlueprints: vi.fn((data) => data || {}),
-}));
-
 describe('useDeleteBlueprint cache consistency', () => {
 	let queryClient: QueryClient;
 	let wrapper: ({children}: {children: React.ReactNode}) => React.JSX.Element;

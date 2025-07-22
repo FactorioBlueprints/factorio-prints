@@ -4,11 +4,9 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import React from 'react';
 import useRawBlueprintSummaries from './useRawBlueprintSummaries';
 import {fetchBlueprintSummary} from '../api/firebase';
-import {validateRawBlueprintSummary} from '../schemas';
 
 // Mock dependencies
 vi.mock('../api/firebase');
-vi.mock('../schemas');
 
 const createWrapper = () => {
 	const queryClient = new QueryClient({
@@ -56,7 +54,6 @@ describe('useRawBlueprintSummaries', () => {
 		vi.mocked(fetchBlueprintSummary).mockImplementation((blueprintId: any) => {
 			return Promise.resolve((mockSummaries as any)[blueprintId]);
 		});
-		vi.mocked(validateRawBlueprintSummary).mockImplementation((data: any) => data);
 	});
 
 	afterEach(() => {
