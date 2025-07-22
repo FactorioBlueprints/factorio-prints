@@ -1,4 +1,5 @@
-import {useNavigate, useParams} from '@tanstack/react-router';
+import {useParams} from '@tanstack/react-router';
+import Disqus from 'disqus-react';
 import {getAuth, User} from 'firebase/auth';
 import flatMap from 'lodash/flatMap';
 import forOwn from 'lodash/forOwn';
@@ -8,7 +9,9 @@ import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
+import Badge from 'react-bootstrap/Badge';
+import Card from 'react-bootstrap/Card';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -18,24 +21,46 @@ import {useIsFavorite} from '../hooks/useBlueprintFavorite';
 import {useEnrichedBlueprint} from '../hooks/useEnrichedBlueprint';
 import {useEnrichedBlueprintSummary} from '../hooks/useEnrichedBlueprintSummary';
 import {useIsModerator} from '../hooks/useModerators';
-import useReconcileFavoritesMutation from '../hooks/useReconcileFavorites';
 import useToggleFavoriteMutation from '../hooks/useToggleFavoriteMutation';
 import {BlueprintWrapper} from '../parsing/BlueprintWrapper';
-import {Route as ViewBlueprintIdRoute} from '../routes/view.$blueprintId';
 import type {BlueprintContent, BlueprintEntity, BlueprintTile} from '../schemas';
 import BlueprintImage from './BlueprintImage';
 import BlueprintTitle from './BlueprintTitle';
+import BlueprintMarkdownDescription from './BlueprintMarkdownDescription';
+import Table from 'react-bootstrap/Table';
+import TagBadge from './TagBadge';
+import DisqusErrorBoundary from './DisqusErrorBoundary';
+import {FactorioIcon, type SignalType, type Quality} from './core/icons/FactorioIcon';
 import {BasicInfoPanel} from './blueprint/panels/info/BasicInfoPanel';
 import {ExtraInfoPanel} from './blueprint/panels/info/ExtraInfoPanel';
 import {ParametersPanel} from './blueprint/panels/parameters/ParametersPanel';
+import {RichText} from './core/text/RichText';
+import {ActionButtons} from './single/ActionButtons';
 import {BlueprintActions} from './single/BlueprintActions';
 import {BlueprintNotFound} from './single/BlueprintNotFound';
 import {CommentsSection} from './single/CommentsSection';
 import {DetailsCard} from './single/DetailsCard';
 import {PostInfoCard} from './single/PostInfoCard';
+import {PostInfoTable} from './single/PostInfoTable';
 import {RequirementsCard} from './single/RequirementsCard';
+import {RequirementsTable} from './single/RequirementsTable';
 import {TagsCard} from './single/TagsCard';
 import {UpgradePlannerCard} from './single/UpgradePlannerCard';
+import {UpgradePlannerTable} from './single/UpgradePlannerTable';
+
+interface ReconcileResult {
+	blueprintId: string;
+	actualCount: number;
+	previousBlueprintCount: number;
+	previousSummaryCount: number;
+	hasDiscrepancy: boolean;
+	reconciled: boolean;
+}
+
+interface EntityHistogramItem {
+	name: string;
+	count: number;
+}
 
 interface ItemData {
 	item?: string;
@@ -58,9 +83,11 @@ declare global {
 
 function SingleBlueprint() {
 	const {blueprintId} = useParams({from: '/view/$blueprintId'});
-	const navigate = useNavigate();
 
 	const [user] = useAuthState(getAuth(app));
+	const [showBlueprint, setShowBlueprint] = useState(false);
+	const [showJson, setShowJson] = useState(false);
+	const [copiedText, setCopiedText] = useState('');
 
 	// First fetch the blueprint summary
 	const {
@@ -99,7 +126,6 @@ function SingleBlueprint() {
 	}, [blueprintIsSuccess]);
 
 	const favoriteBlueprintMutation = useToggleFavoriteMutation();
-	const reconcileFavoritesMutation = useReconcileFavoritesMutation();
 
 	const handleFavorite = useCallback(() => {
 		if (!user) return;
@@ -116,13 +142,28 @@ function SingleBlueprint() {
 		});
 	}, [user, isFavorite, favoriteIsSuccess, blueprintId, blueprintData, favoriteBlueprintMutation]);
 
-	const handleTransitionToEdit = useCallback(() => {
-		navigate({to: '/edit/$blueprintId', params: {blueprintId}});
-	}, [navigate, blueprintId]);
+	const copyToClipboard = useCallback((text: string) => {
+		navigator.clipboard.writeText(text).then(() => {
+			setCopiedText(text);
+			setTimeout(() => setCopiedText(''), 2000);
+		});
+	}, []);
 
-	const handleReconcileFavorites = useCallback(() => {
-		reconcileFavoritesMutation.mutate(blueprintId);
-	}, [blueprintId, reconcileFavoritesMutation]);
+	const handleShowHideBase64 = useCallback(() => {
+		setShowBlueprint((prev) => !prev);
+	}, []);
+
+	const handleShowHideJson = useCallback(() => {
+		setShowJson((prev) => !prev);
+	}, []);
+
+	const safeJsonStringify = (obj: any, space?: number) => {
+		try {
+			return JSON.stringify(obj, null, space);
+		} catch {
+			return 'Error: Unable to convert to JSON';
+		}
+	};
 
 	const entityHistogram = useCallback((parsedBlueprint: BlueprintContent): [string, number][] => {
 		const entities = parsedBlueprint.entities || [];
@@ -232,17 +273,20 @@ function SingleBlueprint() {
 							/>
 						</div>
 					</Col>
-					<BlueprintActions
-						isOwner={isOwner || false}
-						isModerator={isModerator}
-						user={user}
-						isFavorite={isFavorite || false}
-						onEdit={handleTransitionToEdit}
-						onFavorite={handleFavorite}
-						onReconcile={handleReconcileFavorites}
-						favoriteMutation={favoriteBlueprintMutation}
-						reconcileMutation={reconcileFavoritesMutation}
-					/>
+					<Col
+						md={3}
+						className="d-flex align-items-center justify-content-end"
+					>
+						<ActionButtons
+							user={user}
+							blueprintId={blueprintId}
+							isOwner={isOwner || false}
+							isModerator={isModerator}
+							isFavorite={isFavorite}
+							onFavorite={handleFavorite}
+							favoriteMutationIsPending={favoriteBlueprintMutation.isPending}
+						/>
+					</Col>
 				</Row>
 				<Row>
 					<Col md={4}>
@@ -251,34 +295,79 @@ function SingleBlueprint() {
 							thumbnail={blueprintData?.thumbnail}
 							isLoading={blueprintIsLoading}
 						/>
-						<TagsCard tags={tagsData} />
-						<PostInfoCard
+						{tagsData && tagsData.length > 0 && (
+							<Card>
+								<Card.Header>Tags</Card.Header>
+								<Card.Body>
+									<h4>
+										{flatMap(tagsData, (tag) => (
+											<TagBadge
+												key={tag}
+												tag={tag}
+											/>
+										))}
+									</h4>
+								</Card.Body>
+							</Card>
+						)}
+						<PostInfoTable
 							authorUserId={blueprintData?.author?.userId}
 							createdDate={blueprintData?.createdDate}
 							lastUpdatedDate={blueprintData?.lastUpdatedDate}
 							numberOfFavorites={blueprintData?.numberOfFavorites}
 							isLoading={blueprintIsLoading}
 						/>
-						<RequirementsCard
-							blueprintWrapper={blueprintWrapper}
-							entityHistogram={memoizedEntityHistogram}
-							itemHistogram={memoizedItemHistogram}
-						/>
+						{blueprintWrapper && blueprintWrapper.getType() === 'blueprint' && (
+							<RequirementsTable
+								entityHistogram={memoizedEntityHistogram}
+								itemHistogram={memoizedItemHistogram}
+							/>
+						)}
 					</Col>
 					<Col md={8}>
-						<DetailsCard
-							descriptionMarkdown={blueprintData?.descriptionMarkdown}
-							blueprintString={blueprintData?.blueprintString}
-							parsedData={blueprintData?.parsedData}
-							isLoading={blueprintIsLoading}
-						/>
+						<Card>
+							<Card.Header>Details</Card.Header>
+							<Card.Body>
+								<BlueprintMarkdownDescription
+									markdown={blueprintData?.descriptionMarkdown}
+									isLoading={blueprintIsLoading}
+								/>
+							</Card.Body>
+							<BlueprintActions
+								blueprintString={blueprintData?.blueprintString}
+								showBlueprint={showBlueprint}
+								showJson={showJson}
+								copiedText={copiedText}
+								onCopyToClipboard={copyToClipboard}
+								onToggleShowBlueprint={handleShowHideBase64}
+								onToggleShowJson={handleShowHideJson}
+							/>
+						</Card>
+						{/* Add BasicInfoPanel for blueprint information */}
 						<BasicInfoPanel blueprint={blueprintData?.parsedData} />
 						<ExtraInfoPanel blueprint={blueprintData?.parsedData} />
 						<ParametersPanel blueprintString={blueprintData?.parsedData} />
-						<UpgradePlannerCard
-							blueprintWrapper={blueprintWrapper}
-							parsedData={blueprintData?.parsedData}
-						/>
+						{showBlueprint && (
+							<Card>
+								<Card.Header>Blueprint String</Card.Header>
+								<Card.Body>
+									<div className="blueprintString">{blueprintData?.blueprintString}</div>
+								</Card.Body>
+							</Card>
+						)}
+						{showJson && (
+							<Card>
+								<Card.Header>Json Representation</Card.Header>
+								<Card.Body className="code">
+									{safeJsonStringify(blueprintData?.parsedData, 4)}
+								</Card.Body>
+							</Card>
+						)}
+						{blueprintWrapper &&
+							blueprintWrapper.getType() === 'upgrade-planner' &&
+							blueprintData?.parsedData && (
+								<UpgradePlannerTable parsedData={blueprintData.parsedData} />
+							)}{' '}
 					</Col>
 				</Row>
 				{blueprintData && (
