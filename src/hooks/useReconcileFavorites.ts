@@ -12,17 +12,17 @@ export const useReconcileFavorites = () => {
 		mutationFn: async (blueprintId: string) => {
 			return await reconcileFavoritesCount(blueprintId);
 		},
-		onSuccess: ({blueprintId, reconciled}: {blueprintId: string; reconciled: boolean}) => {
-			if (reconciled) {
+		onSuccess: (result) => {
+			if (result.reconciled) {
 				// Invalidate relevant queries if reconciliation happened
-				queryClient.invalidateQueries({queryKey: ['blueprints', 'blueprintId', blueprintId]});
+				queryClient.invalidateQueries({queryKey: ['blueprints', 'blueprintId', result.blueprintId]});
 
 				// Invalidate all paginated summary queries to ensure proper reordering
 				queryClient.invalidateQueries({queryKey: ['blueprintSummaries']});
 
 				// Additionally, these specific queries are important for different views
 				queryClient.invalidateQueries({queryKey: ['blueprintSummaries', 'orderByField', 'lastUpdatedDate']});
-				queryClient.invalidateQueries({queryKey: ['blueprintSummaries', 'blueprintId', blueprintId]});
+				queryClient.invalidateQueries({queryKey: ['blueprintSummaries', 'blueprintId', result.blueprintId]});
 			}
 		},
 	});
