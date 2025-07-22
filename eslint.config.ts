@@ -67,7 +67,6 @@ const config: Linter.Config[] = [
 				'warn',
 				{ allowConstantExport: true },
 			],
-			// Non-formatting rules
 			'eqeqeq'                  : ['error', 'smart'],
 			'one-var'                 : ['error', 'never'],
 		},
@@ -103,7 +102,6 @@ const config: Linter.Config[] = [
 				'warn',
 				{ allowConstantExport: true },
 			],
-			// Non-formatting rules
 			'eqeqeq'                  : ['error', 'smart'],
 			'one-var'                 : ['error', 'never'],
 		},
