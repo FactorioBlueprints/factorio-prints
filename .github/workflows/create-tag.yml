@@ -3,6 +3,9 @@ name: Create Deployment Tag
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   create-tag:
     runs-on: ubuntu-latest
