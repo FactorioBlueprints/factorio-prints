@@ -26,13 +26,6 @@ vi.mock('../base', () => ({
 	app: {},
 }));
 
-// Mock schemas
-vi.mock('../schemas', () => ({
-	validateRawBlueprintSummary: vi.fn((data) => data),
-	validateRawPaginatedBlueprintSummaries: vi.fn((data) => data),
-	validateRawUserBlueprints: vi.fn((data) => data),
-}));
-
 describe('useCreateBlueprint', () => {
 	let queryClient: QueryClient;
 	let wrapper: ({children}: {children: React.ReactNode}) => React.ReactNode;
@@ -208,6 +201,7 @@ describe('useCreateBlueprint', () => {
 					},
 					lastKey: 'existing1',
 					lastValue: 1000000,
+					hasMore: false,
 				},
 			],
 		};

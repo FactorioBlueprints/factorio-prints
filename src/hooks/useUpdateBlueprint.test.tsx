@@ -24,12 +24,6 @@ vi.mock('../base', () => ({
 	app: {},
 }));
 
-// Mock schemas
-vi.mock('../schemas', () => ({
-	validateRawBlueprint: vi.fn((data) => data),
-	validateRawBlueprintSummary: vi.fn((data) => data),
-}));
-
 describe('useUpdateBlueprint', () => {
 	let queryClient: QueryClient;
 	let wrapper: ({children}: {children: React.ReactNode}) => React.JSX.Element;
@@ -60,13 +54,23 @@ describe('useUpdateBlueprint', () => {
 			blueprintString: 'old string',
 			descriptionMarkdown: 'old description',
 			tags: ['old-tag'],
-			image: {id: 'oldImageId', type: 'image/png'},
+			image: {id: 'oldImageId', type: 'image/png', deletehash: 'delete123'},
 			author: {userId: 'user123', displayName: 'Test User'},
 			numberOfFavorites: 0,
 			lastUpdatedDate: Date.now(),
 			createdDate: Date.now(),
 			favorites: {},
 		};
+
+		// Set up the cache with existing data
+		queryClient.setQueryData(['blueprints', 'blueprintId', 'blueprint123'], rawBlueprint);
+		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'blueprint123'], {
+			title: 'Old Title',
+			imgurId: 'oldImageId',
+			imgurType: 'image/png',
+			numberOfFavorites: 0,
+			lastUpdatedDate: Date.now(),
+		});
 
 		const formData = {
 			title: 'New Title',
@@ -118,13 +122,23 @@ describe('useUpdateBlueprint', () => {
 			blueprintString: 'old string',
 			descriptionMarkdown: 'old description',
 			tags: ['old-tag'],
-			image: {id: 'same123', type: 'image/png'},
+			image: {id: 'same123', type: 'image/png', deletehash: 'delete123'},
 			numberOfFavorites: 0,
 			lastUpdatedDate: Date.now(),
 			createdDate: Date.now(),
 			author: {userId: 'user123', displayName: 'Test User'},
 			favorites: {},
 		};
+
+		// Set up the cache with existing data
+		queryClient.setQueryData(['blueprints', 'blueprintId', 'blueprint123'], rawBlueprint);
+		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'blueprint123'], {
+			title: 'Old Title',
+			imgurId: 'same123',
+			imgurType: 'image/png',
+			numberOfFavorites: 0,
+			lastUpdatedDate: Date.now(),
+		});
 
 		const formData = {
 			title: 'New Title',
@@ -164,11 +178,18 @@ describe('useUpdateBlueprint', () => {
 			numberOfFavorites: 0,
 			createdDate: Date.now(),
 			author: {userId: 'user123', displayName: 'Test User'},
-			image: {id: 'img123', type: 'image/png'},
+			image: {id: 'img123', type: 'image/png', deletehash: 'delete123'},
 			favorites: {},
 		};
 
 		queryClient.setQueryData(['blueprints', 'blueprintId', 'blueprint123'], existingBlueprint);
+		queryClient.setQueryData(['blueprintSummaries', 'blueprintId', 'blueprint123'], {
+			title: 'Old Title',
+			imgurId: 'img123',
+			imgurType: 'image/png',
+			numberOfFavorites: 0,
+			lastUpdatedDate: 1000000,
+		});
 
 		const formData = {
 			title: 'New Title',
