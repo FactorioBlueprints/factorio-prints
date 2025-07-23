@@ -580,14 +580,12 @@ const Create: React.FC = () => {
 					>
 						<Card.Img
 							variant="top"
-							src={previewUrl || noImageAvailable}
+							src={previewUrl}
+							key={previewUrl}
 							onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
 								e.currentTarget.src = noImageAvailable;
 							}}
 						/>
-						<Card.Title className="truncate">
-							<RichText text={state.blueprint.title} />
-						</Card.Title>
 					</Card>
 				</Col>
 			</Form.Group>

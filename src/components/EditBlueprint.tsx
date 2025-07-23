@@ -480,16 +480,13 @@ function EditBlueprintWrapper() {
 					>
 						<Card.Img
 							variant="top"
-							src={previewUrl || noImageAvailable}
+							src={previewUrl}
 							key={previewUrl}
 							onError={(e) => {
 								const target = e.target as HTMLImageElement;
 								target.src = noImageAvailable;
 							}}
 						/>
-						<Card.Title className="truncate">
-							<RichText text={form.state.values.title} />
-						</Card.Title>
 					</Card>
 				</Col>
 			</Form.Group>
