@@ -26,6 +26,7 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
 
       - name: Deploy to Firebase
         run: |
