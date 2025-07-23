@@ -1,3 +1,7 @@
+# Import sub-justfiles
+import '.just/firebase.just'
+import '.just/analysis.just'
+
 # `just --list --unsorted`
 default:
     @just --list --unsorted
