@@ -1,16 +1,10 @@
 import React from 'react';
-import {createFileRoute} from '@tanstack/react-router';
-import FavoritesGrid from '../components/MyFavoritesGrid';
-import ErrorBoundary from '../components/ErrorBoundary';
+import {Outlet, createFileRoute} from '@tanstack/react-router';
 
 export const Route = createFileRoute('/favorites')({
-	component: FavoritesComponent,
+	component: FavoritesLayout,
 });
 
-function FavoritesComponent() {
-	return (
-		<ErrorBoundary>
-			<FavoritesGrid />
-		</ErrorBoundary>
-	);
+function FavoritesLayout() {
+	return <Outlet />;
 }
