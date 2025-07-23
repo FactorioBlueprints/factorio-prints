@@ -7,6 +7,12 @@ https://nodejs.org/en/
 #### Install global packages
 
 ```bash
+just install-global
+```
+
+Or manually:
+
+```bash
 npm install -g \
 	firebase-tools@latest \
 	antlr4@latest \
@@ -14,6 +20,12 @@ npm install -g \
 ```
 
 Run the dev build:
+
+```bash
+just start
+```
+
+Or manually:
 
 ```bash
 npm run dev
@@ -26,6 +38,13 @@ This will start the Vite dev server and run the app on localhost:5173. The app w
 Run the commands:
 
 ```bash
+just build
+just deploy
+```
+
+Or manually:
+
+```bash
 npm run build
 firebase deploy
 ```
@@ -35,9 +54,22 @@ firebase deploy
 Install the [Firebase CLI](https://firebase.google.com/docs/cli/).
 
 ```bash
+just install-global
+just firebase-login
+```
+
+Or manually:
+
+```bash
 npm install -g firebase-tools
 firebase login
 ```
+
+```bash
+just database-export
+```
+
+Or manually:
 
 ```bash
 firebase database:get / > factorio-blueprints-export.json

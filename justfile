@@ -10,11 +10,11 @@ install:
 install-ci:
     npm ci --ignore-scripts --include=dev
 
-# Generate routes
+# `npm run route:generate`
 route-generate: install
     npm run route:generate
 
-# Generate routes for CI
+# `npm run route:generate`
 route-generate-ci: install-ci
     npm run route:generate
 
@@ -50,7 +50,6 @@ test: install route-generate
 test-ci: install-ci route-generate-ci
     npm run test:run
 
-
 # `npm run typecheck`
 typecheck: install route-generate
     npm run typecheck
@@ -74,3 +73,15 @@ build-ci: route-generate-ci install-ci
 # Run all pre-commit checks
 precommit: format lint typecheck build test
     @echo "✅ All pre-commit checks passed!"
+
+# `firebase deploy`
+deploy: install
+    firebase deploy
+
+# `firebase login`
+firebase-login: install
+    firebase login
+
+# `firebase database:get / > factorio-blueprints-export.json`
+database-export: install
+    firebase database:get / > factorio-blueprints-export.json
