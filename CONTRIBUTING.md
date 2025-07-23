@@ -16,10 +16,10 @@ npm install -g \
 Run the dev build:
 
 ```bash
-npm start
+npm run dev
 ```
 
-This will build the app, run it on localhost:3000, and open a browser. The app will be connecting to the production database.
+This will start the Vite dev server and run the app on localhost:5173. The app will be connecting to the production database.
 
 ### Production build
 
