@@ -1,5 +1,9 @@
 # Firebase-related recipes
 
+# Fetch Firebase export data
+firebase-fetch-export:
+    firebase database:get / > factorio-blueprints-export.json
+
 # Deploy to Firebase with automatic tagging
 firebase-deploy:
     #!/bin/bash
