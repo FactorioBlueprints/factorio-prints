@@ -25,3 +25,6 @@ src/routeTree.gen.*
 
 .envrc
 eslint_report.json
+
+# Firebase export data
+factorio-blueprints-export.json
