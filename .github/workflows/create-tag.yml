@@ -17,7 +17,7 @@ jobs:
       - name: Generate deployment tag
         id: generate-tag
         run: |
-          BASE_TAG="$(date +%Y.%m.%d)"
+          BASE_TAG="$(TZ='America/New_York' date +%Y.%m.%d)"
           COUNT=1
           DATE_TAG="$BASE_TAG.$COUNT"
           while git tag -l "$DATE_TAG" | grep -q .; do
