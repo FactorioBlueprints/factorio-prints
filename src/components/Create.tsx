@@ -275,7 +275,7 @@ const Create: React.FC = () => {
 						...prevState.blueprint,
 						blueprintString: value,
 					},
-					blueprintPasted: false,
+					blueprintPasted: true,
 					blueprintValidationError: 'Invalid blueprint string. Please paste a valid Factorio blueprint.',
 				}));
 				return;
@@ -382,6 +382,11 @@ const Create: React.FC = () => {
 			submissionWarnings.push('The blueprint has no tags. Consider adding a few tags.');
 		}
 
+		if (state.blueprintValidationError) {
+			submissionWarnings.push('Could not parse blueprint.');
+			return submissionWarnings;
+		}
+
 		const blueprint = new Blueprint(state.blueprint.blueprintString.trim());
 		if (isEmpty(blueprint.decodedObject)) {
 			submissionWarnings.push('Could not parse blueprint.');
@@ -400,7 +405,7 @@ const Create: React.FC = () => {
 		}
 
 		return submissionWarnings;
-	}, [state.blueprint, v15Decoded, someHaveNoName]);
+	}, [state.blueprint, v15Decoded, someHaveNoName, state.blueprintValidationError]);
 
 	useEffect(() => {
 		if (user && pendingSubmission) {
@@ -764,7 +769,7 @@ const Create: React.FC = () => {
 								/>
 								{state.blueprintValidationError && (
 									<Alert
-										variant="danger"
+										variant="warning"
 										className="mt-2"
 									>
 										{state.blueprintValidationError}
