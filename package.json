@@ -90,7 +90,7 @@
 		"eslint-plugin-react-refresh": "^0.4.20",
 		"fake-indexeddb": "^6.0.1",
 		"globals": "^16.3.0",
-		"jiti": "^2.4.2",
+		"jiti": "^2.5.0",
 		"jsdom": "^26.1.0",
 		"less": "^4.4.0",
 		"typescript": "^5.8.3",
