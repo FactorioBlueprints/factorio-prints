@@ -448,54 +448,6 @@ function EditBlueprintWrapper() {
 		);
 	}, [blueprintData, form.state.values.title]);
 
-	const renderPreview = useCallback(() => {
-		if (!form.state.values.imageUrl) {
-			return null;
-		}
-
-		// Convert imgur URLs to direct image URLs for preview
-		let previewUrl = form.state.values.imageUrl;
-		const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
-		const match = previewUrl.match(imgurPageRegex);
-		if (match) {
-			// Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
-			previewUrl = `https://i.imgur.com/${match[1]}.png`;
-		}
-
-		return (
-			<Form.Group
-				as={Row}
-				className="mb-3"
-			>
-				<Form.Label
-					column
-					sm="2"
-				>
-					{'Attached screenshot'}
-				</Form.Label>
-				<Col sm={10}>
-					<Card
-						className="mb-2 mr-2"
-						style={{width: '14rem', backgroundColor: '#1c1e22'}}
-					>
-						<Card.Img
-							variant="top"
-							src={previewUrl || noImageAvailable}
-							key={previewUrl}
-							onError={(e) => {
-								const target = e.target as HTMLImageElement;
-								target.src = noImageAvailable;
-							}}
-						/>
-						<Card.Title className="truncate">
-							<RichText text={form.state.values.title} />
-						</Card.Title>
-					</Card>
-				</Col>
-			</Form.Group>
-		);
-	}, [form.state.values.imageUrl, form.state.values.title]);
-
 	const getUnusedTagSuggestions = () => {
 		if (!user || !blueprintData?.title) return [];
 
@@ -936,42 +888,87 @@ function EditBlueprintWrapper() {
 						<form.Field
 							name="imageUrl"
 							children={(field) => (
-								<Form.Group
-									as={Row}
-									className="mb-3"
-								>
-									<Form.Label
-										column
-										sm="2"
+								<>
+									<Form.Group
+										as={Row}
+										className="mb-3"
 									>
-										{'Imgur URL'}
-									</Form.Label>
-									<Col sm={10}>
-										<FormControl
-											type="text"
-											name={field.name}
-											placeholder="https://imgur.com/kRua41d"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-										/>
-										{field.state.meta.errors?.length > 0 && (
-											<div className="text-danger mt-1">
-												{field.state.meta.errors
-													.map((error) =>
-														typeof error === 'string'
-															? error
-															: (error as any)?.message || JSON.stringify(error),
-													)
-													.join(', ')}
-											</div>
-										)}
-									</Col>
-								</Form.Group>
+										<Form.Label
+											column
+											sm="2"
+										>
+											{'Imgur URL'}
+										</Form.Label>
+										<Col sm={10}>
+											<FormControl
+												type="text"
+												name={field.name}
+												placeholder="https://imgur.com/kRua41d"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(e) => field.handleChange(e.target.value)}
+											/>
+											{field.state.meta.errors?.length > 0 && (
+												<div className="text-danger mt-1">
+													{field.state.meta.errors
+														.map((error) =>
+															typeof error === 'string'
+																? error
+																: (error as any)?.message || JSON.stringify(error),
+														)
+														.join(', ')}
+												</div>
+											)}
+										</Col>
+									</Form.Group>
+
+									{field.state.value &&
+										(() => {
+											// Convert imgur URLs to direct image URLs for preview
+											let previewUrl = field.state.value;
+											const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
+											const match = previewUrl.match(imgurPageRegex);
+											if (match) {
+												// Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
+												previewUrl = `https://i.imgur.com/${match[1]}.png`;
+											}
+
+											return (
+												<Form.Group
+													as={Row}
+													className="mb-3"
+												>
+													<Form.Label
+														column
+														sm="2"
+													>
+														{'Attached screenshot'}
+													</Form.Label>
+													<Col sm={10}>
+														<Card
+															className="mb-2 mr-2"
+															style={{width: '14rem', backgroundColor: '#1c1e22'}}
+														>
+															<Card.Img
+																variant="top"
+																src={previewUrl || noImageAvailable}
+																key={field.state.value}
+																onError={(e) => {
+																	const target = e.target as HTMLImageElement;
+																	target.src = noImageAvailable;
+																}}
+															/>
+															<Card.Title className="truncate">
+																<RichText text={form.state.values.title} />
+															</Card.Title>
+														</Card>
+													</Col>
+												</Form.Group>
+											);
+										})()}
+								</>
 							)}
 						/>
-
-						{renderPreview()}
 
 						<Form.Group
 							as={Row}
