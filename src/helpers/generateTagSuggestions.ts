@@ -170,8 +170,6 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 			checkBeltSpeed(slowBeltTypes, '/belt/transport belt (yellow)/');
 		}
 
-		// Most common item
-
 		if (
 			entityHistogram[0][0] === 'small-lamp' ||
 			(entityCounts['small-lamp'] > 100 && entityHistogram[1] && entityHistogram[1][0] === 'small-lamp')
@@ -181,7 +179,6 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 	};
 
 	const generateTagSuggestionsFromEntityCounts = (entityCounts: Record<string, number>) => {
-		// Mutually exclusive
 		if (entityCounts.lab > 0) {
 			tagSuggestions.push('/production/research (labs)/');
 		} else if (
@@ -213,22 +210,18 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 			tagSuggestions.push('/power/accumulator/');
 		}
 
-		// Additional
 		if (entityCounts.beacon > 10) {
 			tagSuggestions.push('/general/beaconized/');
 		}
 	};
 
 	const generateTagSuggestionsFromTitle = (title: string) => {
-		// Train
 		if (/\b(pax)\b/i.test(title)) {
 			tagSuggestions.push('/train/pax/');
 		}
-		// Contains word starting with "unload"
 		if (/\b(train)\b/i.test(title) && /\b(unload)/i.test(title)) {
 			tagSuggestions.push('/train/unloading station/');
 		}
-		// Contains word starting with "load"
 		if (/\b(train)\b/i.test(title) && /\b(load)/i.test(title)) {
 			tagSuggestions.push('/train/loading station/');
 		}

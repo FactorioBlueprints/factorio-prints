@@ -62,7 +62,6 @@ export const useCreateBlueprint = () => {
 				type: 'image/png',
 			};
 
-			// Build raw blueprint data matching Firebase structure
 			const blueprintData = {
 				title: formData.title,
 				blueprintString: formData.blueprintString,

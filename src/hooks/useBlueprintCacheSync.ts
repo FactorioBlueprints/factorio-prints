@@ -33,11 +33,8 @@ export const useBlueprintCacheSync = (): void => {
 					return;
 				}
 
-				// Check if data has actually changed by comparing lastUpdatedDate
-				// with any existing blueprint data in the cache
 				const existingData = queryClient.getQueryData<RawBlueprint>(['blueprints', 'blueprintId', blueprintId]);
 
-				// If there's no existing data or the lastUpdatedDate has changed, invalidate the blueprint data
 				if (!existingData || existingData.lastUpdatedDate !== newData.lastUpdatedDate) {
 					// Invalidate only the specific blueprint query
 					queryClient.invalidateQueries({

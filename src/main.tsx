@@ -9,10 +9,7 @@ import {Router} from './router';
 
 Sentry.init({
 	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
-	// Setting this option to true will send default PII data to Sentry.
-	// For example, automatic IP address collection on events
 	sendDefaultPii: true,
-	// Set release version to match the build
 	release: import.meta.env.VITE_APP_VERSION || '0.1.0',
 	integrations: [
 		Sentry.browserTracingIntegration(),
@@ -42,17 +39,11 @@ Sentry.init({
 			xhr: true,
 		}),
 	],
-	// Tracing
-	tracesSampleRate: 1.0, //  Capture 100% of the transactions
-	// Set 'tracePropagationTargets' to control for which URLs distributed tracing should be enabled
+	tracesSampleRate: 1.0,
 	tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
-	// Session Replay
-	replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-	replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
-	// Allow localhost URLs
+	replaysSessionSampleRate: 0.1,
+	replaysOnErrorSampleRate: 1.0,
 	allowUrls: ['http://localhost', 'https://localhost', /localhost:\d{4}/, 'https://factorioprints.com'],
-	// Filter out errors from browser extensions and other third-party sources
-	denyUrls: [/chrome-extension:\/\//, /moz-extension:\/\//, /safari-extension:\/\//, /edge:\/\//, /extension:\/\//],
 	enabled: !(window.location.hostname === 'localhost' && window.location.port === '3000'),
 	// Set maxBreadcrumbs to capture more console logs
 	maxBreadcrumbs: 100,
@@ -109,7 +100,6 @@ Sentry.init({
 	},
 });
 
-// Add Vite's preload error handler for module loading failures
 window.addEventListener('vite:preloadError', (event) => {
 	console.error('Vite preload error detected, reloading page...', event.payload);
 	Sentry.captureException(event.payload, {
@@ -120,21 +110,18 @@ window.addEventListener('vite:preloadError', (event) => {
 			message: 'Module import failed during preload',
 		},
 	});
-	event.preventDefault(); // Prevent the error from being thrown
+	event.preventDefault();
 	window.location.reload();
 });
 
-// Add global error handler for images
 window.addEventListener(
 	'error',
 	function (e: ErrorEvent) {
 		const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
 		if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME')) {
-			// In development, log the error for debugging
 			if (import.meta.env.DEV) {
 				console.log('Image/iframe load error:', target.src);
 			}
-			// Prevent the error from bubbling up
 			e.preventDefault();
 			return true;
 		}

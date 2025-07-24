@@ -6,9 +6,6 @@ export const STORAGE_KEYS = {
 	CREATE_FORM: 'factorio-blueprint-create-form',
 } as const;
 
-/**
- * Cache buster for query persistence. Manually increment this number when making changes that break cache compatibility.
- */
 export const CACHE_BUSTER = '6';
 
 export const indexedDbStore = createStore('factorio-prints-db', 'query-cache-store');
@@ -199,7 +196,6 @@ function getWorker() {
 				}
 			};
 
-			// Initialize store in worker
 			worker.postMessage({
 				type: 'init',
 				storeConfig: {
@@ -298,8 +294,6 @@ interface Persister {
 }
 
 export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister {
-	// Create a debounced persist function that waits 2 seconds after changes
-	// and limits executions to once every 10 seconds maximum
 	const debouncedPersist = debounce(
 		async (client: any) => {
 			try {
@@ -321,7 +315,6 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 
 	return {
 		persistClient: async (client: any) => {
-			// Use the debounced version for persistence
 			return debouncedPersist(client);
 		},
 		restoreClient: async () => {
