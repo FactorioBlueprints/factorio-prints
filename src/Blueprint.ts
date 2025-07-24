@@ -118,10 +118,12 @@ type ConvertedBlueprint = SingleBlueprint | BlueprintBook;
 class Blueprint {
 	private encodedText: string;
 	private cachedDecodedObject: DecodedObject = undefined;
+	private context?: {blueprintId?: string};
 
-	constructor(encodedText: string) {
+	constructor(encodedText: string, context?: {blueprintId?: string}) {
 		// TODO 2025-04-22: Assert that encodedText is truthy
 		this.encodedText = encodedText;
+		this.context = context;
 	}
 
 	isV15 = (): boolean => this.encodedText.startsWith('0');
@@ -135,7 +137,7 @@ class Blueprint {
 
 	private convertEncodedTextToObject = (): DecodedObject => {
 		if (this.isV15()) {
-			return deserializeBlueprintNoThrow(this.encodedText) as V15DecodedObject;
+			return deserializeBlueprintNoThrow(this.encodedText, this.context) as V15DecodedObject;
 		}
 
 		return undefined;

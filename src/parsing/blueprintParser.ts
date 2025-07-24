@@ -16,7 +16,7 @@ export class BlueprintError extends Error {
 	}
 }
 
-export function deserializeBlueprint(blueprintData: string): RawBlueprintData {
+export function deserializeBlueprint(blueprintData: string, context?: {blueprintId?: string}): RawBlueprintData {
 	if (!blueprintData.startsWith('0')) {
 		throw new BlueprintError(
 			`Unknown blueprint format: string does not start with '0'.\nStarts with:\n'${blueprintData.slice(0, 80)}'`,
@@ -48,14 +48,14 @@ export function deserializeBlueprint(blueprintData: string): RawBlueprintData {
 		throw new BlueprintError('Invalid JSON in blueprint data', {cause: error as Error});
 	}
 
-	const result = validateRawBlueprintData(parsedData);
+	const result = validateRawBlueprintData(parsedData, context);
 
 	return result;
 }
 
-export function deserializeBlueprintNoThrow(data: string): RawBlueprintData | null {
+export function deserializeBlueprintNoThrow(data: string, context?: {blueprintId?: string}): RawBlueprintData | null {
 	try {
-		return deserializeBlueprint(data);
+		return deserializeBlueprint(data, context);
 	} catch {
 		return null;
 	}

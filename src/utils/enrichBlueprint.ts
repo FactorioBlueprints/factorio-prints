@@ -93,7 +93,7 @@ export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: 
 	let parsedData: any = null;
 	if (rawBlueprint.blueprintString) {
 		try {
-			const blueprint = new Blueprint(rawBlueprint.blueprintString);
+			const blueprint = new Blueprint(rawBlueprint.blueprintString, {blueprintId});
 			parsedData = blueprint.getV15Decoded();
 		} catch (error) {
 			console.error('Error parsing blueprint string:', error);
