@@ -20,7 +20,7 @@ jobs:
       - run: npm ci
       - uses: pre-commit/action@v3.0.1
 
-  lint:
+  eslint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,28 +30,34 @@ jobs:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
 
-      - run: just ci-lint
+      - run: just eslint-ci
         continue-on-error: true
 
       - uses: ataylorme/eslint-annotate-action@2.2.0
         if: always()
 
-  format:
-    name: Format (Biome)
+  biome:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
 
-      - run: just format-ci
+      - run: just biome-ci
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+  prettier:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: jdx/mise-action@v2
 
-      - run: just test-ci
+        - run: just prettier-ci
+
+  typecheck:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - uses: jdx/mise-action@v2
+          - run: just typecheck-ci
 
   build:
     runs-on: ubuntu-latest
@@ -61,9 +67,18 @@ jobs:
 
       - run: just build-ci
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+
+      - run: just test-ci
+
+
   all-checks:
     name: All checks
-    needs: [pre-commit, lint, format, test, build]
+    needs: [pre-commit, eslint, biome, prettier, typecheck, build, test]
     runs-on: ubuntu-latest
     steps:
       - name: All checks passed

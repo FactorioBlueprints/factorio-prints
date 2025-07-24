@@ -1,4 +1,4 @@
-import {useInfiniteQuery, useQueryClient, keepPreviousData, type InfiniteData} from '@tanstack/react-query';
+import {type InfiniteData, keepPreviousData, useInfiniteQuery, useQueryClient} from '@tanstack/react-query';
 import {useEffect} from 'react';
 import {fetchPaginatedSummaries} from '../api/firebase';
 import type {RawBlueprintSummaryPage} from '../schemas';

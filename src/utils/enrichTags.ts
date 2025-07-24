@@ -1,4 +1,4 @@
-import {validateRawTags, validateEnrichedTags, type RawTags, type EnrichedTags, type EnrichedTag} from '../schemas';
+import {type EnrichedTag, type EnrichedTags, type RawTags, validateEnrichedTags, validateRawTags} from '../schemas';
 
 /**
  * Converts a tag name to a display-friendly label

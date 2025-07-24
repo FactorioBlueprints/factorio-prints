@@ -2,7 +2,8 @@ import {createSyncStoragePersister} from '@tanstack/query-sync-storage-persister
 import {QueryClientProvider} from '@tanstack/react-query';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {persistQueryClient} from '@tanstack/react-query-persist-client';
-import React, {useEffect} from 'react';
+import type React from 'react';
+import {useEffect} from 'react';
 import useBlueprintCacheSync from '../hooks/useBlueprintCacheSync';
 import {CACHE_BUSTER, createIDBPersister, STORAGE_KEYS} from '../localStorage';
 import {queryClient} from './queryClient';

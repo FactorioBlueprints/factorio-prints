@@ -1,4 +1,3 @@
-import React, {useMemo, useState} from 'react';
 import {faDiscord, faGithub, faGoogle, faPatreon} from '@fortawesome/free-brands-svg-icons';
 import {
 	faBug,
@@ -16,22 +15,24 @@ import {
 	faWrench,
 } from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {Link} from '@tanstack/react-router';
 import {
-	getAuth,
+	type AuthProvider,
 	GithubAuthProvider,
 	GoogleAuthProvider,
+	getAuth,
 	signInWithPopup,
 	signOut,
-	AuthProvider,
-	User,
+	type User,
 } from 'firebase/auth';
+import type React from 'react';
+import {useMemo, useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {Link} from '@tanstack/react-router';
 
 import {app} from '../base';
 import {useIsModerator} from '../hooks/useModerators';

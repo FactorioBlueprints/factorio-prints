@@ -1,6 +1,6 @@
-import React, {ErrorInfo, ReactNode} from 'react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faExclamationTriangle, faRedo} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import React, {type ErrorInfo, type ReactNode} from 'react';
 
 interface ErrorBoundaryProps {
 	children: ReactNode;

@@ -1,7 +1,7 @@
-import React from 'react';
 import {createFileRoute} from '@tanstack/react-router';
-import KnownIssues from '../components/KnownIssues';
+import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import KnownIssues from '../components/KnownIssues';
 
 export const Route = createFileRoute('/knownIssues')({
 	component: KnownIssuesComponent,

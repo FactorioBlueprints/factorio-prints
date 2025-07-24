@@ -1,15 +1,16 @@
 import {faCog, faSync, faUser} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {Link, useParams} from '@tanstack/react-router';
 import {useStore} from '@tanstack/react-store';
 import {getAuth} from 'firebase/auth';
-import React, {useCallback} from 'react';
+import type React from 'react';
+import {useCallback} from 'react';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {Link, useParams} from '@tanstack/react-router';
 
 import {app} from '../base';
 import useEnrichedBlueprintSummaries from '../hooks/useEnrichedBlueprintSummaries';
@@ -17,8 +18,8 @@ import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummarie
 import {useIsModerator} from '../hooks/useModerators';
 import useReconcileUserFavorites from '../hooks/useReconcileUserFavorites';
 import {useUserBlueprints, useUserDisplayName, useUserFavorites} from '../hooks/useUser';
-import {searchParamsStore} from '../store/searchParamsStore';
 import type {EnrichedBlueprintSummary} from '../schemas';
+import {searchParamsStore} from '../store/searchParamsStore';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import NoMatch from './NoMatch';

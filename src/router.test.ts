@@ -1,5 +1,5 @@
-import {describe, test, expect} from 'vitest';
 import {createRouter} from '@tanstack/react-router';
+import {describe, expect, test} from 'vitest';
 import {routeTree} from './routeTree.gen';
 
 const rootRouteChildren = {

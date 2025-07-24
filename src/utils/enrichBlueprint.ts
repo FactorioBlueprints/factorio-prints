@@ -1,9 +1,9 @@
-import MarkdownIt from 'markdown-it';
-import DOMPurify from 'dompurify';
 import * as Sentry from '@sentry/react';
+import DOMPurify from 'dompurify';
+import MarkdownIt from 'markdown-it';
 import Blueprint from '../Blueprint';
 import buildImageUrl from '../helpers/buildImageUrl';
-import {validateRawBlueprint, validateEnrichedBlueprint, type RawBlueprint, type EnrichedBlueprint} from '../schemas';
+import {type EnrichedBlueprint, type RawBlueprint, validateEnrichedBlueprint, validateRawBlueprint} from '../schemas';
 
 const md = new MarkdownIt({
 	html: true,
@@ -13,12 +13,9 @@ const md = new MarkdownIt({
 });
 
 const defaultTableRenderer =
-	md.renderer.rules.table_open ||
-	function (tokens, idx, options, env, self) {
-		return self.renderToken(tokens, idx, options);
-	};
+	md.renderer.rules.table_open || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
 
-md.renderer.rules.table_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.table_open = (tokens, idx, options, env, self) => {
 	tokens[idx].attrSet('class', 'table table-striped table-bordered');
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };

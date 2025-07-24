@@ -1,9 +1,9 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from '@tanstack/react-router';
-import {getDatabase, ref, serverTimestamp, update as dbUpdate} from 'firebase/database';
+import {update as dbUpdate, getDatabase, ref, serverTimestamp} from 'firebase/database';
 import {app} from '../base';
+import type {ImgurImage, RawBlueprint} from '../schemas';
 import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserBlueprints} from '../schemas';
-import type {RawBlueprint, ImgurImage} from '../schemas';
 
 interface UpdateBlueprintFormData {
 	title: string;

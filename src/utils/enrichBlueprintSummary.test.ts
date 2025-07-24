@@ -1,6 +1,6 @@
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
-import {enrichBlueprintSummary} from './enrichBlueprintSummary';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import buildImageUrl from '../helpers/buildImageUrl';
+import {enrichBlueprintSummary} from './enrichBlueprintSummary';
 
 // Mock the dependencies
 vi.mock('../helpers/buildImageUrl');

@@ -1,7 +1,7 @@
-import React from 'react';
 import {createFileRoute} from '@tanstack/react-router';
-import SingleTagGrid from '../components/SingleTagGrid';
+import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import SingleTagGrid from '../components/SingleTagGrid';
 
 export const Route = createFileRoute('/tag/$tag')({
 	component: TagComponent,

@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
-import {useRawBlueprintSummary} from './useRawBlueprintSummary';
 import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
+import {useRawBlueprintSummary} from './useRawBlueprintSummary';
 
 /**
  * Hook to fetch and enrich a blueprint summary by ID

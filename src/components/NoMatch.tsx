@@ -1,5 +1,5 @@
-import React from 'react';
 import {useRouter} from '@tanstack/react-router';
+import type React from 'react';
 
 const NoMatch: React.FC = () => {
 	const router = useRouter();

@@ -1,13 +1,11 @@
-import React from 'react';
-import {Outlet} from '@tanstack/react-router';
+import {createRootRoute, Outlet} from '@tanstack/react-router';
 import {getAuth} from 'firebase/auth';
 import {getDatabase, ref, runTransaction} from 'firebase/database';
-import {useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
+import {app} from '../base';
 import ErrorBoundary from '../components/ErrorBoundary';
 import Header from '../components/Header';
-import {app} from '../base';
-import {createRootRoute} from '@tanstack/react-router';
 
 export const Route = createRootRoute({
 	component: Root,

@@ -1,6 +1,6 @@
-import React from 'react';
-import Badge from 'react-bootstrap/Badge';
 import {Link} from '@tanstack/react-router';
+import type React from 'react';
+import Badge from 'react-bootstrap/Badge';
 
 interface TagBadgeProps {
 	tag: string;

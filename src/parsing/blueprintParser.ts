@@ -1,9 +1,8 @@
 import atob from 'atob';
 import {unzlibSync, zlibSync} from 'fflate';
-
-import {DEFAULT_COMPRESSION_SETTINGS, type CompressionSettings} from './compressionSettings';
+import {type BlueprintBook, type RawBlueprintData, validateRawBlueprintData} from '../schemas';
+import {type CompressionSettings, DEFAULT_COMPRESSION_SETTINGS} from './compressionSettings';
 import {getErrorMessage} from './errors';
-import {type RawBlueprintData, type BlueprintBook, validateRawBlueprintData} from '../schemas';
 
 export class BlueprintError extends Error {
 	public cause?: Error;

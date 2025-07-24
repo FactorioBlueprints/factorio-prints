@@ -7,13 +7,12 @@ import React from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import {useAuthState} from 'react-firebase-hooks/auth';
-
-import {app} from '../base';
 import {cleanupInvalidUserFavorite} from '../api/firebase';
+import {app} from '../base';
 import useEnrichedBlueprintSummaries from '../hooks/useEnrichedBlueprintSummaries';
 import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import {useUserFavorites} from '../hooks/useUser';
-import {EnrichedBlueprintSummary} from '../schemas';
+import type {EnrichedBlueprintSummary} from '../schemas';
 import {searchParamsStore} from '../store/searchParamsStore';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
@@ -32,7 +31,7 @@ const MyFavoritesGrid: React.FC = () => {
 
 	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
 
-	const {data: data, isLoading: isLoading, isSuccess: isSuccess, error: error} = useUserFavorites(userId);
+	const {data, isLoading, isSuccess, error} = useUserFavorites(userId);
 
 	const {queriesByKey: blueprintQueriesById, blueprintSummaries} = useEnrichedBlueprintSummaries(data, isSuccess);
 

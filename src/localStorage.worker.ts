@@ -1,4 +1,4 @@
-import {createStore, get, set, del, UseStore} from 'idb-keyval';
+import {createStore, del, get, set, type UseStore} from 'idb-keyval';
 
 interface StoreConfig {
 	dbName: string;
@@ -40,7 +40,7 @@ interface WorkerGlobalScope {
 
 declare const self: WorkerGlobalScope;
 
-self.onmessage = async function (e: MessageEvent<WorkerMessage>): Promise<void> {
+self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 	const {type, key, data, id, storeConfig} = e.data;
 
 	try {

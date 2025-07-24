@@ -1,5 +1,5 @@
-import {createStore, get, set, del} from 'idb-keyval';
 import * as Sentry from '@sentry/react';
+import {createStore, del, get, set} from 'idb-keyval';
 
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
@@ -128,7 +128,7 @@ function debounce<T extends (...args: any[]) => any>(
 		return result;
 	}
 
-	debounced.cancel = function (): void {
+	debounced.cancel = (): void => {
 		if (timerId !== undefined) {
 			cancelTimer(timerId);
 		}
@@ -136,13 +136,9 @@ function debounce<T extends (...args: any[]) => any>(
 		lastArgs = lastCallTime = lastThis = timerId = undefined;
 	};
 
-	debounced.flush = function (): ReturnType<T> {
-		return timerId === undefined ? result : trailingEdge(Date.now());
-	};
+	debounced.flush = (): ReturnType<T> => (timerId === undefined ? result : trailingEdge(Date.now()));
 
-	debounced.pending = function (): boolean {
-		return timerId !== undefined;
-	};
+	debounced.pending = (): boolean => timerId !== undefined;
 
 	return debounced;
 }

@@ -1,7 +1,7 @@
-import React from 'react';
 import {createFileRoute} from '@tanstack/react-router';
-import UserFavoritesGrid from '../components/UserFavoritesGrid';
+import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import UserFavoritesGrid from '../components/UserFavoritesGrid';
 
 export const Route = createFileRoute('/favorites/$userId')({
 	component: UserFavoritesComponent,

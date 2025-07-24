@@ -1,6 +1,6 @@
 import {memo} from 'react';
 
-import {RawBlueprintData} from '../../../../schemas';
+import type {RawBlueprintData} from '../../../../schemas';
 import {Panel} from '../../../ui';
 
 const ParametersPanelComponent = ({blueprintString}: {blueprintString?: RawBlueprintData}) => {

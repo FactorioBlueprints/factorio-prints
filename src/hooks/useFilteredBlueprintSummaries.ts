@@ -1,6 +1,6 @@
-import {useFilterByTitle} from './useFilterByTitle';
-import {useFilterByTags} from './useFilterByTags';
 import type {EnrichedBlueprintSummary} from '../schemas';
+import {useFilterByTags} from './useFilterByTags';
+import {useFilterByTitle} from './useFilterByTitle';
 
 export const useFilteredBlueprintSummaries = (
 	blueprintSummaries: EnrichedBlueprintSummary[] = [],

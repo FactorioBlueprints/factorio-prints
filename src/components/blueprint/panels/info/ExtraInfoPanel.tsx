@@ -1,12 +1,12 @@
+import range from 'lodash/range';
 import type {ReactNode} from 'react';
 import {memo} from 'react';
-import range from 'lodash/range';
 
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 
 import {BlueprintWrapper} from '../../../../parsing/BlueprintWrapper';
-import type {RawBlueprintData, BlueprintBookEntry} from '../../../../schemas';
+import type {BlueprintBookEntry, RawBlueprintData} from '../../../../schemas';
 import {FactorioIcon} from '../../../core/icons/FactorioIcon';
 import {RichText} from '../../../core/text/RichText';
 

@@ -1,7 +1,7 @@
 import {useMemo} from 'react';
-import useRawBlueprint from './useRawBlueprint';
-import enrichBlueprint from '../utils/enrichBlueprint';
 import type {EnrichedBlueprint, EnrichedBlueprintSummary} from '../schemas';
+import enrichBlueprint from '../utils/enrichBlueprint';
+import useRawBlueprint from './useRawBlueprint';
 
 export const useEnrichedBlueprint = (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary | null) => {
 	const rawBlueprintQuery = useRawBlueprint(blueprintId, blueprintSummary);

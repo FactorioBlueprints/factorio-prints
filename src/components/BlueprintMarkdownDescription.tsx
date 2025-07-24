@@ -1,6 +1,6 @@
 import {faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React from 'react';
+import type React from 'react';
 import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 
 interface BlueprintMarkdownDescriptionProps {

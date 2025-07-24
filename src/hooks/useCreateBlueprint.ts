@@ -1,9 +1,9 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from '@tanstack/react-router';
-import {getDatabase, push, ref, serverTimestamp, update as dbUpdate} from 'firebase/database';
-import {User} from 'firebase/auth';
-import {app} from '../base';
+import type {User} from 'firebase/auth';
+import {update as dbUpdate, getDatabase, push, ref, serverTimestamp} from 'firebase/database';
 import flatMap from 'lodash/flatMap';
+import {app} from '../base';
 import {
 	validateRawBlueprintSummary,
 	validateRawPaginatedBlueprintSummaries,

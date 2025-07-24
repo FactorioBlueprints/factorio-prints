@@ -1,4 +1,4 @@
-import type {BlueprintIcon, BlueprintContent, RawBlueprintData} from '../schemas';
+import type {BlueprintContent, BlueprintIcon, RawBlueprintData} from '../schemas';
 
 interface BlueprintInfo {
 	type: 'blueprint' | 'blueprint-book' | 'upgrade-planner' | 'deconstruction-planner';

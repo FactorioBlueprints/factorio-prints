@@ -1,9 +1,9 @@
 import {faTags} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React from 'react';
+import {useParams} from '@tanstack/react-router';
+import type React from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import {useParams} from '@tanstack/react-router';
 
 import {useEnrichedTagBlueprintSummaries} from '../hooks/useEnrichedTagBlueprintSummaries';
 import {useFilterByTitle} from '../hooks/useFilterByTitle';

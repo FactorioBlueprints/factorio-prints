@@ -1,8 +1,8 @@
 import {useMemo} from 'react';
-import {useRawPaginatedBlueprintSummaries} from './useRawPaginatedBlueprintSummaries';
-import {enrichPaginatedBlueprintSummaries} from '../utils/enrichPaginatedBlueprintSummaries';
+import type {EnrichedPaginatedBlueprintSummaries, RawPaginatedBlueprintSummaries} from '../schemas';
 import {validateEnrichedPaginatedBlueprintSummaries} from '../schemas';
-import type {RawPaginatedBlueprintSummaries, EnrichedPaginatedBlueprintSummaries} from '../schemas';
+import {enrichPaginatedBlueprintSummaries} from '../utils/enrichPaginatedBlueprintSummaries';
+import {useRawPaginatedBlueprintSummaries} from './useRawPaginatedBlueprintSummaries';
 
 /**
  * Hook to fetch and enrich paginated blueprint summaries

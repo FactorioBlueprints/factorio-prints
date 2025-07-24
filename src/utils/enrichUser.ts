@@ -1,4 +1,4 @@
-import {validateRawUser, validateEnrichedUser, type RawUser, type EnrichedUser} from '../schemas';
+import {type EnrichedUser, type RawUser, validateEnrichedUser, validateRawUser} from '../schemas';
 
 export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null => {
 	if (!rawUser) return null;

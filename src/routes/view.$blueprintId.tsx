@@ -1,12 +1,12 @@
-import React from 'react';
 import {createFileRoute} from '@tanstack/react-router';
-import SingleBlueprint from '../components/SingleBlueprint';
+import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import SingleBlueprint from '../components/SingleBlueprint';
 import {queryClient} from '../providers/queryClient';
-import {blueprintSummaryQuery, blueprintQuery} from '../queries/blueprintQueries';
-import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
+import {blueprintQuery, blueprintSummaryQuery} from '../queries/blueprintQueries';
+import type {EnrichedBlueprint, EnrichedBlueprintSummary} from '../schemas';
 import enrichBlueprint from '../utils/enrichBlueprint';
-import type {EnrichedBlueprintSummary, EnrichedBlueprint} from '../schemas';
+import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
 
 export interface LoaderData {
 	blueprintSummary: EnrichedBlueprintSummary | null;

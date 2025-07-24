@@ -22,29 +22,42 @@ route-generate-ci: install-ci
 dev: install
     npm run dev
 
-# `npm run lint:fix`
-lint-fix: install
-    npm run lint:fix
-
 # `npm run lint`
 lint: install
     npm run lint
 
-# `npm run lint` for CI
-lint-ci: install-ci
-    npm run lint
+# `npm run ci:eslint`
+eslint-ci: install-ci
+    npm run ci:eslint
 
-# ESLint with JSON output for CI annotations
-ci-lint: install-ci
-    npx eslint . --format json --output-file eslint_report.json
+# `npm run format`
+format: install
+    npm run format
 
-# `npm run test`
-test: route-generate
-    npm run test
+# `npm run ci:biome`
+biome-ci: install-ci
+    npm run ci:biome
 
-# `npm run test` for CI
-test-ci: route-generate-ci
-    npm run test
+# `npm run ci:prettier`
+prettier-ci: install-ci
+    npm run ci:prettier
+
+# `npm run test:run`
+test: install route-generate
+    npm run test:run
+
+# `npm run test:run`
+test-ci: install-ci route-generate-ci
+    npm run test:run
+
+
+# `npm run typecheck`
+typecheck: install
+    npm run typecheck
+
+# `npm run typecheck`
+typecheck-ci: install-ci
+    npm run typecheck
 
 # `uv tool run pre-commit run`
 hooks:
@@ -54,17 +67,10 @@ hooks:
 build: install
     op run -- npm run build
 
-# Build for CI
-build-ci: route-generate-ci
+# `npm run build`
+build-ci: route-generate-ci install-ci
     npm run build
 
-# `npm run format`
-format: install
-    npm run format
-
-# Check format for CI
-format-ci: install-ci
-    npm run ci:format
-
-# Run install, build, test, lint, and pre-commit hooks in sequence
-precommit: lint-fix format hooks build test
+# Run all pre-commit checks
+precommit: format lint typecheck build test
+    @echo "✅ All pre-commit checks passed!"
