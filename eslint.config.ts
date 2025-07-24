@@ -11,6 +11,12 @@ const config: Linter.Config[] = [
 	{
 		files: ['public/**/*.{ts,tsx}'],
 		languageOptions: {
+			parser: tsparser,
+			parserOptions: {
+				ecmaVersion: 'latest',
+				ecmaFeatures: {jsx: true},
+				sourceType: 'module',
+			},
 			globals: {
 				ServiceWorkerGlobalScope: 'readonly',
 				ExtendableEvent: 'readonly',

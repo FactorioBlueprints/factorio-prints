@@ -52,7 +52,6 @@ updates:
           - "dependencies"
       ignore:
           - dependency-name: 'ataylorme/eslint-annotate-action'
-            versions: ['3.0.0']
       commit-message:
           prefix: 'dependabot'
           include: 'scope'
