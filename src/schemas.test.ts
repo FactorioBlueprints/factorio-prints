@@ -84,22 +84,37 @@ describe('Schema validation', () => {
 				}),
 			};
 
-			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+			const consoleCalls: any[][] = [];
+			const originalConsoleError = console.error;
+			console.error = (...args) => consoleCalls.push(args);
 
 			expect(() => validate({test: 'invalid'}, mockSchema as any, 'test data')).toThrow(/Invalid test data/);
 
-			expect(consoleSpy).toHaveBeenCalledWith(
-				'Schema validation failed',
-				expect.objectContaining({
-					description: 'test data',
-					errorCount: expect.any(Number),
-					errors: expect.any(Array),
-					dataType: 'object',
-					dataKeys: ['test'],
-				}),
-			);
+			console.error = originalConsoleError;
 
-			consoleSpy.mockRestore();
+			expect(consoleCalls).toHaveLength(1);
+			const [message, jsonString] = consoleCalls[0];
+			expect(message).toBe('Schema validation failed');
+
+			const parsedError = JSON.parse(jsonString);
+			expect(parsedError).toEqual({
+				description: 'test data',
+				errorCount: 2,
+				errors: [
+					{
+						path: 'field1.nested',
+						message: 'Invalid input: expected string, received number',
+						code: 'invalid_type',
+					},
+					{
+						path: 'field2',
+						message: 'Invalid input: expected string, received undefined',
+						code: 'invalid_type',
+					},
+				],
+				dataType: 'object',
+				dataKeys: ['test'],
+			});
 		});
 	});
 
@@ -815,7 +830,9 @@ describe('Schema validation', () => {
 
 			describe('tag validation functions', () => {
 				it('validateRawTags should provide clear error messages', () => {
-					const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+					const consoleCalls: any[][] = [];
+					const originalConsoleError = console.error;
+					console.error = (...args) => consoleCalls.push(args);
 
 					const invalidData = {
 						belt: 'not an array',
@@ -823,28 +840,32 @@ describe('Schema validation', () => {
 
 					expect(() => validateRawTags(invalidData)).toThrow(/Invalid raw tags/);
 
-					expect(consoleSpy).toHaveBeenCalledWith(
-						'Schema validation failed',
-						expect.objectContaining({
-							description: 'raw tags',
-							errorCount: 1,
-							errors: expect.arrayContaining([
-								expect.objectContaining({
-									path: 'belt',
-									message: 'Invalid input: expected array, received string',
-									code: 'invalid_type',
-								}),
-							]),
-							dataType: 'object',
-							dataKeys: ['belt'],
-						}),
-					);
+					console.error = originalConsoleError;
 
-					consoleSpy.mockRestore();
+					expect(consoleCalls).toHaveLength(1);
+					const [message, jsonString] = consoleCalls[0];
+					expect(message).toBe('Schema validation failed');
+
+					const parsedError = JSON.parse(jsonString);
+					expect(parsedError).toEqual({
+						description: 'raw tags',
+						errorCount: 1,
+						errors: [
+							{
+								path: 'belt',
+								message: 'Invalid input: expected array, received string',
+								code: 'invalid_type',
+							},
+						],
+						dataType: 'object',
+						dataKeys: ['belt'],
+					});
 				});
 
 				it('validateEnrichedTags should provide clear error messages', () => {
-					const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+					const consoleCalls: any[][] = [];
+					const originalConsoleError = console.error;
+					console.error = (...args) => consoleCalls.push(args);
 
 					const invalidData = [
 						{
@@ -855,34 +876,36 @@ describe('Schema validation', () => {
 
 					expect(() => validateEnrichedTags(invalidData)).toThrow(/Invalid enriched tags/);
 
-					expect(consoleSpy).toHaveBeenCalledWith(
-						'Schema validation failed',
-						expect.objectContaining({
-							description: 'enriched tags',
-							errorCount: 3,
-							errors: expect.arrayContaining([
-								expect.objectContaining({
-									path: '0.category',
-									message: 'Invalid input: expected string, received undefined',
-									code: 'invalid_type',
-								}),
-								expect.objectContaining({
-									path: '0.name',
-									message: 'Invalid input: expected string, received undefined',
-									code: 'invalid_type',
-								}),
-								expect.objectContaining({
-									path: '0.label',
-									message: 'Invalid input: expected string, received undefined',
-									code: 'invalid_type',
-								}),
-							]),
-							dataType: 'object',
-							dataKeys: ['0'],
-						}),
-					);
+					console.error = originalConsoleError;
 
-					consoleSpy.mockRestore();
+					expect(consoleCalls).toHaveLength(1);
+					const [message, jsonString] = consoleCalls[0];
+					expect(message).toBe('Schema validation failed');
+
+					const parsedError = JSON.parse(jsonString);
+					expect(parsedError).toEqual({
+						description: 'enriched tags',
+						errorCount: 3,
+						errors: [
+							{
+								path: '0.category',
+								message: 'Invalid input: expected string, received undefined',
+								code: 'invalid_type',
+							},
+							{
+								path: '0.name',
+								message: 'Invalid input: expected string, received undefined',
+								code: 'invalid_type',
+							},
+							{
+								path: '0.label',
+								message: 'Invalid input: expected string, received undefined',
+								code: 'invalid_type',
+							},
+						],
+						dataType: 'object',
+						dataKeys: ['0'],
+					});
 				});
 
 				it('should handle null and undefined inputs', () => {
@@ -1226,7 +1249,9 @@ describe('Schema validation', () => {
 
 			describe('user data validation functions', () => {
 				it('validateRawUserBlueprints should provide clear error messages', () => {
-					const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+					const consoleCalls: any[][] = [];
+					const originalConsoleError = console.error;
+					console.error = (...args) => consoleCalls.push(args);
 
 					const invalidData = {
 						'blueprint-1': 'not a boolean',
@@ -1234,28 +1259,32 @@ describe('Schema validation', () => {
 
 					expect(() => validateRawUserBlueprints(invalidData)).toThrow(/Invalid raw user blueprints/);
 
-					expect(consoleSpy).toHaveBeenCalledWith(
-						'Schema validation failed',
-						expect.objectContaining({
-							description: 'raw user blueprints',
-							errorCount: 1,
-							errors: expect.arrayContaining([
-								expect.objectContaining({
-									path: 'blueprint-1',
-									message: 'Invalid input: expected boolean, received string',
-									code: 'invalid_type',
-								}),
-							]),
-							dataType: 'object',
-							dataKeys: ['blueprint-1'],
-						}),
-					);
+					console.error = originalConsoleError;
 
-					consoleSpy.mockRestore();
+					expect(consoleCalls).toHaveLength(1);
+					const [message, jsonString] = consoleCalls[0];
+					expect(message).toBe('Schema validation failed');
+
+					const parsedError = JSON.parse(jsonString);
+					expect(parsedError).toEqual({
+						description: 'raw user blueprints',
+						errorCount: 1,
+						errors: [
+							{
+								path: 'blueprint-1',
+								message: 'Invalid input: expected boolean, received string',
+								code: 'invalid_type',
+							},
+						],
+						dataType: 'object',
+						dataKeys: ['blueprint-1'],
+					});
 				});
 
 				it('validateEnrichedUserFavorites should provide clear error messages', () => {
-					const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+					const consoleCalls: any[][] = [];
+					const originalConsoleError = console.error;
+					console.error = (...args) => consoleCalls.push(args);
 
 					const invalidData = {
 						count: 5,
@@ -1264,24 +1293,26 @@ describe('Schema validation', () => {
 
 					expect(() => validateEnrichedUserFavorites(invalidData)).toThrow(/Invalid enriched user favorites/);
 
-					expect(consoleSpy).toHaveBeenCalledWith(
-						'Schema validation failed',
-						expect.objectContaining({
-							description: 'enriched user favorites',
-							errorCount: 1,
-							errors: expect.arrayContaining([
-								expect.objectContaining({
-									path: 'favoriteIds',
-									message: 'Invalid input: expected record, received undefined',
-									code: 'invalid_type',
-								}),
-							]),
-							dataType: 'object',
-							dataKeys: ['count'],
-						}),
-					);
+					console.error = originalConsoleError;
 
-					consoleSpy.mockRestore();
+					expect(consoleCalls).toHaveLength(1);
+					const [message, jsonString] = consoleCalls[0];
+					expect(message).toBe('Schema validation failed');
+
+					const parsedError = JSON.parse(jsonString);
+					expect(parsedError).toEqual({
+						description: 'enriched user favorites',
+						errorCount: 1,
+						errors: [
+							{
+								path: 'favoriteIds',
+								message: 'Invalid input: expected record, received undefined',
+								code: 'invalid_type',
+							},
+						],
+						dataType: 'object',
+						dataKeys: ['count'],
+					});
 				});
 			});
 		});
