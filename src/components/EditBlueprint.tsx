@@ -500,6 +500,79 @@ function EditBlueprintWrapper() {
 		);
 	}, [blueprintData, form.state.values.title]);
 
+	const renderPreview = useCallback(() => {
+		if (!form.state.values.imageUrl) {
+			return null;
+		}
+
+		// Use resolved image data if available, otherwise fall back to basic parsing
+		let imageUrl;
+		if (uiState.resolvedImageData) {
+			imageUrl = buildImageUrl(uiState.resolvedImageData.id, {resolvedData: uiState.resolvedImageData}, 'b');
+		} else {
+			// Fallback to basic regex parsing for backwards compatibility
+			const goodRegex1 = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
+			const match = form.state.values.imageUrl.match(goodRegex1);
+			if (!match) {
+				return (
+					<Form.Group
+						as={Row}
+						className="mb-3"
+					>
+						<Form.Label
+							column
+							sm="2"
+						>
+							{'Attached screenshot'}
+						</Form.Label>
+						<Col sm={10}>
+							<Card className="m-0">
+								<Card.Title className="m-2">
+									{"Unable to preview image. Please ensure you're using a valid Imgur URL."}
+								</Card.Title>
+							</Card>
+						</Col>
+					</Form.Group>
+				);
+			}
+
+			const imgurId = match[1];
+			imageUrl = buildImageUrl(imgurId, 'image/png', 'b');
+		}
+		return (
+			<Form.Group
+				as={Row}
+				className="mb-3"
+			>
+				<Form.Label
+					column
+					sm="2"
+				>
+					{'Attached screenshot'}
+				</Form.Label>
+				<Col sm={10}>
+					<Card
+						className="mb-2 mr-2"
+						style={{width: '14rem', backgroundColor: '#1c1e22'}}
+					>
+						<Card.Img
+							variant="top"
+							src={imageUrl || noImageAvailable}
+							key={imageUrl}
+							onError={(e) => {
+								const target = e.target as HTMLImageElement;
+								target.src = noImageAvailable;
+							}}
+						/>
+						<Card.Title className="truncate">
+							<RichText text={form.state.values.title} />
+						</Card.Title>
+					</Card>
+				</Col>
+			</Form.Group>
+		);
+	}, [form.state.values.imageUrl, form.state.values.title, uiState.resolvedImageData]);
+
 	const getUnusedTagSuggestions = () => {
 		if (!user || !blueprintData?.title) return [];
 
@@ -997,6 +1070,7 @@ function EditBlueprintWrapper() {
 											)}
 										</Col>
 									</Form.Group>
+									{renderPreview()}
 								</>
 							)}
 						/>

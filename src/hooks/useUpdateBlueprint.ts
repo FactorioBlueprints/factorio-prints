@@ -28,11 +28,6 @@ interface DeleteBlueprintMutationParams {
 	tags: string[];
 }
 
-interface ImgurRegexPatterns {
-	imgurUrl1: RegExp;
-	imgurUrl2: RegExp;
-}
-
 export const useUpdateBlueprint = () => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
@@ -54,25 +49,7 @@ export const useUpdateBlueprint = () => {
 						warnings: formData.resolvedImageData.warnings,
 					};
 				} else {
-					const regexPatterns: ImgurRegexPatterns = {
-						imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-						imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-					};
-
-					const matches = Object.values(regexPatterns)
-						.map((pattern) => formData.imageUrl.match(pattern))
-						.filter(Boolean);
-
-					if (matches.length <= 0) {
-						throw new Error('Invalid image URL format and no resolved image data available');
-					}
-
-					const match = matches[0]!;
-					const imgurId = match[1]!;
-					image = {
-						id: imgurId,
-						type: 'image/png',
-					};
+					throw new Error('Could not resolve image data from the given URL.');
 				}
 			}
 
@@ -149,23 +126,7 @@ export const useUpdateBlueprint = () => {
 						warnings: variables.formData.resolvedImageData.warnings,
 					};
 				} else {
-					const regexPatterns: ImgurRegexPatterns = {
-						imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-						imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-					};
-
-					const matches = Object.values(regexPatterns)
-						.map((pattern) => variables.formData.imageUrl.match(pattern))
-						.filter(Boolean);
-
-					if (matches.length > 0) {
-						const match = matches[0]!;
-						const imgurId = match[1]!;
-						updatedBlueprint.image = {
-							id: imgurId,
-							type: 'image/png',
-						};
-					}
+					throw new Error('Could not resolve image data from the given URL.');
 				}
 			}
 
