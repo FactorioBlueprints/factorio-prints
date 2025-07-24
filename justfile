@@ -6,7 +6,7 @@ default:
 install:
     npm install --ignore-scripts
 
-# `npm ci` for CI
+# `npm ci`
 install-ci:
     npm ci --ignore-scripts --include=dev
 

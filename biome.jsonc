@@ -8,9 +8,9 @@
 			"dist",
 			"build",
 			"coverage",
-			"package.json",
 			"package-lock.json",
-			"**/*.css",
+			"pnpm-lock.yaml",
+			"yarn.lock",
 			"src/routeTree.gen.ts"
 		],
 		"ignoreUnknown": true
@@ -22,6 +22,12 @@
 		"indentWidth": 4,
 		"lineWidth": 120,
 		"lineEnding": "lf"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
 	},
 	"javascript": {
 		"formatter": {
@@ -35,5 +41,28 @@
 			"quoteStyle": "single",
 			"attributePosition": "multiline"
 		}
-	}
+	},
+	"json": {
+		"formatter": {
+			"trailingCommas": "none"
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["test/**/*"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/routeTree.gen.ts"],
+			"formatter": {
+				"enabled": false
+			}
+		}
+	]
 }
