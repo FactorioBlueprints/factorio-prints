@@ -581,6 +581,7 @@ const Create: React.FC = () => {
 						<Card.Img
 							variant="top"
 							src={previewUrl || noImageAvailable}
+							key={previewUrl}
 							onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
 								e.currentTarget.src = noImageAvailable;
 							}}
