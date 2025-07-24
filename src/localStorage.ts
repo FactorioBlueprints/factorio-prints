@@ -158,6 +158,18 @@ function getWorker() {
 
 			worker.onerror = (error) => {
 				console.error('[IndexedDB Worker] Failed to initialize worker:', error);
+				Sentry.captureException(error instanceof ErrorEvent ? error.error || error : error, {
+					tags: {
+						component: 'indexeddb-worker',
+						operation: 'worker-initialization',
+					},
+					extra: {
+						filename: error instanceof ErrorEvent ? error.filename : undefined,
+						lineno: error instanceof ErrorEvent ? error.lineno : undefined,
+						colno: error instanceof ErrorEvent ? error.colno : undefined,
+						message: error instanceof ErrorEvent ? error.message : String(error),
+					},
+				});
 				worker = undefined;
 			};
 
