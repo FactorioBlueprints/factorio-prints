@@ -184,7 +184,6 @@ function EditBlueprintWrapper() {
 	const form = useForm({
 		defaultValues,
 		onSubmit: async ({value}) => {
-			// Validate using Zod schema
 			try {
 				blueprintFormSchema.parse(value);
 			} catch (error) {

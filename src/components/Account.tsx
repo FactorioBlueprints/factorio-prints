@@ -22,22 +22,18 @@ const Account = () => {
 	const [displayName, setDisplayName] = useState('');
 	const queryClient = useQueryClient();
 
-	// Setup mutation for updating display name
 	const updateDisplayNameMutation = useMutation({
 		mutationFn: async (newDisplayName: string) => {
-			// Update display name in Firebase Auth profile
 			await updateProfile(user!, {
 				displayName: newDisplayName,
 			});
 
-			// Update display name in Firebase Database
 			const userRef = ref(getDatabase(app), `/users/${user!.uid}/displayName/`);
 			await set(userRef, newDisplayName);
 
 			return newDisplayName;
 		},
 		onSuccess: () => {
-			// Invalidate any queries that might be using the display name
 			queryClient.invalidateQueries({queryKey: ['userDisplayName', user!.uid]});
 			navigate({to: '/user/$userId', params: {userId: user!.uid}});
 		},

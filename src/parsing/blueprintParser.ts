@@ -49,7 +49,6 @@ export function deserializeBlueprint(blueprintData: string): RawBlueprintData {
 		throw new BlueprintError('Invalid JSON in blueprint data', {cause: error as Error});
 	}
 
-	// Validate the parsed data using Zod schema
 	const result = validateRawBlueprintData(parsedData);
 
 	return result;
