@@ -132,7 +132,12 @@ export type RawTagIndex = z.infer<typeof rawTagIndexSchema>;
 export type EnrichedTag = z.infer<typeof enrichedTagSchema>;
 export type EnrichedTags = z.infer<typeof enrichedTagsSchema>;
 
-export const validate = <T>(data: unknown, schema: z.ZodSchema<T>, description: string): T => {
+export const validate = <T>(
+	data: unknown,
+	schema: z.ZodSchema<T>,
+	description: string,
+	context?: {blueprintId?: string},
+): T => {
 	try {
 		return schema.parse(data);
 	} catch (error) {
@@ -142,23 +147,24 @@ export const validate = <T>(data: unknown, schema: z.ZodSchema<T>, description: 
 				message: e.message,
 				code: e.code,
 			}));
-			console.error(
-				'Schema validation failed',
-				JSON.stringify({
-					description,
-					errorCount: error.issues.length,
-					errors: errorDetails,
-					dataType: typeof data,
-					dataKeys: data && typeof data === 'object' ? Object.keys(data) : undefined,
-				}),
-			);
+			const errorInfo = {
+				description,
+				errorCount: error.issues.length,
+				errors: errorDetails,
+				dataType: typeof data,
+				dataKeys: data && typeof data === 'object' ? Object.keys(data) : undefined,
+				...(context?.blueprintId && {blueprintId: context.blueprintId}),
+			};
+			console.error('Schema validation failed', JSON.stringify(errorInfo, null, 2));
 			const errorMessage = error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
 			throw new Error(`Invalid ${description}: ${errorMessage}`);
 		}
-		console.error(
-			'Schema validation failed with unexpected error',
-			JSON.stringify({description, error: String(error)}),
-		);
+		const unexpectedErrorInfo = {
+			description,
+			error: String(error),
+			...(context?.blueprintId && {blueprintId: context.blueprintId}),
+		};
+		console.error('Schema validation failed with unexpected error', JSON.stringify(unexpectedErrorInfo, null, 2));
 		throw new Error(`Invalid ${description}: ${error instanceof Error ? error.message : 'Unknown error'}`);
 	}
 };
@@ -421,6 +427,6 @@ export type UpgradePlanner = z.infer<typeof upgradePlannerSchema>;
 export type DeconstructionPlanner = z.infer<typeof deconstructionPlannerSchema>;
 export type RawBlueprintData = z.infer<typeof rawBlueprintDataSchema>;
 
-export const validateRawBlueprintData = (data: unknown): RawBlueprintData => {
-	return validate(data, rawBlueprintDataSchema, 'raw blueprint data');
+export const validateRawBlueprintData = (data: unknown, context?: {blueprintId?: string}): RawBlueprintData => {
+	return validate(data, rawBlueprintDataSchema, 'raw blueprint data', context);
 };

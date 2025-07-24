@@ -231,7 +231,7 @@ function EditBlueprintWrapper() {
 	useEffect(() => {
 		if (form.state.values.blueprintString) {
 			try {
-				const parsedBlueprint = new Blueprint(form.state.values.blueprintString);
+				const parsedBlueprint = new Blueprint(form.state.values.blueprintString, {blueprintId});
 				const v15Decoded = parsedBlueprint.getV15Decoded();
 
 				setUiState((prev) => ({
@@ -248,7 +248,7 @@ function EditBlueprintWrapper() {
 				}));
 			}
 		}
-	}, [form.state.values.blueprintString]);
+	}, [form.state.values.blueprintString, blueprintId]);
 
 	useEffect(() => {
 		if (form.state.values.descriptionMarkdown) {
@@ -284,7 +284,7 @@ function EditBlueprintWrapper() {
 			}
 
 			try {
-				const blueprint = new Blueprint(formValues.blueprintString.trim());
+				const blueprint = new Blueprint(formValues.blueprintString.trim(), {blueprintId});
 				if (isEmpty(blueprint.decodedObject)) {
 					warnings.push('Could not parse blueprint.');
 					return warnings;
@@ -322,7 +322,7 @@ function EditBlueprintWrapper() {
 
 			return warnings;
 		},
-		[uiState.v15Decoded, someHaveNoName],
+		[uiState.v15Decoded, someHaveNoName, blueprintId],
 	);
 
 	const handleDismissWarnings = useCallback(() => {
