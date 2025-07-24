@@ -22,3 +22,6 @@ yarn-error.log*
 
 # TanStack Router generated files
 src/routeTree.gen.*
+
+.envrc
+eslint_report.json

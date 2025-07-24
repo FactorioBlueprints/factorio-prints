@@ -1,12 +1,45 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-      - id: check-yaml
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
-  - repo: https://github.com/biomejs/pre-commit
-    rev: v0.2.0
-    hooks:
-      - id: biome-format
-        additional_dependencies: ["@biomejs/biome@2.0.5"]
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v5.0.0
+      hooks:
+          - id: check-yaml
+          - id: check-json
+            # Exclude JSONC files (JSON with Comments) as they need comment support
+            # Also exclude package-lock.json as it's generated
+            exclude: "(tsconfig.*\\.json|package-lock\\.json)"
+          - id: check-toml
+          - id: check-xml
+          - id: end-of-file-fixer
+            exclude: "package-lock\\.json"
+          - id: trailing-whitespace
+            exclude: "package-lock\\.json"
+          - id: check-added-large-files
+            args: ['--maxkb=1000']
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: detect-private-key
+          - id: mixed-line-ending
+            args: ['--fix=lf']
+
+    - repo: local
+      hooks:
+          - id: biome
+            name: biome
+            entry: npx biome format --write
+            language: system
+            types: [file]
+            files: \.(js|jsx|ts|tsx|mjs|cjs|json|json5)$
+            exclude: "package(-lock)?\\.json"
+
+          - id: prettier
+            name: prettier
+            entry: npx prettier --write
+            language: system
+            types_or: [yaml, markdown, html]
+
+          - id: eslint
+            name: eslint
+            entry: npx eslint --fix
+            language: system
+            files: \.(js|jsx|ts|tsx|mjs|cjs)$
+            types: [file]
