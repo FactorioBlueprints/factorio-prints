@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
+import {type EnrichedBlueprintSummary, type RawBlueprintSummary, validateEnrichedBlueprintSummaries} from '../schemas';
 import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
-import {validateEnrichedBlueprintSummaries, type RawBlueprintSummary, type EnrichedBlueprintSummary} from '../schemas';
 
 type SummaryWithKey = RawBlueprintSummary & {key: string};
 

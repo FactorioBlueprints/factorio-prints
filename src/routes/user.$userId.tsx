@@ -1,7 +1,7 @@
-import React from 'react';
 import {createFileRoute} from '@tanstack/react-router';
-import UserGrid from '../components/UserGrid';
+import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import UserGrid from '../components/UserGrid';
 
 export const Route = createFileRoute('/user/$userId')({
 	component: UserComponent,

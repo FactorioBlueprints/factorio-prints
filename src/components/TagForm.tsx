@@ -1,7 +1,8 @@
 import {useStore} from '@tanstack/react-store';
-import React, {useMemo} from 'react';
+import type React from 'react';
+import {useMemo} from 'react';
 import Col from 'react-bootstrap/Col';
-import Select, {MultiValue} from 'react-select';
+import Select, {type MultiValue} from 'react-select';
 
 import {useTags} from '../hooks/useTags';
 import {searchParamsStore} from '../store/searchParamsStore';

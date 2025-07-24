@@ -1,12 +1,13 @@
 import {faArrowLeft, faBan, faCog, faSave, faTrash} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-
+import {useForm} from '@tanstack/react-form';
+import {useNavigate, useParams} from '@tanstack/react-router';
+import DOMPurify from 'dompurify';
 import {getAuth} from 'firebase/auth';
 import isEmpty from 'lodash/isEmpty';
 import some from 'lodash/some';
 import MarkdownIt from 'markdown-it';
-import DOMPurify from 'dompurify';
-import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
@@ -19,30 +20,26 @@ import Modal from 'react-bootstrap/Modal';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import Row from 'react-bootstrap/Row';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {useNavigate, useParams} from '@tanstack/react-router';
 import Select from 'react-select';
-import {useForm} from '@tanstack/react-form';
 import {z} from 'zod';
-
-import {app} from '../base';
 import Blueprint, {type V15DecodedObject} from '../Blueprint';
+import {app} from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 import buildImageUrl from '../helpers/buildImageUrl';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import {sanitizeHtml} from '../helpers/sanitizeHtml';
+import {useEnrichedBlueprint} from '../hooks/useEnrichedBlueprint';
+import {useEnrichedBlueprintSummary} from '../hooks/useEnrichedBlueprintSummary';
 import {useIsModerator} from '../hooks/useModerators';
+import {useRawBlueprint} from '../hooks/useRawBlueprint';
 import {useTags} from '../hooks/useTags';
 import {useDeleteBlueprint, useUpdateBlueprint} from '../hooks/useUpdateBlueprint';
-import {useEnrichedBlueprint} from '../hooks/useEnrichedBlueprint';
-import {useRawBlueprint} from '../hooks/useRawBlueprint';
-import {useEnrichedBlueprintSummary} from '../hooks/useEnrichedBlueprintSummary';
 import type {BlueprintBook} from '../schemas';
-
+import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
+import {RichText} from './core/text/RichText';
 import NoMatch from './NoMatch';
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
-import {RichText} from './core/text/RichText';
-import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 
 const md = new MarkdownIt({
 	html: true,
@@ -53,11 +50,9 @@ const md = new MarkdownIt({
 
 const defaultTableRenderer =
 	md.renderer.rules.table_open ||
-	function (tokens: any[], idx: number, options: any, env: any, self: any) {
-		return self.renderToken(tokens, idx, options);
-	};
+	((tokens: any[], idx: number, options: any, env: any, self: any) => self.renderToken(tokens, idx, options));
 
-md.renderer.rules.table_open = function (tokens: any[], idx: number, options: any, env: any, self: any) {
+md.renderer.rules.table_open = (tokens: any[], idx: number, options: any, env: any, self: any) => {
 	tokens[idx].attrSet('class', 'table table-striped table-bordered');
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };

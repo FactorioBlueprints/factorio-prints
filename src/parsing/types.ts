@@ -1,20 +1,20 @@
 // Import types from schemas that are already defined
 import type {
-	BlueprintIcon as Icon,
-	BlueprintEntity as Entity,
-	BlueprintTile as Tile,
 	BlueprintContent as Blueprint,
 	BlueprintBook,
-	UpgradePlanner,
-	DeconstructionPlanner,
 	RawBlueprintData as BlueprintString,
+	DeconstructionPlanner,
+	BlueprintEntity as Entity,
+	BlueprintIcon as Icon,
+	BlueprintTile as Tile,
+	UpgradePlanner,
 } from '../schemas';
 
 // Re-export with the names expected by the migrated components
 export type {Icon, Entity, Tile, Blueprint, BlueprintBook, UpgradePlanner, DeconstructionPlanner, BlueprintString};
 
 // Additional types needed by components
-import type {SignalType, Quality, SignalID} from '../types/factorio';
+import type {Quality, SignalID, SignalType} from '../types/factorio';
 export type {SignalType, Quality, SignalID};
 
 export interface Position {

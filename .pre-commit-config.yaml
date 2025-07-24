@@ -3,16 +3,16 @@ repos:
       rev: v5.0.0
       hooks:
           - id: check-yaml
+            args: ['--allow-multiple-documents']
           - id: check-json
             # Exclude JSONC files (JSON with Comments) as they need comment support
-            # Also exclude package-lock.json as it's generated
-            exclude: "(tsconfig.*\\.json|package-lock\\.json)"
+            exclude: "tsconfig.*\\.json|package-lock\\.json|biome\\.jsonc"
           - id: check-toml
           - id: check-xml
           - id: end-of-file-fixer
-            exclude: "package-lock\\.json"
+            exclude: "package-lock\\.json|^\\.idea/"
           - id: trailing-whitespace
-            exclude: "package-lock\\.json"
+            exclude: "package-lock\\.json|^\\.idea/"
           - id: check-added-large-files
             args: ['--maxkb=1000']
           - id: check-case-conflict

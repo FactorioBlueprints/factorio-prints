@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {enrichUser} from './enrichUser';
 import type {RawUser} from '../schemas';
+import {enrichUser} from './enrichUser';
 
 describe('enrichUser', () => {
 	it('should enrich user data with counts', () => {

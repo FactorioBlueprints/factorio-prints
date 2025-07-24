@@ -1,12 +1,12 @@
 import {faChevronDown, faCog} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React from 'react';
+import type React from 'react';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import {useEnrichedPaginatedSummaries} from '../hooks/useEnrichedPaginatedSummaries';
+import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import useFlattenedEnrichedPaginatedSummaries from '../hooks/useFlattenedEnrichedPaginatedSummaries';
 
 import BlueprintThumbnail from './BlueprintThumbnail';

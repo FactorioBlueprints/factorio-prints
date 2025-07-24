@@ -1,10 +1,10 @@
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
-import {renderHook} from '@testing-library/react';
 import {QueryClient, QueryClientProvider, type UseQueryResult} from '@tanstack/react-query';
-import React from 'react';
+import {renderHook} from '@testing-library/react';
+import type React from 'react';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
 import {useEnrichedBlueprintSummary} from './useEnrichedBlueprintSummary';
 import {useRawBlueprintSummary} from './useRawBlueprintSummary';
-import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
 
 // Mock dependencies
 vi.mock('./useRawBlueprintSummary');

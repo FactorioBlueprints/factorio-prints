@@ -1,5 +1,5 @@
 import {render, screen} from '@testing-library/react';
-import {describe, test, expect} from 'vitest';
+import {describe, expect, test} from 'vitest';
 import {FactorioIcon} from './FactorioIcon';
 
 describe('FactorioIcon', () => {

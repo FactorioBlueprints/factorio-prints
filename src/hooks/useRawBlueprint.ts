@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
 import {blueprintQuery} from '../queries/blueprintQueries';
-import type {RawBlueprint, EnrichedBlueprintSummary} from '../schemas';
+import type {EnrichedBlueprintSummary, RawBlueprint} from '../schemas';
 
 export const useRawBlueprint = (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary | null) => {
 	return useQuery<RawBlueprint | null>({

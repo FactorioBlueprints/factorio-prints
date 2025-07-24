@@ -1,11 +1,11 @@
-import React from 'react';
-import {render, screen} from '@testing-library/react';
-import {vi, describe, it, expect, beforeEach} from 'vitest';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import SingleTagGrid from './SingleTagGrid';
+import {render, screen} from '@testing-library/react';
+import type React from 'react';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useEnrichedTagBlueprintSummaries} from '../hooks/useEnrichedTagBlueprintSummaries';
 import {useFilterByTitle} from '../hooks/useFilterByTitle';
 import type {EnrichedBlueprintSummary} from '../schemas';
+import SingleTagGrid from './SingleTagGrid';
 
 // Mock the router params
 vi.mock('@tanstack/react-router', () => ({

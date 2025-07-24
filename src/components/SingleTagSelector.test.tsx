@@ -1,9 +1,9 @@
-import React from 'react';
-import {render, screen, fireEvent} from '@testing-library/react';
-import {vi, describe, it, expect, beforeEach} from 'vitest';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import SingleTagSelector from './SingleTagSelector';
+import {fireEvent, render, screen} from '@testing-library/react';
+import type React from 'react';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useTags} from '../hooks/useTags';
+import SingleTagSelector from './SingleTagSelector';
 
 // Mock the router
 const mockNavigate = vi.fn();

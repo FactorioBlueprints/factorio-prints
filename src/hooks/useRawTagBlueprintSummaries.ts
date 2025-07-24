@@ -1,4 +1,4 @@
-import {useQueries, useQuery, UseQueryResult} from '@tanstack/react-query';
+import {type UseQueryResult, useQueries, useQuery} from '@tanstack/react-query';
 import {fetchBlueprintSummary, fetchByTagData} from '../api/firebase';
 import type {RawBlueprintSummary} from '../schemas';
 

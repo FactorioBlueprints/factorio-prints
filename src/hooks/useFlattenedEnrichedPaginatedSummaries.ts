@@ -1,5 +1,5 @@
 import {useMemo} from 'react';
-import type {EnrichedPaginatedBlueprintSummaries, EnrichedBlueprintSummary} from '../schemas';
+import type {EnrichedBlueprintSummary, EnrichedPaginatedBlueprintSummaries} from '../schemas';
 
 export const useFlattenedEnrichedPaginatedSummaries = (
 	paginatedData: EnrichedPaginatedBlueprintSummaries | null | undefined,

@@ -1,5 +1,5 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {getDatabase, ref, update as dbUpdate} from 'firebase/database';
+import {update as dbUpdate, getDatabase, ref} from 'firebase/database';
 import {app} from '../base';
 import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserFavorites} from '../schemas';
 

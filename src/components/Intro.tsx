@@ -1,6 +1,6 @@
 import {getAuth} from 'firebase/auth';
 import isEmpty from 'lodash/isEmpty';
-import React from 'react';
+import type React from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base.js';
 

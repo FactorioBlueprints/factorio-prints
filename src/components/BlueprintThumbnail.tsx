@@ -1,17 +1,17 @@
 import {faHeart} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {Link} from '@tanstack/react-router';
 import {getAuth} from 'firebase/auth';
-import React from 'react';
+import type React from 'react';
 import Card from 'react-bootstrap/Card';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {Link} from '@tanstack/react-router';
 import {app} from '../base';
 import buildImageUrl from '../helpers/buildImageUrl';
 import useToggleFavoriteMutation from '../hooks/useToggleFavoriteMutation';
 import {useUserBlueprints, useUserFavorites} from '../hooks/useUser';
-import {EnrichedBlueprintSummary, validateEnrichedBlueprintSummary} from '../schemas';
+import {type EnrichedBlueprintSummary, validateEnrichedBlueprintSummary} from '../schemas';
 
 interface BlueprintThumbnailProps {
 	blueprintSummary: EnrichedBlueprintSummary;

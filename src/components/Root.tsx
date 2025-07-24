@@ -1,8 +1,9 @@
+import {Outlet} from '@tanstack/react-router';
 import {getAuth, User} from 'firebase/auth';
 import {getDatabase, ref, runTransaction} from 'firebase/database';
-import React, {useEffect} from 'react';
+import type React from 'react';
+import {useEffect} from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {Outlet} from '@tanstack/react-router';
 
 import {app} from '../base';
 import ErrorBoundary from './ErrorBoundary';

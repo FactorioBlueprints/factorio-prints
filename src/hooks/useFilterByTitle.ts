@@ -1,6 +1,6 @@
 import {useStore} from '@tanstack/react-store';
-import {searchParamsStore} from '../store/searchParamsStore';
 import type {EnrichedBlueprintSummary} from '../schemas';
+import {searchParamsStore} from '../store/searchParamsStore';
 
 /**
  * Hook to filter blueprint summaries by title only

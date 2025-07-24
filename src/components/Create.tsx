@@ -1,16 +1,23 @@
+import {faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
 import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
-import {faGoogle, faGithub} from '@fortawesome/free-brands-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-
-import {getAuth, User, signInWithPopup, GoogleAuthProvider, GithubAuthProvider, AuthProvider} from 'firebase/auth';
+import {useNavigate} from '@tanstack/react-router';
+import DOMPurify from 'dompurify';
+import {
+	type AuthProvider,
+	GithubAuthProvider,
+	GoogleAuthProvider,
+	getAuth,
+	signInWithPopup,
+	type User,
+} from 'firebase/auth';
 import update from 'immutability-helper';
 import difference from 'lodash/difference';
 import isEmpty from 'lodash/isEmpty';
 import some from 'lodash/some';
 import MarkdownIt from 'markdown-it';
-import DOMPurify from 'dompurify';
-import React, {useCallback, useEffect, useState} from 'react';
-import {loadFromStorage, saveToStorage, removeFromStorage, STORAGE_KEYS} from '../localStorage';
+import type React from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
@@ -23,21 +30,20 @@ import Modal from 'react-bootstrap/Modal';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import Row from 'react-bootstrap/Row';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {useNavigate} from '@tanstack/react-router';
 import Select from 'react-select';
+import Blueprint from '../Blueprint';
 
 import {app} from '../base';
-import Blueprint from '../Blueprint';
-import {parseVersion3} from '../parsing/blueprintParser';
 import noImageAvailable from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import {useCreateBlueprint} from '../hooks/useCreateBlueprint';
 import {useTags} from '../hooks/useTags';
-
+import {loadFromStorage, removeFromStorage, STORAGE_KEYS, saveToStorage} from '../localStorage';
+import {parseVersion3} from '../parsing/blueprintParser';
+import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
+import {RichText} from './core/text/RichText';
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
-import {RichText} from './core/text/RichText';
-import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 
 interface BlueprintFormData {
 	title: string;
@@ -83,11 +89,9 @@ const md = new MarkdownIt({
 
 const defaultTableRenderer =
 	md.renderer.rules.table_open ||
-	function (tokens: any, idx: number, options: any, env: any, self: any) {
-		return self.renderToken(tokens, idx, options);
-	};
+	((tokens: any, idx: number, options: any, env: any, self: any) => self.renderToken(tokens, idx, options));
 
-md.renderer.rules.table_open = function (tokens: any, idx: number, options: any, env: any, self: any) {
+md.renderer.rules.table_open = (tokens: any, idx: number, options: any, env: any, self: any) => {
 	tokens[idx].attrSet('class', 'table table-striped table-bordered');
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };

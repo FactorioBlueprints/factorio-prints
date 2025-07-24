@@ -1,9 +1,9 @@
 import buildImageUrl from '../helpers/buildImageUrl';
 import {
-	validateRawBlueprintSummary,
-	validateEnrichedBlueprintSummary,
-	type RawBlueprintSummary,
 	type EnrichedBlueprintSummary,
+	type RawBlueprintSummary,
+	validateEnrichedBlueprintSummary,
+	validateRawBlueprintSummary,
 } from '../schemas';
 
 /**

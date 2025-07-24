@@ -1,5 +1,5 @@
-import {describe, it, expect, beforeEach, vi} from 'vitest';
 import * as Sentry from '@sentry/react';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import enrichBlueprint from './enrichBlueprint';
 
 vi.mock('@sentry/react', () => ({

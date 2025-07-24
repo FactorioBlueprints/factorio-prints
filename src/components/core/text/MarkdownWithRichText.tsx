@@ -1,6 +1,6 @@
-import React from 'react';
-import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
+import MarkdownIt from 'markdown-it';
+import React from 'react';
 import {RichText} from './RichText';
 
 const md = new MarkdownIt({

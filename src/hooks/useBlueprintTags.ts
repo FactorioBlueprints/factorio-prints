@@ -1,4 +1,4 @@
-import {useQueries, UseQueryOptions, UseQueryResult} from '@tanstack/react-query';
+import {type UseQueryOptions, type UseQueryResult, useQueries} from '@tanstack/react-query';
 import {fetchBlueprintTags} from '../api/firebase';
 
 export const getBlueprintTagsOptions = (blueprintId: string, enabled = true): UseQueryOptions<string[], Error> => ({

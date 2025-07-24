@@ -1,6 +1,6 @@
 import {faDiscord, faGithub, faReddit} from '@fortawesome/free-brands-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React from 'react';
+import type React from 'react';
 
 function Chat(): React.ReactElement {
 	return (

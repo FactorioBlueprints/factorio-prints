@@ -1,7 +1,6 @@
-import React from 'react';
-import {createRoot} from 'react-dom/client';
-import {StrictMode} from 'react';
 import * as Sentry from '@sentry/react';
+import React, {StrictMode} from 'react';
+import {createRoot} from 'react-dom/client';
 
 import './css/style.css';
 import QueryProvider from './providers/QueryProvider';
@@ -116,7 +115,7 @@ window.addEventListener('vite:preloadError', (event) => {
 
 window.addEventListener(
 	'error',
-	function (e: ErrorEvent) {
+	(e: ErrorEvent) => {
 		const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
 		if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME')) {
 			if (import.meta.env.DEV) {

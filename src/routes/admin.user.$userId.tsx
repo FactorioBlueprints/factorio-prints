@@ -1,5 +1,5 @@
-import React from 'react';
 import {createFileRoute} from '@tanstack/react-router';
+import React from 'react';
 import AdminUserView from '../components/AdminUserView';
 import ErrorBoundary from '../components/ErrorBoundary';
 

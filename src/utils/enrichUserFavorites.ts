@@ -1,8 +1,8 @@
 import {
-	validateRawUserFavorites,
-	validateEnrichedUserFavorites,
-	type RawUserFavorites,
 	type EnrichedUserFavorites,
+	type RawUserFavorites,
+	validateEnrichedUserFavorites,
+	validateRawUserFavorites,
 } from '../schemas';
 
 export const enrichUserFavorites = (rawUserFavorites: RawUserFavorites | null): EnrichedUserFavorites | null => {

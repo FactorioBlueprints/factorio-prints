@@ -1,7 +1,7 @@
 import {useMemo} from 'react';
-import {useRawUser} from './useRawUser';
-import {enrichUser} from '../utils/enrichUser';
 import type {EnrichedUser} from '../schemas';
+import {enrichUser} from '../utils/enrichUser';
+import {useRawUser} from './useRawUser';
 
 export const useEnrichedUser = (userId: string | null | undefined) => {
 	const rawUserQuery = useRawUser(userId);

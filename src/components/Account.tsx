@@ -1,9 +1,11 @@
 import {faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useNavigate} from '@tanstack/react-router';
 import {getAuth, updateProfile} from 'firebase/auth';
 import {getDatabase, ref, set} from 'firebase/database';
-import React, {useEffect, useState} from 'react';
+import type React from 'react';
+import {useEffect, useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -11,7 +13,6 @@ import Form from 'react-bootstrap/Form';
 import FormControl from 'react-bootstrap/FormControl';
 import Row from 'react-bootstrap/Row';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {useNavigate} from '@tanstack/react-router';
 
 import {app} from '../base';
 import PageHeader from './PageHeader';

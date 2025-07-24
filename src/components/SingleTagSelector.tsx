@@ -1,7 +1,8 @@
-import React, {useMemo} from 'react';
+import {useNavigate} from '@tanstack/react-router';
+import type React from 'react';
+import {useMemo} from 'react';
 import Col from 'react-bootstrap/Col';
 import Select from 'react-select';
-import {useNavigate} from '@tanstack/react-router';
 
 import {useTags} from '../hooks/useTags';
 

@@ -1,5 +1,5 @@
+import type {Quality, SignalID, SignalType} from '../../../types/factorio';
 import styles from './FactorioIcon.module.css';
-import type {SignalType, Quality, SignalID} from '../../../types/factorio';
 
 export type {SignalType, Quality, SignalID};
 export type IconSize = 'tiny' | 'small' | 'large';

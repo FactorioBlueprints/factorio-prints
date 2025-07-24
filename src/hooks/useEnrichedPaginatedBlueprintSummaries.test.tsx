@@ -1,10 +1,10 @@
-import {renderHook} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {renderHook} from '@testing-library/react';
+import type React from 'react';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {enrichPaginatedBlueprintSummaries} from '../utils/enrichPaginatedBlueprintSummaries';
 import {useEnrichedPaginatedBlueprintSummaries} from './useEnrichedPaginatedBlueprintSummaries';
 import {useRawPaginatedBlueprintSummaries} from './useRawPaginatedBlueprintSummaries';
-import {enrichPaginatedBlueprintSummaries} from '../utils/enrichPaginatedBlueprintSummaries';
-import {vi, describe, it, expect, beforeEach} from 'vitest';
-import React from 'react';
 
 // TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
 vi.mock('./useRawPaginatedBlueprintSummaries');

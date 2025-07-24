@@ -1,4 +1,4 @@
-import {fetchBlueprintSummary, fetchBlueprint} from '../api/firebase';
+import {fetchBlueprint, fetchBlueprintSummary} from '../api/firebase';
 import type {EnrichedBlueprintSummary} from '../schemas';
 
 export const blueprintSummaryQuery = (blueprintId: string) => ({

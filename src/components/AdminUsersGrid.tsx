@@ -1,17 +1,17 @@
 import {faCog, faHeart, faImage, faUser} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {Link} from '@tanstack/react-router';
 import {getAuth} from 'firebase/auth';
-import React, {ChangeEvent, useMemo, useState} from 'react';
+import type React from 'react';
+import {type ChangeEvent, useMemo, useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Table from 'react-bootstrap/Table';
 import {useAuthState} from 'react-firebase-hooks/auth';
-import {Link} from '@tanstack/react-router';
-
+import type {UserData} from '../api/firebase';
 import {app} from '../base';
-import {UserData} from '../api/firebase';
 import useAllUsers from '../hooks/useAllUsers';
 import {useIsModerator} from '../hooks/useModerators';
 

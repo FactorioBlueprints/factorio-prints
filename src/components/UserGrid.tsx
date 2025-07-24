@@ -1,14 +1,14 @@
+import {useParams} from '@tanstack/react-router';
 import {useStore} from '@tanstack/react-store';
-import React from 'react';
+import type React from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-import {useParams} from '@tanstack/react-router';
-import {Route as UserUserIdRoute} from '../routes/user.$userId';
 import useEnrichedBlueprintSummaries from '../hooks/useEnrichedBlueprintSummaries';
 import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummaries';
 import {useUserBlueprints} from '../hooks/useUser';
+import {Route as UserUserIdRoute} from '../routes/user.$userId';
+import type {EnrichedBlueprintSummary} from '../schemas';
 import {searchParamsStore} from '../store/searchParamsStore';
-import {EnrichedBlueprintSummary} from '../schemas';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
 import DisplayName from './DisplayName';
@@ -23,7 +23,7 @@ const UserGrid: React.FC = () => {
 	const {userId} = useParams({from: UserUserIdRoute.id});
 	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
 
-	const {data: data, isLoading: isLoading, isSuccess: isSuccess, error: error} = useUserBlueprints(userId);
+	const {data, isLoading, isSuccess, error} = useUserBlueprints(userId);
 
 	const {blueprintSummaries} = useEnrichedBlueprintSummaries(data, isSuccess);
 

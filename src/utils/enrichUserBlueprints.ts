@@ -1,8 +1,8 @@
 import {
-	validateRawUserBlueprints,
-	validateEnrichedUserBlueprints,
-	type RawUserBlueprints,
 	type EnrichedUserBlueprints,
+	type RawUserBlueprints,
+	validateEnrichedUserBlueprints,
+	validateRawUserBlueprints,
 } from '../schemas';
 
 export const enrichUserBlueprints = (rawUserBlueprints: RawUserBlueprints | null): EnrichedUserBlueprints | null => {

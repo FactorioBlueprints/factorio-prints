@@ -1,6 +1,6 @@
-import {describe, it, expect, vi} from 'vitest';
-import enrichTags from './enrichTags';
+import {describe, expect, it, vi} from 'vitest';
 import type {RawTags} from '../schemas';
+import enrichTags from './enrichTags';
 
 describe('enrichTags', () => {
 	describe('tagNameToLabel conversion', () => {

@@ -1,7 +1,7 @@
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
-import {fetchPaginatedSummaries, getBlueprintCdnUrl, fetchBlueprintFromCdn} from './firebase';
 import {get} from 'firebase/database';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import type {EnrichedBlueprintSummary, RawBlueprint} from '../schemas';
+import {fetchBlueprintFromCdn, fetchPaginatedSummaries, getBlueprintCdnUrl} from './firebase';
 
 vi.mock('firebase/database', () => ({
 	ref: vi.fn(),

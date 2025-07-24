@@ -1,7 +1,7 @@
 import {useStore} from '@tanstack/react-store';
+import type {EnrichedBlueprintSummary} from '../schemas';
 import {searchParamsStore} from '../store/searchParamsStore';
 import {useBlueprintsTags} from './useBlueprintTags';
-import type {EnrichedBlueprintSummary} from '../schemas';
 
 export const useFilterByTags = (blueprintSummaries: EnrichedBlueprintSummary[] = []): EnrichedBlueprintSummary[] => {
 	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);

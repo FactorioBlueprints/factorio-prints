@@ -1,5 +1,5 @@
 import {useMemo} from 'react';
-import type {RawPaginatedBlueprintSummaries, RawBlueprintSummary} from '../schemas';
+import type {RawBlueprintSummary, RawPaginatedBlueprintSummaries} from '../schemas';
 
 type SummaryWithKey = RawBlueprintSummary & {key: string};
 

@@ -1,5 +1,5 @@
-import {describe, it, expect} from 'vitest';
-import {deserializeBlueprint, deserializeBlueprintNoThrow, BlueprintError} from './blueprintParser';
+import {describe, expect, it} from 'vitest';
+import {BlueprintError, deserializeBlueprint, deserializeBlueprintNoThrow} from './blueprintParser';
 
 describe('blueprintParser', () => {
 	describe('corrupted data handling', () => {
