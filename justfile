@@ -52,11 +52,11 @@ test-ci: install-ci route-generate-ci
 
 
 # `npm run typecheck`
-typecheck: install
+typecheck: install route-generate
     npm run typecheck
 
 # `npm run typecheck`
-typecheck-ci: install-ci
+typecheck-ci: install-ci route-generate-ci
     npm run typecheck
 
 # `uv tool run pre-commit run`
