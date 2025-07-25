@@ -15,7 +15,10 @@ jobs:
       - name: Run tests and lint
         run: |
           just test-ci
-          just lint-ci
+          just eslint-ci
+          just prettier-ci
+          just typecheck-ci
+          just biome-ci
 
       - name: Build for production
         run: just build-ci
