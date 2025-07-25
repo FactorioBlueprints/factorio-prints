@@ -87,6 +87,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				to="/view/$blueprintId"
 				params={{blueprintId: key}}
 				from="/"
+				preload={false}
 			>
 				<Card.Img
 					variant="top"
@@ -157,6 +158,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 						to="/view/$blueprintId"
 						params={{blueprintId: key}}
 						from="/"
+						preload={false}
 					>
 						<span className={mineStyle}>{title}</span>
 					</Link>
