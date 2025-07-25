@@ -85,3 +85,7 @@ firebase-login: install
 # `firebase database:get / > factorio-blueprints-export.json`
 database-export: install
     firebase database:get / > factorio-blueprints-export.json
+
+# `firebase database:get /tags > tags-export.json`
+tags-export: install
+    firebase database:get /tags > tags-export.json
