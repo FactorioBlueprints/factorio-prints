@@ -29,6 +29,12 @@ export default defineConfig(
 							authToken: process.env.SENTRY_AUTH_TOKEN,
 							release: {
 								name: version,
+								setCommits: {
+									auto: true,
+								},
+								deploy: {
+									env: 'production',
+								},
 							},
 							sourcemaps: {
 								assets: './dist/**',

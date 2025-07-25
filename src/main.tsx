@@ -10,6 +10,7 @@ Sentry.init({
 	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
 	sendDefaultPii: true,
 	release: import.meta.env.VITE_APP_VERSION || '0.1.0',
+	environment: import.meta.env.PROD ? 'production' : 'development',
 	integrations: [
 		Sentry.browserTracingIntegration(),
 		Sentry.replayIntegration({
