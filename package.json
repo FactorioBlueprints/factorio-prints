@@ -17,7 +17,10 @@
 		"test": "vitest",
 		"test:run": "vitest run",
 		"route:generate": "tsr generate",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"deploy:cloudflare": "wrangler pages deploy dist --project-name=factorio-prints",
+		"deploy:cloudflare:preview": "wrangler pages deploy dist --project-name=factorio-prints --branch=preview",
+		"deploy:cloudflare:production": "wrangler pages deploy dist --project-name=factorio-prints --branch=main"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-svg-core": "7.0.0",
@@ -90,6 +93,7 @@
 		"prettier": "3.6.2",
 		"typescript": "5.8.3",
 		"vite": "7.0.6",
-		"vitest": "3.2.4"
+		"vitest": "3.2.4",
+		"wrangler": "^4.26.0"
 	}
 }

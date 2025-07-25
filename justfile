@@ -89,3 +89,15 @@ database-export: install
 # `firebase database:get /tags > tags-export.json`
 tags-export: install
     firebase database:get /tags > tags-export.json
+
+# Deploy to Cloudflare Pages
+deploy-cloudflare: build
+    npx wrangler pages deploy dist --project-name=factorio-prints
+
+# Preview deployment on Cloudflare Pages
+preview-cloudflare: build
+    npx wrangler pages deploy dist --project-name=factorio-prints --branch=preview
+
+# Deploy to Cloudflare Pages (production)
+deploy-cloudflare-production: build
+    npx wrangler pages deploy dist --project-name=factorio-prints --branch=main
