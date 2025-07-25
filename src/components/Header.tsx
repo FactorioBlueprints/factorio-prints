@@ -4,6 +4,7 @@ import {
 	faClock,
 	faCogs,
 	faDonate,
+	faEnvelope,
 	faHeart,
 	faPlusSquare,
 	faSearch,
@@ -21,6 +22,7 @@ import {
 	GithubAuthProvider,
 	GoogleAuthProvider,
 	getAuth,
+	sendSignInLinkToEmail,
 	signInWithPopup,
 	signOut,
 	type User,
@@ -29,6 +31,7 @@ import type React from 'react';
 import {useMemo, useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
+import Form from 'react-bootstrap/Form';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
@@ -42,6 +45,8 @@ const Header: React.FC = () => {
 	const moderatorQuery = useIsModerator(user?.uid);
 	const isModerator = moderatorQuery.data ?? false;
 	const [showAccountDropdown, setShowAccountDropdown] = useState<boolean>(false);
+	const [email, setEmail] = useState<string>('');
+	const [isEmailSending, setIsEmailSending] = useState<boolean>(false);
 
 	const googleProvider = useMemo(() => {
 		const provider = new GoogleAuthProvider();
@@ -79,6 +84,31 @@ const Header: React.FC = () => {
 				console.error({error});
 			}
 		});
+	};
+
+	const authenticateWithEmail = async (emailAddress: string): Promise<void> => {
+		if (!emailAddress.trim()) {
+			return;
+		}
+
+		setIsEmailSending(true);
+
+		const actionCodeSettings = {
+			url: `${window.location.origin}/auth/email-callback`,
+			handleCodeInApp: true,
+		};
+
+		try {
+			await sendSignInLinkToEmail(getAuth(app), emailAddress, actionCodeSettings);
+			localStorage.setItem('emailForSignIn', emailAddress);
+			alert('Check your email for a sign-in link!');
+			setEmail('');
+		} catch (error) {
+			console.error('Error sending email:', error);
+			alert('Failed to send sign-in email. Please try again.');
+		} finally {
+			setIsEmailSending(false);
+		}
 	};
 
 	const renderAuthentication = (): React.ReactElement => {
@@ -214,7 +244,7 @@ const Header: React.FC = () => {
 					</Button>
 					<Button
 						type="button"
-						className="github w-100"
+						className="github w-100 mb-2"
 						onClick={() => authenticate(githubProvider)}
 					>
 						<FontAwesomeIcon
@@ -224,6 +254,36 @@ const Header: React.FC = () => {
 						/>
 						{' Log in with GitHub'}
 					</Button>
+					<Form
+						onSubmit={(event) => {
+							event.preventDefault();
+							authenticateWithEmail(email);
+						}}
+					>
+						<Form.Group className="mb-2">
+							<Form.Control
+								type="email"
+								placeholder="Enter your email address"
+								value={email}
+								onChange={(event) => setEmail(event.target.value)}
+								disabled={isEmailSending}
+								required
+							/>
+						</Form.Group>
+						<Button
+							type="submit"
+							className="w-100"
+							variant="primary"
+							disabled={isEmailSending || !email.trim()}
+						>
+							<FontAwesomeIcon
+								icon={faEnvelope}
+								size="lg"
+								fixedWidth
+							/>
+							{isEmailSending ? ' Sending...' : ' Send Sign-in Link'}
+						</Button>
+					</Form>
 				</div>
 			</NavDropdown>
 		);
