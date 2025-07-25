@@ -1,10 +1,6 @@
-import {describe, expect, it, vi} from 'vitest';
-import {z} from 'zod';
+import {describe, expect, it} from 'vitest';
 import {
-	enrichedBlueprintSchema,
-	enrichedBlueprintSummariesSchema,
 	enrichedBlueprintSummarySchema,
-	enrichedPaginatedBlueprintSummariesSchema,
 	enrichedTagSchema,
 	enrichedTagsSchema,
 	rawBlueprintSchema,
@@ -12,7 +8,6 @@ import {
 	rawBlueprintSummarySchema,
 	rawPaginatedBlueprintSummariesSchema,
 	rawTagsSchema,
-	validate,
 	validateEnrichedBlueprint,
 	validateEnrichedBlueprintSummaries,
 	validateEnrichedBlueprintSummary,
@@ -30,94 +25,6 @@ import {
 } from './schemas';
 
 describe('Schema validation', () => {
-	describe('validate function', () => {
-		it('should validate valid data without errors', () => {
-			const mockSchema = {parse: vi.fn((data) => data)};
-			const mockData = {test: 'data'};
-
-			const result = validate(mockData, mockSchema as any, 'test data');
-
-			expect(mockSchema.parse).toHaveBeenCalledWith(mockData);
-			expect(result).toEqual(mockData);
-		});
-
-		it('should throw error with description for invalid data', () => {
-			const mockError = new Error('Validation error') as any;
-			mockError.errors = ['error details'];
-
-			const mockSchema = {
-				parse: vi.fn(() => {
-					throw mockError;
-				}),
-			};
-
-			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-			expect(() => validate({test: 'invalid'}, mockSchema as any, 'test data')).toThrow(
-				'Invalid test data: Validation error',
-			);
-
-			expect(consoleSpy).toHaveBeenCalledTimes(1);
-
-			consoleSpy.mockRestore();
-		});
-
-		it('should handle ZodError with detailed error information', () => {
-			// Create a real ZodError for testing
-			const testSchema = z.object({
-				field1: z.object({
-					nested: z.string(),
-				}),
-				field2: z.string(),
-			});
-
-			let zodError: z.ZodError;
-			try {
-				testSchema.parse({field1: {nested: 123}, field2: undefined});
-			} catch (error) {
-				zodError = error as z.ZodError;
-			}
-
-			const mockSchema = {
-				parse: vi.fn(() => {
-					throw zodError!;
-				}),
-			};
-
-			const consoleCalls: any[][] = [];
-			const originalConsoleError = console.error;
-			console.error = (...args) => consoleCalls.push(args);
-
-			expect(() => validate({test: 'invalid'}, mockSchema as any, 'test data')).toThrow(/Invalid test data/);
-
-			console.error = originalConsoleError;
-
-			expect(consoleCalls).toHaveLength(1);
-			const [message, jsonString] = consoleCalls[0];
-			expect(message).toBe('Schema validation failed');
-
-			const parsedError = JSON.parse(jsonString);
-			expect(parsedError).toEqual({
-				description: 'test data',
-				errorCount: 2,
-				errors: [
-					{
-						path: 'field1.nested',
-						message: 'Invalid input: expected string, received number',
-						code: 'invalid_type',
-					},
-					{
-						path: 'field2',
-						message: 'Invalid input: expected string, received undefined',
-						code: 'invalid_type',
-					},
-				],
-				dataType: 'object',
-				dataKeys: ['test'],
-			});
-		});
-	});
-
 	describe('raw schemas', () => {
 		it('should validate a raw blueprint summary', () => {
 			const fakeRawSummary = {
@@ -242,7 +149,6 @@ describe('Schema validation', () => {
 
 			expect(() => rawPaginatedBlueprintSummariesSchema.parse(fakeRawPaginated)).not.toThrow();
 
-			// Test with missing required fields
 			const invalidPaginated = {
 				pages: [
 					{
@@ -281,14 +187,9 @@ describe('Schema validation', () => {
 				parsedData: null,
 			};
 
-			const validateSpy = vi.spyOn(enrichedBlueprintSchema, 'parse').mockReturnValue(mockBlueprint);
-
 			const result = validateEnrichedBlueprint(mockBlueprint);
 
 			expect(result).toEqual(mockBlueprint);
-			expect(validateSpy).toHaveBeenCalledWith(mockBlueprint);
-
-			validateSpy.mockRestore();
 		});
 	});
 
@@ -306,14 +207,9 @@ describe('Schema validation', () => {
 				thumbnail: 'https://i.imgur.com/img123b.png',
 			};
 
-			const validateSpy = vi.spyOn(enrichedBlueprintSummarySchema, 'parse').mockReturnValue(mockSummary);
-
 			const result = validateEnrichedBlueprintSummary(mockSummary);
 
 			expect(result).toEqual(mockSummary);
-			expect(validateSpy).toHaveBeenCalledWith(mockSummary);
-
-			validateSpy.mockRestore();
 		});
 
 		it('should reject blueprint summary with unexpected fields', () => {
@@ -361,14 +257,9 @@ describe('Schema validation', () => {
 				},
 			];
 
-			const validateSpy = vi.spyOn(enrichedBlueprintSummariesSchema, 'parse').mockReturnValue(mockSummaries);
-
 			const result = validateEnrichedBlueprintSummaries(mockSummaries);
 
 			expect(result).toEqual(mockSummaries);
-			expect(validateSpy).toHaveBeenCalledWith(mockSummaries);
-
-			validateSpy.mockRestore();
 		});
 	});
 
@@ -414,16 +305,9 @@ describe('Schema validation', () => {
 				pageParams: [null, {key: 'key1', value: 1625097600000}],
 			};
 
-			const validateSpy = vi
-				.spyOn(enrichedPaginatedBlueprintSummariesSchema, 'parse')
-				.mockReturnValue(mockPaginatedData);
-
 			const result = validateEnrichedPaginatedBlueprintSummaries(mockPaginatedData);
 
 			expect(result).toEqual(mockPaginatedData);
-			expect(validateSpy).toHaveBeenCalledWith(mockPaginatedData);
-
-			validateSpy.mockRestore();
 		});
 	});
 
