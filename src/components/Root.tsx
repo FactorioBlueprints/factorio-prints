@@ -49,15 +49,13 @@ const Root: React.FC = () => {
 	}, [user]);
 
 	return (
-		<>
+		<ErrorBoundary>
 			<title>Factorio Prints</title>
-			<ErrorBoundary>
-				<div>
-					<Header />
-					<Outlet />
-				</div>
-			</ErrorBoundary>
-		</>
+			<div>
+				<Header />
+				<Outlet />
+			</div>
+		</ErrorBoundary>
 	);
 };
 

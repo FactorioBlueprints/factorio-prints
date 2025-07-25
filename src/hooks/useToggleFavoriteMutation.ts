@@ -56,13 +56,22 @@ export const useToggleFavoriteMutation = () => {
 				const blueprint = validateRawBlueprint(oldData);
 				const existingFavorites = blueprint.favorites || {};
 
+				// Clean the existing favorites to ensure it only contains boolean values
+				const cleanedFavorites = Object.fromEntries(
+					Object.entries(existingFavorites).filter(([, value]) => typeof value === 'boolean'),
+				);
+
+				const updatedFavorites = {...cleanedFavorites};
+				if (newIsFavorite) {
+					updatedFavorites[userId] = true;
+				} else {
+					delete updatedFavorites[userId];
+				}
+
 				return {
 					...blueprint,
 					numberOfFavorites: newFavoriteCount,
-					favorites: {
-						...existingFavorites,
-						[userId]: newIsFavorite ? true : undefined,
-					},
+					favorites: updatedFavorites,
 				};
 			});
 
@@ -80,12 +89,26 @@ export const useToggleFavoriteMutation = () => {
 			queryClient.setQueryData(['users', 'userId', userId, 'favorites'], (oldData: unknown) => {
 				if (!oldData) return oldData;
 
-				const favorites = validateRawUserFavorites(oldData);
+				// Clean the existing data to ensure it only contains boolean values
+				const cleanedData =
+					typeof oldData === 'object' && oldData !== null
+						? Object.fromEntries(
+								Object.entries(oldData as Record<string, unknown>).filter(
+									([, value]) => typeof value === 'boolean',
+								),
+							)
+						: {};
 
-				return {
-					...favorites,
-					[blueprintId]: newIsFavorite ? true : undefined,
-				};
+				const favorites = validateRawUserFavorites(cleanedData);
+
+				const updatedUserFavorites = {...favorites};
+				if (newIsFavorite) {
+					updatedUserFavorites[blueprintId] = true;
+				} else {
+					delete updatedUserFavorites[blueprintId];
+				}
+
+				return updatedUserFavorites;
 			});
 
 			queryClient.setQueryData(
