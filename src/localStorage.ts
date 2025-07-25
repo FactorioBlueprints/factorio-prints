@@ -6,7 +6,7 @@ export const STORAGE_KEYS = {
 	CREATE_FORM: 'factorio-blueprint-create-form',
 } as const;
 
-export const CACHE_BUSTER = '6';
+export const CACHE_BUSTER = '7';
 
 export const indexedDbStore = createStore('factorio-prints-db', 'query-cache-store');
 
