@@ -53,9 +53,9 @@ const rootRouteChildren =
 	{
 		id: "/tag/$tag",
 	},
-	TaggedTagRoute:
+	TaggedCategoryNameRoute:
 	{
-		id: "/tagged/$tag",
+		id: "/tagged/$category/$name",
 	},
 	UserUserIdRoute:
 	{
@@ -106,7 +106,7 @@ describe("Router Configuration", () =>
 			"/users",
 			"/edit/$blueprintId",
 			"/tag/$tag",
-			"/tagged/$tag",
+			"/tagged/$category/$name",
 			"/user/$userId",
 			"/view/$blueprintId",
 			"/admin/user/$userId",
