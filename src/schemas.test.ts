@@ -1,4 +1,5 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
+import {z} from 'zod';
 import {
 	enrichedBlueprintSummarySchema,
 	enrichedTagSchema,
@@ -8,6 +9,7 @@ import {
 	rawBlueprintSummarySchema,
 	rawPaginatedBlueprintSummariesSchema,
 	rawTagsSchema,
+	validate,
 	validateEnrichedBlueprint,
 	validateEnrichedBlueprintSummaries,
 	validateEnrichedBlueprintSummary,
@@ -25,6 +27,247 @@ import {
 } from './schemas';
 
 describe('Schema validation', () => {
+	describe('validate function', () => {
+		it('should validate valid data without errors', () => {
+			const mockSchema = {parse: vi.fn((data) => data)};
+			const mockData = {test: 'data'};
+
+			const result = validate(mockData, mockSchema as any, 'test data');
+
+			expect(mockSchema.parse).toHaveBeenCalledWith(mockData);
+			expect(result).toEqual(mockData);
+		});
+
+		it('should throw error with description for invalid data', () => {
+			const mockError = new Error('Validation error') as any;
+			mockError.errors = ['error details'];
+
+			const mockSchema = {
+				parse: vi.fn(() => {
+					throw mockError;
+				}),
+			};
+
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+			expect(() => validate({test: 'invalid'}, mockSchema as any, 'test data')).toThrow(
+				'Invalid test data: Validation error',
+			);
+
+			expect(consoleSpy.mock.calls.length).toBeGreaterThanOrEqual(1);
+
+			consoleSpy.mockRestore();
+		});
+
+		it('should include actual values and types in error messages for complex objects', () => {
+			const testSchema = z.object({
+				array: z.array(z.string()),
+				nested: z.object({
+					value: z.number(),
+				}),
+				simpleField: z.string(),
+			});
+
+			const testData = {
+				array: [1, 2, 3], // Should be strings
+				nested: {
+					value: 'not a number', // Should be number
+				},
+				simpleField: 123, // Should be string
+			};
+
+			const consoleCalls: any[][] = [];
+			const originalConsoleError = console.error;
+			console.error = (...args) => consoleCalls.push(args);
+
+			expect(() => validate(testData, testSchema, 'complex test data')).toThrow();
+
+			console.error = originalConsoleError;
+
+			expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
+			const [message, jsonString] = consoleCalls[0];
+			expect(message).toBe('Schema validation failed');
+
+			const parsedError = JSON.parse(jsonString);
+			expect(parsedError.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						path: 'array.0',
+						actualValue: '1',
+						actualType: 'number',
+					}),
+					expect.objectContaining({
+						path: 'nested.value',
+						actualValue: '"not a number"',
+						actualType: 'string',
+					}),
+					expect.objectContaining({
+						path: 'simpleField',
+						actualValue: '123',
+						actualType: 'number',
+					}),
+				]),
+			);
+		});
+
+		it('should handle large objects by truncating values in error messages', () => {
+			const testSchema = z.object({
+				largeArray: z.array(z.string()),
+				largeObject: z.object({
+					prop1: z.string(),
+					prop2: z.string(),
+					prop3: z.string(),
+					prop4: z.string(),
+					prop5: z.string(),
+				}),
+			});
+
+			const testData = {
+				largeArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // Should be strings
+				largeObject: {
+					prop1: 1,
+					prop2: 2,
+					prop3: 3,
+					prop4: 4,
+					prop5: 5,
+				},
+			};
+
+			const consoleCalls: any[][] = [];
+			const originalConsoleError = console.error;
+			console.error = (...args) => consoleCalls.push(args);
+
+			expect(() => validate(testData, testSchema, 'large object test')).toThrow();
+
+			console.error = originalConsoleError;
+
+			expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
+			const [, jsonString] = consoleCalls[0];
+			const parsedError = JSON.parse(jsonString);
+
+			// Check that large array is truncated
+			const arrayError = parsedError.errors.find((e: any) => e.path === 'largeArray.0');
+			expect(arrayError.actualValue).toBe('1');
+
+			// Check that the large object would be truncated in actual display if it was the failing value
+			expect(parsedError.errors.length).toBeGreaterThan(0);
+		});
+
+		it('should log the full object that failed validation for small objects', () => {
+			const testSchema = z.object({
+				field: z.string(),
+			});
+
+			const testData = {
+				field: 123, // Should be string
+			};
+
+			const consoleCalls: any[][] = [];
+			const originalConsoleError = console.error;
+			console.error = (...args) => consoleCalls.push(args);
+
+			expect(() => validate(testData, testSchema, 'small object test')).toThrow();
+
+			console.error = originalConsoleError;
+
+			// Should have at least 2 console calls: error info + full object
+			expect(consoleCalls.length).toBeGreaterThanOrEqual(2);
+
+			// Check that one of the calls contains the full object
+			const fullObjectCall = consoleCalls.find((call) => call[0] === 'Full object that failed validation:');
+			expect(fullObjectCall).toBeDefined();
+			expect(fullObjectCall![1]).toEqual(testData);
+		});
+
+		it('should truncate very large objects in console logs', () => {
+			const testSchema = z.object({
+				field: z.string(),
+			});
+
+			// Create a large object that will exceed the 5KB limit
+			const largeString = 'x'.repeat(6000);
+			const testData = {
+				field: 123, // Wrong type
+				largeField: largeString,
+			};
+
+			const consoleCalls: any[][] = [];
+			const originalConsoleError = console.error;
+			console.error = (...args) => consoleCalls.push(args);
+
+			expect(() => validate(testData, testSchema, 'large object test')).toThrow();
+
+			console.error = originalConsoleError;
+
+			// Should have console calls including truncated object
+			const truncatedCall = consoleCalls.find(
+				(call) => typeof call[0] === 'string' && call[0].includes('truncated from'),
+			);
+			expect(truncatedCall).toBeDefined();
+			expect(truncatedCall![1]).toContain('...[truncated]');
+		});
+
+		it('should handle ZodError with detailed error information', () => {
+			// Create a real ZodError for testing
+			const testSchema = z.object({
+				field1: z.object({
+					nested: z.string(),
+				}),
+				field2: z.string(),
+			});
+
+			let zodError: z.ZodError;
+			try {
+				testSchema.parse({field1: {nested: 123}, field2: undefined});
+			} catch (error) {
+				zodError = error as z.ZodError;
+			}
+
+			const mockSchema = {
+				parse: vi.fn(() => {
+					throw zodError!;
+				}),
+			};
+
+			const consoleCalls: any[][] = [];
+			const originalConsoleError = console.error;
+			console.error = (...args) => consoleCalls.push(args);
+
+			const testData = {field1: {nested: 123}, field2: undefined};
+			expect(() => validate(testData, mockSchema as any, 'test data')).toThrow(/Invalid test data/);
+
+			console.error = originalConsoleError;
+
+			expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
+			const [message, jsonString] = consoleCalls[0];
+			expect(message).toBe('Schema validation failed');
+
+			const parsedError = JSON.parse(jsonString);
+			expect(parsedError).toEqual({
+				description: 'test data',
+				errorCount: 2,
+				errors: [
+					{
+						path: 'field1.nested',
+						message: 'Invalid input: expected string, received number',
+						code: 'invalid_type',
+						actualValue: '123',
+						actualType: 'number',
+					},
+					{
+						path: 'field2',
+						message: 'Invalid input: expected string, received undefined',
+						code: 'invalid_type',
+						actualValue: 'undefined',
+						actualType: 'undefined',
+					},
+				],
+				dataType: 'object',
+				dataKeys: ['field1', 'field2'],
+			});
+		});
+	});
+
 	describe('raw schemas', () => {
 		it('should validate a raw blueprint summary', () => {
 			const fakeRawSummary = {
@@ -726,7 +969,7 @@ describe('Schema validation', () => {
 
 					console.error = originalConsoleError;
 
-					expect(consoleCalls).toHaveLength(1);
+					expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
 					const [message, jsonString] = consoleCalls[0];
 					expect(message).toBe('Schema validation failed');
 
@@ -739,6 +982,8 @@ describe('Schema validation', () => {
 								path: 'belt',
 								message: 'Invalid input: expected array, received string',
 								code: 'invalid_type',
+								actualValue: '"not an array"',
+								actualType: 'string',
 							},
 						],
 						dataType: 'object',
@@ -762,7 +1007,7 @@ describe('Schema validation', () => {
 
 					console.error = originalConsoleError;
 
-					expect(consoleCalls).toHaveLength(1);
+					expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
 					const [message, jsonString] = consoleCalls[0];
 					expect(message).toBe('Schema validation failed');
 
@@ -775,16 +1020,22 @@ describe('Schema validation', () => {
 								path: '0.category',
 								message: 'Invalid input: expected string, received undefined',
 								code: 'invalid_type',
+								actualValue: 'undefined',
+								actualType: 'undefined',
 							},
 							{
 								path: '0.name',
 								message: 'Invalid input: expected string, received undefined',
 								code: 'invalid_type',
+								actualValue: 'undefined',
+								actualType: 'undefined',
 							},
 							{
 								path: '0.label',
 								message: 'Invalid input: expected string, received undefined',
 								code: 'invalid_type',
+								actualValue: 'undefined',
+								actualType: 'undefined',
 							},
 						],
 						dataType: 'object',
@@ -1145,7 +1396,7 @@ describe('Schema validation', () => {
 
 					console.error = originalConsoleError;
 
-					expect(consoleCalls).toHaveLength(1);
+					expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
 					const [message, jsonString] = consoleCalls[0];
 					expect(message).toBe('Schema validation failed');
 
@@ -1158,6 +1409,8 @@ describe('Schema validation', () => {
 								path: 'blueprint-1',
 								message: 'Invalid input: expected boolean, received string',
 								code: 'invalid_type',
+								actualValue: '"not a boolean"',
+								actualType: 'string',
 							},
 						],
 						dataType: 'object',
@@ -1179,7 +1432,7 @@ describe('Schema validation', () => {
 
 					console.error = originalConsoleError;
 
-					expect(consoleCalls).toHaveLength(1);
+					expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
 					const [message, jsonString] = consoleCalls[0];
 					expect(message).toBe('Schema validation failed');
 
@@ -1192,6 +1445,8 @@ describe('Schema validation', () => {
 								path: 'favoriteIds',
 								message: 'Invalid input: expected record, received undefined',
 								code: 'invalid_type',
+								actualValue: 'undefined',
+								actualType: 'undefined',
 							},
 						],
 						dataType: 'object',

@@ -132,6 +132,43 @@ export type RawTagIndex = z.infer<typeof rawTagIndexSchema>;
 export type EnrichedTag = z.infer<typeof enrichedTagSchema>;
 export type EnrichedTags = z.infer<typeof enrichedTagsSchema>;
 
+const getValueAtPath = (obj: unknown, path: string[]): unknown => {
+	let current = obj;
+	for (const key of path) {
+		if (current && typeof current === 'object' && key in current) {
+			current = (current as Record<string, unknown>)[key];
+		} else {
+			return undefined;
+		}
+	}
+	return current;
+};
+
+const serializeValue = (value: unknown): string => {
+	if (value === null) return 'null';
+	if (value === undefined) return 'undefined';
+	if (typeof value === 'string') return `"${value}"`;
+	if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+	if (Array.isArray(value)) {
+		if (value.length === 0) return '[]';
+		if (value.length <= 3) return `[${value.map(serializeValue).join(', ')}]`;
+		return `[${value.slice(0, 3).map(serializeValue).join(', ')}, ...${value.length - 3} more]`;
+	}
+	if (typeof value === 'object') {
+		const keys = Object.keys(value);
+		if (keys.length === 0) return '{}';
+		if (keys.length <= 3) {
+			const entries = keys.map((k) => `${k}: ${serializeValue((value as Record<string, unknown>)[k])}`);
+			return `{${entries.join(', ')}}`;
+		}
+		const firstThree = keys
+			.slice(0, 3)
+			.map((k) => `${k}: ${serializeValue((value as Record<string, unknown>)[k])}`);
+		return `{${firstThree.join(', ')}, ...${keys.length - 3} more}`;
+	}
+	return String(value);
+};
+
 export const validate = <T>(
 	data: unknown,
 	schema: z.ZodSchema<T>,
@@ -142,11 +179,16 @@ export const validate = <T>(
 		return schema.parse(data);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			const errorDetails = error.issues.map((e) => ({
-				path: e.path.join('.'),
-				message: e.message,
-				code: e.code,
-			}));
+			const errorDetails = error.issues.map((e) => {
+				const actualValue = getValueAtPath(data, e.path.map(String));
+				return {
+					path: e.path.join('.'),
+					message: e.message,
+					code: e.code,
+					actualValue: serializeValue(actualValue),
+					actualType: typeof actualValue,
+				};
+			});
 			const errorInfo = {
 				description,
 				errorCount: error.issues.length,
@@ -156,6 +198,32 @@ export const validate = <T>(
 				...(context?.blueprintId && {blueprintId: context.blueprintId}),
 			};
 			console.error('Schema validation failed', JSON.stringify(errorInfo, null, 2));
+
+			// Log the full object for debugging
+			try {
+				const serialized = JSON.stringify(data);
+				const maxLength = 5000; // 5KB limit for Sentry
+				if (serialized && serialized.length <= maxLength) {
+					console.error('Full object that failed validation:', data);
+				} else {
+					// For large objects, log the actual object to console
+					console.error('Full object that failed validation (large object):', data);
+					// Also log a truncated string for context
+					console.error(
+						`Object size: ${serialized?.length || 0} characters (showing first ${maxLength}):`,
+						serialized?.substring(0, maxLength) + '...[truncated]',
+					);
+				}
+			} catch (error) {
+				// Handle undefined case
+					console.error('Full object that failed validation:', data);
+				}
+			} catch (stringifyError) {
+				// Handle circular references or other stringify errors
+				console.error('Unable to serialize full object due to:', stringifyError);
+				console.error('Object keys:', data && typeof data === 'object' ? Object.keys(data) : 'N/A');
+			}
+
 			const errorMessage = error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
 			throw new Error(`Invalid ${description}: ${errorMessage}`);
 		}
