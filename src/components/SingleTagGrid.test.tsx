@@ -5,17 +5,23 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { useEnrichedTagBlueprintSummaries } from "../hooks/useEnrichedTagBlueprintSummaries";
 import { useFilterByTitle } from "../hooks/useFilterByTitle";
 import type { EnrichedBlueprintSummary } from "../schemas";
+import { searchParamsStore, type SearchParamsState } from "../store/searchParamsStore";
 import SingleTagGrid from "./SingleTagGrid";
 
 // Mock the router params
 vi.mock("@tanstack/react-router", () => ({
-  useParams: vi.fn(() => ({ tag: "test/tag" })),
+  useParams: vi.fn(() => ({ category: "test", name: "tag" })),
   useNavigate: vi.fn(() => vi.fn()),
 }));
 
 // Mock the hooks
 vi.mock("../hooks/useEnrichedTagBlueprintSummaries");
 vi.mock("../hooks/useFilterByTitle");
+vi.mock("../store/searchParamsStore", () => ({
+  searchParamsStore: {
+    setState: vi.fn(),
+  },
+}));
 
 // Mock the components
 vi.mock("./BlueprintThumbnail", () => ({
@@ -25,7 +31,7 @@ vi.mock("./BlueprintThumbnail", () => ({
 }));
 
 vi.mock("./PageHeader", () => ({
-  default: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
+  default: ({ title }: { title: React.ReactNode }) => <div data-testid="page-header">{title}</div>,
 }));
 
 vi.mock("./SearchForm", () => ({
@@ -326,7 +332,7 @@ describe("SingleTagGrid", () => {
     expect(pageHeader).toHaveTextContent("test › tag");
   });
 
-  it("should render search form and tag selector", () => {
+  it("should render the search form and route-aware tag selector", () => {
     const mockResult = {
       tagQuery: { isSuccess: true, error: null },
       blueprintQueries: {},
@@ -341,11 +347,39 @@ describe("SingleTagGrid", () => {
     render(<SingleTagGrid />, { wrapper });
 
     expect(screen.getByTestId("search-form")).toBeInTheDocument();
-    expect(screen.getByTestId("single-tag-selector")).toBeInTheDocument();
     expect(screen.getByTestId("single-tag-selector")).toHaveAttribute(
       "data-current-tag",
       "test/tag",
     );
+  });
+
+  it("should synchronize the selected tag with search parameters", () => {
+    const mockResult = {
+      tagQuery: { isSuccess: true, error: null },
+      blueprintQueries: {},
+      isLoading: false,
+      isError: false,
+      isSuccess: true,
+      blueprintIds: [],
+    } as any;
+
+    vi.mocked(useEnrichedTagBlueprintSummaries).mockReturnValue(mockResult);
+
+    render(<SingleTagGrid />, { wrapper });
+
+    expect(searchParamsStore.setState).toHaveBeenCalledOnce();
+    const updateState = vi.mocked(searchParamsStore.setState).mock.calls[0][0] as (
+      state: SearchParamsState,
+    ) => SearchParamsState;
+    expect(
+      updateState({
+        filteredTags: ["/old/tag/"],
+        titleFilter: "factory",
+      }),
+    ).toStrictEqual({
+      filteredTags: ["/test/tag/"],
+      titleFilter: "",
+    });
   });
 
   it("should handle blueprints with null or undefined data", () => {
@@ -416,10 +450,10 @@ describe("SingleTagGrid", () => {
     expect(thumbnails[1]).toHaveAttribute("data-testid", "blueprint-thumbnail-blueprint1");
   });
 
-  it("should handle empty tag parameter", async () => {
+  it("should handle empty tag parameters", async () => {
     // Override the useParams mock for this test
     const { useParams } = await import("@tanstack/react-router");
-    vi.mocked(useParams).mockReturnValue({ tag: "" });
+    vi.mocked(useParams).mockReturnValue({ category: "", name: "" });
 
     const mockResult = {
       tagQuery: { isSuccess: true, error: null },
@@ -434,8 +468,8 @@ describe("SingleTagGrid", () => {
 
     render(<SingleTagGrid />, { wrapper });
 
-    // Should still render but with empty tag
     expect(screen.getByTestId("page-header")).toBeInTheDocument();
     expect(screen.getByTestId("single-tag-selector")).toHaveAttribute("data-current-tag", "");
+    expect(searchParamsStore.setState).not.toHaveBeenCalled();
   });
 });
