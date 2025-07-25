@@ -1,16 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import React from "react";
-import ErrorBoundary from "../components/ErrorBoundary";
-import SingleTagGrid from "../components/SingleTagGrid";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { legacyTagRedirectParams } from "../utils/legacyTagRoute";
 
+// Keeps old /tag/<category>%2F<name> links working by sending them to the tagged view.
 export const Route = createFileRoute("/tag/$tag")({
-  component: TagComponent,
-});
+  beforeLoad: ({ params }) => {
+    const target = legacyTagRedirectParams(params.tag);
+    if (target === undefined) {
+      throw redirect({ to: "/", replace: true });
+    }
 
-function TagComponent() {
-  return (
-    <ErrorBoundary>
-      <SingleTagGrid />
-    </ErrorBoundary>
-  );
-}
+    throw redirect({ to: "/tagged/$category/$name", params: target, replace: true });
+  },
+});
