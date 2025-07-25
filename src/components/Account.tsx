@@ -68,7 +68,9 @@ const Account = () => {
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">{'Account Settings'}</h1>
-				<p className="lead">{'Please log in with Google or GitHub in order to edit your account settings.'}</p>
+				<p className="lead">
+					{'Please log in with Google, GitHub, or email in order to edit your account settings.'}
+				</p>
 			</div>
 		);
 	}
