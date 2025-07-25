@@ -18,8 +18,8 @@ import SearchForm from './SearchForm';
 import SingleTagSelector from './SingleTagSelector';
 
 const SingleTagGrid: React.FC = () => {
-	const {tag} = useParams({strict: false});
-	const tagId = tag || '';
+	const params = useParams({strict: false});
+	const tagId = params.tag || (params.category && params.name ? `${params.category}/${params.name}` : '') || '';
 
 	const {tagQuery, blueprintQueries, isLoading, isError} = useEnrichedTagBlueprintSummaries(tagId);
 
