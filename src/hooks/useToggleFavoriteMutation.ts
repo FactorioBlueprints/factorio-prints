@@ -120,6 +120,11 @@ export const useToggleFavoriteMutation = () => {
 				['blueprints', 'blueprintId', blueprintId, 'favorites', 'userId', userId],
 				newIsFavorite,
 			);
+
+			// TODO 2025-07-25 Make this more efficient by actually changing the number of favorites inside the cached paginated data
+			queryClient.invalidateQueries({
+				queryKey: ['blueprintSummaries', 'orderByField'],
+			});
 		},
 	});
 };
