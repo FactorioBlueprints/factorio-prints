@@ -1,27 +1,39 @@
-import {faTags} from '@fortawesome/free-solid-svg-icons';
+import {faCog, faTags} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useParams} from '@tanstack/react-router';
 import type React from 'react';
+import {useEffect} from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 
 import {useEnrichedTagBlueprintSummaries} from '../hooks/useEnrichedTagBlueprintSummaries';
 import {useFilterByTitle} from '../hooks/useFilterByTitle';
 import type {EnrichedBlueprintSummary} from '../schemas';
+import {searchParamsStore} from '../store/searchParamsStore';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
-import EmptyResults from './grid/EmptyResults';
-import ErrorDisplay from './grid/ErrorDisplay';
-import LoadingIndicator from './grid/LoadingIndicator';
 import PageHeader from './PageHeader';
 import SearchForm from './SearchForm';
-import SingleTagSelector from './SingleTagSelector';
+import TagForm from './TagForm';
 
 const SingleTagGrid: React.FC = () => {
-	const {tag} = useParams({strict: false});
-	const tagId = tag || '';
+	const params = useParams({strict: false});
+	// Handle /tagged/$category/$name route
+	const tagId = (params.category && params.name ? `${params.category}/${params.name}` : '') || '';
 
-	const {tagQuery, blueprintQueries, isLoading, isError} = useEnrichedTagBlueprintSummaries(tagId);
+	// Update searchParamsStore when tag changes
+	useEffect(() => {
+		if (tagId) {
+			const tagWithSlashes = `/${tagId}/`;
+			searchParamsStore.setState((state) => ({
+				...state,
+				filteredTags: [tagWithSlashes],
+				titleFilter: '',
+			}));
+		}
+	}, [tagId]);
+
+	const {blueprintQueries, isLoading} = useEnrichedTagBlueprintSummaries(tagId);
 
 	const blueprintSummaries: EnrichedBlueprintSummary[] = Object.entries(blueprintQueries)
 		.filter(([, query]) => query.isSuccess && query.data)
@@ -40,8 +52,19 @@ const SingleTagGrid: React.FC = () => {
 
 	const formattedTag = tagId.replace(/\//g, ' › ') || '';
 
-	const isSuccess = tagQuery.isSuccess;
-	const isEmpty = isSuccess && sortedBlueprints.length === 0;
+	if (isLoading) {
+		return (
+			<div className="p-5 rounded-lg jumbotron">
+				<h1 className="display-4">
+					<FontAwesomeIcon
+						icon={faCog}
+						spin
+					/>
+					{' Loading data'}
+				</h1>
+			</div>
+		);
+	}
 
 	return (
 		<Container fluid>
@@ -56,33 +79,10 @@ const SingleTagGrid: React.FC = () => {
 					</>
 				}
 			/>
-			<Row>
+			<Row className="search-row">
 				<SearchForm />
-				<SingleTagSelector currentTag={tagId} />
+				<TagForm />
 			</Row>
-
-			<LoadingIndicator
-				isLoading={isLoading}
-				message={`Loading blueprints for tag: ${formattedTag}...`}
-			/>
-
-			<ErrorDisplay
-				error={tagQuery.error || (isError && 'Error loading blueprints')}
-				message={`There was a problem loading blueprints for tag: ${formattedTag}. Please try again later.`}
-			/>
-
-			<EmptyResults
-				isEmpty={isEmpty}
-				filteredTags={[]}
-			>
-				<p>No blueprints found with the tag "{formattedTag}".</p>
-				<p>
-					<small>
-						The URL format for tag browsing is: <code>/tagged/category/name</code>
-					</small>
-				</p>
-			</EmptyResults>
-
 			<Row className="blueprint-grid-row justify-content-center">
 				{sortedBlueprints.map((blueprintSummary) => (
 					<BlueprintThumbnail
