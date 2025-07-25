@@ -8,7 +8,7 @@ import reverse from 'lodash/fp/reverse';
 import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useOptimistic} from 'react';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -88,6 +88,14 @@ function SingleBlueprint() {
 
 	const {data: isFavorite, isSuccess: favoriteIsSuccess} = useIsFavorite(user?.uid, blueprintId);
 
+	const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(
+		{isFavorite: isFavorite || false, count: blueprintData?.numberOfFavorites || 0},
+		(state, action: {type: 'toggle'; numberOfFavorites: number}) => ({
+			isFavorite: !state.isFavorite,
+			count: action.numberOfFavorites + (state.isFavorite ? -1 : 1),
+		}),
+	);
+
 	const initialLoadRef = React.useRef(true);
 
 	// Scroll to top on initial data load
@@ -101,20 +109,31 @@ function SingleBlueprint() {
 	const favoriteBlueprintMutation = useToggleFavoriteMutation();
 	const reconcileFavoritesMutation = useReconcileFavoritesMutation();
 
-	const handleFavorite = useCallback(() => {
+	const handleFavorite = useCallback(async () => {
 		if (!user) return;
 		if (!favoriteIsSuccess) return;
 		if (!blueprintData) return;
 
 		const {uid} = user;
+		const numberOfFavorites = blueprintData.numberOfFavorites || 0;
+
+		setOptimisticFavorite({type: 'toggle', numberOfFavorites});
 
 		favoriteBlueprintMutation.mutate({
 			blueprintId,
 			userId: uid,
 			isFavorite,
-			numberOfFavorites: blueprintData.numberOfFavorites || 0,
+			numberOfFavorites,
 		});
-	}, [user, isFavorite, favoriteIsSuccess, blueprintId, blueprintData, favoriteBlueprintMutation]);
+	}, [
+		user,
+		isFavorite,
+		favoriteIsSuccess,
+		blueprintId,
+		blueprintData,
+		favoriteBlueprintMutation,
+		setOptimisticFavorite,
+	]);
 
 	const handleTransitionToEdit = useCallback(() => {
 		navigate({to: '/edit/$blueprintId', params: {blueprintId}});
@@ -218,77 +237,75 @@ function SingleBlueprint() {
 	const isOwner = user && user.uid === blueprintData?.author?.userId;
 
 	return (
-		<>
+		<Container>
 			<title>
 				{blueprintIsLoading ? 'Factorio Prints: Loading...' : `Factorio Prints: ${blueprintData?.title}`}
 			</title>
-			<Container>
-				<Row>
-					<Col md={9}>
-						<div className="d-flex mt-4">
-							<BlueprintTitle
-								title={blueprintData?.title}
-								isLoading={blueprintIsLoading}
-							/>
-						</div>
-					</Col>
-					<BlueprintActions
-						isOwner={isOwner || false}
-						isModerator={isModerator}
-						user={user}
-						isFavorite={isFavorite || false}
-						onEdit={handleTransitionToEdit}
-						onFavorite={handleFavorite}
-						onReconcile={handleReconcileFavorites}
-						favoriteMutation={favoriteBlueprintMutation}
-						reconcileMutation={reconcileFavoritesMutation}
+			<Row>
+				<Col md={9}>
+					<div className="d-flex mt-4">
+						<BlueprintTitle
+							title={blueprintData?.title}
+							isLoading={blueprintIsLoading}
+						/>
+					</div>
+				</Col>
+				<BlueprintActions
+					isOwner={isOwner || false}
+					isModerator={isModerator}
+					user={user}
+					isFavorite={optimisticFavorite.isFavorite}
+					onEdit={handleTransitionToEdit}
+					onFavorite={handleFavorite}
+					onReconcile={handleReconcileFavorites}
+					favoriteMutation={favoriteBlueprintMutation}
+					reconcileMutation={reconcileFavoritesMutation}
+				/>
+			</Row>
+			<Row>
+				<Col md={4}>
+					<BlueprintImage
+						image={blueprintData?.image}
+						thumbnail={blueprintData?.thumbnail}
+						isLoading={blueprintIsLoading}
 					/>
-				</Row>
-				<Row>
-					<Col md={4}>
-						<BlueprintImage
-							image={blueprintData?.image}
-							thumbnail={blueprintData?.thumbnail}
-							isLoading={blueprintIsLoading}
-						/>
-						<TagsCard tags={tagsData} />
-						<PostInfoCard
-							authorUserId={blueprintData?.author?.userId}
-							createdDate={blueprintData?.createdDate}
-							lastUpdatedDate={blueprintData?.lastUpdatedDate}
-							numberOfFavorites={blueprintData?.numberOfFavorites}
-							isLoading={blueprintIsLoading}
-						/>
-						<RequirementsCard
-							blueprintWrapper={blueprintWrapper}
-							entityHistogram={memoizedEntityHistogram}
-							itemHistogram={memoizedItemHistogram}
-						/>
-					</Col>
-					<Col md={8}>
-						<DetailsCard
-							descriptionMarkdown={blueprintData?.descriptionMarkdown}
-							blueprintString={blueprintData?.blueprintString}
-							parsedData={blueprintData?.parsedData}
-							isLoading={blueprintIsLoading}
-						/>
-						<BasicInfoPanel blueprint={blueprintData?.parsedData} />
-						<ExtraInfoPanel blueprint={blueprintData?.parsedData} />
-						<ParametersPanel blueprintString={blueprintData?.parsedData} />
-						<UpgradePlannerCard
-							blueprintWrapper={blueprintWrapper}
-							parsedData={blueprintData?.parsedData}
-						/>
-					</Col>
-				</Row>
-				{blueprintData && (
-					<CommentsSection
-						blueprintId={blueprintId}
-						blueprintTitle={blueprintData?.title}
+					<TagsCard tags={tagsData} />
+					<PostInfoCard
+						authorUserId={blueprintData?.author?.userId}
+						createdDate={blueprintData?.createdDate}
+						lastUpdatedDate={blueprintData?.lastUpdatedDate}
+						numberOfFavorites={optimisticFavorite.count}
+						isLoading={blueprintIsLoading}
 					/>
-				)}
-			</Container>
-		</>
+					<RequirementsCard
+						blueprintWrapper={blueprintWrapper}
+						entityHistogram={memoizedEntityHistogram}
+						itemHistogram={memoizedItemHistogram}
+					/>
+				</Col>
+				<Col md={8}>
+					<DetailsCard
+						descriptionMarkdown={blueprintData?.descriptionMarkdown}
+						blueprintString={blueprintData?.blueprintString}
+						parsedData={blueprintData?.parsedData}
+						isLoading={blueprintIsLoading}
+					/>
+					<BasicInfoPanel blueprint={blueprintData?.parsedData} />
+					<ExtraInfoPanel blueprint={blueprintData?.parsedData} />
+					<ParametersPanel blueprintString={blueprintData?.parsedData} />
+					<UpgradePlannerCard
+						blueprintWrapper={blueprintWrapper}
+						parsedData={blueprintData?.parsedData}
+					/>
+				</Col>
+			</Row>
+			{blueprintData && (
+				<CommentsSection
+					blueprintId={blueprintId}
+					blueprintTitle={blueprintData?.title}
+				/>
+			)}
+		</Container>
 	);
 }
 
