@@ -39,7 +39,7 @@ repos:
 
           - id: eslint
             name: eslint
-            entry: npx eslint --fix
+            entry: bash -c 'npx --no-install eslint --fix "$@"' --
             language: system
             files: \.(js|jsx|ts|tsx|mjs|cjs)$
             types: [file]
