@@ -1,0 +1,83 @@
+name = "factorio-prints"
+compatibility_date = "2025-07-25"
+
+[build]
+command = "npm run build"
+
+[build.upload]
+directory = "dist"
+
+[[headers]]
+for = "/*"
+[headers.values]
+X-Content-Type-Options = "nosniff"
+X-Frame-Options = "SAMEORIGIN"
+Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+for = "/*.jpg"
+[headers.values]
+Cache-Control = "max-age=2419200"
+
+[[headers]]
+for = "/*.jpeg"
+[headers.values]
+Cache-Control = "max-age=2419200"
+
+[[headers]]
+for = "/*.gif"
+[headers.values]
+Cache-Control = "max-age=2419200"
+
+[[headers]]
+for = "/*.png"
+[headers.values]
+Cache-Control = "max-age=2419200"
+
+[[headers]]
+for = "/*.svg"
+[headers.values]
+Cache-Control = "max-age=2419200"
+
+[[headers]]
+for = "/*.ico"
+[headers.values]
+Cache-Control = "max-age=2419200"
+
+[[headers]]
+for = "/sw.ts"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+Service-Worker-Allowed = "/"
+
+[[headers]]
+for = "/service-worker.ts"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+Service-Worker-Allowed = "/"
+
+[[headers]]
+for = "/serviceWorker.ts"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+Service-Worker-Allowed = "/"
+
+[[headers]]
+for = "/*.js"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+
+[[headers]]
+for = "/*.css"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+
+[[headers]]
+for = "/*.html"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+
+[[headers]]
+for = "/*.json"
+[headers.values]
+Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"

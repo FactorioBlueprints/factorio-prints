@@ -1,0 +1,46 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/*.jpg
+  Cache-Control: max-age=2419200
+
+/*.jpeg
+  Cache-Control: max-age=2419200
+
+/*.gif
+  Cache-Control: max-age=2419200
+
+/*.png
+  Cache-Control: max-age=2419200
+
+/*.svg
+  Cache-Control: max-age=2419200
+
+/*.ico
+  Cache-Control: max-age=2419200
+
+/sw.ts
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+/service-worker.ts
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+/serviceWorker.ts
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+/*.js
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+
+/*.css
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+
+/*.html
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+
+/*.json
+  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
