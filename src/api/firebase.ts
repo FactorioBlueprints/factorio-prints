@@ -1,5 +1,15 @@
 import {format, formatDistance} from 'date-fns';
-import {update as dbUpdate, endAt, get, getDatabase, limitToLast, orderByChild, query, ref} from 'firebase/database';
+import {
+	update as dbUpdate,
+	endAt,
+	get,
+	getDatabase,
+	limitToLast,
+	orderByChild,
+	query,
+	ref,
+	startAt,
+} from 'firebase/database';
 import {app} from '../base';
 import {
 	type EnrichedBlueprintSummary,
@@ -514,6 +524,37 @@ export const fetchPaginatedSummaries = async (
 		});
 	} catch (error) {
 		console.error('Error fetching paginated summaries:', error);
+		throw error;
+	}
+};
+
+export const fetchSummariesNewerThan = async (
+	highWatermark: number,
+	pageSize = 100,
+): Promise<RawBlueprintSummary[]> => {
+	try {
+		const summariesQuery = query(
+			ref(getDatabase(app), '/blueprintSummaries/'),
+			orderByChild('lastUpdatedDate'),
+			startAt(highWatermark + 1),
+			limitToLast(pageSize),
+		);
+
+		const snapshot = await get(summariesQuery);
+
+		if (!snapshot.exists()) {
+			return [];
+		}
+
+		const summaries: RawBlueprintSummary[] = [];
+		snapshot.forEach((childSnapshot) => {
+			const summary = validateRawBlueprintSummary(childSnapshot.val());
+			summaries.push(summary);
+		});
+
+		return summaries.reverse();
+	} catch (error) {
+		console.error('Error fetching summaries newer than high watermark:', error);
 		throw error;
 	}
 };
