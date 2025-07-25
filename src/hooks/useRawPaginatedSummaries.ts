@@ -1,6 +1,7 @@
 import {type InfiniteData, keepPreviousData, useInfiniteQuery, useQueryClient} from '@tanstack/react-query';
 import {useEffect} from 'react';
 import {fetchPaginatedSummaries} from '../api/firebase';
+import {updateHighWatermark} from '../localStorage';
 import type {RawBlueprintSummaryPage} from '../schemas';
 
 type PageParam = {
@@ -51,6 +52,21 @@ export const useRawPaginatedSummaries = (pageSize = 60, orderByField = 'lastUpda
 			});
 		}
 	}, [result.data, queryClient]);
+
+	// Track high watermark when fetching blueprints ordered by lastUpdatedDate
+	useEffect(() => {
+		if (orderByField === 'lastUpdatedDate' && result.data?.pages) {
+			const allSummaries = result.data.pages.flatMap((page: RawBlueprintSummaryPage) => Object.values(page.data));
+			const latestDates = allSummaries
+				.map((summary: any) => summary.lastUpdatedDate)
+				.filter((date: any): date is number => date !== undefined);
+
+			if (latestDates.length > 0) {
+				const maxDate = Math.max(...latestDates);
+				updateHighWatermark(maxDate);
+			}
+		}
+	}, [result.data, orderByField]);
 
 	return result;
 };

@@ -5,6 +5,7 @@ import {persistQueryClient} from '@tanstack/react-query-persist-client';
 import type React from 'react';
 import {useEffect} from 'react';
 import useBlueprintCacheSync from '../hooks/useBlueprintCacheSync';
+import {useHighWatermarkSync} from '../hooks/useHighWatermarkSync';
 import {CACHE_BUSTER, createIDBPersister, STORAGE_KEYS} from '../localStorage';
 import {queryClient} from './queryClient';
 
@@ -14,6 +15,7 @@ interface BlueprintCacheSyncProviderProps {
 
 function BlueprintCacheSyncProvider({children}: BlueprintCacheSyncProviderProps) {
 	useBlueprintCacheSync();
+	useHighWatermarkSync();
 	return <>{children}</>;
 }
 
