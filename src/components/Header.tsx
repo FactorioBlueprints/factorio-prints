@@ -5,6 +5,7 @@ import {
 	faCogs,
 	faDonate,
 	faEnvelope,
+	faFire,
 	faHeart,
 	faPlusSquare,
 	faSearch,
@@ -333,6 +334,19 @@ const Header: React.FC = () => {
 								fixedWidth
 							/>
 							{' Most Recent'}
+						</Link>
+					</Nav.Item>
+					<Nav.Item>
+						<Link
+							to="/hot"
+							className="nav-link text-light"
+						>
+							<FontAwesomeIcon
+								icon={faFire}
+								size="lg"
+								fixedWidth
+							/>
+							{' Hot'}
 						</Link>
 					</Nav.Item>
 					<Nav.Item>
