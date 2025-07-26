@@ -9,6 +9,19 @@
 # production
 /dist
 
+# cloud functions
+/functions/node_modules
+/functions/lib
+
+# Firebase service account keys (SENSITIVE - NEVER COMMIT!)
+*firebase-adminsdk*.json
+
+# Disqus migration data
+*.xml.gz
+disqus-comments.json
+test-*.json
+test-*.xml
+
 # misc
 .DS_Store
 .env.local

@@ -36,6 +36,13 @@
 				},
 				"displayName": {
 					".read": "true"
+				},
+				"comments": {
+					".read": "true",
+					"$commentId": {
+						".write": "auth != null && auth.uid == $uid",
+						".validate": "newData.isBoolean() && newData.val() === true"
+					}
 				}
 			}
 		},
@@ -72,6 +79,37 @@
 			".read": "true",
 			".write": "true",
 			".indexOn": [".value"]
+		},
+		"comments": {
+			".read": "true",
+			"$blueprintId": {
+				".indexOn": ["createdAt", "parentId"],
+				"$commentId": {
+					".write": "(auth != null && !data.exists()) || (auth != null && data.child('authorId').val() === auth.uid && (!newData.exists() || newData.child('authorId').val() === auth.uid)) || root.child('moderators').child(auth.uid).val() === true",
+					".validate": "newData.hasChildren(['authorId', 'content', 'createdAt']) && newData.child('authorId').isString() && newData.child('content').isString() && newData.child('createdAt').isNumber()",
+					"authorId": {
+						".validate": "newData.val() === auth.uid"
+					},
+					"authorDisplayName": {
+						".validate": "newData.isString()"
+					},
+					"content": {
+						".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000"
+					},
+					"createdAt": {
+						".validate": "newData.isNumber() && (!data.exists() || data.val() === newData.val())"
+					},
+					"updatedAt": {
+						".validate": "newData.isNumber()"
+					},
+					"isDeleted": {
+						".validate": "newData.isBoolean()"
+					},
+					"parentId": {
+						".validate": "newData.isString() || newData.val() === null"
+					}
+				}
+			}
 		}
 	}
 }

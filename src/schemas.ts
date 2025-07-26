@@ -194,6 +194,33 @@ const serializeValue = (value: unknown): string => {
 	return String(value);
 };
 
+// Comment schemas
+export const rawCommentSchema = z
+	.object({
+		authorId: z.string(),
+		authorDisplayName: z.string(),
+		content: z.string().min(1).max(5000),
+		createdAt: z.number(),
+		updatedAt: z.number().optional(),
+		isDeleted: z.boolean().optional().default(false),
+		parentId: z.string().nullable().optional(),
+	})
+	.strict();
+
+export type RawComment = z.infer<typeof rawCommentSchema>;
+
+export interface EnrichedComment extends RawComment {
+	id: string;
+	replyComments?: EnrichedComment[];
+}
+
+export const enrichedCommentSchema: z.ZodSchema<EnrichedComment> = rawCommentSchema
+	.extend({
+		id: z.string(),
+		replyComments: z.array(z.lazy((): z.ZodSchema<EnrichedComment> => enrichedCommentSchema)).optional(),
+	})
+	.strict();
+
 export const validate = <T>(
 	data: unknown,
 	schema: z.ZodSchema<T>,
@@ -308,6 +335,22 @@ export const validateEnrichedBlueprint = (data: unknown): EnrichedBlueprint => {
 
 export const validateRawBlueprintSummaryPage = (data: unknown): RawBlueprintSummaryPage => {
 	return validate(data, rawBlueprintSummaryPageSchema, 'raw blueprint summary page');
+};
+
+export const validateRawComment = (data: unknown): RawComment => {
+	const parsed = validate(data, rawCommentSchema, 'raw comment');
+	return {
+		...(parsed as RawComment),
+		isDeleted: parsed.isDeleted ?? false,
+	};
+};
+
+export const validateEnrichedComment = (data: unknown): EnrichedComment => {
+	const parsed = validate(data, enrichedCommentSchema, 'enriched comment');
+	return {
+		...(parsed as EnrichedComment),
+		isDeleted: parsed.isDeleted ?? false,
+	};
 };
 
 export const validateRawPaginatedBlueprintSummaries = (data: unknown): RawPaginatedBlueprintSummaries => {
