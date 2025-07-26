@@ -6,6 +6,7 @@ import {useEffect} from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
 
 import {app} from '../base';
+import {useHighWatermarkSync} from '../hooks/useHighWatermarkSync';
 import ErrorBoundary from './ErrorBoundary';
 import Header from './Header';
 
@@ -20,6 +21,8 @@ interface UserData {
 
 const Root: React.FC = () => {
 	const [user] = useAuthState(getAuth(app));
+
+	useHighWatermarkSync();
 
 	// Update user profile in the database when auth state changes
 	useEffect(() => {

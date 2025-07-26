@@ -4,6 +4,7 @@ import {createStore, del, get, set} from 'idb-keyval';
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
 	CREATE_FORM: 'factorio-blueprint-create-form',
+	HIGH_WATERMARK: 'factorio-prints-high-watermark',
 } as const;
 
 export const CACHE_BUSTER = '7';
@@ -424,4 +425,31 @@ export const removeFromStorage = (key: string): void => {
 	} catch (error) {
 		console.error('Error removing from localStorage:', error);
 	}
+};
+
+interface HighWatermarkData {
+	lastUpdatedDate: number;
+	lastChecked: number;
+}
+
+export const getHighWatermark = (): HighWatermarkData | null => {
+	return loadFromStorage<HighWatermarkData>(STORAGE_KEYS.HIGH_WATERMARK);
+};
+
+export const setHighWatermark = (lastUpdatedDate: number): boolean => {
+	const watermarkData: HighWatermarkData = {
+		lastUpdatedDate,
+		lastChecked: Date.now(),
+	};
+	return saveToStorage(STORAGE_KEYS.HIGH_WATERMARK, watermarkData);
+};
+
+export const updateHighWatermark = (lastUpdatedDate: number): boolean => {
+	const currentWatermark = getHighWatermark();
+
+	if (!currentWatermark || lastUpdatedDate > currentWatermark.lastUpdatedDate) {
+		return setHighWatermark(lastUpdatedDate);
+	}
+
+	return true;
 };
