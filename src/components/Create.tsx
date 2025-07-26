@@ -15,8 +15,16 @@ import update from 'immutability-helper';
 import difference from 'lodash/difference';
 import isEmpty from 'lodash/isEmpty';
 import some from 'lodash/some';
+import flatMap from 'lodash/flatMap';
+import forOwn from 'lodash/forOwn';
+import countBy from 'lodash/fp/countBy';
+import flow from 'lodash/fp/flow';
+import reverse from 'lodash/fp/reverse';
+import sortBy from 'lodash/fp/sortBy';
+import toPairs from 'lodash/fp/toPairs';
+import range from 'lodash/range';
 import MarkdownIt from 'markdown-it';
-import type React from 'react';
+import React from 'react';
 import {useCallback, useEffect, useState} from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
@@ -29,19 +37,25 @@ import FormControl from 'react-bootstrap/FormControl';
 import Modal from 'react-bootstrap/Modal';
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import Row from 'react-bootstrap/Row';
+import Table from 'react-bootstrap/Table';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import Select from 'react-select';
 import Blueprint from '../Blueprint';
 
 import {app} from '../base';
+import {parseVersion3} from '../parsing/blueprintParser';
+import {BlueprintWrapper} from '../parsing/BlueprintWrapper';
 import noImageAvailable from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
 import {useCreateBlueprint} from '../hooks/useCreateBlueprint';
 import {useTags} from '../hooks/useTags';
 import {loadFromStorage, removeFromStorage, STORAGE_KEYS, saveToStorage} from '../localStorage';
-import {parseVersion3} from '../parsing/blueprintParser';
 import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 import {RichText} from './core/text/RichText';
+import entitiesWithIcons from '../data/entitiesWithIcons';
+import type {BlueprintEntity, BlueprintTile, BlueprintContent, BlueprintIcon, RawBlueprintData} from '../schemas';
+import {FactorioIcon, type SignalType, type Quality} from './core/icons/FactorioIcon';
+
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
 
@@ -120,6 +134,7 @@ const Create: React.FC = () => {
 	const [state, setState] = useState<CreateState>(initialState);
 	const [parsedBlueprint, setParsedBlueprint] = useState<Blueprint | null>(null);
 	const [v15Decoded, setV15Decoded] = useState<any>(null);
+	const [blueprintWrapper, setBlueprintWrapper] = useState<BlueprintWrapper | null>(null);
 
 	const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 	const [pendingSubmission, setPendingSubmission] = useState(false);
@@ -152,6 +167,90 @@ const Create: React.FC = () => {
 			});
 	}, []);
 
+	const entityHistogram = useCallback((parsedBlueprint: BlueprintContent): [string, number][] => {
+		const entities = parsedBlueprint.entities || [];
+		const tiles = parsedBlueprint.tiles || [];
+		const validEntities = [...entities, ...tiles].filter(
+			(entity) => typeof entity.name === 'string' || typeof entity.name === 'number',
+		);
+
+		return flow(
+			countBy<BlueprintEntity | BlueprintTile>('name'),
+			toPairs,
+			sortBy(1),
+			reverse,
+		)(validEntities) as unknown as [string, number][];
+	}, []);
+
+	const itemHistogram = useCallback((parsedBlueprint: BlueprintContent): [string, number][] => {
+		const result: Record<string, number> = {};
+		const items = flatMap(parsedBlueprint.entities, (entity) => entity.items || []) as any[];
+
+		items.forEach((item: any) => {
+			if (!item || typeof item !== 'object') return;
+
+			// Handle original format: {item: "copper-cable", count: 5}
+			if ('item' in item && 'count' in item) {
+				result[item.item] = (result[item.item] || 0) + item.count;
+			}
+			// Handle new format with id.name and items structure
+			else if ('id' in item) {
+				const itemId = item.id;
+				if (itemId && typeof itemId === 'object' && 'name' in itemId) {
+					const itemName = itemId.name;
+					// Count the number of stacks if items.in_inventory exists
+					if ('items' in item) {
+						const itemsObj = item.items;
+						if (itemsObj && typeof itemsObj === 'object' && 'in_inventory' in itemsObj) {
+							const inventory = itemsObj.in_inventory;
+							if (Array.isArray(inventory)) {
+								const stackCount = inventory.length;
+								result[itemName] = (result[itemName] || 0) + stackCount;
+							} else if (inventory) {
+								result[itemName] = (result[itemName] || 0) + 1;
+							}
+						} else {
+							result[itemName] = (result[itemName] || 0) + 1;
+						}
+					} else {
+						result[itemName] = (result[itemName] || 0) + 1;
+					}
+				}
+			}
+			// Handle old style direct key-value pairs: {"copper-cable": 5}
+			else {
+				forOwn(item, (value, key) => {
+					// Skip non-primitive values that might cause [object Object] rendering
+					if (typeof value !== 'object' || value === null) {
+						result[key] = (result[key] || 0) + (value as number);
+					}
+				});
+			}
+		});
+
+		return flow(toPairs, sortBy(1), reverse)(result) as unknown as [string, number][];
+	}, []);
+
+	const getBookEntry = useCallback((eachBlueprint: BlueprintBookEntry): BlueprintContent | undefined => {
+		if (eachBlueprint.blueprint) {
+			return eachBlueprint.blueprint;
+		}
+
+		if ('upgrade_planner' in eachBlueprint && eachBlueprint.upgrade_planner) {
+			return eachBlueprint.upgrade_planner as BlueprintContent;
+		}
+
+		if ('deconstruction_planner' in eachBlueprint && eachBlueprint.deconstruction_planner) {
+			return eachBlueprint.deconstruction_planner as BlueprintContent;
+		}
+
+		if ('blueprint_book' in eachBlueprint && eachBlueprint.blueprint_book) {
+			return eachBlueprint.blueprint_book as BlueprintContent;
+		}
+
+		return undefined;
+	}, []);
+
 	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null => {
 		try {
 			return new Blueprint(blueprintString);
@@ -182,6 +281,7 @@ const Create: React.FC = () => {
 
 				setParsedBlueprint(parsedBp);
 				setV15Decoded(decoded);
+				setBlueprintWrapper(decoded ? new BlueprintWrapper(decoded as any) : null);
 			}
 		},
 		[parseBlueprint],
@@ -270,6 +370,7 @@ const Create: React.FC = () => {
 
 			setParsedBlueprint(newParsedBlueprint);
 			setV15Decoded(newV15Decoded);
+			setBlueprintWrapper(newV15Decoded ? new BlueprintWrapper(newV15Decoded as any) : null);
 
 			// Check if the blueprint is valid
 			if (!newParsedBlueprint || !newV15Decoded) {
@@ -603,6 +704,14 @@ const Create: React.FC = () => {
 	const allTagSuggestions = generateTagSuggestions(state.blueprint.title, parsedBlueprint, v15Decoded);
 	const unusedTagSuggestions = difference(allTagSuggestions, state.blueprint.tags || []);
 
+	const memoizedEntityHistogram = React.useMemo(() => {
+		return v15Decoded?.blueprint ? entityHistogram(v15Decoded.blueprint) : [];
+	}, [v15Decoded, entityHistogram]);
+
+	const memoizedItemHistogram = React.useMemo(() => {
+		return v15Decoded?.blueprint ? itemHistogram(v15Decoded.blueprint) : [];
+	}, [v15Decoded, itemHistogram]);
+
 	return (
 		<>
 			<Modal
@@ -926,6 +1035,363 @@ const Create: React.FC = () => {
 								</Form.Group>
 
 								{renderPreview()}
+
+								{/* Blueprint Preview Section */}
+								{blueprintWrapper && blueprintWrapper.getType() === 'blueprint' && (
+									<Form.Group
+										as={Row}
+										className="mb-3"
+									>
+										<Form.Label
+											column
+											sm="2"
+										>
+											{'Blueprint Preview'}
+										</Form.Label>
+										<Col sm={10}>
+											<Card>
+												<Card.Header>Requirements</Card.Header>
+												<Table
+													bordered
+													hover
+												>
+													<colgroup>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col span={1} />
+													</colgroup>
+
+													<tbody>
+														{memoizedEntityHistogram.map((pair) => {
+															if (
+																typeof pair[0] === 'object' ||
+																typeof pair[1] === 'object'
+															) {
+																return null;
+															}
+															return (
+																<tr key={pair[0]}>
+																	<td
+																		className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}
+																	>
+																		{(entitiesWithIcons as any)[pair[0]] ? (
+																			<FactorioIcon
+																				icon={{name: pair[0], type: 'item'}}
+																				size="small"
+																			/>
+																		) : (
+																			''
+																		)}
+																	</td>
+																	<td className="number">{pair[1]}</td>
+																	<td>{pair[0]}</td>
+																</tr>
+															);
+														})}
+														{memoizedItemHistogram.map((pair) => {
+															// Skip rendering if key or value is not a primitive to prevent [object Object]
+															if (
+																typeof pair[0] === 'object' ||
+																typeof pair[1] === 'object'
+															) {
+																return null;
+															}
+															return (
+																<tr key={pair[0]}>
+																	<td
+																		className={`icon icon-${(entitiesWithIcons as any)[pair[0]]}`}
+																	>
+																		{(entitiesWithIcons as any)[pair[0]] ? (
+																			<FactorioIcon
+																				icon={{name: pair[0], type: 'item'}}
+																				size="small"
+																			/>
+																		) : (
+																			''
+																		)}
+																	</td>
+																	<td className="number">{pair[1]}</td>
+																	<td>{pair[0]}</td>
+																</tr>
+															);
+														})}
+													</tbody>
+												</Table>
+											</Card>
+										</Col>
+									</Form.Group>
+								)}
+
+								{blueprintWrapper && blueprintWrapper.getType() === 'blueprint' && (
+									<Form.Group
+										as={Row}
+										className="mb-3"
+									>
+										<Form.Label
+											column
+											sm="2"
+										>
+											{'Extra Info'}
+										</Form.Label>
+										<Col sm={10}>
+											<Card border="secondary">
+												<Card.Header>Extra Info</Card.Header>
+												<Table
+													bordered
+													hover
+												>
+													<colgroup>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col span={1} />
+													</colgroup>
+
+													<tbody>
+														<tr>
+															<td colSpan={2}>
+																{(v15Decoded as RawBlueprintData).blueprint?.label}
+															</td>
+														</tr>
+														{((v15Decoded as RawBlueprintData).blueprint?.icons || [])
+															.filter((icon) => icon !== null)
+															.map((icon) => {
+																const iconObj = icon as BlueprintIcon;
+																const iconName =
+																	('name' in iconObj
+																		? String(iconObj.name)
+																		: String(iconObj.signal?.name || '')) || '';
+																return (
+																	<tr key={(icon as BlueprintIcon).index}>
+																		<td className={`icon icon-${iconName}`}>
+																			{iconObj.signal ? (
+																				<div
+																					style={{
+																						width: '32px',
+																						height: '32px',
+																					}}
+																				>
+																					<FactorioIcon
+																						icon={{
+																							name: iconObj.signal.name,
+																							type: (iconObj.signal
+																								.type ||
+																								'item') as SignalType,
+																							quality: iconObj.signal
+																								.quality as Quality,
+																						}}
+																						size="small"
+																					/>
+																				</div>
+																			) : null}
+																		</td>
+																		<td>{String(iconName)}</td>
+																	</tr>
+																);
+															})}
+													</tbody>
+												</Table>
+											</Card>
+										</Col>
+									</Form.Group>
+								)}
+
+								{blueprintWrapper && blueprintWrapper.getType() === 'blueprint-book' && (
+									<Form.Group
+										as={Row}
+										className="mb-3"
+									>
+										<Form.Label
+											column
+											sm="2"
+										>
+											{'Book Contents'}
+										</Form.Label>
+										<Col sm={10}>
+											<Card>
+												<Card.Header>Extra Info</Card.Header>
+												<Table
+													bordered
+													hover
+												>
+													<colgroup>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col span={1} />
+													</colgroup>
+													<tbody>
+														<tr>
+															<td colSpan={4}>{'Book'}</td>
+															<td>
+																{(v15Decoded as RawBlueprintData).blueprint_book?.label}
+															</td>
+														</tr>
+														{(
+															v15Decoded as RawBlueprintData
+														).blueprint_book?.blueprints.map(
+															(eachBlueprint, blueprintIndex) => (
+																<tr key={blueprintIndex}>
+																	{range(4).map((iconIndex) => {
+																		const entry = getBookEntry(eachBlueprint);
+																		if (
+																			entry &&
+																			entry.icons &&
+																			entry.icons.length > iconIndex &&
+																			entry.icons[iconIndex] !== null
+																		) {
+																			const icon = entry.icons[
+																				iconIndex
+																			] as BlueprintIcon;
+
+																			const iconName =
+																				('name' in icon
+																					? String(icon.name)
+																					: String(
+																							icon.signal?.name || '',
+																						)) || '';
+																			return (
+																				<td
+																					className={`icon icon-${iconName}`}
+																					key={iconIndex}
+																				>
+																					{icon.signal ? (
+																						<div
+																							style={{
+																								width: '32px',
+																								height: '32px',
+																							}}
+																						>
+																							<FactorioIcon
+																								icon={{
+																									name: icon.signal
+																										.name,
+																									type: (icon.signal
+																										.type ||
+																										'item') as SignalType,
+																									quality: icon.signal
+																										.quality as Quality,
+																								}}
+																								size="small"
+																							/>
+																						</div>
+																					) : null}
+																				</td>
+																			);
+																		}
+																		return (
+																			<td
+																				className="icon"
+																				key={iconIndex}
+																			/>
+																		);
+																	})}
+																	<td>
+																		{eachBlueprint.blueprint
+																			? eachBlueprint.blueprint.label
+																			: 'Empty slot in book'}
+																	</td>
+																</tr>
+															),
+														)}
+													</tbody>
+												</Table>
+											</Card>
+										</Col>
+									</Form.Group>
+								)}
+
+								{blueprintWrapper && blueprintWrapper.getType() === 'upgrade-planner' && (
+									<Form.Group
+										as={Row}
+										className="mb-3"
+									>
+										<Form.Label
+											column
+											sm="2"
+										>
+											{'Upgrade Planner'}
+										</Form.Label>
+										<Col sm={10}>
+											<Card>
+												<Card.Header>Upgrade Planner</Card.Header>
+												<Table
+													bordered
+													hover
+												>
+													<colgroup>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col
+															span={1}
+															style={{width: '1%'}}
+														/>
+														<col span={1} />
+													</colgroup>
+													<tbody>
+														{(
+															(v15Decoded as RawBlueprintData).upgrade_planner
+																?.settings as any
+														)?.mappers?.map(({from, to, index}: any) => (
+															<tr key={index}>
+																<td className={`icon icon-${from.name}`}>
+																	{(entitiesWithIcons as any)[from.name] ? (
+																		<FactorioIcon
+																			icon={{
+																				name: from.name,
+																				type: from.type || 'item',
+																				quality: from.quality,
+																			}}
+																			size="small"
+																		/>
+																	) : (
+																		''
+																	)}
+																</td>
+																<td className={`icon icon-${to.name}`}>
+																	{(entitiesWithIcons as any)[to.name] ? (
+																		<FactorioIcon
+																			icon={{
+																				name: to.name,
+																				type: to.type || 'item',
+																				quality: to.quality,
+																			}}
+																			size="small"
+																		/>
+																	) : (
+																		''
+																	)}
+																</td>
+															</tr>
+														))}
+													</tbody>
+												</Table>
+											</Card>
+										</Col>
+									</Form.Group>
+								)}
 							</>
 						)}
 
