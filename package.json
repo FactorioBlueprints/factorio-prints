@@ -62,7 +62,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.1.2",
-		"@eslint/js": "9.30.1",
+		"@eslint/js": "9.32.0",
 		"@sentry/vite-plugin": "4.0.0",
 		"@tanstack/react-query-devtools": "5.83.0",
 		"@tanstack/router-cli": "1.130.2",
