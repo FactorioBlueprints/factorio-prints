@@ -19,7 +19,7 @@
 		"strictBindCallApply": true,
 		"noImplicitThis": true,
 		// Making build lenient - will gradually re-strict
-		"noImplicitAny": false,
+		"noImplicitAny": true,
 		"jsx": "react-jsx",
 		// Making build lenient - will gradually re-strict
 		"noUnusedLocals": false,
