@@ -95,12 +95,11 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 					referrerPolicy="no-referrer"
 					onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 						const target = e.target as HTMLImageElement;
-						console.log('Image load error in BlueprintThumbnail:', target.src);
 						try {
 							target.onerror = null;
 							target.src = '/icons/entity-unknown.png';
-						} catch (err) {
-							console.error('Error in BlueprintThumbnail image error handler:', err);
+						} catch {
+							// Silently handle error
 						}
 					}}
 				/>

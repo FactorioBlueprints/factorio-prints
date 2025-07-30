@@ -155,8 +155,7 @@ const Create: React.FC = () => {
 	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null => {
 		try {
 			return new Blueprint(blueprintString);
-		} catch (ignored) {
-			console.log('Create.parseBlueprint', {ignored});
+		} catch {
 			return null;
 		}
 	}, []);
