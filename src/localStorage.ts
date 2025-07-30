@@ -153,25 +153,94 @@ function getWorker() {
 		try {
 			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
 
-			worker.onerror = (error) => {
-				console.error('[IndexedDB Worker] Failed to initialize worker:', error);
-				Sentry.captureException(error instanceof ErrorEvent ? error.error || error : error, {
-					tags: {
-						component: 'indexeddb-worker',
-						operation: 'worker-initialization',
-					},
-					extra: {
-						filename: error instanceof ErrorEvent ? error.filename : undefined,
-						lineno: error instanceof ErrorEvent ? error.lineno : undefined,
-						colno: error instanceof ErrorEvent ? error.colno : undefined,
-						message: error instanceof ErrorEvent ? error.message : String(error),
-					},
-				});
+			worker.onerror = (event) => {
+				console.error('[IndexedDB Worker] Failed to initialize worker:', event);
+
+				let errorToCapture: Error;
+				let errorMessage: string;
+
+				if (event instanceof ErrorEvent) {
+					errorMessage = event.message || 'Unknown worker error';
+					if (event.error instanceof Error) {
+						errorToCapture = event.error;
+					} else {
+						errorToCapture = new Error(errorMessage);
+						errorToCapture.name = 'WorkerError';
+					}
+
+					Sentry.captureException(errorToCapture, {
+						tags: {
+							component: 'indexeddb-worker',
+							operation: 'worker-initialization',
+						},
+						extra: {
+							filename: event.filename,
+							lineno: event.lineno,
+							colno: event.colno,
+							message: errorMessage,
+							errorType: event.error ? event.error.constructor.name : 'Unknown',
+						},
+					});
+				} else {
+					errorMessage = String(event);
+					errorToCapture = new Error(errorMessage);
+					errorToCapture.name = 'WorkerError';
+
+					Sentry.captureException(errorToCapture, {
+						tags: {
+							component: 'indexeddb-worker',
+							operation: 'worker-initialization',
+						},
+						extra: {
+							rawEvent: String(event),
+						},
+					});
+				}
+
 				worker = undefined;
 			};
 
 			worker.onmessage = (e) => {
 				const {id, result, error, success} = e.data;
+
+				// Handle uncaught errors from the worker
+				if (e.data.type === 'error' && error?.isUncaught) {
+					const uncaughtError = new Error(error.message);
+					uncaughtError.name = 'WorkerUncaughtError';
+
+					Sentry.captureException(uncaughtError, {
+						tags: {
+							component: 'indexeddb-worker',
+							operation: 'worker-runtime',
+							errorType: 'uncaught-error',
+						},
+						extra: {
+							details: error.details,
+							stack: error.stack,
+						},
+					});
+					return;
+				}
+
+				// Handle unhandled promise rejections from the worker
+				if (e.data.type === 'error' && error?.isUnhandledRejection) {
+					const rejectionError = new Error(error.message);
+					rejectionError.name = 'WorkerUnhandledRejection';
+
+					Sentry.captureException(rejectionError, {
+						tags: {
+							component: 'indexeddb-worker',
+							operation: 'worker-runtime',
+							errorType: 'unhandled-rejection',
+						},
+						extra: {
+							reason: error.reason,
+							stack: error.stack,
+						},
+					});
+					return;
+				}
+
 				const pendingOp = pendingOperations.get(id);
 
 				if (pendingOp) {

@@ -21,7 +21,11 @@ interface SuccessResult {
 interface ErrorResult {
 	message: string;
 	stack?: string;
-	isConnectionClosing: boolean;
+	isConnectionClosing?: boolean;
+	isUncaught?: boolean;
+	isUnhandledRejection?: boolean;
+	details?: any;
+	reason?: string;
 }
 
 interface WorkerResponse {
@@ -29,16 +33,59 @@ interface WorkerResponse {
 	result?: SuccessResult;
 	error?: ErrorResult;
 	success: boolean;
+	type?: 'error';
 }
 
 let store: UseStore | undefined;
 
-interface WorkerGlobalScope {
-	onmessage: ((this: WorkerGlobalScope, ev: MessageEvent<WorkerMessage>) => any) | null;
-	postMessage(message: WorkerResponse): void;
-}
+declare const self: DedicatedWorkerGlobalScope;
 
-declare const self: WorkerGlobalScope;
+// Global error handler for uncaught errors in the worker
+self.addEventListener('error', (event: ErrorEvent) => {
+	console.error('[IndexedDB Worker] Uncaught error:', event);
+
+	const errorInfo = {
+		message: event.message || 'Unknown error',
+		filename: event.filename,
+		lineno: event.lineno,
+		colno: event.colno,
+		error: event.error ? String(event.error) : undefined,
+		stack: event.error?.stack,
+	};
+
+	// Send error info to main thread for proper logging
+	self.postMessage({
+		type: 'error',
+		error: {
+			message: `Uncaught worker error: ${errorInfo.message}`,
+			stack: errorInfo.stack,
+			isUncaught: true,
+			details: errorInfo,
+		},
+		success: false,
+	});
+});
+
+// Global handler for unhandled promise rejections in the worker
+self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+	console.error('[IndexedDB Worker] Unhandled promise rejection:', event.reason);
+
+	const errorMessage = event.reason instanceof Error ? event.reason.message : String(event.reason);
+
+	const errorStack = event.reason instanceof Error ? event.reason.stack : undefined;
+
+	// Send error info to main thread for proper logging
+	self.postMessage({
+		type: 'error',
+		error: {
+			message: `Unhandled promise rejection: ${errorMessage}`,
+			stack: errorStack,
+			isUnhandledRejection: true,
+			reason: String(event.reason),
+		},
+		success: false,
+	});
+});
 
 self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 	const {type, key, data, id, storeConfig} = e.data;
