@@ -150,14 +150,35 @@ function debounce<T extends (...args: any[]) => any>(
 let worker: Worker | undefined;
 let operationCounter = 0;
 const pendingOperations = new Map();
+let workerReconnectAttempts = 0;
+const maxWorkerReconnectAttempts = 3;
+let lastWorkerResetTime = 0;
+const workerResetCooldown = 60000; // 1 minute cooldown between resets
+
+function resetWorkerIfNeeded() {
+	const now = Date.now();
+	if (now - lastWorkerResetTime > workerResetCooldown) {
+		console.log('[IndexedDB Worker] Resetting worker reconnect attempts');
+		workerReconnectAttempts = 0;
+		lastWorkerResetTime = now;
+	}
+}
 
 function getWorker() {
 	if (!worker) {
+		// Check if we should reset the reconnect counter
+		resetWorkerIfNeeded();
+
+		if (workerReconnectAttempts >= maxWorkerReconnectAttempts) {
+			return undefined;
+		}
+
 		try {
+			workerReconnectAttempts++;
 			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
 
 			worker.onerror = (event) => {
-				console.error('[IndexedDB Worker] Failed to initialize worker:', event);
+				console.error('[IndexedDB Worker] Worker error:', event);
 
 				let errorToCapture: Error;
 				let errorMessage: string;
@@ -174,7 +195,8 @@ function getWorker() {
 					Sentry.captureException(errorToCapture, {
 						tags: {
 							component: 'indexeddb-worker',
-							operation: 'worker-initialization',
+							operation: 'worker-error',
+							reconnectAttempt: workerReconnectAttempts,
 						},
 						extra: {
 							filename: event.filename,
@@ -192,7 +214,8 @@ function getWorker() {
 					Sentry.captureException(errorToCapture, {
 						tags: {
 							component: 'indexeddb-worker',
-							operation: 'worker-initialization',
+							operation: 'worker-error',
+							reconnectAttempt: workerReconnectAttempts,
 						},
 						extra: {
 							rawEvent: String(event),
@@ -200,7 +223,17 @@ function getWorker() {
 					});
 				}
 
-				worker = undefined;
+				// Clean up failed worker and retry later
+				if (worker) {
+					worker.terminate();
+					worker = undefined;
+				}
+
+				// Reset pending operations
+				pendingOperations.forEach((op) => {
+					op.resolve({data: undefined, success: false});
+				});
+				pendingOperations.clear();
 			};
 
 			worker.onmessage = (e) => {
@@ -287,81 +320,157 @@ function getWorker() {
 					storeName: 'query-cache-store',
 				},
 			});
+
+			// Reset reconnect attempts on successful initialization
+			console.log('[IndexedDB Worker] Worker initialized successfully');
+			workerReconnectAttempts = 0;
 		} catch (error) {
 			console.error('[IndexedDB Worker] Failed to create worker:', error);
 			worker = undefined;
+
+			Sentry.captureException(error, {
+				tags: {
+					component: 'indexeddb-worker',
+					operation: 'worker-creation',
+					reconnectAttempt: workerReconnectAttempts,
+				},
+			});
 		}
 	}
 
 	return worker;
 }
 
-async function workerOperation(type: string, key: string, data = null) {
-	const worker = getWorker();
+type WorkerOperationResult = {success: true; data?: any} | {success: false} | {data: any};
 
-	// Fallback to direct idb-keyval if worker fails
-	if (!worker) {
-		switch (type) {
-			case 'set':
-				await set(key, data, indexedDbStore);
-				return {success: true};
-			case 'get':
-				return {data: await get(key, indexedDbStore)};
-			case 'delete':
-				await del(key, indexedDbStore);
-				return {success: true};
-			default:
-				throw new Error('Unknown operation type');
-		}
-	}
+async function workerOperation(type: string, key: string, data = null, retryCount = 0): Promise<WorkerOperationResult> {
+	const maxRetries = 3;
+	const baseDelay = 100;
 
-	return new Promise((resolve, reject) => {
-		const id = operationCounter++;
+	try {
+		const worker = getWorker();
 
-		pendingOperations.set(id, {resolve, reject});
-
-		worker.postMessage({type, key, data, id});
-
-		const timeoutDuration = 10000;
-		const startTime = Date.now();
-
-		setTimeout(() => {
-			if (pendingOperations.has(id)) {
-				pendingOperations.delete(id);
-				const duration = Date.now() - startTime;
-				console.warn('[IndexedDB] Operation timed out:', type, key, `after ${duration}ms`);
-
-				const timeoutError = new Error(`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`);
-				timeoutError.name = 'IndexedDBTimeoutError';
-
-				Sentry.captureException(timeoutError, {
-					level: 'warning',
-					tags: {
-						component: 'localStorage',
-						errorType: 'timeout',
-						operationType: type,
-						database: 'FACTORIO_PRINTS_QUERY_CACHE',
-					},
-					extra: {
-						operationType: type,
-						key: key,
-						timeout: timeoutDuration,
-						actualDuration: duration,
-						userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-					},
-				});
-
-				if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
-					console.warn('[IndexedDB] Query cache timeout - clearing cache');
-					del(key, indexedDbStore).catch((err) =>
-						console.error('[IndexedDB] Failed to clear cache after timeout:', err),
-					);
+		// Fallback to direct idb-keyval if worker fails
+		if (!worker) {
+			try {
+				switch (type) {
+					case 'set':
+						await set(key, data, indexedDbStore);
+						return {success: true};
+					case 'get':
+						return {data: await get(key, indexedDbStore)};
+					case 'delete':
+						await del(key, indexedDbStore);
+						return {success: true};
+					default:
+						throw new Error('Unknown operation type');
 				}
+			} catch (error) {
+				// Handle connection lost errors in direct mode
+				if (
+					error instanceof Error &&
+					(error.message.includes('Connection to Indexed Database server lost') ||
+						error.message.includes('database connection is closing') ||
+						error.message.includes('IDBDatabase'))
+				) {
+					if (retryCount < maxRetries) {
+						const delay = baseDelay * Math.pow(2, retryCount);
+						console.warn(
+							`[IndexedDB] Connection lost, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`,
+						);
+						await new Promise((resolve) => setTimeout(resolve, delay));
+						return workerOperation(type, key, data, retryCount + 1);
+					}
 
-				resolve(type === 'get' ? {data: undefined} : {success: false});
+					console.error('[IndexedDB] Connection lost after max retries, returning fallback');
+					return type === 'get' ? {data: undefined} : {success: false};
+				}
+				throw error;
 			}
-		}, timeoutDuration);
-	});
+		}
+
+		return new Promise((resolve, reject) => {
+			const id = operationCounter++;
+
+			pendingOperations.set(id, {resolve, reject});
+
+			worker.postMessage({type, key, data, id});
+
+			const timeoutDuration = 10000;
+			const startTime = Date.now();
+
+			setTimeout(() => {
+				if (pendingOperations.has(id)) {
+					pendingOperations.delete(id);
+					const duration = Date.now() - startTime;
+					console.warn('[IndexedDB] Operation timed out:', type, key, `after ${duration}ms`);
+
+					const timeoutError = new Error(`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`);
+					timeoutError.name = 'IndexedDBTimeoutError';
+
+					Sentry.captureException(timeoutError, {
+						level: 'warning',
+						tags: {
+							component: 'localStorage',
+							errorType: 'timeout',
+							operationType: type,
+							database: 'FACTORIO_PRINTS_QUERY_CACHE',
+						},
+						extra: {
+							operationType: type,
+							key: key,
+							timeout: timeoutDuration,
+							actualDuration: duration,
+							userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+						},
+					});
+
+					if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
+						console.warn('[IndexedDB] Query cache timeout - clearing cache');
+						del(key, indexedDbStore).catch((err) =>
+							console.error('[IndexedDB] Failed to clear cache after timeout:', err),
+						);
+					}
+
+					resolve(type === 'get' ? {data: undefined} : {success: false});
+				}
+			}, timeoutDuration);
+		});
+	} catch (error) {
+		// Handle connection errors at the worker operation level
+		if (
+			error instanceof Error &&
+			(error.message.includes('Connection to Indexed Database server lost') ||
+				error.message.includes('Failed to execute') ||
+				error.message.includes('InvalidStateError'))
+		) {
+			if (retryCount < maxRetries) {
+				const delay = baseDelay * Math.pow(2, retryCount);
+				console.warn(
+					`[IndexedDB] Worker operation failed, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`,
+				);
+				await new Promise((resolve) => setTimeout(resolve, delay));
+				return workerOperation(type, key, data, retryCount + 1);
+			}
+		}
+
+		console.error('[IndexedDB] Worker operation failed:', error);
+		Sentry.captureException(error, {
+			tags: {
+				component: 'localStorage',
+				errorType: 'worker-operation-error',
+				operationType: type,
+			},
+			extra: {
+				operationType: type,
+				key: key,
+				retryCount: retryCount,
+				errorMessage: error instanceof Error ? error.message : String(error),
+			},
+		});
+
+		return type === 'get' ? {data: undefined} : {success: false};
+	}
 }
 
 function formatBytes(bytes: number) {
@@ -388,12 +497,28 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				const formattedSize = formatBytes(dataSize);
 				console.log(`[IndexedDB] Persisting client data of size: ${formattedSize}`);
 
-				await workerOperation('set', idbValidKey, client);
+				const result = await workerOperation('set', idbValidKey, client);
 
-				console.log('[IndexedDB] Persistence complete');
+				if (result && 'success' in result && !result.success) {
+					console.warn('[IndexedDB] Persistence operation did not succeed, but continuing gracefully');
+				} else {
+					console.log('[IndexedDB] Persistence complete');
+				}
 			} catch (error) {
 				console.error('[IndexedDB] Error persisting to IndexedDB:', error);
-				throw error;
+
+				// Don't throw - allow the app to continue functioning
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: {
+						component: 'localStorage',
+						operation: 'persist',
+					},
+					extra: {
+						key: idbValidKey,
+						errorMessage: error instanceof Error ? error.message : String(error),
+					},
+				});
 			}
 		},
 		2000,
