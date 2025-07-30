@@ -1,3 +1,4 @@
+import {useEffect, useState} from 'react';
 import Disqus from 'disqus-react';
 import Row from 'react-bootstrap/Row';
 import DisqusErrorBoundary from '../DisqusErrorBoundary';
@@ -14,11 +15,23 @@ interface CommentsSectionProps {
 }
 
 export function CommentsSection({blueprintId, blueprintTitle}: CommentsSectionProps) {
+	const [shouldRenderDisqus, setShouldRenderDisqus] = useState(false);
+
 	const disqusConfig: DisqusConfig = {
 		url: `https://factorioprints.com/view/${blueprintId}`,
 		identifier: blueprintId,
 		title: blueprintTitle,
 	};
+
+	useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			setShouldRenderDisqus(true);
+		}, 100);
+
+		return () => {
+			clearTimeout(timeoutId);
+		};
+	}, [blueprintId]);
 
 	return (
 		<Row className="w-100">
@@ -27,10 +40,12 @@ export function CommentsSection({blueprintId, blueprintTitle}: CommentsSectionPr
 					id="disqus_thread"
 					style={{minHeight: '100px'}}
 				>
-					<Disqus.DiscussionEmbed
-						shortname="factorio-blueprints"
-						config={disqusConfig}
-					/>
+					{shouldRenderDisqus && (
+						<Disqus.DiscussionEmbed
+							shortname="factorio-blueprints"
+							config={disqusConfig}
+						/>
+					)}
 				</div>
 			</DisqusErrorBoundary>
 		</Row>

@@ -231,6 +231,7 @@ function SingleBlueprint() {
 			</Row>
 			{blueprintData && (
 				<CommentsSection
+					key={`comments-${blueprintId}`}
 					blueprintId={blueprintId}
 					blueprintTitle={blueprintData?.title}
 				/>
