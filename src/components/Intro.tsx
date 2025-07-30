@@ -1,13 +1,12 @@
 import {getAuth} from 'firebase/auth';
-import isEmpty from 'lodash/isEmpty';
 import type React from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base.js';
 
 const Intro: React.FC = () => {
-	const [user] = useAuthState(getAuth(app));
+	const [user, loading] = useAuthState(getAuth(app));
 
-	if (!isEmpty(user)) {
+	if (loading || user) {
 		return null;
 	}
 
