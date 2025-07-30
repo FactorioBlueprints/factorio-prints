@@ -697,8 +697,12 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 		{maxWait: 10000},
 	);
 
-	return {
+	const persister: Persister = {
 		persistClient: async (client: any) => {
+			if (!client) {
+				console.warn('[IndexedDB] Attempted to persist null/undefined client');
+				return;
+			}
 			try {
 				return await debouncedPersist(client);
 			} catch (error) {
@@ -785,6 +789,13 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 			}
 		},
 	};
+
+	// Validate the persister object before returning
+	if (!persister.restoreClient || typeof persister.restoreClient !== 'function') {
+		throw new Error('[IndexedDB] Failed to create valid persister - restoreClient method missing');
+	}
+
+	return persister;
 }
 
 export const saveToStorage = (key: string, data: any, retryWithoutBlueprintString = true): boolean => {
