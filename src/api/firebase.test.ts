@@ -235,7 +235,10 @@ describe('firebase API', () => {
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
 			expect(result).toBeNull();
-			expect(consoleWarnSpy).toHaveBeenCalledWith('Error fetching blueprint from CDN:', expect.any(Error));
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				`Failed to parse JSON response from CDN for blueprint ${mockBlueprintSummary.key}:`,
+				expect.any(Error),
+			);
 
 			consoleWarnSpy.mockRestore();
 		});

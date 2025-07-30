@@ -22,6 +22,26 @@ import {
 } from '../schemas';
 
 /**
+ * Checks if an error is a network-related error that should not be sent to Sentry.
+ * These are expected errors that occur when users have connectivity issues.
+ */
+const isNetworkError = (error: unknown): boolean => {
+	if (error instanceof TypeError && error.message === 'Failed to fetch') {
+		return true;
+	}
+	if (error instanceof Error) {
+		const message = error.message.toLowerCase();
+		return (
+			message.includes('failed to fetch') ||
+			message.includes('network error') ||
+			message.includes('network request failed') ||
+			message.includes('fetch failed')
+		);
+	}
+	return false;
+};
+
+/**
  * Transforms a blueprint key to its CDN URL format.
  *
  * @param blueprintKey - The blueprint key (e.g., "-KnQ865j-qQ21WoUPbd3")
@@ -69,7 +89,14 @@ export const fetchBlueprintFromCdn = async (
 			return null;
 		}
 
-		const data = await response.json();
+		let data;
+		try {
+			data = await response.json();
+		} catch (jsonError) {
+			console.warn(`Failed to parse JSON response from CDN for blueprint ${blueprintKey}:`, jsonError);
+			return null;
+		}
+
 		return validateRawBlueprint(data);
 	} catch (error) {
 		console.warn('Error fetching blueprint from CDN:', error);
@@ -153,6 +180,10 @@ export const fetchBlueprint = async (
 		console.log(`Blueprint ${blueprintId} fetched from Firebase`);
 		return validateRawBlueprint(snapshot.val());
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching blueprint ${blueprintId}:`, error);
+			return null;
+		}
 		console.error('Error fetching blueprint:', error);
 		throw error;
 	}
@@ -164,6 +195,10 @@ export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]>
 		const snapshot = await get(tagsRef);
 		return snapshot.exists() ? snapshot.val() : [];
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching blueprint tags for ${blueprintId}:`, error);
+			return [];
+		}
 		console.error('Error fetching blueprint tags:', error);
 		throw error;
 	}
@@ -180,6 +215,10 @@ export const fetchTags = async (): Promise<Record<string, string[]>> => {
 
 		return snapshot.val();
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn('Network error fetching tags:', error);
+			return {};
+		}
 		console.error('Error fetching tags:', error);
 		throw error;
 	}
@@ -201,6 +240,10 @@ export const fetchByTagData = async (tagId: string): Promise<Record<string, bool
 		const snapshot = await get(ref(getDatabase(app), `/byTag/${tagId}`));
 		return snapshot.val() || {};
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching tag data for ${tagId}:`, error);
+			return {};
+		}
 		console.error('Error fetching tag data:', error);
 		throw error;
 	}
@@ -213,6 +256,10 @@ export const fetchModerator = async (userId: string): Promise<boolean> => {
 
 		return Boolean(snapshot.val());
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching moderator status for ${userId}:`, error);
+			return false;
+		}
 		console.error('Error fetching moderator status:', error);
 		throw error;
 	}
@@ -225,6 +272,10 @@ export const fetchUserDisplayName = async (userId: string): Promise<string | nul
 
 		return snapshot.val();
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching user display name for ${userId}:`, error);
+			return null;
+		}
 		console.error('Error fetching user display name:', error);
 		throw error;
 	}
@@ -235,6 +286,10 @@ export const fetchUserBlueprints = async (userId: string): Promise<Record<string
 		const snapshot = await get(ref(getDatabase(app), `/users/${userId}/blueprints`));
 		return snapshot.val() || {};
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching user blueprints for ${userId}:`, error);
+			return {};
+		}
 		console.error('Error fetching user blueprints:', error);
 		throw error;
 	}
@@ -245,6 +300,10 @@ export const fetchUserFavorites = async (userId: string): Promise<Record<string,
 		const snapshot = await get(ref(getDatabase(app), `/users/${userId}/favorites`));
 		return snapshot.val() || {};
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching user favorites for ${userId}:`, error);
+			return {};
+		}
 		console.error('Error fetching user favorites:', error);
 		throw error;
 	}
@@ -268,6 +327,10 @@ export const fetchUser = async (userId: string): Promise<RawUser | null> => {
 			blueprints: userData.blueprints || {},
 		};
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching user ${userId}:`, error);
+			return null;
+		}
 		console.error('Error fetching user:', error);
 		throw error;
 	}
@@ -296,6 +359,10 @@ export const fetchAllUsers = async (): Promise<UserData[]> => {
 
 		return usersData.sort((a, b) => b.favoritesCount - a.favoritesCount);
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn('Network error fetching all users:', error);
+			return [];
+		}
 		console.error('Error fetching all users:', error);
 		throw error;
 	}
@@ -435,6 +502,10 @@ export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlu
 
 		return validateRawBlueprintSummary(snapshot.val());
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn(`Network error fetching blueprint summary for ${blueprintId}:`, error);
+			return null;
+		}
 		console.error('Error fetching blueprint summary:', error);
 		throw error;
 	}
@@ -510,6 +581,15 @@ export const fetchPaginatedSummaries = async (
 			lastValue: nextLastValue,
 		});
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn('Network error fetching paginated summaries:', error);
+			return validateRawBlueprintSummaryPage({
+				data: {},
+				hasMore: false,
+				lastKey: null,
+				lastValue: null,
+			});
+		}
 		console.error('Error fetching paginated summaries:', error);
 		throw error;
 	}
@@ -541,6 +621,10 @@ export const fetchSummariesNewerThan = async (
 
 		return summaries.reverse();
 	} catch (error) {
+		if (isNetworkError(error)) {
+			console.warn('Network error fetching summaries newer than high watermark:', error);
+			return [];
+		}
 		console.error('Error fetching summaries newer than high watermark:', error);
 		throw error;
 	}
