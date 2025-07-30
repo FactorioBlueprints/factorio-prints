@@ -50,10 +50,10 @@ export const ExtraInfoPanelComponent = ({blueprint}: ExtraInfoPanelProps) => {
 							icons.length > 0 &&
 							icons.map((icon, index) => (
 								<tr key={icon.index || index}>
-									<td className={`icon icon-${icon.signal.name}`}>
+									<td className={`icon icon-${icon.signal.name || icon.signal.backup || ''}`}>
 										<FactorioIcon
 											icon={{
-												name: icon.signal.name,
+												name: icon.signal.name || icon.signal.backup || '',
 												type: icon.signal.type as any,
 												quality: icon.signal.quality as any,
 											}}
@@ -61,7 +61,7 @@ export const ExtraInfoPanelComponent = ({blueprint}: ExtraInfoPanelProps) => {
 										/>
 									</td>
 									<td>
-										<RichText text={icon.signal.name} />
+										<RichText text={icon.signal.name || icon.signal.backup || ''} />
 									</td>
 								</tr>
 							))}
@@ -125,7 +125,7 @@ export const ExtraInfoPanelComponent = ({blueprint}: ExtraInfoPanelProps) => {
 									<FactorioIcon
 										key={slotIndex}
 										icon={{
-											name: icon.signal.name,
+											name: icon.signal.name || icon.signal.backup || '',
 											type: icon.signal.type as any,
 											quality: icon.signal.quality as any,
 										}}

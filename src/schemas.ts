@@ -144,6 +144,31 @@ const getValueAtPath = (obj: unknown, path: string[]): unknown => {
 	return current;
 };
 
+const extractBlueprintContext = (data: unknown, path: string[]): unknown => {
+	// Look for blueprint-related path segments and extract the nearest blueprint object
+	const pathString = path.join('.');
+
+	// Find patterns like blueprint_book.blueprints.X.blueprint or blueprint_book.blueprints.X.blueprint_book.blueprints.Y.blueprint
+	const blueprintPattern = /^(.*?\.blueprint)(?:\.|$)/;
+	const match = pathString.match(blueprintPattern);
+
+	if (match) {
+		const blueprintPath = match[1].split('.');
+		return getValueAtPath(data, blueprintPath);
+	}
+
+	// Also check for blueprint_book at any level
+	const bookPattern = /^(.*?\.blueprint_book)(?:\.|$)/;
+	const bookMatch = pathString.match(bookPattern);
+
+	if (bookMatch) {
+		const bookPath = bookMatch[1].split('.');
+		return getValueAtPath(data, bookPath);
+	}
+
+	return undefined;
+};
+
 const serializeValue = (value: unknown): string => {
 	if (value === null) return 'null';
 	if (value === undefined) return 'undefined';
@@ -199,6 +224,26 @@ export const validate = <T>(
 			};
 			console.error('Schema validation failed', JSON.stringify(errorInfo, null, 2));
 
+			// Log blueprint context for nested blueprint errors
+			const blueprintContexts = new Map<string, unknown>();
+			for (const issue of error.issues) {
+				const context = extractBlueprintContext(data, issue.path.map(String));
+				if (context) {
+					const contextPath = issue.path.join('.');
+					const blueprintPath = contextPath.match(/^(.*?\.blueprint(?:_book)?)(?:\.|$)/)?.[1] || contextPath;
+					if (!blueprintContexts.has(blueprintPath)) {
+						blueprintContexts.set(blueprintPath, context);
+					}
+				}
+			}
+
+			if (blueprintContexts.size > 0) {
+				console.error('Blueprint context for errors:');
+				blueprintContexts.forEach((context, path) => {
+					console.error(`  At path "${path}":`, context);
+				});
+			}
+
 			// Log the full object for debugging
 			try {
 				const serialized = JSON.stringify(data);
@@ -206,13 +251,8 @@ export const validate = <T>(
 				if (serialized && serialized.length <= maxLength) {
 					console.error('Full object that failed validation:', data);
 				} else {
-					// For large objects, log the actual object to console
+					// For large objects, still log the actual object to console
 					console.error('Full object that failed validation (large object):', data);
-					// Also log a truncated string for context
-					console.error(
-						`Object size: ${serialized?.length || 0} characters (showing first ${maxLength}):`,
-						serialized?.substring(0, maxLength) + '...[truncated]',
-					);
 				}
 			} catch (error) {
 				// Handle circular references or other stringify errors
@@ -384,9 +424,10 @@ export const blueprintIconSchema = z
 	.object({
 		signal: z
 			.object({
-				name: z.string(),
+				name: z.string().optional(),
 				type: z.string().optional(),
 				quality: z.string().optional(),
+				backup: z.string().optional(),
 			})
 			.strict(),
 		index: z.number(),
