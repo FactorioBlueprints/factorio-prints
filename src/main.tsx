@@ -94,7 +94,9 @@ Sentry.init({
 				error.message.includes(
 					'SecurityError: CSSStyleSheet.cssRules getter: Not allowed to access cross-origin stylesheet',
 				) ||
-				error.message.includes('cross-origin stylesheet')
+				error.message.includes('cross-origin stylesheet') ||
+				error.message.includes('Blocked a frame with origin') ||
+				error.message.includes('SecurityError: Blocked a frame')
 			) {
 				return null; // Don't send cross-origin CSS errors to Sentry
 			}
@@ -166,6 +168,21 @@ window.addEventListener(
 		if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME')) {
 			if (import.meta.env.DEV) {
 				console.log('Image/iframe load error:', target.src);
+			}
+			e.preventDefault();
+			return true;
+		}
+
+		// Handle SecurityError for cross-origin iframe access
+		if (
+			e.error &&
+			e.error instanceof Error &&
+			e.error.message &&
+			(e.error.message.includes('Blocked a frame with origin') ||
+				e.error.message.includes('SecurityError: Blocked a frame'))
+		) {
+			if (import.meta.env.DEV) {
+				console.warn('Cross-origin iframe error suppressed:', e.error.message);
 			}
 			e.preventDefault();
 			return true;
