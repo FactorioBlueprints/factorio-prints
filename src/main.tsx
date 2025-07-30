@@ -27,7 +27,7 @@ Sentry.init({
 			],
 		}),
 		Sentry.captureConsoleIntegration({
-			levels: ['error', 'warn', 'info', 'debug'],
+			levels: ['error', 'warn'],
 		}),
 		Sentry.contextLinesIntegration(),
 		Sentry.breadcrumbsIntegration({

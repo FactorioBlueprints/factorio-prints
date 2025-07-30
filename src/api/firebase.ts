@@ -1,4 +1,3 @@
-import {format, formatDistance} from 'date-fns';
 import {
 	update as dbUpdate,
 	endAt,
@@ -125,7 +124,6 @@ export const fetchBlueprint = async (
 
 			if (cdnLastUpdated === summaryLastUpdated) {
 				// Dates match - use CDN data
-				console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
 				return cdnBlueprint;
 			}
 			if (cdnLastUpdated && summaryLastUpdated) {
@@ -133,24 +131,14 @@ export const fetchBlueprint = async (
 				const cdnDate = new Date(cdnLastUpdated);
 				const summaryDate = new Date(summaryLastUpdated);
 				const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
-				const timeDiff = formatDistance(cdnDate, summaryDate);
 
 				if (timeDifferenceMs < 1000) {
 					// CDN data is stale by less than 1 second - use it anyway
-					console.log(
-						`Blueprint ${blueprintId} CDN data is stale by less than a second, using CDN data (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
-					);
 					return cdnBlueprint;
 				}
 				// CDN data is stale by more than 1 second
-				console.log(
-					`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
-				);
 			} else {
 				// One or both dates are missing
-				console.log(
-					`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`,
-				);
 			}
 		}
 
@@ -159,7 +147,6 @@ export const fetchBlueprint = async (
 		const snapshot = await get(blueprintRef);
 
 		if (!snapshot.exists()) {
-			console.log(`Blueprint ${blueprintId} not found in Firebase`);
 			return null;
 		}
 

@@ -26,8 +26,6 @@ const TagForm: React.FC = () => {
 
 		const tagValues = selectedTags ? [...selectedTags].map((tag) => tag.value) : [];
 		searchParamsStore.setState((state) => ({...state, filteredTags: tagValues}));
-
-		console.log('TagForm updated filteredTags:', tagValues);
 	};
 
 	const options = useMemo(() => {

@@ -21,8 +21,6 @@ const SearchForm: React.FC = () => {
 			...state,
 			titleFilter: title,
 		}));
-
-		console.log('SearchForm updated titleFilter:', title);
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
