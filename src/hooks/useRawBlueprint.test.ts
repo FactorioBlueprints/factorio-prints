@@ -94,9 +94,26 @@ describe('useRawBlueprint', () => {
 		expect(result.current.data).toEqual(fakeRawBlueprint);
 	});
 
-	it('should handle error when fetchBlueprint fails', async () => {
-		const fakeError = new Error('Failed to fetch blueprint');
-		vi.mocked(fetchBlueprint).mockRejectedValue(fakeError);
+	it('should handle network error by returning null', async () => {
+		// Network errors now return null instead of throwing
+		vi.mocked(fetchBlueprint).mockResolvedValue(null);
+
+		const queryClient = createTestQueryClient();
+		const wrapper = ({children}: {children: React.ReactNode}) =>
+			React.createElement(QueryClientProvider, {client: queryClient}, children);
+
+		const {result} = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), {wrapper});
+
+		// Wait for query to complete
+		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+		expect(result.current.error).toBeNull();
+		expect(result.current.data).toBeNull();
+	});
+
+	it('should handle non-network errors by throwing', async () => {
+		const nonNetworkError = new Error('Database error');
+		vi.mocked(fetchBlueprint).mockRejectedValue(nonNetworkError);
 
 		const queryClient = createTestQueryClient();
 		const wrapper = ({children}: {children: React.ReactNode}) =>
@@ -107,7 +124,7 @@ describe('useRawBlueprint', () => {
 		// Wait for query to complete
 		await waitFor(() => expect(result.current.isError).toBe(true));
 
-		expect(result.current.error).toEqual(fakeError);
+		expect(result.current.error).toEqual(nonNetworkError);
 		expect(result.current.data).toBeUndefined();
 	});
 
