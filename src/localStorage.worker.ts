@@ -131,10 +131,13 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 		const isConnectionClosing =
 			errorMessage.includes('database connection is closing') ||
 			errorMessage.includes('IDBDatabase') ||
-			errorMessage.includes('backing store');
+			errorMessage.includes('backing store') ||
+			errorMessage.includes('Connection to Indexed Database server lost') ||
+			errorMessage.includes('InvalidStateError') ||
+			errorMessage.includes('Failed to execute');
 
 		if (isConnectionClosing) {
-			console.warn('[IndexedDB Worker] Database connection closing, operation skipped:', type, key);
+			console.warn('[IndexedDB Worker] Database connection issue detected:', type, key, errorMessage);
 		}
 
 		const response: WorkerResponse = {
