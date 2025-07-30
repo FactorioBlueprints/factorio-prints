@@ -184,7 +184,10 @@ function getWorker() {
 								'[IndexedDB] Operation failed due to closing connection, resolving with undefined',
 							);
 							// 📊 Log to Sentry for monitoring
-							Sentry.captureMessage('IndexedDB connection closing', {
+							const connectionError = new Error(`IndexedDB connection closing: ${error.message}`);
+							connectionError.name = 'IndexedDBConnectionError';
+
+							Sentry.captureException(connectionError, {
 								level: 'info',
 								tags: {
 									component: 'localStorage',
@@ -256,7 +259,10 @@ async function workerOperation(type: string, key: string, data = null) {
 				const duration = Date.now() - startTime;
 				console.warn('[IndexedDB] Operation timed out:', type, key, `after ${duration}ms`);
 
-				Sentry.captureMessage('IndexedDB operation timeout', {
+				const timeoutError = new Error(`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`);
+				timeoutError.name = 'IndexedDBTimeoutError';
+
+				Sentry.captureException(timeoutError, {
 					level: 'warning',
 					tags: {
 						component: 'localStorage',
@@ -338,7 +344,12 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					console.log(`[IndexedDB] Restored data size: ${formattedSize} in ${duration}ms`);
 
 					if (duration > 5000) {
-						Sentry.captureMessage('IndexedDB slow restore', {
+						const slowRestoreError = new Error(
+							`IndexedDB slow restore: took ${duration}ms to restore ${formattedSize}`,
+						);
+						slowRestoreError.name = 'IndexedDBSlowRestoreError';
+
+						Sentry.captureException(slowRestoreError, {
 							level: 'info',
 							tags: {
 								component: 'localStorage',
