@@ -199,12 +199,13 @@ describe('Schema validation', () => {
 
 			console.error = originalConsoleError;
 
-			// Should have console calls including truncated object
-			const truncatedCall = consoleCalls.find(
-				(call) => typeof call[0] === 'string' && call[0].includes('Object size:'),
+			// Should have console calls for large object
+			const largeObjectCall = consoleCalls.find(
+				(call) =>
+					typeof call[0] === 'string' &&
+					call[0].includes('Full object that failed validation (large object):'),
 			);
-			expect(truncatedCall).toBeDefined();
-			expect(truncatedCall![1]).toContain('...[truncated]');
+			expect(largeObjectCall).toBeDefined();
 		});
 
 		it('should handle ZodError with detailed error information', () => {
