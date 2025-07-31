@@ -403,6 +403,43 @@ function EditBlueprintWrapper() {
 	);
 
 	const renderOldThumbnail = useCallback(() => {
+		// Handle old Firebase Storage URLs
+		if (blueprintData?.imageUrl) {
+			const imageUrl = blueprintData.imageUrl;
+			return (
+				<Form.Group
+					as={Row}
+					className="mb-3"
+				>
+					<Form.Label
+						column
+						sm="2"
+					>
+						{'Old screenshot'}
+					</Form.Label>
+					<Col sm={10}>
+						<Card
+							className="mb-2 mr-2"
+							style={{width: '14rem', backgroundColor: '#1c1e22'}}
+						>
+							<Card.Img
+								variant="top"
+								src={imageUrl || noImageAvailable}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement;
+									target.src = noImageAvailable;
+								}}
+							/>
+							<Card.Title className="truncate">
+								<RichText text={form.state.values.title} />
+							</Card.Title>
+						</Card>
+					</Col>
+				</Form.Group>
+			);
+		}
+
+		// Handle new Imgur image format
 		if (!blueprintData?.image) {
 			return null;
 		}
@@ -928,6 +965,13 @@ function EditBlueprintWrapper() {
 												previewUrl = `https://i.imgur.com/${match[1]}.png`;
 											}
 
+											// Handle direct image URLs (including old Firebase Storage URLs)
+											const directImageRegex = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
+											if (!match && directImageRegex.test(previewUrl)) {
+												// It's already a direct image URL, use as-is
+												// This handles Firebase Storage URLs and other direct image links
+											}
+
 											return (
 												<Form.Group
 													as={Row}
@@ -937,7 +981,7 @@ function EditBlueprintWrapper() {
 														column
 														sm="2"
 													>
-														{'Attached screenshot'}
+														{'New screenshot'}
 													</Form.Label>
 													<Col sm={10}>
 														<Card
