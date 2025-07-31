@@ -532,8 +532,8 @@ const Create: React.FC = () => {
 		navigate({to: '/blueprints', from: '/create'});
 	}, [navigate]);
 
-	const handleTagSelection = useCallback((selectedTags: SelectOption[]) => {
-		const tags = selectedTags.map((each) => each.value);
+	const handleTagSelection = useCallback((selectedTags: readonly SelectOption[] | null) => {
+		const tags = selectedTags ? selectedTags.map((each) => each.value) : [];
 		setState((prevState) => ({
 			...prevState,
 			blueprint: {
