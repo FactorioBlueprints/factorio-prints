@@ -234,19 +234,34 @@ const Header: React.FC = () => {
 							{' Most Favorited'}
 						</Link>
 					</Nav.Item>
-					<Nav.Item>
-						<Link
+					<NavDropdown
+						title={
+							<span>
+								<FontAwesomeIcon
+									icon={faPlusSquare}
+									size="lg"
+									fixedWidth
+								/>
+								{' Create'}
+							</span>
+						}
+						id="create-dropdown"
+						className="nav-item-dropdown"
+					>
+						<NavDropdown.Item
+							as={Link}
 							to="/create"
-							className="nav-link text-light"
 						>
-							<FontAwesomeIcon
-								icon={faPlusSquare}
-								size="lg"
-								fixedWidth
-							/>
-							{' Create'}
-						</Link>
-					</Nav.Item>
+							Create Blueprint
+						</NavDropdown.Item>
+						<NavDropdown.Divider />
+						<NavDropdown.Item
+							as={Link}
+							to="/import/factorio-bin"
+						>
+							Import from Factorio Bin
+						</NavDropdown.Item>
+					</NavDropdown>
 					<Nav.Item>
 						<Link
 							to="/chat"

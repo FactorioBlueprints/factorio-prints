@@ -171,3 +171,31 @@ root {
 .opacity-50 {
 	opacity: 0.5;
 }
+
+/* Navbar dropdown styling */
+.nav-item-dropdown > a {
+	color: rgba(255, 255, 255, 0.85) !important;
+}
+.nav-item-dropdown > a:hover,
+.nav-item-dropdown > a:focus {
+	color: #fff !important;
+}
+.nav-item-dropdown.show > a {
+	color: #fff !important;
+}
+/* Dark theme for dropdown menu */
+.navbar .dropdown-menu {
+	background-color: #343a40;
+	border-color: #454d55;
+}
+.navbar .dropdown-item {
+	color: #fff;
+}
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+	background-color: #495057;
+	color: #fff;
+}
+.navbar .dropdown-divider {
+	border-color: #454d55;
+}
