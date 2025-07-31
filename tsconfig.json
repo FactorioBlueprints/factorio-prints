@@ -15,6 +15,7 @@
 		"isolatedModules": true,
 		"noEmit": true,
 		"strictNullChecks": true,
+		"strictFunctionTypes": true,
 		// Making build lenient - will gradually re-strict
 		"noImplicitAny": false,
 		"jsx": "react-jsx",
