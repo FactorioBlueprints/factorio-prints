@@ -6,6 +6,7 @@ import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base';
 import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import ErrorBoundary from '../components/ErrorBoundary';
+import GoogleOfferwall from '../components/GoogleOfferwall';
 import Header from '../components/Header';
 import {useSentryUser} from '../hooks/useSentryUser';
 
@@ -69,6 +70,7 @@ function Root() {
 			<ErrorBoundary>
 				<div>
 					<Header />
+					<GoogleOfferwall />
 					<Outlet />
 				</div>
 			</ErrorBoundary>

@@ -1,6 +1,7 @@
 import {createFileRoute} from '@tanstack/react-router';
 import React from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
+import OfferwallGate from '../components/OfferwallGate';
 import SingleBlueprint from '../components/SingleBlueprint';
 import {queryClient} from '../providers/queryClient';
 import {blueprintQuery, blueprintSummaryQuery} from '../queries/blueprintQueries';
@@ -76,7 +77,9 @@ export const Route = createFileRoute('/view/$blueprintId')({
 function ViewBlueprintComponent() {
 	return (
 		<ErrorBoundary>
-			<SingleBlueprint />
+			<OfferwallGate>
+				<SingleBlueprint />
+			</OfferwallGate>
 		</ErrorBoundary>
 	);
 }
