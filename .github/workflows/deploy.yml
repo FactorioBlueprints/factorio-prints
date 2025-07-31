@@ -51,6 +51,12 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           create_credentials_file: true
 
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm install
+          npm run build
+
       - name: Deploy to Firebase
         run: |
           npm run deploy:all -- --project facorio-blueprints

@@ -1,5 +1,5 @@
 {
-	"name": "functions",
+	"name": "factorio-blueprints-functions",
 	"description": "Cloud Functions for Firebase",
 	"scripts": {
 		"build": "tsc",

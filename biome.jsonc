@@ -5,6 +5,7 @@
 			"src/**",
 			"public/**",
 			"functions/**",
+			"scripts/**",
 			"test/**",
 			"*.json",
 			"*.json5",

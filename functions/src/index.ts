@@ -1,3 +1,9 @@
+/**
+ * Example Cloud Functions for maintaining data consistency
+ * These functions should be deployed to handle operations that require
+ * atomic updates or complex validation.
+ */
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import {onValueWritten, onValueDeleted, DatabaseEvent, DataSnapshot} from 'firebase-functions/v2/database';

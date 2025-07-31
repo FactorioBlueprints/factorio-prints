@@ -7,7 +7,7 @@ import tsparser from '@typescript-eslint/parser';
 import type {Linter} from 'eslint';
 
 const config: Linter.Config[] = [
-	{ignores: ['dist', 'build', '.llm/**', 'functions/**']},
+	{ignores: ['dist', 'build', '.llm/**', 'functions/lib/**', 'functions/.eslintrc.js', 'functions/index.js']},
 	{
 		files: ['functions/**/*.{ts,tsx}'],
 		languageOptions: {
@@ -129,6 +129,28 @@ const config: Linter.Config[] = [
 			'react-refresh/only-export-components': ['warn', {allowConstantExport: true}],
 			eqeqeq: ['error', 'smart'],
 			'one-var': ['error', 'never'],
+		},
+	},
+	{
+		files: ['functions/**/*.ts', 'scripts/**/*.ts'],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+			parser: tsparser,
+			parserOptions: {
+				ecmaVersion: 'latest',
+				sourceType: 'module',
+				project: false, // Don't use project references for these files
+			},
+		},
+		plugins: {
+			'@typescript-eslint': tseslint as any,
+		},
+		rules: {
+			...tseslint.configs.recommended.rules,
+			'@typescript-eslint/no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]'}],
+			'@typescript-eslint/no-explicit-any': 'off',
 		},
 	},
 ];

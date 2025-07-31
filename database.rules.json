@@ -2,76 +2,178 @@
 	"rules": {
 		"blueprints": {
 			".read": "true",
+			".indexOn": ["lastUpdatedDate", "createdDate", "authorId"],
 			"$blueprint": {
-				".write": "!data.exists() || (data.child('authorId').val() === auth.uid || data.child('author').child('userId').val() === auth.uid) && newData.exists() || root.child('moderators').child(auth.uid).val() === true",
-				".validate": "newData.hasChildren(['author']) || newData.hasChildren(['authorId'])",
+				".write": "(!data.exists() && auth != null && newData.child('author').child('userId').val() === auth.uid) || (data.exists() && auth != null && (data.child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true) && newData.exists()) || (data.exists() && auth != null && root.child('moderators').child(auth.uid).val() === true && !newData.exists())",
+				".validate": "newData.hasChildren(['author', 'title', 'blueprintString', 'descriptionMarkdown', 'createdDate', 'lastUpdatedDate', 'image']) || !newData.exists()",
+				"title": {
+					".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 500"
+				},
+				"blueprintString": {
+					".validate": "newData.isString() && newData.val().length >= 1"
+				},
+				"descriptionMarkdown": {
+					".validate": "newData.isString() && newData.val().length <= 10000"
+				},
+				"createdDate": {
+					".validate": "newData.isNumber() && (!data.exists() || data.val() === newData.val())"
+				},
+				"lastUpdatedDate": {
+					".validate": "newData.isNumber()"
+				},
 				"author": {
-					".validate": "newData.child('userId').isString()",
+					".validate": "newData.hasChildren(['userId']) && (!data.exists() || data.val() === newData.val())",
 					"userId": {
-						".validate": "newData.val() === auth.uid"
+						".validate": "newData.isString() && newData.val() === auth.uid"
+					},
+					"displayName": {
+						".validate": "newData.isString() && newData.val().length <= 100"
+					}
+				},
+				"authorId": {
+					".validate": "newData.isString() && newData.val() === auth.uid && (!data.exists() || data.val() === newData.val())"
+				},
+				"image": {
+					".validate": "newData.hasChildren(['id', 'type'])",
+					"id": {
+						".validate": "newData.isString() && newData.val().matches(/^[a-zA-Z0-9]+$/)"
+					},
+					"type": {
+						".validate": "newData.isString() && (newData.val() === 'image/png' || newData.val() === 'image/jpeg' || newData.val() === 'image/gif')"
+					},
+					"deletehash": {
+						".validate": "newData.isString()"
+					},
+					"height": {
+						".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 10000"
+					},
+					"width": {
+						".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 10000"
+					}
+				},
+				"tags": {
+					".validate": "newData.hasChildren() || !newData.exists()",
+					"$tag": {
+						".validate": "newData.isString() && root.child('tags').child($tag).exists()"
 					}
 				},
 				"favorites": {
 					"$uid": {
 						".write": "auth != null && auth.uid == $uid",
-						".validate": "newData.isBoolean()"
+						".validate": "newData.isBoolean() && newData.val() === true || !newData.exists()"
 					}
 				},
 				"numberOfFavorites": {
-					".write": "auth != null"
+					".write": "auth != null",
+					".validate": "newData.isNumber() && newData.val() >= 0"
+				},
+				"fileName": {
+					".validate": "newData.isString() && newData.val().length <= 255"
 				}
 			}
 		},
 		"users": {
 			".read": "root.child('moderators').child(auth.uid).val() === true",
+			".indexOn": ["displayName", "email"],
 			"$uid": {
 				".read": "auth != null && auth.uid == $uid",
 				".write": "auth != null && auth.uid == $uid",
+				".validate": "newData.hasChildren() || !newData.exists()",
+				"displayName": {
+					".read": "true",
+					".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+				},
+				"email": {
+					".validate": "newData.isString() && newData.val().matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/)"
+				},
 				"blueprints": {
 					".read": "true",
-					".write": "root.child('moderators').child(auth.uid).val() === true",
+					".write": "auth != null && (auth.uid == $uid || root.child('moderators').child(auth.uid).val() === true)",
 					"$blueprintId": {
-						".validate": "newData.isBoolean()"
+						".validate": "(newData.isBoolean() && newData.val() === true && root.child('blueprints').child($blueprintId).exists()) || !newData.exists()"
 					}
 				},
-				"displayName": {
-					".read": "true"
+				"favorites": {
+					"$blueprintId": {
+						".validate": "(newData.isBoolean() && newData.val() === true && root.child('blueprintSummaries').child($blueprintId).exists()) || !newData.exists()"
+					}
 				}
 			}
 		},
 		"moderators": {
-			".read": "true"
+			".read": "true",
+			".write": "false",
+			"$uid": {
+				".validate": "newData.isBoolean() && newData.val() === true"
+			}
 		},
 		"thumbnails": {
 			".read": "true",
+			".indexOn": ["blueprintId"],
 			"$blueprint": {
-				".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true"
+				".write": "auth != null && (root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true)",
+				".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|gif);base64,[A-Za-z0-9+/]+=*$/) || !newData.exists()"
 			}
 		},
 		"blueprintSummaries": {
 			".read": "true",
-			".indexOn": ["lastUpdatedDate", "authorId", "numberOfFavorites"],
+			".indexOn": ["lastUpdatedDate", "authorId", "numberOfFavorites", "imgurId"],
 			"$blueprint": {
-				".write": "root.child('blueprints').child($blueprint).child('authorId').val() === auth.uid || root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
+				".write": "auth != null && (root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true)",
+				".validate": "(newData.hasChildren(['title', 'imgurId', 'imgurType', 'numberOfFavorites', 'lastUpdatedDate']) && root.child('blueprints').child($blueprint).exists()) || !newData.exists()",
+				"title": {
+					".validate": "newData.isString() && newData.val() === root.child('blueprints').child($blueprint).child('title').val()"
+				},
+				"imgurId": {
+					".validate": "newData.isString() && newData.val().matches(/^[a-zA-Z0-9]+$/)"
+				},
+				"imgurType": {
+					".validate": "newData.isString() && (newData.val() === 'image/png' || newData.val() === 'image/jpeg' || newData.val() === 'image/gif')"
+				},
 				"numberOfFavorites": {
-					".write": "auth != null"
+					".write": "auth != null",
+					".validate": "newData.isNumber() && newData.val() >= 0"
+				},
+				"lastUpdatedDate": {
+					".validate": "newData.isNumber() && newData.val() === root.child('blueprints').child($blueprint).child('lastUpdatedDate').val()"
+				},
+				"height": {
+					".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 10000"
+				},
+				"width": {
+					".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 10000"
 				}
 			}
 		},
 		"blueprintsPrivate": {
-			".read": "true",
+			".read": "false",
 			"$blueprint": {
-				".write": "root.child('blueprints').child($blueprint).child('authorId').val() === auth.uid || root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true"
+				".read": "auth != null && (root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true)",
+				".write": "auth != null && (root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true)",
+				".validate": "root.child('blueprints').child($blueprint).exists() || !newData.exists()",
+				"imageUrl": {
+					".validate": "newData.isString() && newData.val().matches(/^https:\\/\\/(i\\.)?imgur\\.com\\/[a-zA-Z0-9]+(\\.[a-zA-Z]{3,4})?$/)"
+				}
 			}
 		},
 		"tags": {
 			".read": "true",
-			".indexOn": [".value"]
+			".write": "root.child('moderators').child(auth.uid).val() === true",
+			".indexOn": ".value",
+			"$tagId": {
+				".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+			}
 		},
 		"byTag": {
 			".read": "true",
-			".write": "true",
-			".indexOn": [".value"]
+			".indexOn": ".value",
+			"$tag": {
+				".write": "false",
+				"$blueprintId": {
+					".write": "auth != null && root.child('blueprints').child($blueprintId).child('author').child('userId').val() === auth.uid",
+					".validate": "(newData.isBoolean() && newData.val() === true && root.child('blueprints').child($blueprintId).child('tags').child($tag).exists()) || !newData.exists()"
+				}
+			}
 		}
 	}
 }
