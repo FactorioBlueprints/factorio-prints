@@ -91,7 +91,7 @@
 		"jsdom": "26.1.0",
 		"less": "4.4.0",
 		"prettier": "3.6.2",
-		"typescript": "5.8.3",
+		"typescript": "5.9.2",
 		"vite": "7.0.6",
 		"vitest": "3.2.4",
 		"wrangler": "^4.26.1"
