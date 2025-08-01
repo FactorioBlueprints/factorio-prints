@@ -1,6 +1,5 @@
 import {faDiscord, faGithub, faGoogle, faPatreon} from '@fortawesome/free-brands-svg-icons';
 import {
-	faBug,
 	faClock,
 	faCogs,
 	faDonate,
@@ -359,19 +358,6 @@ const Header: React.FC = () => {
 								fixedWidth
 							/>
 							{' Create'}
-						</Link>
-					</Nav.Item>
-					<Nav.Item>
-						<Link
-							to="/knownIssues"
-							className="nav-link text-light"
-						>
-							<FontAwesomeIcon
-								icon={faBug}
-								size="lg"
-								fixedWidth
-							/>
-							{' Known Issues'}
 						</Link>
 					</Nav.Item>
 					<Nav.Item>
