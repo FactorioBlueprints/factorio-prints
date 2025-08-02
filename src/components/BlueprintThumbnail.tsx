@@ -12,6 +12,7 @@ import buildImageUrl from '../helpers/buildImageUrl';
 import useToggleFavoriteMutation from '../hooks/useToggleFavoriteMutation';
 import {useUserBlueprints, useUserFavorites} from '../hooks/useUser';
 import {type EnrichedBlueprintSummary, validateEnrichedBlueprintSummary} from '../schemas';
+import {RichText} from './core/text/RichText';
 
 interface BlueprintThumbnailProps {
 	blueprintSummary: EnrichedBlueprintSummary;
@@ -48,7 +49,10 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 
 	const tooltip = (
 		<Tooltip>
-			<span>{title}</span>
+			<RichText
+				text={title}
+				inline
+			/>
 		</Tooltip>
 	);
 
@@ -159,7 +163,12 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 						from="/"
 						preload={false}
 					>
-						<span className={mineStyle}>{title}</span>
+						<span className={mineStyle}>
+							<RichText
+								text={title}
+								inline
+							/>
+						</span>
 					</Link>
 				</OverlayTrigger>
 			</p>

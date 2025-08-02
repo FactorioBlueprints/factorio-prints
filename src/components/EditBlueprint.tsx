@@ -592,7 +592,13 @@ function EditBlueprintWrapper() {
 					<Modal.Title>Are you sure you want to delete the blueprint?</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
-					<p>{`Deleting: ${form.state.values.title}`}</p>
+					<p>
+						Deleting:{' '}
+						<RichText
+							text={form.state.values.title}
+							inline
+						/>
+					</p>
 					<p>This cannot be undone.</p>
 				</Modal.Body>
 				<Modal.Footer>

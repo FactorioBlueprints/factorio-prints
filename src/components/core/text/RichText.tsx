@@ -1,10 +1,11 @@
 import type React from 'react';
-import {FactorioIcon} from '../icons/FactorioIcon';
+import {FactorioIcon, type IconSize} from '../icons/FactorioIcon';
 
 interface RichTextProps {
 	text: string;
 	className?: string;
 	inline?: boolean;
+	iconSize?: IconSize;
 }
 
 interface ParsedSegment {
@@ -97,7 +98,7 @@ function parseRichText(text: string): ParsedSegment[] {
 	return segments;
 }
 
-function renderSegment(segment: ParsedSegment, index: number): React.ReactNode {
+function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize = 'tiny'): React.ReactNode {
 	if (segment.type === 'text') {
 		return segment.content;
 	}
@@ -176,7 +177,7 @@ function renderSegment(segment: ParsedSegment, index: number): React.ReactNode {
 					name: name,
 					quality: quality ? (quality as any) : undefined,
 				}}
-				size="tiny"
+				size={iconSize}
 				inline
 			/>
 		);
@@ -185,11 +186,11 @@ function renderSegment(segment: ParsedSegment, index: number): React.ReactNode {
 	return segment.content;
 }
 
-export const RichText: React.FC<RichTextProps> = ({text, className, inline = false}) => {
+export const RichText: React.FC<RichTextProps> = ({text, className, inline = false, iconSize = 'tiny'}) => {
 	if (!text) return null;
 
 	const segments = parseRichText(text);
-	const content = segments.map((segment, index) => renderSegment(segment, index));
+	const content = segments.map((segment, index) => renderSegment(segment, index, iconSize));
 
 	if (inline) {
 		return <span className={className}>{content}</span>;
