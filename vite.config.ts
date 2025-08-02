@@ -33,7 +33,7 @@ export default defineConfig(
 									auto: true,
 								},
 								deploy: {
-									env: 'production',
+									env: process.env.SENTRY_ENVIRONMENT || 'production',
 								},
 							},
 							sourcemaps: {

@@ -6,11 +6,33 @@ import './css/style.css';
 import QueryProvider from './providers/QueryProvider';
 import {Router} from './router';
 
+function getSentryEnvironment(): string {
+	const hostname = window.location.hostname;
+
+	// Local development
+	if (hostname === 'localhost' || hostname === '127.0.0.1') {
+		return 'development';
+	}
+
+	// Production
+	if (hostname === 'factorioprints.com' || hostname === 'www.factorioprints.com') {
+		return 'production';
+	}
+
+	// Cloudflare Pages preview deployments (staging)
+	if (hostname.includes('.pages.dev') || hostname.includes('cloudflare')) {
+		return 'staging';
+	}
+
+	// Default to staging for any other hostnames
+	return 'staging';
+}
+
 Sentry.init({
 	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
 	sendDefaultPii: true,
 	release: import.meta.env.VITE_APP_VERSION || '0.1.0',
-	environment: import.meta.env.PROD ? 'production' : 'development',
+	environment: getSentryEnvironment(),
 	integrations: [
 		Sentry.browserTracingIntegration(),
 		Sentry.replayIntegration({
@@ -100,14 +122,23 @@ Sentry.init({
 	},
 });
 
+// Set global Sentry scope with environment context
+Sentry.setTag('environment', getSentryEnvironment());
+Sentry.setContext('deployment', {
+	hostname: window.location.hostname,
+	environment: getSentryEnvironment(),
+});
+
 window.addEventListener('vite:preloadError', (event) => {
 	console.error('Vite preload error detected, reloading page...', event.payload);
 	Sentry.captureException(event.payload, {
 		tags: {
 			error_type: 'vite_preload_error',
+			environment: getSentryEnvironment(),
 		},
 		extra: {
 			message: 'Module import failed during preload',
+			hostname: window.location.hostname,
 		},
 	});
 	event.preventDefault();
