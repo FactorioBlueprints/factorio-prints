@@ -60,6 +60,10 @@ Sentry.init({
 			sentry: true,
 			xhr: true,
 		}),
+		Sentry.feedbackIntegration({
+			colorScheme: 'system',
+			enableScreenshot: true,
+		}),
 	],
 	tracesSampleRate: 1.0,
 	tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
