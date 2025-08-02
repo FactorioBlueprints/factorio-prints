@@ -42,7 +42,7 @@ function debounce<T extends (...args: any[]) => any>(
 	maxWait = maxing ? Math.max(options.maxWait || 0, wait) : 0;
 
 	function invokeFunc(time: number): ReturnType<T> {
-		const args = lastArgs;
+		const args = lastArgs!;
 		const thisArg = lastThis;
 
 		lastArgs = lastThis = undefined;
