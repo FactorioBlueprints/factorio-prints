@@ -25,7 +25,6 @@
 		"noUnusedParameters": false,
 		"noImplicitReturns": false,
 		"noFallthroughCasesInSwitch": true,
-		"strictBindCallApply": true,
 		// Making build lenient - will gradually re-strict
 		"noUncheckedIndexedAccess": false,
 		"exactOptionalPropertyTypes": false,
