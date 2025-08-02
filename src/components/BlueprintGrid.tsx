@@ -10,6 +10,7 @@ import useFilteredBlueprintSummaries from '../hooks/useFilteredBlueprintSummarie
 import useFlattenedEnrichedPaginatedSummaries from '../hooks/useFlattenedEnrichedPaginatedSummaries';
 
 import BlueprintThumbnail from './BlueprintThumbnail';
+import ErrorBoundary from './ErrorBoundary';
 import PageHeader from './PageHeader';
 import SearchForm from './SearchForm';
 import TagForm from './TagForm';
@@ -47,10 +48,20 @@ const BlueprintGrid: React.FC = () => {
 			</Row>
 			<Row className="blueprint-grid-row justify-content-center">
 				{blueprintSummaries.map((blueprintSummary) => (
-					<BlueprintThumbnail
+					<ErrorBoundary
 						key={blueprintSummary.key}
-						blueprintSummary={blueprintSummary}
-					/>
+						fallback={
+							<div
+								className="blueprint-thumbnail col-auto"
+								style={{width: '11rem'}}
+							>
+								<div className="text-danger p-3">Failed to load blueprint</div>
+							</div>
+						}
+						showDetails={false}
+					>
+						<BlueprintThumbnail blueprintSummary={blueprintSummary} />
+					</ErrorBoundary>
 				))}
 			</Row>
 			{hasNextPage && (
