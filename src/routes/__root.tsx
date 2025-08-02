@@ -6,6 +6,7 @@ import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base';
 import ErrorBoundary from '../components/ErrorBoundary';
 import Header from '../components/Header';
+import {useSentryUser} from '../hooks/useSentryUser';
 
 export const Route = createRootRoute({
 	component: Root,
@@ -14,7 +15,8 @@ export const Route = createRootRoute({
 function Root() {
 	const [user] = useAuthState(getAuth(app));
 
-	// Update user profile in the database when auth state changes
+	useSentryUser(user);
+
 	useEffect(() => {
 		if (user) {
 			const {uid, email, photoURL, emailVerified, providerData} = user;
