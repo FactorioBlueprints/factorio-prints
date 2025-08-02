@@ -47,6 +47,9 @@ function debounce<T extends (...args: any[]) => any>(
 
 		lastArgs = lastThis = undefined;
 		lastInvokeTime = time;
+		if (!args) {
+			throw new Error('invokeFunc called without arguments');
+		}
 		result = func.apply(thisArg, args);
 		return result;
 	}
