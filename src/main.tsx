@@ -7,6 +7,9 @@ import QueryProvider from './providers/QueryProvider';
 import {Router} from './router';
 import {getReleaseInfo, getReleaseMetadata} from './utils/release';
 import {setupTooltipCleanup} from './utils/cleanupTooltips';
+import {suppressGoogleAuthDeprecationWarning} from './utils/suppressGoogleAuthWarning';
+
+suppressGoogleAuthDeprecationWarning();
 
 const releaseInfo = getReleaseInfo();
 
