@@ -6,11 +6,15 @@ import {execSync} from 'child_process';
 import type {ConfigEnv, UserConfig} from 'vite';
 
 const version = execSync('git describe --always --tags', {encoding: 'utf8'}).trim();
+const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', {encoding: 'utf8'}).trim();
+const buildTime = new Date().toISOString();
 
 export default defineConfig(
 	({mode}: ConfigEnv): UserConfig => ({
 		define: {
 			'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
+			'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),
+			'import.meta.env.VITE_BUILD_TIME': JSON.stringify(buildTime),
 		},
 		plugins: [
 			TanStackRouterVite({

@@ -5,6 +5,9 @@ import {createRoot} from 'react-dom/client';
 import './css/style.css';
 import QueryProvider from './providers/QueryProvider';
 import {Router} from './router';
+import {getReleaseInfo, getReleaseMetadata} from './utils/release';
+
+const releaseInfo = getReleaseInfo();
 
 function getSentryEnvironment(): string {
 	const hostname = window.location.hostname;
@@ -31,7 +34,7 @@ function getSentryEnvironment(): string {
 Sentry.init({
 	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
 	sendDefaultPii: true,
-	release: import.meta.env.VITE_APP_VERSION || '0.1.0',
+	release: releaseInfo.version,
 	environment: getSentryEnvironment(),
 	integrations: [
 		Sentry.browserTracingIntegration(),
@@ -126,12 +129,19 @@ Sentry.init({
 	},
 });
 
+// Set release metadata as context
+Sentry.setContext('release_metadata', getReleaseMetadata());
+
 // Set global Sentry scope with environment context
 Sentry.setTag('environment', getSentryEnvironment());
 Sentry.setContext('deployment', {
 	hostname: window.location.hostname,
 	environment: getSentryEnvironment(),
 });
+
+// Set git commit as a tag for easier filtering
+Sentry.setTag('git_commit', releaseInfo.gitCommit);
+Sentry.setTag('git_branch', releaseInfo.gitBranch);
 
 window.addEventListener('vite:preloadError', (event) => {
 	console.error('Vite preload error detected, reloading page...', event.payload);
