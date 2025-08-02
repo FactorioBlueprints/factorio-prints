@@ -16,8 +16,7 @@ import difference from 'lodash/difference';
 import isEmpty from 'lodash/isEmpty';
 import some from 'lodash/some';
 import MarkdownIt from 'markdown-it';
-import type React from 'react';
-import {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
@@ -40,10 +39,12 @@ import {useCreateBlueprint} from '../hooks/useCreateBlueprint';
 import {useTags} from '../hooks/useTags';
 import {loadFromStorage, removeFromStorage, STORAGE_KEYS, saveToStorage} from '../localStorage';
 import {parseVersion3} from '../parsing/blueprintParser';
+import {BlueprintWrapper} from '../parsing/BlueprintWrapper';
 import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 import {RichText} from './core/text/RichText';
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
+import BlueprintPreview from './BlueprintPreview';
 
 interface BlueprintFormData {
 	title: string;
@@ -120,6 +121,7 @@ const Create: React.FC = () => {
 	const [state, setState] = useState<CreateState>(initialState);
 	const [parsedBlueprint, setParsedBlueprint] = useState<Blueprint | null>(null);
 	const [v15Decoded, setV15Decoded] = useState<any>(null);
+	const [blueprintWrapper, setBlueprintWrapper] = useState<BlueprintWrapper | null>(null);
 
 	const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 	const [pendingSubmission, setPendingSubmission] = useState(false);
@@ -181,6 +183,12 @@ const Create: React.FC = () => {
 
 				setParsedBlueprint(parsedBp);
 				setV15Decoded(decoded);
+
+				// Set BlueprintWrapper if we have valid decoded data
+				if (decoded) {
+					const wrapper = new BlueprintWrapper(decoded);
+					setBlueprintWrapper(wrapper);
+				}
 			}
 		},
 		[parseBlueprint],
@@ -261,6 +269,7 @@ const Create: React.FC = () => {
 					blueprintPasted: false,
 					blueprintValidationError: null,
 				}));
+				setBlueprintWrapper(null);
 				return;
 			}
 
@@ -281,8 +290,13 @@ const Create: React.FC = () => {
 					blueprintPasted: true,
 					blueprintValidationError: 'Invalid blueprint string. Please paste a valid Factorio blueprint.',
 				}));
+				setBlueprintWrapper(null);
 				return;
 			}
+
+			// Create BlueprintWrapper for preview components
+			const wrapper = new BlueprintWrapper(newV15Decoded);
+			setBlueprintWrapper(wrapper);
 
 			// Extract title and description from blueprint if available
 			let extractedTitle = '';
@@ -925,6 +939,27 @@ const Create: React.FC = () => {
 								</Form.Group>
 
 								{renderPreview()}
+
+								{/* Blueprint Preview Section */}
+								{blueprintWrapper && v15Decoded && !state.blueprintValidationError && (
+									<Form.Group
+										as={Row}
+										className="mb-3"
+									>
+										<Form.Label
+											column
+											sm="2"
+										>
+											{'Blueprint Preview'}
+										</Form.Label>
+										<Col sm={10}>
+											<BlueprintPreview
+												blueprintWrapper={blueprintWrapper}
+												decodedBlueprint={v15Decoded}
+											/>
+										</Col>
+									</Form.Group>
+								)}
 							</>
 						)}
 
