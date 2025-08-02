@@ -30,6 +30,7 @@ function getSentryEnvironment(): string {
 
 Sentry.init({
 	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
+	debug: import.meta.env.DEV,
 	sendDefaultPii: true,
 	release: import.meta.env.VITE_APP_VERSION || '0.1.0',
 	environment: getSentryEnvironment(),
@@ -122,7 +123,16 @@ Sentry.init({
 		return event;
 	},
 	beforeBreadcrumb: (breadcrumb) => {
+		if (import.meta.env.DEV) {
+			console.log('[Sentry Breadcrumb]', breadcrumb);
+		}
 		return breadcrumb;
+	},
+	beforeSendTransaction: (event) => {
+		if (import.meta.env.DEV) {
+			console.log('[Sentry Transaction]', event);
+		}
+		return event;
 	},
 });
 
@@ -132,6 +142,15 @@ Sentry.setContext('deployment', {
 	hostname: window.location.hostname,
 	environment: getSentryEnvironment(),
 });
+
+if (import.meta.env.DEV) {
+	const isEnabled = !(window.location.hostname === 'localhost' && window.location.port === '3000');
+	console.log(
+		`[Sentry] Debug mode enabled. Sentry is ${isEnabled ? 'ACTIVE' : 'DISABLED'} on ${window.location.hostname}:${window.location.port}`,
+	);
+	console.log('[Sentry] Environment:', import.meta.env.PROD ? 'production' : 'development');
+	console.log('[Sentry] Release:', import.meta.env.VITE_APP_VERSION || '0.1.0');
+}
 
 window.addEventListener('vite:preloadError', (event) => {
 	console.error('Vite preload error detected, reloading page...', event.payload);

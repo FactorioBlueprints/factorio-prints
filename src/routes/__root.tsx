@@ -6,6 +6,7 @@ import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base';
 import ErrorBoundary from '../components/ErrorBoundary';
 import Header from '../components/Header';
+import {SentryDebugPanel} from '../components/SentryDebugPanel';
 
 export const Route = createRootRoute({
 	component: Root,
@@ -61,6 +62,7 @@ function Root() {
 					<Outlet />
 				</div>
 			</ErrorBoundary>
+			<SentryDebugPanel />
 		</>
 	);
 }
