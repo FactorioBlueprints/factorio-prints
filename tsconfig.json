@@ -16,6 +16,7 @@
 		"noEmit": true,
 		"strictNullChecks": true,
 		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
 		// Making build lenient - will gradually re-strict
 		"noImplicitAny": false,
 		"jsx": "react-jsx",
