@@ -20,6 +20,7 @@ import {searchParamsStore} from '../store/searchParamsStore';
 import BlueprintThumbnail from './BlueprintThumbnail';
 import DisplayName from './DisplayName.jsx';
 import EmptyResults from './grid/EmptyResults';
+import ErrorBoundary from './ErrorBoundary';
 import ErrorDisplay from './grid/ErrorDisplay';
 import LoadingIndicator from './grid/LoadingIndicator';
 import PageHeader from './PageHeader';
@@ -223,10 +224,20 @@ const UserFavoritesGrid: React.FC = () => {
 
 			<Row className="blueprint-grid-row justify-content-center">
 				{sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary) => (
-					<BlueprintThumbnail
+					<ErrorBoundary
 						key={blueprintSummary.key}
-						blueprintSummary={blueprintSummary}
-					/>
+						fallback={
+							<div
+								className="blueprint-thumbnail col-auto"
+								style={{width: '11rem'}}
+							>
+								<div className="text-danger p-3">Failed to load blueprint</div>
+							</div>
+						}
+						showDetails={false}
+					>
+						<BlueprintThumbnail blueprintSummary={blueprintSummary} />
+					</ErrorBoundary>
 				))}
 			</Row>
 
