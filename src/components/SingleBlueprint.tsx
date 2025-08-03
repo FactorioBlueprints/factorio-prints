@@ -9,6 +9,7 @@ import sortBy from 'lodash/fp/sortBy';
 import toPairs from 'lodash/fp/toPairs';
 import has from 'lodash/has';
 import React, {useCallback, useEffect, useOptimistic} from 'react';
+import Card from 'react-bootstrap/Card';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -26,10 +27,10 @@ import type {BlueprintContent, BlueprintEntity, BlueprintTile} from '../schemas'
 import BlueprintImage from './BlueprintImage';
 import BlueprintTitle from './BlueprintTitle';
 import {BasicInfoPanel} from './blueprint/panels/info/BasicInfoPanel';
-import {ExtraInfoPanel} from './blueprint/panels/info/ExtraInfoPanel';
 import {ParametersPanel} from './blueprint/panels/parameters/ParametersPanel';
 import {BlueprintActions} from './single/BlueprintActions';
 import {BlueprintNotFound} from './single/BlueprintNotFound';
+import BlueprintTitles from './single/BlueprintTitles';
 import {CommentsSection} from './single/CommentsSection';
 import {DetailsCard} from './single/DetailsCard';
 import {PostInfoCard} from './single/PostInfoCard';
@@ -291,7 +292,16 @@ function SingleBlueprint() {
 						isLoading={blueprintIsLoading}
 					/>
 					<BasicInfoPanel blueprint={blueprintData?.parsedData} />
-					<ExtraInfoPanel blueprint={blueprintData?.parsedData} />
+					<Card className="mt-3">
+						<Card.Header>Blueprint Titles</Card.Header>
+						<Card.Body>
+							<BlueprintTitles
+								blueprintKey={blueprintId}
+								parsedData={blueprintData?.parsedData}
+								isLoading={blueprintIsLoading}
+							/>
+						</Card.Body>
+					</Card>
 					<ParametersPanel blueprintString={blueprintData?.parsedData} />
 					<UpgradePlannerCard
 						blueprintWrapper={blueprintWrapper}
