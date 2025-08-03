@@ -2,6 +2,7 @@ import React from 'react';
 import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 import {FactorioIcon, Placeholder} from '../core/icons/FactorioIcon';
+import {RichText} from '../core/text/RichText';
 import type {
 	RawBlueprintData,
 	BlueprintBook,
@@ -63,7 +64,13 @@ function getBlueprint(data: BlueprintContent | UpgradePlanner | DeconstructionPl
 			)}
 			{icons && Array.isArray(icons) && [...Array(4).keys()].map((index) => getItemIconIfExists(icons, index))}
 			<span className="p-1" />
-			{label && <span>{label}</span>}
+			{label && (
+				<RichText
+					text={label}
+					inline
+					iconSize="small"
+				/>
+			)}
 		</>
 	);
 }
@@ -103,7 +110,13 @@ function getFirstRow(data: BlueprintBook): React.ReactElement {
 			<span className="p-1" />
 			{icons && Array.isArray(icons) && [...Array(4).keys()].map((index) => getItemIconIfExists(icons, index))}
 			<span className="p-1" />
-			{label && <span>{label}</span>}
+			{label && (
+				<RichText
+					text={label}
+					inline
+					iconSize="small"
+				/>
+			)}
 		</>
 	);
 }
