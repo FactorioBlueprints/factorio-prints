@@ -1,17 +1,8 @@
-import {faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
-import {faArrowLeft, faBan, faEnvelope, faSave} from '@fortawesome/free-solid-svg-icons';
+import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useNavigate} from '@tanstack/react-router';
 import DOMPurify from 'dompurify';
-import {
-	type AuthProvider,
-	GithubAuthProvider,
-	GoogleAuthProvider,
-	getAuth,
-	sendSignInLinkToEmail,
-	signInWithPopup,
-	type User,
-} from 'firebase/auth';
+import {getAuth, type User} from 'firebase/auth';
 import update from 'immutability-helper';
 import difference from 'lodash/difference';
 import isEmpty from 'lodash/isEmpty';
@@ -32,7 +23,6 @@ import Row from 'react-bootstrap/Row';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import Select from 'react-select';
 import Blueprint from '../Blueprint';
-
 import {app} from '../base';
 import noImageAvailable from '../gif/No_available_image.gif';
 import generateTagSuggestions from '../helpers/generateTagSuggestions';
@@ -41,11 +31,12 @@ import {useTags} from '../hooks/useTags';
 import {loadFromStorage, removeFromStorage, STORAGE_KEYS, saveToStorage} from '../localStorage';
 import {parseVersion3} from '../parsing/blueprintParser';
 import {BlueprintWrapper} from '../parsing/BlueprintWrapper';
+import {AuthenticationForm} from './auth/AuthenticationForm';
+import BlueprintPreview from './BlueprintPreview';
 import {MarkdownWithRichText} from './core/text/MarkdownWithRichText';
 import {RichText} from './core/text/RichText';
 import PageHeader from './PageHeader';
 import TagSuggestionButton from './TagSuggestionButton';
-import BlueprintPreview from './BlueprintPreview';
 
 interface BlueprintFormData {
 	title: string;
@@ -126,62 +117,11 @@ const Create: React.FC = () => {
 
 	const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 	const [pendingSubmission, setPendingSubmission] = useState(false);
-	const [authEmail, setAuthEmail] = useState('');
-	const [isEmailSending, setIsEmailSending] = useState(false);
 
 	const {data: tagsData, isLoading: tagsLoading} = useTags();
 	const tags = tagsData?.tags || [];
 
 	const createBlueprintMutation = useCreateBlueprint();
-	const googleProvider = useState(() => {
-		const provider = new GoogleAuthProvider();
-		provider.setCustomParameters({prompt: 'consent select_account'});
-		return provider;
-	})[0];
-
-	const githubProvider = useState(() => {
-		const provider = new GithubAuthProvider();
-		provider.setCustomParameters({allow_signup: 'true'});
-		return provider;
-	})[0];
-
-	const authenticate = useCallback((provider: AuthProvider) => {
-		signInWithPopup(getAuth(app), provider)
-			.then(() => {
-				setShowAuthPrompt(false);
-			})
-			.catch((error) => {
-				if (error.code !== 'auth/popup-closed-by-user') {
-					console.error({error});
-				}
-			});
-	}, []);
-
-	const authenticateWithEmail = useCallback(async (emailAddress: string) => {
-		if (!emailAddress.trim()) {
-			return;
-		}
-
-		setIsEmailSending(true);
-
-		const actionCodeSettings = {
-			url: `${window.location.origin}/auth/email-callback`,
-			handleCodeInApp: true,
-		};
-
-		try {
-			await sendSignInLinkToEmail(getAuth(app), emailAddress, actionCodeSettings);
-			localStorage.setItem('emailForSignIn', emailAddress);
-			alert('Check your email for a sign-in link!');
-			setAuthEmail('');
-			setShowAuthPrompt(false);
-		} catch (error) {
-			console.error('Error sending email:', error);
-			alert('Failed to send sign-in email. Please try again.');
-		} finally {
-			setIsEmailSending(false);
-		}
-	}, []);
 
 	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null => {
 		try {
@@ -652,7 +592,6 @@ const Create: React.FC = () => {
 				onHide={() => {
 					setShowAuthPrompt(false);
 					setPendingSubmission(false);
-					setAuthEmail('');
 				}}
 			>
 				<Modal.Header closeButton>
@@ -662,65 +601,10 @@ const Create: React.FC = () => {
 					<p className="mb-4">
 						Please sign in to save your blueprint. Your blueprint data will be preserved.
 					</p>
-					<div className="d-flex flex-column">
-						<Button
-							type="button"
-							className="google w-100 mb-2"
-							style={{marginLeft: 0, marginRight: 0}}
-							onClick={() => authenticate(googleProvider)}
-						>
-							<FontAwesomeIcon
-								icon={faGoogle}
-								size="lg"
-								fixedWidth
-							/>
-							{' Log in with Google'}
-						</Button>
-						<Button
-							type="button"
-							className="github w-100 mb-3"
-							style={{marginLeft: 0, marginRight: 0}}
-							onClick={() => authenticate(githubProvider)}
-						>
-							<FontAwesomeIcon
-								icon={faGithub}
-								size="lg"
-								fixedWidth
-							/>
-							{' Log in with GitHub'}
-						</Button>
-						<hr className="w-100 my-3" />
-						<Form
-							onSubmit={(event) => {
-								event.preventDefault();
-								authenticateWithEmail(authEmail);
-							}}
-						>
-							<Form.Group className="mb-2">
-								<Form.Control
-									type="email"
-									placeholder="Enter your email address"
-									value={authEmail}
-									onChange={(event) => setAuthEmail(event.target.value)}
-									disabled={isEmailSending}
-									required
-								/>
-							</Form.Group>
-							<Button
-								type="submit"
-								className="w-100"
-								variant="primary"
-								disabled={isEmailSending || !authEmail.trim()}
-							>
-								<FontAwesomeIcon
-									icon={faEnvelope}
-									size="lg"
-									fixedWidth
-								/>
-								{isEmailSending ? ' Sending...' : ' Send Sign-in Link'}
-							</Button>
-						</Form>
-					</div>
+					<AuthenticationForm
+						onAuthSuccess={() => setShowAuthPrompt(false)}
+						buttonClassName="mx-0"
+					/>
 				</Modal.Body>
 			</Modal>
 			<Modal show={state.uploadProgressBarVisible}>
