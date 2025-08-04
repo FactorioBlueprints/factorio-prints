@@ -143,11 +143,20 @@ const Create: React.FC = () => {
 				const parsedBp = parseBlueprint(blueprint.blueprintString);
 				const decoded = parsedBp ? parsedBp.getV15Decoded() : null;
 
+				// Show form if we have a valid blueprint OR if we have any saved data (title, description, etc.)
+				const hasValidBlueprint = !!parsedBp && !!decoded;
+				const hasSavedData = !!(
+					blueprint.title ||
+					blueprint.descriptionMarkdown ||
+					blueprint.imageUrl ||
+					(blueprint.tags && blueprint.tags.length > 0)
+				);
+
 				setState((prevState) => ({
 					...prevState,
 					blueprint: newBlueprint,
 					renderedMarkdown,
-					blueprintPasted: !!parsedBp && !!decoded,
+					blueprintPasted: hasValidBlueprint || hasSavedData,
 				}));
 
 				setParsedBlueprint(parsedBp);
