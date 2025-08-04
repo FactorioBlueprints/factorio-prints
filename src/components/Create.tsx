@@ -1,5 +1,5 @@
 import {faGithub, faGoogle} from '@fortawesome/free-brands-svg-icons';
-import {faArrowLeft, faBan, faSave} from '@fortawesome/free-solid-svg-icons';
+import {faArrowLeft, faBan, faEnvelope, faSave} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useNavigate} from '@tanstack/react-router';
 import DOMPurify from 'dompurify';
@@ -8,6 +8,7 @@ import {
 	GithubAuthProvider,
 	GoogleAuthProvider,
 	getAuth,
+	sendSignInLinkToEmail,
 	signInWithPopup,
 	type User,
 } from 'firebase/auth';
@@ -125,6 +126,8 @@ const Create: React.FC = () => {
 
 	const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 	const [pendingSubmission, setPendingSubmission] = useState(false);
+	const [authEmail, setAuthEmail] = useState('');
+	const [isEmailSending, setIsEmailSending] = useState(false);
 
 	const {data: tagsData, isLoading: tagsLoading} = useTags();
 	const tags = tagsData?.tags || [];
@@ -152,6 +155,32 @@ const Create: React.FC = () => {
 					console.error({error});
 				}
 			});
+	}, []);
+
+	const authenticateWithEmail = useCallback(async (emailAddress: string) => {
+		if (!emailAddress.trim()) {
+			return;
+		}
+
+		setIsEmailSending(true);
+
+		const actionCodeSettings = {
+			url: `${window.location.origin}/auth/email-callback`,
+			handleCodeInApp: true,
+		};
+
+		try {
+			await sendSignInLinkToEmail(getAuth(app), emailAddress, actionCodeSettings);
+			localStorage.setItem('emailForSignIn', emailAddress);
+			alert('Check your email for a sign-in link!');
+			setAuthEmail('');
+			setShowAuthPrompt(false);
+		} catch (error) {
+			console.error('Error sending email:', error);
+			alert('Failed to send sign-in email. Please try again.');
+		} finally {
+			setIsEmailSending(false);
+		}
 	}, []);
 
 	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null => {
@@ -623,6 +652,7 @@ const Create: React.FC = () => {
 				onHide={() => {
 					setShowAuthPrompt(false);
 					setPendingSubmission(false);
+					setAuthEmail('');
 				}}
 			>
 				<Modal.Header closeButton>
@@ -630,8 +660,7 @@ const Create: React.FC = () => {
 				</Modal.Header>
 				<Modal.Body>
 					<p className="mb-4">
-						Please sign in with Google or GitHub to save your blueprint. Your blueprint data will be
-						preserved.
+						Please sign in to save your blueprint. Your blueprint data will be preserved.
 					</p>
 					<div className="d-flex flex-column">
 						<Button
@@ -649,7 +678,7 @@ const Create: React.FC = () => {
 						</Button>
 						<Button
 							type="button"
-							className="github w-100"
+							className="github w-100 mb-3"
 							style={{marginLeft: 0, marginRight: 0}}
 							onClick={() => authenticate(githubProvider)}
 						>
@@ -660,6 +689,37 @@ const Create: React.FC = () => {
 							/>
 							{' Log in with GitHub'}
 						</Button>
+						<hr className="w-100 my-3" />
+						<Form
+							onSubmit={(event) => {
+								event.preventDefault();
+								authenticateWithEmail(authEmail);
+							}}
+						>
+							<Form.Group className="mb-2">
+								<Form.Control
+									type="email"
+									placeholder="Enter your email address"
+									value={authEmail}
+									onChange={(event) => setAuthEmail(event.target.value)}
+									disabled={isEmailSending}
+									required
+								/>
+							</Form.Group>
+							<Button
+								type="submit"
+								className="w-100"
+								variant="primary"
+								disabled={isEmailSending || !authEmail.trim()}
+							>
+								<FontAwesomeIcon
+									icon={faEnvelope}
+									size="lg"
+									fixedWidth
+								/>
+								{isEmailSending ? ' Sending...' : ' Send Sign-in Link'}
+							</Button>
+						</Form>
 					</div>
 				</Modal.Body>
 			</Modal>
