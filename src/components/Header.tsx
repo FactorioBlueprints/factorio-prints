@@ -1,9 +1,8 @@
-import {faDiscord, faGithub, faGoogle, faPatreon} from '@fortawesome/free-brands-svg-icons';
+import {faDiscord, faPatreon} from '@fortawesome/free-brands-svg-icons';
 import {
 	faClock,
 	faCogs,
 	faDonate,
-	faEnvelope,
 	faHeart,
 	faPlusSquare,
 	faSearch,
@@ -16,21 +15,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {Link} from '@tanstack/react-router';
-import {
-	type AuthProvider,
-	GithubAuthProvider,
-	GoogleAuthProvider,
-	getAuth,
-	sendSignInLinkToEmail,
-	signInWithPopup,
-	signOut,
-	type User,
-} from 'firebase/auth';
+import {getAuth, signOut, type User} from 'firebase/auth';
 import type React from 'react';
-import {useMemo, useState} from 'react';
+import {useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import Form from 'react-bootstrap/Form';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
@@ -38,28 +27,13 @@ import {useAuthState} from 'react-firebase-hooks/auth';
 
 import {app} from '../base';
 import {useIsModerator} from '../hooks/useModerators';
+import {AuthenticationForm} from './auth/AuthenticationForm';
 
 const Header: React.FC = () => {
 	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const moderatorQuery = useIsModerator(user?.uid);
 	const isModerator = moderatorQuery.data ?? false;
 	const [showAccountDropdown, setShowAccountDropdown] = useState<boolean>(false);
-	const [email, setEmail] = useState<string>('');
-	const [isEmailSending, setIsEmailSending] = useState<boolean>(false);
-
-	const googleProvider = useMemo(() => {
-		const provider = new GoogleAuthProvider();
-		// Choose between multiple google accounts
-		// http://stackoverflow.com/a/40551683/23572
-		provider.setCustomParameters({prompt: 'consent select_account'});
-		return provider;
-	}, []);
-
-	const githubProvider = useMemo(() => {
-		const provider = new GithubAuthProvider();
-		provider.setCustomParameters({allow_signup: 'true'});
-		return provider;
-	}, []);
 
 	const handleLogout = (): void => {
 		signOut(getAuth(app));
@@ -74,40 +48,6 @@ const Header: React.FC = () => {
 			);
 		}
 		return false;
-	};
-
-	const authenticate = (provider: AuthProvider): void => {
-		signInWithPopup(getAuth(app), provider).catch((error) => {
-			// Don't show error for user-cancelled popups
-			if (error.code !== 'auth/popup-closed-by-user') {
-				console.error({error});
-			}
-		});
-	};
-
-	const authenticateWithEmail = async (emailAddress: string): Promise<void> => {
-		if (!emailAddress.trim()) {
-			return;
-		}
-
-		setIsEmailSending(true);
-
-		const actionCodeSettings = {
-			url: `${window.location.origin}/auth/email-callback`,
-			handleCodeInApp: true,
-		};
-
-		try {
-			await sendSignInLinkToEmail(getAuth(app), emailAddress, actionCodeSettings);
-			localStorage.setItem('emailForSignIn', emailAddress);
-			alert('Check your email for a sign-in link!');
-			setEmail('');
-		} catch (error) {
-			console.error('Error sending email:', error);
-			alert('Failed to send sign-in email. Please try again.');
-		} finally {
-			setIsEmailSending(false);
-		}
 	};
 
 	const renderAuthentication = (): React.ReactElement => {
@@ -229,60 +169,7 @@ const Header: React.FC = () => {
 				style={{minWidth: '210px'}}
 			>
 				<div className="p-2">
-					<Button
-						type="button"
-						className="google w-100 mb-2"
-						onClick={() => authenticate(googleProvider)}
-					>
-						<FontAwesomeIcon
-							icon={faGoogle}
-							size="lg"
-							fixedWidth
-						/>
-						{' Log in with Google'}
-					</Button>
-					<Button
-						type="button"
-						className="github w-100 mb-2"
-						onClick={() => authenticate(githubProvider)}
-					>
-						<FontAwesomeIcon
-							icon={faGithub}
-							size="lg"
-							fixedWidth
-						/>
-						{' Log in with GitHub'}
-					</Button>
-					<Form
-						onSubmit={(event) => {
-							event.preventDefault();
-							authenticateWithEmail(email);
-						}}
-					>
-						<Form.Group className="mb-2">
-							<Form.Control
-								type="email"
-								placeholder="Enter your email address"
-								value={email}
-								onChange={(event) => setEmail(event.target.value)}
-								disabled={isEmailSending}
-								required
-							/>
-						</Form.Group>
-						<Button
-							type="submit"
-							className="w-100"
-							variant="primary"
-							disabled={isEmailSending || !email.trim()}
-						>
-							<FontAwesomeIcon
-								icon={faEnvelope}
-								size="lg"
-								fixedWidth
-							/>
-							{isEmailSending ? ' Sending...' : ' Send Sign-in Link'}
-						</Button>
-					</Form>
+					<AuthenticationForm showDivider={false} />
 				</div>
 			</NavDropdown>
 		);
