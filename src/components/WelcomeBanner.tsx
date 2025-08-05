@@ -5,20 +5,33 @@ import type React from 'react';
 import {useState, useEffect} from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base.js';
+import {CACHE_BUSTER} from '../localStorage.js';
 
 const WelcomeBanner: React.FC = () => {
 	const [user, loading] = useAuthState(getAuth(app));
 	const [isDismissed, setIsDismissed] = useState(false);
 
 	useEffect(() => {
-		const dismissed = localStorage.getItem('welcomeBannerDismissed');
-		if (dismissed === 'true') {
-			setIsDismissed(true);
+		try {
+			const dismissalData = localStorage.getItem('welcomeBannerDismissal');
+			if (dismissalData) {
+				const {dismissed, cacheBuster} = JSON.parse(dismissalData);
+				// Only honor the dismissal if it was made with the same cache buster
+				if (dismissed && cacheBuster === CACHE_BUSTER) {
+					setIsDismissed(true);
+				}
+			}
+		} catch {
+			// If there's any error parsing, treat as not dismissed
 		}
 	}, []);
 
 	const handleDismiss = () => {
-		localStorage.setItem('welcomeBannerDismissed', 'true');
+		const dismissalData = {
+			dismissed: true,
+			cacheBuster: CACHE_BUSTER,
+		};
+		localStorage.setItem('welcomeBannerDismissal', JSON.stringify(dismissalData));
 		setIsDismissed(true);
 	};
 
