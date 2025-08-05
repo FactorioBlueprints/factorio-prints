@@ -39,7 +39,6 @@ export const useCreateBlueprint = () => {
 
 	return useMutation<CreateBlueprintResult, Error, CreateBlueprintMutationParams>({
 		mutationFn: async ({formData, user}) => {
-			// Process image URL to extract imgur ID
 			const imageUrl = formData.imageUrl;
 
 			const regexPatterns: ImgurRegexPatterns = {
@@ -116,7 +115,6 @@ export const useCreateBlueprint = () => {
 			const now = new Date();
 			const unixTimestamp = now.getTime();
 
-			// Extract imgur ID from the image URL for the summary
 			const regexPatterns: ImgurRegexPatterns = {
 				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
 				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
@@ -223,7 +221,6 @@ export const useCreateBlueprint = () => {
 			const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
 			const userBlueprintsData = userBlueprintsDataRaw ? validateRawUserBlueprints(userBlueprintsDataRaw) : {};
 
-			// Add the new blueprint to the user's blueprints object
 			queryClient.setQueryData(userBlueprintsKey, {
 				...userBlueprintsData,
 				[blueprintId]: true,
@@ -254,7 +251,7 @@ export const useCreateBlueprint = () => {
 				});
 			}
 
-			navigate({to: '/view/$blueprintId', params: {blueprintId}, from: '/create'});
+			navigate({to: '/user/$userId', params: {userId: authorId}, from: '/create'});
 		},
 	});
 };
