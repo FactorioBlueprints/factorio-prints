@@ -728,7 +728,12 @@ function EditBlueprintWrapper() {
 				<PageHeader
 					title={
 						<>
-							Editing: <RichText text={form.state.values.title} />
+							Editing:{' '}
+							<RichText
+								text={form.state.values.title}
+								iconSize="large"
+								inline
+							/>
 						</>
 					}
 				/>
