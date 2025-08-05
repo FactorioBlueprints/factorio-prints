@@ -167,11 +167,23 @@ function EditBlueprintWrapper() {
 			? Object.keys(blueprintData.tags).filter((tag) => blueprintData.tags[tag])
 			: emptyTags;
 
+		// Handle both old Firebase Storage URLs and new Imgur format
+		// Prefer the new format (image.id) when both exist, as it's more reliable
+		let imageUrl = '';
+		if (blueprintData?.image?.id) {
+			// New format: Imgur image data - always prefer this
+			imageUrl = `https://imgur.com/${blueprintData.image.id}`;
+		} else if (blueprintData?.imageUrl) {
+			// Old format: could be Firebase Storage URL or Imgur page URL
+			// The form field conversion logic will handle both cases
+			imageUrl = blueprintData.imageUrl;
+		}
+
 		return {
 			title: blueprintData?.title || '',
 			descriptionMarkdown: blueprintData?.descriptionMarkdown || '',
 			blueprintString: blueprintData?.blueprintString || '',
-			imageUrl: blueprintData?.image ? `https://imgur.com/${blueprintData.image.id}` : '',
+			imageUrl: imageUrl,
 			tags: tags,
 		};
 	}, [blueprintData]);
@@ -403,9 +415,10 @@ function EditBlueprintWrapper() {
 	);
 
 	const renderOldThumbnail = useCallback(() => {
-		// Handle old Firebase Storage URLs
-		if (blueprintData?.imageUrl) {
-			const imageUrl = blueprintData.imageUrl;
+		// Prefer new Imgur image format when available
+		if (blueprintData?.image?.id) {
+			const {id, type} = blueprintData.image;
+			const imageUrl = buildImageUrl(id, type, 'b');
 			return (
 				<Form.Group
 					as={Row}
@@ -439,45 +452,53 @@ function EditBlueprintWrapper() {
 			);
 		}
 
-		// Handle new Imgur image format
-		if (!blueprintData?.image) {
-			return null;
+		// Fallback to old imageUrl field (Firebase Storage or legacy Imgur URLs)
+		if (blueprintData?.imageUrl) {
+			let imageUrl = blueprintData.imageUrl;
+
+			// Convert Imgur page URLs to direct image URLs
+			const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
+			const match = imageUrl.match(imgurPageRegex);
+			if (match) {
+				// Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
+				imageUrl = `https://i.imgur.com/${match[1]}.png`;
+			}
+
+			return (
+				<Form.Group
+					as={Row}
+					className="mb-3"
+				>
+					<Form.Label
+						column
+						sm="2"
+					>
+						{'Old screenshot'}
+					</Form.Label>
+					<Col sm={10}>
+						<Card
+							className="mb-2 mr-2"
+							style={{width: '14rem', backgroundColor: '#1c1e22'}}
+						>
+							<Card.Img
+								variant="top"
+								src={imageUrl || noImageAvailable}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement;
+									target.src = noImageAvailable;
+								}}
+							/>
+							<Card.Title className="truncate">
+								<RichText text={form.state.values.title} />
+							</Card.Title>
+						</Card>
+					</Col>
+				</Form.Group>
+			);
 		}
 
-		const {id, type} = blueprintData.image;
-		const imageUrl = buildImageUrl(id, type, 'b');
-
-		return (
-			<Form.Group
-				as={Row}
-				className="mb-3"
-			>
-				<Form.Label
-					column
-					sm="2"
-				>
-					{'Old screenshot'}
-				</Form.Label>
-				<Col sm={10}>
-					<Card
-						className="mb-2 mr-2"
-						style={{width: '14rem', backgroundColor: '#1c1e22'}}
-					>
-						<Card.Img
-							variant="top"
-							src={imageUrl || noImageAvailable}
-							onError={(e) => {
-								const target = e.target as HTMLImageElement;
-								target.src = noImageAvailable;
-							}}
-						/>
-						<Card.Title className="truncate">
-							<RichText text={form.state.values.title} />
-						</Card.Title>
-					</Card>
-				</Col>
-			</Form.Group>
-		);
+		// No image data available
+		return null;
 	}, [blueprintData, form.state.values.title]);
 
 	const getUnusedTagSuggestions = () => {
