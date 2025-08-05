@@ -73,7 +73,6 @@ describe('useCreateBlueprint', () => {
 			user,
 		});
 
-		// Verify Firebase push was called with correct blueprint data
 		expect(push).toHaveBeenCalledWith(mockRef, {
 			title: 'Test Blueprint',
 			blueprintString: 'test blueprint string',
@@ -94,7 +93,6 @@ describe('useCreateBlueprint', () => {
 			},
 		});
 
-		// Verify Firebase update was called with correct updates
 		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
 			'/users/user123/blueprints/newBlueprint123': true,
 			'/blueprintSummaries/newBlueprint123': {
@@ -109,10 +107,9 @@ describe('useCreateBlueprint', () => {
 			'/byTag/tag2/newBlueprint123': true,
 		});
 
-		// Verify navigation
 		expect(navigateMock).toHaveBeenCalledWith({
-			to: '/view/$blueprintId',
-			params: {blueprintId: 'newBlueprint123'},
+			to: '/user/$userId',
+			params: {userId: 'user123'},
 			from: '/create',
 		});
 	});
@@ -144,7 +141,6 @@ describe('useCreateBlueprint', () => {
 			user,
 		});
 
-		// Verify the image was processed correctly
 		expect(push).toHaveBeenCalledWith(
 			mockRef,
 			expect.objectContaining({
@@ -186,7 +182,6 @@ describe('useCreateBlueprint', () => {
 		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
 		vi.mocked(dbUpdate).mockResolvedValue();
 
-		// Set up existing cache data
 		const existingPaginatedData = {
 			pages: [
 				{
@@ -227,7 +222,6 @@ describe('useCreateBlueprint', () => {
 			user,
 		});
 
-		// Check summary cache was updated
 		const summaryData = queryClient.getQueryData(['blueprintSummaries', 'blueprintId', 'newBlueprint123']);
 		expect(summaryData).toEqual({
 			title: 'New Blueprint',
@@ -237,7 +231,6 @@ describe('useCreateBlueprint', () => {
 			lastUpdatedDate: expect.any(Number),
 		});
 
-		// Check paginated data was updated
 		const paginatedData = queryClient.getQueryData([
 			'blueprintSummaries',
 			'orderByField',
@@ -253,7 +246,6 @@ describe('useCreateBlueprint', () => {
 		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
 		vi.mocked(dbUpdate).mockResolvedValue();
 
-		// Set up existing user blueprints
 		queryClient.setQueryData(['users', 'userId', 'user123', 'blueprints'], {
 			existing1: true,
 			existing2: true,
@@ -278,7 +270,6 @@ describe('useCreateBlueprint', () => {
 			user,
 		});
 
-		// Check user blueprints were updated
 		const userBlueprints = queryClient.getQueryData(['users', 'userId', 'user123', 'blueprints']);
 		expect(userBlueprints).toEqual({
 			existing1: true,
@@ -294,7 +285,6 @@ describe('useCreateBlueprint', () => {
 		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
 		vi.mocked(dbUpdate).mockResolvedValue();
 
-		// Set up existing tags and tag data
 		queryClient.setQueryData(['tags'], ['tag1', 'tag2', 'tag3']);
 		queryClient.setQueryData(['byTag', 'tag1'], {existing1: true});
 		queryClient.setQueryData(['byTag', 'tag2'], {existing2: true});
@@ -318,7 +308,6 @@ describe('useCreateBlueprint', () => {
 			user,
 		});
 
-		// Check tag caches were updated
 		const tag1Data = queryClient.getQueryData(['byTag', 'tag1']);
 		expect(tag1Data).toEqual({existing1: true, newBlueprint123: true});
 
