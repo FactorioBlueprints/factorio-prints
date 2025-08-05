@@ -21,11 +21,6 @@ export const useHighWatermarkSync = () => {
 		const newSummaries = await fetchSummariesNewerThan(watermark.lastUpdatedDate);
 
 		if (newSummaries.length > 0) {
-			const watermarkDate = new Date(watermark.lastUpdatedDate).toLocaleString();
-			console.log(
-				`🆕 Found ${newSummaries.length} new blueprints while checking for blueprints newer than ${watermarkDate}`,
-			);
-
 			const latestDate = Math.max(
 				...newSummaries
 					.map((summary) => summary.lastUpdatedDate)

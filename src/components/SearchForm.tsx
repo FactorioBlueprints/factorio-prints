@@ -13,7 +13,6 @@ const SearchForm: React.FC = () => {
 
 	const filterOnTitle = (title: string): void => {
 		if (title === undefined) {
-			console.error('Title is undefined in filterOnTitle');
 			throw new Error('Title is undefined in filterOnTitle');
 		}
 

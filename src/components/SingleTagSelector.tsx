@@ -45,7 +45,6 @@ const SingleTagSelector: React.FC<SingleTagSelectorProps> = ({currentTag}) => {
 				const [category, name] = parts;
 				navigate({to: '/tagged/$category/$name', params: {category, name}});
 			} else {
-				console.error(`Invalid tag format: "${normalizedTag}" should have exactly one slash`);
 			}
 		}
 	};

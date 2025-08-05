@@ -12,9 +12,7 @@ export const useCopyToClipboard = (): [boolean, (text: string) => void] => {
 				setCopiedText(true);
 				setTimeout(() => setCopiedText(false), 2000);
 			})
-			.catch((err) => {
-				console.error('Failed to copy: ', err);
-			});
+			.catch(() => {});
 	}, []);
 
 	return [copiedText, copyToClipboard];

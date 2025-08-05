@@ -21,13 +21,8 @@ export const useEnrichedPaginatedSummaries = (pageSize = 60, orderByField = 'las
 		const enriched = enrichPaginatedBlueprintSummaries(rawPaginatedQuery.data as RawPaginatedBlueprintSummaries);
 
 		// Strict validation to catch any issues
-		try {
-			const validated = validateEnrichedPaginatedBlueprintSummaries(enriched);
-			return validated ?? null;
-		} catch (error) {
-			console.error('Validation error in enriched paginated data:', error);
-			throw error; // Re-throw to bubble up the error
-		}
+		const validated = validateEnrichedPaginatedBlueprintSummaries(enriched);
+		return validated ?? null;
 	}, [rawPaginatedQuery.data]);
 
 	return {

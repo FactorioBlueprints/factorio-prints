@@ -65,7 +65,6 @@ export const fetchBlueprintFromCdn = async (
 	try {
 		const blueprintKey = blueprintSummary.key;
 		if (!blueprintKey) {
-			console.error('Blueprint summary missing key');
 			return null;
 		}
 
@@ -80,26 +79,18 @@ export const fetchBlueprintFromCdn = async (
 		}
 
 		if (!response.ok) {
-			// Only log non-404 and non-network errors, as both are expected for CDN
-			if (response.status !== 404 && response.status !== 0) {
-				console.warn(
-					`CDN fetch failed for blueprint ${blueprintKey}: ${response.status} ${response.statusText}`,
-				);
-			}
 			return null;
 		}
 
 		let data;
 		try {
 			data = await response.json();
-		} catch (jsonError) {
-			console.warn(`Failed to parse JSON response from CDN for blueprint ${blueprintKey}:`, jsonError);
+		} catch {
 			return null;
 		}
 
 		return validateRawBlueprint(data);
-	} catch (error) {
-		console.warn('Error fetching blueprint from CDN:', error);
+	} catch {
 		return null;
 	}
 };
@@ -138,55 +129,45 @@ export const fetchBlueprint = async (
 	blueprintId: string,
 	blueprintSummary: EnrichedBlueprintSummary,
 ): Promise<RawBlueprint | null> => {
-	try {
-		// Extract lastUpdatedDate from blueprintSummary
-		const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
+	// Extract lastUpdatedDate from blueprintSummary
+	const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
 
-		// Attempt to fetch from CDN first
-		const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
+	// Attempt to fetch from CDN first
+	const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
 
-		if (cdnBlueprint) {
-			// CDN fetch succeeded - compare lastUpdatedDate values
-			const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
+	if (cdnBlueprint) {
+		// CDN fetch succeeded - compare lastUpdatedDate values
+		const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-			if (cdnLastUpdated === summaryLastUpdated) {
-				// Dates match - use CDN data
+		if (cdnLastUpdated === summaryLastUpdated) {
+			// Dates match - use CDN data
+			return cdnBlueprint;
+		}
+		if (cdnLastUpdated && summaryLastUpdated) {
+			// Dates don't match - check if CDN data is stale
+			const cdnDate = new Date(cdnLastUpdated);
+			const summaryDate = new Date(summaryLastUpdated);
+			const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
+
+			if (timeDifferenceMs < 1000) {
+				// CDN data is stale by less than 1 second - use it anyway
 				return cdnBlueprint;
 			}
-			if (cdnLastUpdated && summaryLastUpdated) {
-				// Dates don't match - check if CDN data is stale
-				const cdnDate = new Date(cdnLastUpdated);
-				const summaryDate = new Date(summaryLastUpdated);
-				const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
-
-				if (timeDifferenceMs < 1000) {
-					// CDN data is stale by less than 1 second - use it anyway
-					return cdnBlueprint;
-				}
-				// CDN data is stale by more than 1 second
-			} else {
-				// One or both dates are missing
-			}
+			// CDN data is stale by more than 1 second
+		} else {
+			// One or both dates are missing
 		}
-
-		// Fall back to Firebase if CDN failed or data was stale
-		const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/`);
-		const snapshot = await get(blueprintRef);
-
-		if (!snapshot.exists()) {
-			return null;
-		}
-
-		console.log(`Blueprint ${blueprintId} fetched from Firebase`);
-		return validateRawBlueprint(snapshot.val());
-	} catch (error) {
-		if (isNetworkError(error)) {
-			console.warn(`Network error fetching blueprint ${blueprintId}:`, error);
-			return null;
-		}
-		console.error('Error fetching blueprint:', error);
-		throw error;
 	}
+
+	// Fall back to Firebase if CDN failed or data was stale
+	const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/`);
+	const snapshot = await get(blueprintRef);
+
+	if (!snapshot.exists()) {
+		return null;
+	}
+
+	return validateRawBlueprint(snapshot.val());
 };
 
 export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]> => {
@@ -196,10 +177,8 @@ export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]>
 		return snapshot.exists() ? snapshot.val() : [];
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching blueprint tags for ${blueprintId}:`, error);
 			return [];
 		}
-		console.error('Error fetching blueprint tags:', error);
 		throw error;
 	}
 };
@@ -216,17 +195,14 @@ export const fetchTags = async (): Promise<Record<string, string[]>> => {
 		return snapshot.val();
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn('Network error fetching tags:', error);
 			return {};
 		}
-		console.error('Error fetching tags:', error);
 		throw error;
 	}
 };
 
 export const fetchByTagData = async (tagId: string): Promise<Record<string, boolean>> => {
 	if (!tagId) {
-		console.error('fetchTagData called with null or empty tagId');
 		return {};
 	}
 
@@ -241,10 +217,8 @@ export const fetchByTagData = async (tagId: string): Promise<Record<string, bool
 		return snapshot.val() || {};
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching tag data for ${tagId}:`, error);
 			return {};
 		}
-		console.error('Error fetching tag data:', error);
 		throw error;
 	}
 };
@@ -257,10 +231,8 @@ export const fetchModerator = async (userId: string): Promise<boolean> => {
 		return Boolean(snapshot.val());
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching moderator status for ${userId}:`, error);
 			return false;
 		}
-		console.error('Error fetching moderator status:', error);
 		throw error;
 	}
 };
@@ -273,10 +245,8 @@ export const fetchUserDisplayName = async (userId: string): Promise<string | nul
 		return snapshot.val();
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching user display name for ${userId}:`, error);
 			return null;
 		}
-		console.error('Error fetching user display name:', error);
 		throw error;
 	}
 };
@@ -287,10 +257,8 @@ export const fetchUserBlueprints = async (userId: string): Promise<Record<string
 		return snapshot.val() || {};
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching user blueprints for ${userId}:`, error);
 			return {};
 		}
-		console.error('Error fetching user blueprints:', error);
 		throw error;
 	}
 };
@@ -301,10 +269,8 @@ export const fetchUserFavorites = async (userId: string): Promise<Record<string,
 		return snapshot.val() || {};
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching user favorites for ${userId}:`, error);
 			return {};
 		}
-		console.error('Error fetching user favorites:', error);
 		throw error;
 	}
 };
@@ -328,10 +294,8 @@ export const fetchUser = async (userId: string): Promise<RawUser | null> => {
 		};
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching user ${userId}:`, error);
 			return null;
 		}
-		console.error('Error fetching user:', error);
 		throw error;
 	}
 };
@@ -360,107 +324,95 @@ export const fetchAllUsers = async (): Promise<UserData[]> => {
 		return usersData.sort((a, b) => b.favoritesCount - a.favoritesCount);
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn('Network error fetching all users:', error);
 			return [];
 		}
-		console.error('Error fetching all users:', error);
 		throw error;
 	}
 };
 
 export const reconcileFavoritesCount = async (blueprintId: string): Promise<ReconcileResult> => {
-	try {
-		const favoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites`);
-		const favoritesSnapshot = await get(favoritesRef);
-		const favorites = favoritesSnapshot.exists() ? favoritesSnapshot.val() : {};
+	const favoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites`);
+	const favoritesSnapshot = await get(favoritesRef);
+	const favorites = favoritesSnapshot.exists() ? favoritesSnapshot.val() : {};
 
-		const actualCount = Object.values(favorites).filter(Boolean).length;
+	const actualCount = Object.values(favorites).filter(Boolean).length;
 
-		const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/numberOfFavorites`);
-		const blueprintSnapshot = await get(blueprintRef);
-		const currentBlueprintCount = blueprintSnapshot.exists() ? blueprintSnapshot.val() : 0;
+	const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/numberOfFavorites`);
+	const blueprintSnapshot = await get(blueprintRef);
+	const currentBlueprintCount = blueprintSnapshot.exists() ? blueprintSnapshot.val() : 0;
 
-		const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}/numberOfFavorites`);
-		const summarySnapshot = await get(summaryRef);
-		const currentSummaryCount = summarySnapshot.exists() ? summarySnapshot.val() : 0;
+	const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}/numberOfFavorites`);
+	const summarySnapshot = await get(summaryRef);
+	const currentSummaryCount = summarySnapshot.exists() ? summarySnapshot.val() : 0;
 
-		const hasDiscrepancy = actualCount !== currentBlueprintCount || actualCount !== currentSummaryCount;
+	const hasDiscrepancy = actualCount !== currentBlueprintCount || actualCount !== currentSummaryCount;
 
-		if (hasDiscrepancy) {
-			const updates = {
-				[`/blueprints/${blueprintId}/numberOfFavorites`]: actualCount,
-				[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
-			};
-
-			await dbUpdate(ref(getDatabase(app)), updates);
-		}
-
-		return {
-			blueprintId,
-			actualCount,
-			previousBlueprintCount: currentBlueprintCount,
-			previousSummaryCount: currentSummaryCount,
-			hasDiscrepancy,
-			reconciled: hasDiscrepancy,
+	if (hasDiscrepancy) {
+		const updates = {
+			[`/blueprints/${blueprintId}/numberOfFavorites`]: actualCount,
+			[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
 		};
-	} catch (error) {
-		console.error('Error reconciling favorites count:', error);
-		throw error;
+
+		await dbUpdate(ref(getDatabase(app)), updates);
 	}
+
+	return {
+		blueprintId,
+		actualCount,
+		previousBlueprintCount: currentBlueprintCount,
+		previousSummaryCount: currentSummaryCount,
+		hasDiscrepancy,
+		reconciled: hasDiscrepancy,
+	};
 };
 
 // TODO 2025-04-12: Move this out of firebase.js, and refactor it to use react query hooks from the hooks/ dir. The problem with the current implementation is that it performs many queries but doesn't cache anything. /users/${userId}/favorites already has a hook useUserFavorites in useUser. But `/blueprints/${blueprintId}/favorites/${userId}` doesn't have a hook or a mutation yet, so we need to add them.
 export const reconcileUserFavorites = async (userId: string): Promise<UserReconcileResult> => {
-	try {
-		const userFavoritesRef = ref(getDatabase(app), `/users/${userId}/favorites`);
-		const userFavoritesSnapshot = await get(userFavoritesRef);
-		const userFavorites = userFavoritesSnapshot.exists() ? userFavoritesSnapshot.val() : {};
+	const userFavoritesRef = ref(getDatabase(app), `/users/${userId}/favorites`);
+	const userFavoritesSnapshot = await get(userFavoritesRef);
+	const userFavorites = userFavoritesSnapshot.exists() ? userFavoritesSnapshot.val() : {};
 
-		const discrepancies: Array<{
-			blueprintId: string;
-			issue: string;
-			fixed: boolean;
-		}> = [];
-		const updates: Record<string, boolean> = {};
+	const discrepancies: Array<{
+		blueprintId: string;
+		issue: string;
+		fixed: boolean;
+	}> = [];
+	const updates: Record<string, boolean> = {};
 
-		for (const blueprintId of Object.keys(userFavorites)) {
-			if (!userFavorites[blueprintId]) {
-				continue;
-			}
-
-			const blueprintFavoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites/${userId}`);
-			const blueprintFavoriteSnapshot = await get(blueprintFavoritesRef);
-
-			if (!blueprintFavoriteSnapshot.exists() || !blueprintFavoriteSnapshot.val()) {
-				discrepancies.push({
-					blueprintId,
-					issue: 'User favorite not found in blueprint favorites',
-					fixed: true,
-				});
-
-				updates[`/blueprints/${blueprintId}/favorites/${userId}`] = true;
-
-				// TODO 2025-04-11: react query cache invalidation will be needed for each of these blueprints
-
-				// TODO 2025-04-11: Don't reconcile counts, we'll handle that separately when reconciling from the blueprints rather than from the users
-				await reconcileFavoritesCount(blueprintId);
-			}
+	for (const blueprintId of Object.keys(userFavorites)) {
+		if (!userFavorites[blueprintId]) {
+			continue;
 		}
 
-		if (Object.keys(updates).length > 0) {
-			await dbUpdate(ref(getDatabase(app)), updates);
-		}
+		const blueprintFavoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites/${userId}`);
+		const blueprintFavoriteSnapshot = await get(blueprintFavoritesRef);
 
-		return {
-			userId,
-			discrepancies,
-			totalFixed: discrepancies.length,
-			reconciled: discrepancies.length > 0,
-		};
-	} catch (error) {
-		console.error('Error reconciling user favorites:', error);
-		throw error;
+		if (!blueprintFavoriteSnapshot.exists() || !blueprintFavoriteSnapshot.val()) {
+			discrepancies.push({
+				blueprintId,
+				issue: 'User favorite not found in blueprint favorites',
+				fixed: true,
+			});
+
+			updates[`/blueprints/${blueprintId}/favorites/${userId}`] = true;
+
+			// TODO 2025-04-11: react query cache invalidation will be needed for each of these blueprints
+
+			// TODO 2025-04-11: Don't reconcile counts, we'll handle that separately when reconciling from the blueprints rather than from the users
+			await reconcileFavoritesCount(blueprintId);
+		}
 	}
+
+	if (Object.keys(updates).length > 0) {
+		await dbUpdate(ref(getDatabase(app)), updates);
+	}
+
+	return {
+		userId,
+		discrepancies,
+		totalFixed: discrepancies.length,
+		reconciled: discrepancies.length > 0,
+	};
 };
 
 export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: string): Promise<boolean> => {
@@ -469,9 +421,6 @@ export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: st
 		const summarySnapshot = await get(summaryRef);
 
 		if (summarySnapshot.exists()) {
-			console.error(
-				`Attempted to clean up a valid blueprint ${blueprintId} from user ${userId}'s favorites. This is a bug and should be investigated.`,
-			);
 			return false;
 		}
 
@@ -482,11 +431,7 @@ export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: st
 		await dbUpdate(ref(getDatabase(app)), updates);
 
 		return true;
-	} catch (error) {
-		console.error(
-			`Error cleaning up invalid user favorite for userId=${userId}, blueprintId=${blueprintId}:`,
-			error,
-		);
+	} catch {
 		return false;
 	}
 };
@@ -503,10 +448,8 @@ export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlu
 		return validateRawBlueprintSummary(snapshot.val());
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn(`Network error fetching blueprint summary for ${blueprintId}:`, error);
 			return null;
 		}
-		console.error('Error fetching blueprint summary:', error);
 		throw error;
 	}
 };
@@ -517,11 +460,11 @@ export const fetchPaginatedSummaries = async (
 	lastValue: any = null,
 	orderByField = 'lastUpdatedDate',
 ): Promise<RawBlueprintSummaryPage> => {
-	try {
-		let summariesQuery;
-		let nextLastKey: string | null = null;
-		let nextLastValue: number | null = null;
+	let summariesQuery;
+	let nextLastKey: string | null = null;
+	let nextLastValue: number | null = null;
 
+	try {
 		if (lastKey && lastValue) {
 			summariesQuery = query(
 				ref(getDatabase(app), '/blueprintSummaries/'),
@@ -582,7 +525,6 @@ export const fetchPaginatedSummaries = async (
 		});
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn('Network error fetching paginated summaries:', error);
 			return validateRawBlueprintSummaryPage({
 				data: {},
 				hasMore: false,
@@ -590,7 +532,6 @@ export const fetchPaginatedSummaries = async (
 				lastValue: null,
 			});
 		}
-		console.error('Error fetching paginated summaries:', error);
 		throw error;
 	}
 };
@@ -622,10 +563,8 @@ export const fetchSummariesNewerThan = async (
 		return summaries.reverse();
 	} catch (error) {
 		if (isNetworkError(error)) {
-			console.warn('Network error fetching summaries newer than high watermark:', error);
 			return [];
 		}
-		console.error('Error fetching summaries newer than high watermark:', error);
 		throw error;
 	}
 };

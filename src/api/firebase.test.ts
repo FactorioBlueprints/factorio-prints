@@ -121,15 +121,10 @@ describe('firebase API', () => {
 				lastUpdatedDate: 1607936203137,
 			};
 
-			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary as any);
 
 			expect(result).toBeNull();
-			expect(consoleErrorSpy).toHaveBeenCalledWith('Blueprint summary missing key');
 			expect(globalThis.fetch).not.toHaveBeenCalled();
-
-			consoleErrorSpy.mockRestore();
 		});
 
 		it('should return null when CDN fetch returns 404 (without logging)', async () => {
@@ -159,7 +154,7 @@ describe('firebase API', () => {
 			consoleWarnSpy.mockRestore();
 		});
 
-		it('should log warning for non-404 CDN fetch errors', async () => {
+		it('should return null for non-404 CDN fetch errors', async () => {
 			const mockBlueprintSummary: EnrichedBlueprintSummary = {
 				key: '-KnQ865j-qQ21WoUPbd3',
 				title: 'Test Blueprint',
@@ -176,16 +171,9 @@ describe('firebase API', () => {
 				statusText: 'Internal Server Error',
 			} as unknown as Response);
 
-			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
 			expect(result).toBeNull();
-			expect(consoleWarnSpy).toHaveBeenCalledWith(
-				'CDN fetch failed for blueprint -KnQ865j-qQ21WoUPbd3: 500 Internal Server Error',
-			);
-
-			consoleWarnSpy.mockRestore();
 		});
 
 		it('should return null when network error occurs', async () => {
@@ -230,17 +218,9 @@ describe('firebase API', () => {
 				},
 			} as unknown as Response);
 
-			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
 			expect(result).toBeNull();
-			expect(consoleWarnSpy).toHaveBeenCalledWith(
-				`Failed to parse JSON response from CDN for blueprint ${mockBlueprintSummary.key}:`,
-				expect.any(Error),
-			);
-
-			consoleWarnSpy.mockRestore();
 		});
 	});
 

@@ -89,7 +89,6 @@ function BlueprintContentHeader({
 	} else if (data.upgrade_planner) {
 		return getBlueprint(data.upgrade_planner);
 	} else {
-		console.error('Unknown blueprint data type:', data);
 		return null;
 	}
 }

@@ -39,7 +39,6 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 				onAuthSuccess?.();
 			} catch (error: any) {
 				if (error.code !== 'auth/popup-closed-by-user') {
-					console.error({error});
 				}
 			}
 		},
@@ -64,8 +63,7 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 				localStorage.setItem('emailForSignIn', emailAddress);
 				alert('Check your email for a sign-in link!');
 				onAuthSuccess?.();
-			} catch (error) {
-				console.error('Error sending email:', error);
+			} catch {
 				alert('Failed to send sign-in email. Please try again.');
 			} finally {
 				setIsEmailSending(false);

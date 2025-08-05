@@ -251,9 +251,7 @@ describe('SingleTagSelector', () => {
 		expect(options[0].value).toBe('');
 	});
 
-	it('should log error for invalid tag format', () => {
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
+	it('should handle invalid tag format without navigation', () => {
 		vi.mocked(useTags).mockReturnValue({
 			data: {
 				tagHierarchy: {invalid: ['tag']},
@@ -269,10 +267,7 @@ describe('SingleTagSelector', () => {
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 		fireEvent.change(select, {target: {value: 'invalidtag'}});
 
-		expect(consoleSpy).toHaveBeenCalledWith('Invalid tag format: "invalidtag" should have exactly one slash');
 		expect(mockNavigate).not.toHaveBeenCalled();
-
-		consoleSpy.mockRestore();
 	});
 
 	it('should render with correct Select props', () => {
@@ -309,7 +304,7 @@ describe('SingleTagSelector', () => {
 		expect(screen.getByText('Select or search for a tag')).toBeInTheDocument();
 	});
 
-	it('should handle tag with multiple slashes correctly', () => {
+	it('should handle tag with multiple slashes without navigation', () => {
 		vi.mocked(useTags).mockReturnValue({
 			data: {
 				tagHierarchy: {'category/subcategory': ['tag']},
@@ -324,16 +319,10 @@ describe('SingleTagSelector', () => {
 
 		const select = screen.getByTestId('tag-select') as HTMLSelectElement;
 
-		// This should log an error as it has more than one slash
-		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		// This should not navigate as it has more than one slash
 		fireEvent.change(select, {target: {value: '/category/subcategory/tag/'}});
 
-		expect(consoleSpy).toHaveBeenCalledWith(
-			'Invalid tag format: "category/subcategory/tag" should have exactly one slash',
-		);
 		expect(mockNavigate).not.toHaveBeenCalled();
-
-		consoleSpy.mockRestore();
 	});
 
 	it('should handle undefined currentTag prop', () => {

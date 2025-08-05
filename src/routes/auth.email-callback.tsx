@@ -42,8 +42,7 @@ function EmailCallback() {
 					setTimeout(() => {
 						navigate({to: '/'});
 					}, 2000);
-				} catch (error) {
-					console.error('Error signing in with email link:', error);
+				} catch {
 					setStatus('error');
 					setErrorMessage('Failed to sign in. The link may be invalid or expired.');
 				}

@@ -153,12 +153,12 @@ const pendingOperations = new Map();
 let workerReconnectAttempts = 0;
 const maxWorkerReconnectAttempts = 3;
 let lastWorkerResetTime = 0;
-const workerResetCooldown = 60000; // 1 minute cooldown between resets
+// 1 minute cooldown between resets
+const workerResetCooldown = 60000;
 
 function resetWorkerIfNeeded() {
 	const now = Date.now();
 	if (now - lastWorkerResetTime > workerResetCooldown) {
-		console.log('[IndexedDB Worker] Resetting worker reconnect attempts');
 		workerReconnectAttempts = 0;
 		lastWorkerResetTime = now;
 	}
@@ -322,7 +322,6 @@ function getWorker() {
 			});
 
 			// Reset reconnect attempts on successful initialization
-			console.log('[IndexedDB Worker] Worker initialized successfully');
 			workerReconnectAttempts = 0;
 		} catch (error) {
 			console.error('[IndexedDB Worker] Failed to create worker:', error);
@@ -493,16 +492,10 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 	const debouncedPersist = debounce(
 		async (client: any) => {
 			try {
-				const dataSize = JSON.stringify(client).length;
-				const formattedSize = formatBytes(dataSize);
-				console.log(`[IndexedDB] Persisting client data of size: ${formattedSize}`);
-
 				const result = await workerOperation('set', idbValidKey, client);
 
 				if (result && 'success' in result && !result.success) {
 					console.warn('[IndexedDB] Persistence operation did not succeed, but continuing gracefully');
-				} else {
-					console.log('[IndexedDB] Persistence complete');
 				}
 			} catch (error) {
 				console.error('[IndexedDB] Error persisting to IndexedDB:', error);
@@ -538,7 +531,6 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				if (result?.data) {
 					const dataSize = JSON.stringify(result.data).length;
 					const formattedSize = formatBytes(dataSize);
-					console.log(`[IndexedDB] Restored data size: ${formattedSize} in ${duration}ms`);
 
 					if (duration > 5000) {
 						const slowRestoreError = new Error(
@@ -577,7 +569,6 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 
 				try {
 					await workerOperation('delete', idbValidKey);
-					console.log('[IndexedDB] Cleared cache after restore error');
 				} catch (deleteError) {
 					console.error('[IndexedDB] Failed to clear cache:', deleteError);
 				}
@@ -654,15 +645,9 @@ export const setHighWatermark = (lastUpdatedDate: number): boolean => {
 
 export const updateHighWatermark = (lastUpdatedDate: number): boolean => {
 	const currentWatermark = getHighWatermark();
-	console.log('🌊 Updating high watermark:', {
-		current: currentWatermark?.lastUpdatedDate,
-		new: lastUpdatedDate,
-		willUpdate: !currentWatermark || lastUpdatedDate > currentWatermark.lastUpdatedDate,
-	});
 
 	if (!currentWatermark || lastUpdatedDate > currentWatermark.lastUpdatedDate) {
 		const result = setHighWatermark(lastUpdatedDate);
-		console.log('🌊 High watermark updated:', result);
 		return result;
 	}
 

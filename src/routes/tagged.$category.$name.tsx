@@ -12,9 +12,7 @@ function TaggedRouteComponent() {
 	const {category, name} = Route.useParams();
 
 	useEffect(() => {
-		// Throw if category or name is undefined
 		if (category === undefined || name === undefined) {
-			console.error('Category or name is undefined in tagged route', {category, name});
 			throw new Error('Category or name is undefined in tagged route component');
 		}
 

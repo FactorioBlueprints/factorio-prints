@@ -111,9 +111,7 @@ const UserFavoritesGrid: React.FC = () => {
 								);
 							}
 						})
-						.catch((error: Error) => {
-							console.error(`Failed to clean up invalid favorite ${blueprintId}:`, error);
-						});
+						.catch(() => {});
 				}
 			});
 		}

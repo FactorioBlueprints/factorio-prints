@@ -18,7 +18,6 @@ export const Route = createFileRoute('/view/$blueprintId')({
 	loader: async ({params}): Promise<LoaderData> => {
 		const {blueprintId} = params;
 
-		// First fetch the blueprint summary
 		const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
 
 		if (!summaryData) {
@@ -28,7 +27,6 @@ export const Route = createFileRoute('/view/$blueprintId')({
 			};
 		}
 
-		// Enrich the summary
 		const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
 
 		if (!enrichedSummary) {
@@ -38,7 +36,6 @@ export const Route = createFileRoute('/view/$blueprintId')({
 			};
 		}
 
-		// Then fetch the full blueprint
 		const blueprintRawData = await queryClient.fetchQuery(blueprintQuery(blueprintId, enrichedSummary));
 
 		const enrichedBlueprint = blueprintRawData ? enrichBlueprint(blueprintRawData, blueprintId) : null;

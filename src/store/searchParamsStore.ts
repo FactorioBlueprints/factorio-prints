@@ -22,8 +22,6 @@ searchParamsStore.subscribe((state) => {
 		storeSchema.parse(state);
 	} catch (error: unknown) {
 		const zodError = error as z.ZodError;
-		console.error('SearchParams validation error:', zodError.issues);
-		console.error('Invalid state data:', state);
 		throw new Error(`SearchParams validation failed: ${zodError.issues.map((e) => e.message).join(', ')}`);
 	}
 });
