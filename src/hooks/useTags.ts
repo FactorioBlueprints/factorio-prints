@@ -18,8 +18,7 @@ const buildTagOptions = (tagHierarchy: TagHierarchy): string[] => {
 				result.push(`/${category}/${tag}/`);
 			});
 		});
-	} catch (error) {
-		console.error('Tag hierarchy format error on tagHierarchy:', {tagHierarchy, error});
+	} catch {
 		throw new Error('Tag hierarchy has unexpected format');
 	}
 

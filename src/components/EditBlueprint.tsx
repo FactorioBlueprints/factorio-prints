@@ -195,7 +195,6 @@ function EditBlueprintWrapper() {
 				blueprintFormSchema.parse(value);
 			} catch (error) {
 				if (error instanceof z.ZodError) {
-					console.error('Validation errors:', error.issues);
 					return;
 				}
 			}
@@ -251,8 +250,7 @@ function EditBlueprintWrapper() {
 					parsedBlueprint,
 					v15Decoded,
 				}));
-			} catch (ignored) {
-				console.log('EditBlueprint.parseBlueprint', {ignored});
+			} catch {
 				setUiState((prev) => ({
 					...prev,
 					parsedBlueprint: null,
@@ -383,7 +381,6 @@ function EditBlueprintWrapper() {
 		const authorId = rawBlueprintData?.author?.userId;
 
 		if (!authorId) {
-			console.error('No author ID found for blueprint');
 			return;
 		}
 
@@ -709,12 +706,7 @@ function EditBlueprintWrapper() {
 											{(() => {
 												try {
 													return JSON.stringify(deleteBlueprintMutation.error, null, 2);
-												} catch (stringifyError) {
-													console.error(
-														'Error serializing error object:',
-														deleteBlueprintMutation.error,
-													);
-													console.error('Stringify error:', stringifyError);
+												} catch {
 													return `Error message: ${deleteBlueprintMutation.error.message}\nStack: ${deleteBlueprintMutation.error.stack || 'No stack trace available'}`;
 												}
 											})()}

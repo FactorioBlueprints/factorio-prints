@@ -20,7 +20,6 @@ const TagForm: React.FC = () => {
 
 	const handleTagSelection = (selectedTags: MultiValue<TagOption>) => {
 		if (selectedTags === undefined) {
-			console.error('selectedTags is undefined in handleTagSelection');
 			throw new Error('selectedTags is undefined in handleTagSelection');
 		}
 

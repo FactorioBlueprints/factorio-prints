@@ -26,8 +26,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 
 	try {
 		validateEnrichedBlueprintSummary(blueprintSummary);
-	} catch (error) {
-		console.error('Invalid blueprint summary in BlueprintThumbnail:', error, blueprintSummary);
+	} catch {
 		return (
 			<Card
 				className="blueprint-thumbnail col-auto"
@@ -59,23 +58,11 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 	let imageUrl;
 	try {
 		if (!imgurId || !imgurType) {
-			console.error('Missing imgurId or imgurType in blueprintSummary:', {
-				key,
-				title,
-				imgurId,
-				imgurType,
-			});
 			imageUrl = '/icons/entity-unknown.png';
 		} else {
 			imageUrl = buildImageUrl(imgurId, imgurType, 'b');
 		}
-	} catch (error) {
-		console.error('Error building image URL:', error, {
-			key,
-			title,
-			imgurId,
-			imgurType,
-		});
+	} catch {
 		imageUrl = '/icons/entity-unknown.png';
 	}
 

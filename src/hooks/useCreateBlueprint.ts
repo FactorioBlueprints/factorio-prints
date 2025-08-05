@@ -199,9 +199,7 @@ export const useCreateBlueprint = () => {
 
 					const validatedPaginatedData = validateRawPaginatedBlueprintSummaries(updatedPaginatedData);
 					queryClient.setQueryData(lastUpdatedDateKey, validatedPaginatedData);
-				} catch (error) {
-					console.error('useCreateBlueprint - Error updating paginated cache:', error);
-				}
+				} catch {}
 			}
 
 			const summaryKey = ['blueprintSummaries', 'blueprintId', blueprintId];

@@ -21,8 +21,3 @@ const uniqueToNew = [...keysNew].filter((key) => !keysOld.has(key));
 
 // Sort alphabetically for easier reading
 uniqueToNew.sort();
-
-console.log('Keys that exist only in the new file:');
-console.log('\nTotal number of unique keys:', uniqueToNew.length);
-console.log('\nHere are the new keys:\n');
-uniqueToNew.forEach((key) => console.log(`'${key}'`));

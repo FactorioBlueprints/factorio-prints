@@ -38,9 +38,6 @@ const Account = () => {
 			queryClient.invalidateQueries({queryKey: ['userDisplayName', user!.uid]});
 			navigate({to: '/user/$userId', params: {userId: user!.uid}});
 		},
-		onError: (error) => {
-			console.error('Error updating display name:', error);
-		},
 	});
 
 	useEffect(() => {

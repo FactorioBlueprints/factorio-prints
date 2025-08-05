@@ -41,7 +41,6 @@ const reconcileFavorites = async (
 	}
 
 	if (Object.keys(updates).length > 0) {
-		console.warn({updates});
 		await dbUpdate(ref(getDatabase(app)), updates);
 	}
 };

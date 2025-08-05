@@ -279,7 +279,6 @@ export const validateRawBlueprintSummary = (data: unknown): RawBlueprintSummary 
 
 export const validateRawBlueprint = (data: unknown): RawBlueprint => {
 	const parsed = validate(data, rawBlueprintSchema, 'raw blueprint');
-	// Ensure defaults are applied
 	return {
 		...parsed,
 		numberOfFavorites: parsed.numberOfFavorites ?? 0,
@@ -298,7 +297,6 @@ export const validateEnrichedBlueprintSummaries = (data: unknown): EnrichedBluep
 
 export const validateEnrichedBlueprint = (data: unknown): EnrichedBlueprint => {
 	const parsed = validate(data, enrichedBlueprintSchema, 'enriched blueprint');
-	// Ensure defaults are applied
 	return {
 		...parsed,
 		numberOfFavorites: parsed.numberOfFavorites ?? 0,
@@ -358,7 +356,6 @@ export type EnrichedUser = z.output<typeof enrichedUserSchema>;
 
 export const validateRawUser = (data: unknown): RawUser => {
 	const parsed = validate(data, rawUserSchema, 'raw user');
-	// Ensure defaults are applied
 	return {
 		...parsed,
 		favorites: parsed.favorites ?? {},
@@ -368,7 +365,6 @@ export const validateRawUser = (data: unknown): RawUser => {
 
 export const validateEnrichedUser = (data: unknown): EnrichedUser => {
 	const parsed = validate(data, enrichedUserSchema, 'enriched user');
-	// Ensure defaults are applied
 	return {
 		...parsed,
 		favorites: parsed.favorites ?? {},
