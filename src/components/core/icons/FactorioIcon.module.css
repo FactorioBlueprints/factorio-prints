@@ -1,7 +1,6 @@
 .parent {
 	aspect-ratio: 1;
 	height: 100%;
-	vertical-align: bottom;
 	position: relative;
 	display: inline-block;
 }
@@ -44,7 +43,6 @@
 
 .inline {
 	display: inline-block;
-	vertical-align: text-bottom;
 	margin: 0 2px;
 }
 
