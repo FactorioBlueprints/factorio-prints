@@ -57,7 +57,12 @@ const WelcomeBanner: React.FC = () => {
 					className="mb-0"
 					style={{fontSize: '1rem'}}
 				>
-					{'Share and discover blueprints for Factorio. '}
+					{'Share and discover blueprints for Factorio.'}
+				</p>
+				<p
+					className="mb-0"
+					style={{fontSize: '1rem'}}
+				>
 					<a
 						href="https://discord.gg/uvUUw5a9Qc"
 						target="_blank"
