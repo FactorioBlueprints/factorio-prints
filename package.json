@@ -8,6 +8,7 @@
 		"dev": "vite",
 		"preview": "vite preview",
 		"build": "npm run route:generate && tsc && vite build",
+		"build:staging": "npm run route:generate && tsc && vite build --mode staging",
 		"lint": "eslint . --fix",
 		"format": "biome format --write . && prettier --write .",
 		"ci:eslint": "eslint . --format json --output-file eslint_report.json",

@@ -36,3 +36,15 @@ public/**/*.js
 
 # TypeScript build info
 tsconfig.tsbuildinfo
+
+# Staging environment
+.env.staging
+
+# Firebase backups and exports
+database.rules.backup.json
+staging-*.json
+production-backup.json
+*-backup.json
+
+# Functions build output
+functions/lib
