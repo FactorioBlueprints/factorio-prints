@@ -286,21 +286,28 @@ function getWorker() {
 							console.warn(
 								'[IndexedDB] Operation failed due to closing connection, resolving with undefined',
 							);
-							const connectionError = new Error(`IndexedDB connection closing: ${error.message}`);
-							connectionError.name = 'IndexedDBConnectionError';
 
-							Sentry.captureException(connectionError, {
-								level: 'info',
-								tags: {
-									component: 'localStorage',
-									errorType: 'connection-closing',
-								},
-								extra: {
-									errorMessage: error.message,
-									operationType: e.data.type,
-									key: e.data.key,
-								},
-							});
+							// 📊 Log to Sentry for monitoring
+							try {
+								const connectionError = new Error(`IndexedDB connection closing: ${error.message}`);
+								connectionError.name = 'IndexedDBConnectionError';
+
+								Sentry.captureException(connectionError, {
+									level: 'info',
+									tags: {
+										component: 'localStorage',
+										errorType: 'connection-closing',
+									},
+									extra: {
+										errorMessage: error.message,
+										operationType: e.data.type,
+										key: e.data.key,
+									},
+								});
+							} catch (sentryError) {
+								// Silently ignore Sentry errors to prevent secondary errors
+								console.warn('[IndexedDB] Failed to log to Sentry:', sentryError);
+							}
 							pendingOp.resolve(undefined);
 						} else {
 							pendingOp.reject(new Error(error.message));
@@ -397,25 +404,33 @@ async function workerOperation(type: string, key: string, data = null, retryCoun
 					pendingOperations.delete(id);
 					const duration = Date.now() - startTime;
 
-					const timeoutError = new Error(`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`);
-					timeoutError.name = 'IndexedDBTimeoutError';
+					// Log timeout errors to Sentry
+					try {
+						const timeoutError = new Error(
+							`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`,
+						);
+						timeoutError.name = 'IndexedDBTimeoutError';
 
-					Sentry.captureException(timeoutError, {
-						level: 'warning',
-						tags: {
-							component: 'localStorage',
-							errorType: 'timeout',
-							operationType: type,
-							database: 'FACTORIO_PRINTS_QUERY_CACHE',
-						},
-						extra: {
-							operationType: type,
-							key: key,
-							timeout: timeoutDuration,
-							actualDuration: duration,
-							userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-						},
-					});
+						Sentry.captureException(timeoutError, {
+							level: 'warning',
+							tags: {
+								component: 'localStorage',
+								errorType: 'timeout',
+								operationType: type,
+								database: 'FACTORIO_PRINTS_QUERY_CACHE',
+							},
+							extra: {
+								operationType: type,
+								key: key,
+								timeout: timeoutDuration,
+								actualDuration: duration,
+								userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+							},
+						});
+					} catch (sentryError) {
+						// Silently ignore Sentry errors to prevent secondary errors
+						console.warn('[IndexedDB] Failed to log timeout to Sentry:', sentryError);
+					}
 
 					if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
 						del(key, indexedDbStore).catch((err) =>
@@ -524,23 +539,29 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					const formattedSize = formatBytes(dataSize);
 
 					if (duration > 5000) {
-						const slowRestoreError = new Error(
-							`IndexedDB slow restore: took ${duration}ms to restore ${formattedSize}`,
-						);
-						slowRestoreError.name = 'IndexedDBSlowRestoreError';
+						// Log slow restore to Sentry
+						try {
+							const slowRestoreError = new Error(
+								`IndexedDB slow restore: took ${duration}ms to restore ${formattedSize}`,
+							);
+							slowRestoreError.name = 'IndexedDBSlowRestoreError';
 
-						Sentry.captureException(slowRestoreError, {
-							level: 'info',
-							tags: {
-								component: 'localStorage',
-								errorType: 'slow-restore',
-							},
-							extra: {
-								duration: duration,
-								dataSize: dataSize,
-								formattedSize: formattedSize,
-							},
-						});
+							Sentry.captureException(slowRestoreError, {
+								level: 'info',
+								tags: {
+									component: 'localStorage',
+									errorType: 'slow-restore',
+								},
+								extra: {
+									duration: duration,
+									dataSize: dataSize,
+									formattedSize: formattedSize,
+								},
+							});
+						} catch (sentryError) {
+							// Silently ignore Sentry errors to prevent secondary errors
+							console.warn('[IndexedDB] Failed to log slow restore to Sentry:', sentryError);
+						}
 					}
 				}
 
