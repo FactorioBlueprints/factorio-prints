@@ -4,7 +4,6 @@ import {Link} from '@tanstack/react-router';
 import {getAuth} from 'firebase/auth';
 import type React from 'react';
 import Card from 'react-bootstrap/Card';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base';
@@ -13,6 +12,7 @@ import useToggleFavoriteMutation from '../hooks/useToggleFavoriteMutation';
 import {useUserBlueprints, useUserFavorites} from '../hooks/useUser';
 import {type EnrichedBlueprintSummary, validateEnrichedBlueprintSummary} from '../schemas';
 import {RichText} from './core/text/RichText';
+import SafeOverlayTrigger from './SafeOverlayTrigger';
 
 interface BlueprintThumbnailProps {
 	blueprintSummary: EnrichedBlueprintSummary;
@@ -140,7 +140,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 					/>
 				</span>
 				{'  '}
-				<OverlayTrigger
+				<SafeOverlayTrigger
 					placement="bottom"
 					overlay={tooltip}
 				>
@@ -157,7 +157,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 							/>
 						</span>
 					</Link>
-				</OverlayTrigger>
+				</SafeOverlayTrigger>
 			</p>
 		</Card>
 	);
