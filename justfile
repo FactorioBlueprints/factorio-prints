@@ -70,14 +70,16 @@ hooks:
 build: install
     op run -- npm run build
 
+# `npm run build` without 1Password (for precommit checks)
+build-no-secrets: install
+    SENTRY_AUTH_TOKEN="" npm run build
+
 # `npm run build`
 build-ci: route-generate-ci install-ci
     npm run build
 
 # Run all pre-commit checks
-precommit: format lint typecheck test
-    @echo "✅ Running build without Sentry integration for precommit checks..."
-    @SENTRY_AUTH_TOKEN= SENTRY_ORG= SENTRY_PROJECT= npm run build
+precommit: format lint typecheck build-no-secrets test
     @echo "✅ All pre-commit checks passed!"
 
 # `firebase deploy`
