@@ -129,45 +129,52 @@ export const fetchBlueprint = async (
 	blueprintId: string,
 	blueprintSummary: EnrichedBlueprintSummary,
 ): Promise<RawBlueprint | null> => {
-	// Extract lastUpdatedDate from blueprintSummary
-	const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
+	try {
+		// Extract lastUpdatedDate from blueprintSummary
+		const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
 
-	// Attempt to fetch from CDN first
-	const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
+		// Attempt to fetch from CDN first
+		const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
 
-	if (cdnBlueprint) {
-		// CDN fetch succeeded - compare lastUpdatedDate values
-		const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
+		if (cdnBlueprint) {
+			// CDN fetch succeeded - compare lastUpdatedDate values
+			const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-		if (cdnLastUpdated === summaryLastUpdated) {
-			// Dates match - use CDN data
-			return cdnBlueprint;
-		}
-		if (cdnLastUpdated && summaryLastUpdated) {
-			// Dates don't match - check if CDN data is stale
-			const cdnDate = new Date(cdnLastUpdated);
-			const summaryDate = new Date(summaryLastUpdated);
-			const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
-
-			if (timeDifferenceMs < 1000) {
-				// CDN data is stale by less than 1 second - use it anyway
+			if (cdnLastUpdated === summaryLastUpdated) {
+				// Dates match - use CDN data
 				return cdnBlueprint;
 			}
-			// CDN data is stale by more than 1 second
-		} else {
-			// One or both dates are missing
+			if (cdnLastUpdated && summaryLastUpdated) {
+				// Dates don't match - check if CDN data is stale
+				const cdnDate = new Date(cdnLastUpdated);
+				const summaryDate = new Date(summaryLastUpdated);
+				const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
+
+				if (timeDifferenceMs < 1000) {
+					// CDN data is stale by less than 1 second - use it anyway
+					return cdnBlueprint;
+				}
+				// CDN data is stale by more than 1 second
+			} else {
+				// One or both dates are missing
+			}
 		}
+
+		// Fall back to Firebase if CDN failed or data was stale
+		const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/`);
+		const snapshot = await get(blueprintRef);
+
+		if (!snapshot.exists()) {
+			return null;
+		}
+
+		return validateRawBlueprint(snapshot.val());
+	} catch (error) {
+		if (isNetworkError(error)) {
+			return null;
+		}
+		throw error;
 	}
-
-	// Fall back to Firebase if CDN failed or data was stale
-	const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/`);
-	const snapshot = await get(blueprintRef);
-
-	if (!snapshot.exists()) {
-		return null;
-	}
-
-	return validateRawBlueprint(snapshot.val());
 };
 
 export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]> => {
