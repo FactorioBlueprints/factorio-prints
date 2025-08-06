@@ -65,7 +65,6 @@ describe("useToggleFavoriteMutation", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-        "/blueprints/blueprint123/favorites/user456": true,
         "/users/user456/favorites/blueprint123": true,
       });
     });
@@ -85,7 +84,6 @@ describe("useToggleFavoriteMutation", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-        "/blueprints/blueprint123/favorites/user456": null,
         "/users/user456/favorites/blueprint123": null,
       });
     });
@@ -105,7 +103,6 @@ describe("useToggleFavoriteMutation", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-        "/blueprints/blueprint123/favorites/user456": null,
         "/users/user456/favorites/blueprint123": null,
       });
     });
@@ -125,7 +122,6 @@ describe("useToggleFavoriteMutation", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-        "/blueprints/blueprint123/favorites/user456": true,
         "/users/user456/favorites/blueprint123": true,
       });
     });
@@ -145,7 +141,6 @@ describe("useToggleFavoriteMutation", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
       expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-        "/blueprints/blueprint123/favorites/user456": true,
         "/users/user456/favorites/blueprint123": true,
       });
     });
@@ -454,7 +449,6 @@ describe("useToggleFavoriteMutation", () => {
       // Should use the provided numberOfFavorites (42) for cache updates only
       // numberOfFavorites is NOT sent to database (Cloud Function is source of truth)
       expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-        "/blueprints/blueprint123/favorites/user456": true,
         "/users/user456/favorites/blueprint123": true,
       });
     });
