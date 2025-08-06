@@ -61,7 +61,8 @@
 			}
 		},
 		"tags": {
-			".read": "true"
+			".read": "true",
+			".indexOn": [".value"]
 		},
 		"byTag": {
 			".read": "true",
