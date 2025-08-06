@@ -13,7 +13,8 @@
 				},
 				"favorites": {
 					"$uid": {
-						".write": "auth != null && auth.uid == $uid"
+						".write": "auth != null && auth.uid == $uid",
+						".validate": "newData.isBoolean()"
 					}
 				},
 				"numberOfFavorites": {
@@ -28,7 +29,10 @@
 				".write": "auth != null && auth.uid == $uid",
 				"blueprints": {
 					".read": "true",
-					".write": "root.child('moderators').child(auth.uid).val() === true"
+					".write": "root.child('moderators').child(auth.uid).val() === true",
+					"$blueprintId": {
+						".validate": "newData.isBoolean()"
+					}
 				},
 				"displayName": {
 					".read": "true"
