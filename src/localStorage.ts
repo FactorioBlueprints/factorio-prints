@@ -396,7 +396,6 @@ async function workerOperation(type: string, key: string, data = null, retryCoun
 				if (pendingOperations.has(id)) {
 					pendingOperations.delete(id);
 					const duration = Date.now() - startTime;
-					console.warn('[IndexedDB] Operation timed out:', type, key, `after ${duration}ms`);
 
 					const timeoutError = new Error(`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`);
 					timeoutError.name = 'IndexedDBTimeoutError';
@@ -419,7 +418,6 @@ async function workerOperation(type: string, key: string, data = null, retryCoun
 					});
 
 					if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
-						console.warn('[IndexedDB] Query cache timeout - clearing cache');
 						del(key, indexedDbStore).catch((err) =>
 							console.error('[IndexedDB] Failed to clear cache after timeout:', err),
 						);
