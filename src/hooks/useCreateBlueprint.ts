@@ -70,7 +70,6 @@ export const useCreateBlueprint = () => {
 					userId: user.uid,
 					displayName: user.displayName || null,
 				},
-				authorId: user.uid,
 				createdDate: serverTimestamp(),
 				lastUpdatedDate: serverTimestamp(),
 				favorites: {},

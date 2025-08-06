@@ -3,8 +3,8 @@
 		"blueprints": {
 			".read": "true",
 			"$blueprint": {
-				".write": "!data.exists() || (data.child('authorId').val() === auth.uid || data.child('author').child('userId').val() === auth.uid) && newData.exists() || root.child('moderators').child(auth.uid).val() === true",
-				".validate": "newData.hasChildren(['author']) || newData.hasChildren(['authorId'])",
+				".write": "!data.exists() || data.child('author').child('userId').val() === auth.uid && newData.exists() || root.child('moderators').child(auth.uid).val() === true",
+				".validate": "newData.hasChildren(['author'])",
 				"author": {
 					".validate": "newData.child('userId').isString()",
 					"userId": {
@@ -52,7 +52,7 @@
 			".read": "true",
 			".indexOn": ["lastUpdatedDate", "authorId", "numberOfFavorites"],
 			"$blueprint": {
-				".write": "root.child('blueprints').child($blueprint).child('authorId').val() === auth.uid || root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
+				".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
 				"numberOfFavorites": {
 					".write": "auth != null"
 				}
