@@ -153,7 +153,6 @@ const pendingOperations = new Map();
 let workerReconnectAttempts = 0;
 const maxWorkerReconnectAttempts = 3;
 let lastWorkerResetTime = 0;
-// 1 minute cooldown between resets
 const workerResetCooldown = 60000;
 
 function resetWorkerIfNeeded() {
@@ -166,7 +165,6 @@ function resetWorkerIfNeeded() {
 
 function getWorker() {
 	if (!worker) {
-		// Check if we should reset the reconnect counter
 		resetWorkerIfNeeded();
 
 		if (workerReconnectAttempts >= maxWorkerReconnectAttempts) {
@@ -178,13 +176,12 @@ function getWorker() {
 			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
 
 			worker.onerror = (event) => {
-				console.error('[IndexedDB Worker] Worker error:', event);
-
 				let errorToCapture: Error;
 				let errorMessage: string;
 
 				if (event instanceof ErrorEvent) {
 					errorMessage = event.message || 'Unknown worker error';
+					console.error('[IndexedDB Worker] Worker error:', errorMessage);
 					if (event.error instanceof Error) {
 						errorToCapture = event.error;
 					} else {
@@ -207,7 +204,12 @@ function getWorker() {
 						},
 					});
 				} else {
-					errorMessage = String(event);
+					errorMessage = 'Non-ErrorEvent worker error occurred';
+					const eventType =
+						event && typeof event === 'object' && event !== null
+							? Object.prototype.toString.call(event).slice(8, -1)
+							: 'Unknown';
+					console.error('[IndexedDB Worker] Worker error:', errorMessage, {eventType});
 					errorToCapture = new Error(errorMessage);
 					errorToCapture.name = 'WorkerError';
 
@@ -218,18 +220,17 @@ function getWorker() {
 							reconnectAttempt: workerReconnectAttempts,
 						},
 						extra: {
-							rawEvent: String(event),
+							eventType,
+							eventString: String(event),
 						},
 					});
 				}
 
-				// Clean up failed worker and retry later
 				if (worker) {
 					worker.terminate();
 					worker = undefined;
 				}
 
-				// Reset pending operations
 				pendingOperations.forEach((op) => {
 					op.resolve({data: undefined, success: false});
 				});
@@ -239,7 +240,6 @@ function getWorker() {
 			worker.onmessage = (e) => {
 				const {id, result, error, success} = e.data;
 
-				// Handle uncaught errors from the worker
 				if (e.data.type === 'error' && error?.isUncaught) {
 					const uncaughtError = new Error(error.message);
 					uncaughtError.name = 'WorkerUncaughtError';
@@ -258,7 +258,6 @@ function getWorker() {
 					return;
 				}
 
-				// Handle unhandled promise rejections from the worker
 				if (e.data.type === 'error' && error?.isUnhandledRejection) {
 					const rejectionError = new Error(error.message);
 					rejectionError.name = 'WorkerUnhandledRejection';
@@ -283,12 +282,10 @@ function getWorker() {
 					if (success) {
 						pendingOp.resolve(result);
 					} else {
-						// 🛡️ Handle connection closing errors gracefully
 						if (error?.isConnectionClosing) {
 							console.warn(
 								'[IndexedDB] Operation failed due to closing connection, resolving with undefined',
 							);
-							// 📊 Log to Sentry for monitoring
 							const connectionError = new Error(`IndexedDB connection closing: ${error.message}`);
 							connectionError.name = 'IndexedDBConnectionError';
 
@@ -321,7 +318,6 @@ function getWorker() {
 				},
 			});
 
-			// Reset reconnect attempts on successful initialization
 			workerReconnectAttempts = 0;
 		} catch (error) {
 			console.error('[IndexedDB Worker] Failed to create worker:', error);
@@ -349,7 +345,6 @@ async function workerOperation(type: string, key: string, data = null, retryCoun
 	try {
 		const worker = getWorker();
 
-		// Fallback to direct idb-keyval if worker fails
 		if (!worker) {
 			try {
 				switch (type) {
@@ -365,7 +360,6 @@ async function workerOperation(type: string, key: string, data = null, retryCoun
 						throw new Error('Unknown operation type');
 				}
 			} catch (error) {
-				// Handle connection lost errors in direct mode
 				if (
 					error instanceof Error &&
 					(error.message.includes('Connection to Indexed Database server lost') ||
@@ -436,7 +430,6 @@ async function workerOperation(type: string, key: string, data = null, retryCoun
 			}, timeoutDuration);
 		});
 	} catch (error) {
-		// Handle connection errors at the worker operation level
 		if (
 			error instanceof Error &&
 			(error.message.includes('Connection to Indexed Database server lost') ||
