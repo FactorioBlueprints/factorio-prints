@@ -1,6 +1,6 @@
 ## Compiled JavaScript files
-lib/**/*.js
-lib/**/*.js.map
+**/*.js
+**/*.js.map
 
 # Typescript v1 declaration files
 typings/
@@ -11,3 +11,6 @@ yarn-debug.log*
 yarn-error.log*
 firebase-debug.log*
 firebase-debug.*.log*
+
+# Build output
+lib/

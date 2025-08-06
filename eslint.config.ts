@@ -9,16 +9,28 @@ import type {Linter} from 'eslint';
 const config: Linter.Config[] = [
 	{ignores: ['dist', 'build', '.llm/**', 'functions/**']},
 	{
-		files: ['functions/**/*.js'],
+		files: ['functions/**/*.{ts,tsx}'],
 		languageOptions: {
 			ecmaVersion: 2020,
 			globals: {
 				...globals.node,
 			},
-			sourceType: 'commonjs',
+			parser: tsparser,
+			parserOptions: {
+				ecmaVersion: 'latest',
+				sourceType: 'module',
+				project: './functions/tsconfig.json',
+			},
+		},
+		plugins: {
+			'@typescript-eslint': tseslint as any,
 		},
 		rules: {
-			...js.configs.recommended.rules,
+			...tseslint.configs.recommended.rules,
+			'@typescript-eslint/no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]'}],
+			'@typescript-eslint/no-explicit-any': 'off',
+			eqeqeq: ['error', 'smart'],
+			'one-var': ['error', 'never'],
 		},
 	},
 	{
@@ -88,7 +100,7 @@ const config: Linter.Config[] = [
 		},
 	},
 	{
-		files: ['**/*.{ts,tsx}'],
+		files: ['src/**/*.{ts,tsx}', '!functions/**/*.{ts,tsx}'],
 		languageOptions: {
 			ecmaVersion: 2020,
 			globals: {
