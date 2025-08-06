@@ -38,7 +38,9 @@ export const Route = createFileRoute('/view/$blueprintId')({
 
 		const blueprintRawData = await queryClient.fetchQuery(blueprintQuery(blueprintId, enrichedSummary));
 
-		const enrichedBlueprint = blueprintRawData ? enrichBlueprint(blueprintRawData, blueprintId) : null;
+		const enrichedBlueprint = blueprintRawData
+			? enrichBlueprint(blueprintRawData, blueprintId, enrichedSummary)
+			: null;
 
 		return {
 			blueprintSummary: enrichedSummary,

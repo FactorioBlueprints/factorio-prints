@@ -20,7 +20,13 @@ md.renderer.rules.table_open = (tokens, idx, options, env, self) => {
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };
 
-export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: string): EnrichedBlueprint | null => {
+import type {EnrichedBlueprintSummary} from '../schemas';
+
+export const enrichBlueprint = (
+	rawBlueprint: RawBlueprint | null,
+	blueprintId: string,
+	blueprintSummary?: EnrichedBlueprintSummary | null,
+): EnrichedBlueprint | null => {
 	if (!rawBlueprint) return null;
 
 	const reportToSentry = (message: string, level: 'warning' | 'info', issues: any) => {
@@ -33,7 +39,7 @@ export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: 
 			},
 			extra: {
 				blueprintId,
-				blueprintTitle: rawBlueprint.title || 'Untitled',
+				blueprintTitle: blueprintSummary?.title || rawBlueprint.title || 'Untitled',
 				blueprintUrl: `https://factorioprints.com/view/${blueprintId}`,
 				authorId: rawBlueprint.author?.userId,
 				authorName: rawBlueprint.author?.displayName,
@@ -64,9 +70,18 @@ export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: 
 	validateRawBlueprint(rawBlueprint);
 
 	let thumbnail: string | null = null;
-	if (rawBlueprint.image?.id) {
-		const imgurId = rawBlueprint.image.id;
-		const imgurType = rawBlueprint.image.type || 'image/png';
+	let imgurId: string | undefined;
+	let imgurType: string | undefined;
+
+	if (blueprintSummary) {
+		imgurId = blueprintSummary.imgurId;
+		imgurType = blueprintSummary.imgurType;
+	} else if (rawBlueprint.image?.id) {
+		imgurId = rawBlueprint.image.id;
+		imgurType = rawBlueprint.image.type || 'image/png';
+	}
+
+	if (imgurId && imgurType) {
 		thumbnail = buildImageUrl(imgurId, imgurType, 'l');
 	}
 
@@ -109,6 +124,13 @@ export const enrichBlueprint = (rawBlueprint: RawBlueprint | null, blueprintId: 
 		parsedData,
 		renderedDescription,
 		tags: processedTags,
+		// Override with summary data if available
+		...(blueprintSummary && {
+			title: blueprintSummary.title,
+			numberOfFavorites: blueprintSummary.numberOfFavorites,
+			lastUpdatedDate: blueprintSummary.lastUpdatedDate,
+			image: imgurId && imgurType ? {id: imgurId, type: imgurType} : rawBlueprint.image,
+		}),
 	};
 
 	return validateEnrichedBlueprint(enrichedBlueprint);

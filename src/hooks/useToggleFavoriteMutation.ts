@@ -34,7 +34,6 @@ export const useToggleFavoriteMutation = () => {
 			const newFavoriteCount = Math.max(0, currentFavoriteCount + (newIsFavorite ? 1 : -1));
 
 			const updates: Record<string, number | boolean | null> = {
-				[`/blueprints/${blueprintId}/numberOfFavorites`]: newFavoriteCount,
 				[`/blueprints/${blueprintId}/favorites/${userId}`]: newIsFavorite ? true : null,
 				[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: newFavoriteCount,
 				[`/users/${userId}/favorites/${blueprintId}`]: newIsFavorite ? true : null,

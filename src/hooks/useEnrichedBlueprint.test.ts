@@ -95,8 +95,12 @@ describe('useEnrichedBlueprint', () => {
 		// Check if useRawBlueprint was called with correct ID and summary
 		expect(useRawBlueprint).toHaveBeenCalledWith(expectedBlueprintId, expectedBlueprintSummary);
 
-		// Check if enrichBlueprint was called with raw data and ID
-		expect(enrichBlueprint).toHaveBeenCalledWith(expectedRawBlueprint, expectedBlueprintId);
+		// Check if enrichBlueprint was called with raw data, ID, and summary
+		expect(enrichBlueprint).toHaveBeenCalledWith(
+			expectedRawBlueprint,
+			expectedBlueprintId,
+			expectedBlueprintSummary,
+		);
 
 		// Verify the enriched data is returned
 		expect(result.current.data).toEqual(expectedEnrichedBlueprint);
