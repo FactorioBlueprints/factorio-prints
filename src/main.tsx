@@ -130,6 +130,19 @@ Sentry.init({
 		return event;
 	},
 	beforeBreadcrumb: (breadcrumb) => {
+		// Filter out cross-origin CSS warnings from console breadcrumbs
+		if (breadcrumb.category === 'console' && breadcrumb.message) {
+			const message = breadcrumb.message;
+			if (
+				message.includes("Cannot get CSS styles from text's parentNode") ||
+				message.includes('CSSStyleSheet.cssRules getter') ||
+				message.includes('cross-origin stylesheet') ||
+				message.includes('Blocked a frame with origin') ||
+				message.includes('SecurityError')
+			) {
+				return null; // Don't create breadcrumb for cross-origin CSS warnings
+			}
+		}
 		return breadcrumb;
 	},
 });
