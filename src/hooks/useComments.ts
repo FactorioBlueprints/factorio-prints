@@ -32,6 +32,27 @@ export const useCreateComment = () => {
 		onSuccess: (_, variables) => {
 			queryClient.invalidateQueries({queryKey: ['comments', variables.blueprintId]});
 		},
+		onError: (error: any) => {
+			// Log error details for debugging
+			console.error('Comment creation failed:', error);
+
+			// Extract user-friendly message
+			let message = 'Failed to post comment. Please try again.';
+
+			if (error.message?.includes('harmful content') || error.message?.includes('flagged')) {
+				message = error.message;
+			} else if (error.message?.includes('logged in') || error.message?.includes('authenticated')) {
+				message = 'Please log in to post comments.';
+			} else if (error.message?.includes('empty')) {
+				message = 'Comment cannot be empty.';
+			} else if (error.message?.includes('too long')) {
+				message = error.message;
+			}
+
+			// You could integrate with a toast notification system here
+			// For now, we'll let the component handle the error display
+			throw new Error(message);
+		},
 	});
 };
 

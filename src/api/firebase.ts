@@ -4,13 +4,14 @@ import {
 	get,
 	limitToLast,
 	orderByChild,
-	push,
 	query,
 	ref,
+	runTransaction,
 	startAt,
 } from 'firebase/database';
 import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import {FirebaseError} from 'firebase/app';
+import {app} from '../base';
 import {
 	type EnrichedBlueprintSummary,
 	type RawBlueprint,
@@ -618,34 +619,53 @@ export const createComment = async (
 	content: string,
 	parentId?: string,
 ): Promise<string> => {
-	const commentPath = `/comments/${blueprintId}`;
-	const updates: Record<string, any> = {};
-
 	try {
-		const now = Date.now();
-		const commentData: RawComment = {
+		// Import functions SDK
+		const {getFunctions, httpsCallable} = await import('firebase/functions');
+		const functions = getFunctions(app);
+
+		// Create a reference to the cloud function
+		const createCommentFunction = httpsCallable<
+			{
+				blueprintId: string;
+				authorId: string;
+				authorDisplayName: string;
+				content: string;
+				parentId?: string;
+			},
+			{success: boolean; commentId: string; message: string}
+		>(functions, 'createComment');
+
+		// Call the cloud function
+		const result = await createCommentFunction({
+			blueprintId,
 			authorId,
 			authorDisplayName,
 			content,
-			createdAt: now,
-			isDeleted: false,
-			parentId: parentId || null,
-		};
+			parentId,
+		});
 
-		const commentsRef = ref(getFirebaseDatabase(), commentPath);
-		const newCommentRef = push(commentsRef);
-		const commentId = newCommentRef.key!;
+		if (!result.data.success) {
+			throw new Error(result.data.message || 'Failed to create comment');
+		}
 
-		updates[`/comments/${blueprintId}/${commentId}`] = commentData;
-		updates[`/users/${authorId}/comments/${commentId}`] = true;
+		return result.data.commentId;
+	} catch (error: any) {
+		// Handle specific cloud function errors
+		if (error.code === 'functions/failed-precondition' && error.details?.toxicityScore) {
+			throw new Error('Your comment appears to contain inappropriate content. Please revise and try again.');
+		}
 
-		await dbUpdate(ref(getFirebaseDatabase()), updates);
-		return commentId;
-	} catch (error) {
-		const paths = Object.keys(updates).join(', ');
-		const enhancedError = enhanceFirebaseError(error, 'write', paths || commentPath);
-		console.error('Error creating comment:', enhancedError);
-		throw enhancedError;
+		if (error.code === 'functions/unauthenticated') {
+			throw new Error('You must be logged in to post comments');
+		}
+
+		if (error.code === 'functions/permission-denied') {
+			throw new Error('You do not have permission to post comments');
+		}
+
+		console.error('Error creating comment:', error);
+		throw error;
 	}
 };
 
@@ -718,36 +738,79 @@ export const updateComment = async (
 
 export const deleteComment = async (blueprintId: string, commentId: string, authorId: string): Promise<void> => {
 	const path = `/comments/${blueprintId}/${commentId}`;
-	const updates: Record<string, any> = {};
 
 	try {
-		const commentRef = ref(getFirebaseDatabase(), path);
-		const snapshot = await get(commentRef);
+		// Use a transaction to ensure atomic operation
+		const allCommentsRef = ref(getFirebaseDatabase(), `/comments/${blueprintId}`);
+		const result = await runTransaction(allCommentsRef, (currentData) => {
+			if (!currentData) {
+				// No comments exist
+				return currentData;
+			}
 
-		if (!snapshot.exists()) {
-			throw new Error('Comment not found');
+			const targetComment = currentData[commentId];
+			if (!targetComment) {
+				// Comment doesn't exist - abort transaction
+				throw new Error('Comment not found');
+			}
+
+			// Validate comment data
+			let validatedComment: RawComment;
+			try {
+				validatedComment = validateRawComment(targetComment);
+			} catch {
+				throw new Error('Invalid comment data');
+			}
+
+			if (validatedComment.authorId !== authorId) {
+				throw new Error('Unauthorized to delete this comment');
+			}
+
+			// Check if any other comments have this comment as their parent
+			let hasReplies = false;
+			for (const [id, commentData] of Object.entries(currentData)) {
+				if (id !== commentId && commentData && typeof commentData === 'object' && 'parentId' in commentData) {
+					if (commentData.parentId === commentId) {
+						hasReplies = true;
+						break;
+					}
+				}
+			}
+
+			if (hasReplies) {
+				// Soft delete: mark as deleted but keep in database
+				currentData[commentId] = {
+					...validatedComment,
+					isDeleted: true,
+					content: '[deleted]',
+					updatedAt: Date.now(),
+				};
+			} else {
+				// Hard delete: remove from database entirely
+				delete currentData[commentId];
+			}
+
+			return currentData;
+		});
+
+		// If transaction succeeded and comment was hard deleted, also remove from user's comments
+		if (result.committed) {
+			const allCommentsSnapshot = result.snapshot;
+			if (allCommentsSnapshot && !allCommentsSnapshot.child(commentId).exists()) {
+				// Comment was hard deleted, remove from user's comments
+				await dbUpdate(ref(getFirebaseDatabase()), {[`/users/${authorId}/comments/${commentId}`]: null});
+			}
 		}
-
-		const comment = validateRawComment(snapshot.val());
-
-		if (comment.authorId !== authorId) {
-			throw new Error('Unauthorized to delete this comment');
-		}
-
-		updates[`/comments/${blueprintId}/${commentId}/isDeleted`] = true;
-		updates[`/comments/${blueprintId}/${commentId}/content`] = '[deleted]';
-		updates[`/comments/${blueprintId}/${commentId}/updatedAt`] = Date.now();
-
-		await dbUpdate(ref(getFirebaseDatabase()), updates);
 	} catch (error) {
-		if (error instanceof Error && error.message === 'Comment not found') {
+		if (
+			error instanceof Error &&
+			(error.message === 'Comment not found' ||
+				error.message === 'Unauthorized to delete this comment' ||
+				error.message === 'Invalid comment data')
+		) {
 			throw error;
 		}
-		if (error instanceof Error && error.message === 'Unauthorized to delete this comment') {
-			throw error;
-		}
-		const paths = Object.keys(updates).join(', ');
-		const enhancedError = enhanceFirebaseError(error, 'write', paths || path);
+		const enhancedError = enhanceFirebaseError(error, 'write', path);
 		console.error('Error deleting comment:', enhancedError);
 		throw enhancedError;
 	}

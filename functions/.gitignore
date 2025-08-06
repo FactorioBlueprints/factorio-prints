@@ -1,11 +1,16 @@
-## Compiled JavaScript files
+# Compiled JavaScript files
 **/*.js
 **/*.js.map
 
-# Typescript v1 declaration files
+# TypeScript v1 declaration files
 typings/
 
+# Node.js dependency directory
 node_modules/
+
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -14,3 +19,15 @@ firebase-debug.*.log*
 
 # Build output
 lib/
+
+# Firebase cache
+.firebase/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Local development config
+.runtimeconfig.json

@@ -16,6 +16,7 @@ interface CommentFormProps {
 export function CommentForm({blueprintId, parentId, onCancel, placeholder = 'Write a comment...'}: CommentFormProps) {
 	const [user] = useAuthState(getAuth(app));
 	const [content, setContent] = useState('');
+	const [error, setError] = useState<string | null>(null);
 	const createCommentMutation = useCreateComment();
 
 	const handleSubmit = async (event: React.FormEvent) => {
@@ -26,6 +27,7 @@ export function CommentForm({blueprintId, parentId, onCancel, placeholder = 'Wri
 		}
 
 		try {
+			setError(null);
 			await createCommentMutation.mutateAsync({
 				blueprintId,
 				authorId: user.uid,
@@ -35,8 +37,8 @@ export function CommentForm({blueprintId, parentId, onCancel, placeholder = 'Wri
 			});
 			setContent('');
 			onCancel?.();
-		} catch (error) {
-			console.error('Error creating comment:', error);
+		} catch (error: any) {
+			setError(error.message || 'Failed to post comment. Please try again.');
 		}
 	};
 
@@ -52,10 +54,22 @@ export function CommentForm({blueprintId, parentId, onCancel, placeholder = 'Wri
 					rows={3}
 					placeholder={placeholder}
 					value={content}
-					onChange={(e) => setContent(e.target.value)}
+					onChange={(e) => {
+						setContent(e.target.value);
+						setError(null); // Clear error when user types
+					}}
 					maxLength={5000}
+					isInvalid={!!error}
 				/>
 				<Form.Text className="text-muted">{content.length}/5000 characters</Form.Text>
+				{error && (
+					<Form.Control.Feedback
+						type="invalid"
+						className="d-block"
+					>
+						{error}
+					</Form.Control.Feedback>
+				)}
 			</Form.Group>
 			<div className="d-flex gap-2">
 				<Button

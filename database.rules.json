@@ -85,7 +85,7 @@
 			"$blueprintId": {
 				".indexOn": ["createdAt", "parentId"],
 				"$commentId": {
-					".write": "(auth != null && !data.exists()) || (auth != null && data.child('authorId').val() === auth.uid && (!newData.exists() || newData.child('authorId').val() === auth.uid)) || root.child('moderators').child(auth.uid).val() === true",
+					".write": "(auth != null && data.exists() && data.child('authorId').val() === auth.uid) || root.child('moderators').child(auth.uid).val() === true",
 					".validate": "newData.hasChildren(['authorId', 'content', 'createdAt']) && newData.child('authorId').isString() && newData.child('content').isString() && newData.child('createdAt').isNumber()",
 					"authorId": {
 						".validate": "newData.val() === auth.uid"
