@@ -44,7 +44,7 @@ jobs:
           SENTRY_ENVIRONMENT: staging
 
       - name: Create Sentry release
-        uses: getsentry/action-release@v1
+        uses: getsentry/action-release@v3
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/factorio.school'
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
