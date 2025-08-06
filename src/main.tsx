@@ -6,6 +6,7 @@ import './css/style.css';
 import QueryProvider from './providers/QueryProvider';
 import {Router} from './router';
 import {getReleaseInfo, getReleaseMetadata} from './utils/release';
+import {setupTooltipCleanup} from './utils/cleanupTooltips';
 
 const releaseInfo = getReleaseInfo();
 
@@ -239,6 +240,9 @@ window.addEventListener(
 	},
 	true,
 );
+
+// Setup tooltip cleanup to prevent DOM manipulation issues
+setupTooltipCleanup();
 
 const container = document.getElementById('root');
 if (!container) {
