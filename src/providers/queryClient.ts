@@ -10,6 +10,16 @@ const queryCache = new QueryCache({
 			});
 		}
 	},
+	onError: (error: any) => {
+		// Network errors should be handled at source, skip logging them
+		if (error instanceof TypeError && error.message === 'Failed to fetch') {
+			return;
+		}
+		// Log other errors in development only
+		if (import.meta.env.DEV) {
+			console.error('Query error:', error);
+		}
+	},
 });
 
 export const queryClient = new QueryClient({

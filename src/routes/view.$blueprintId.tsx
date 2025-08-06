@@ -18,34 +18,58 @@ export const Route = createFileRoute('/view/$blueprintId')({
 	loader: async ({params}): Promise<LoaderData> => {
 		const {blueprintId} = params;
 
-		const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
+		try {
+			const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
 
-		if (!summaryData) {
+			if (!summaryData) {
+				return {
+					blueprintSummary: null,
+					blueprintData: null,
+				};
+			}
+
+			const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
+
+			if (!enrichedSummary) {
+				return {
+					blueprintSummary: null,
+					blueprintData: null,
+				};
+			}
+
+			const blueprintRawData = await queryClient.fetchQuery(blueprintQuery(blueprintId, enrichedSummary));
+
+			const enrichedBlueprint = blueprintRawData ? enrichBlueprint(blueprintRawData, blueprintId) : null;
+
 			return {
-				blueprintSummary: null,
-				blueprintData: null,
+				blueprintSummary: enrichedSummary,
+				blueprintData: enrichedBlueprint,
 			};
+		} catch (error) {
+			// Handle network errors gracefully - return null data instead of throwing
+			if (error instanceof TypeError && error.message === 'Failed to fetch') {
+				return {
+					blueprintSummary: null,
+					blueprintData: null,
+				};
+			}
+			if (error instanceof Error && error.message) {
+				const message = error.message.toLowerCase();
+				if (
+					message.includes('failed to fetch') ||
+					message.includes('network error') ||
+					message.includes('network request failed') ||
+					message.includes('fetch failed')
+				) {
+					return {
+						blueprintSummary: null,
+						blueprintData: null,
+					};
+				}
+			}
+			// Re-throw non-network errors
+			throw error;
 		}
-
-		const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
-
-		if (!enrichedSummary) {
-			return {
-				blueprintSummary: null,
-				blueprintData: null,
-			};
-		}
-
-		const blueprintRawData = await queryClient.fetchQuery(blueprintQuery(blueprintId, enrichedSummary));
-
-		const enrichedBlueprint = blueprintRawData
-			? enrichBlueprint(blueprintRawData, blueprintId, enrichedSummary)
-			: null;
-
-		return {
-			blueprintSummary: enrichedSummary,
-			blueprintData: enrichedBlueprint,
-		};
 	},
 });
 

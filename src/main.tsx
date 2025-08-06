@@ -79,26 +79,29 @@ Sentry.init({
 	// Attach stack traces to messages
 	attachStacktrace: true,
 	beforeSend: (event, hint) => {
-		// Filter out Disqus errors
 		const error = hint.originalException;
+
+		// Filter out third-party errors (Disqus, ads, etc.)
 		if (error && error instanceof Error) {
 			if (error.stack && (error.stack.includes('embed.js') || error.stack.includes('disqus'))) {
-				return null; // Don't send to Sentry
+				return null;
 			}
 		}
 
-		// Filter out cross-origin CSS access errors from Sentry replay
+		// Last-resort filter for any network errors that weren't caught earlier
+		if (error && error instanceof TypeError && error.message === 'Failed to fetch') {
+			return null;
+		}
+
+		// Filter out cross-origin errors
 		if (error && error instanceof Error && error.message) {
 			if (
 				error.message.includes("Cannot get CSS styles from text's parentNode") ||
-				error.message.includes(
-					'SecurityError: CSSStyleSheet.cssRules getter: Not allowed to access cross-origin stylesheet',
-				) ||
-				error.message.includes('cross-origin stylesheet') ||
-				error.message.includes('Blocked a frame with origin') ||
-				error.message.includes('SecurityError: Blocked a frame')
+				error.message.includes('SecurityError') ||
+				error.message.includes('cross-origin') ||
+				error.message.includes('Blocked a frame with origin')
 			) {
-				return null; // Don't send cross-origin CSS errors to Sentry
+				return null;
 			}
 		}
 
@@ -200,7 +203,6 @@ window.addEventListener(
 			if (import.meta.env.DEV) {
 				console.warn('Third-party script error suppressed:', e.error?.message, 'from', e.filename);
 			}
-			// Prevent the error from being reported to Sentry
 			e.preventDefault();
 			return true;
 		}
@@ -218,7 +220,6 @@ window.addEventListener(
 			if (import.meta.env.DEV) {
 				console.warn('Browser extension error suppressed:', e.error?.message, 'from', e.filename);
 			}
-			// Prevent the error from being reported to Sentry
 			e.preventDefault();
 			return true;
 		}
