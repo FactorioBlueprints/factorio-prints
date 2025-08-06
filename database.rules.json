@@ -70,7 +70,8 @@
 		},
 		"byTag": {
 			".read": "true",
-			".write": "true"
+			".write": "true",
+			".indexOn": [".value"]
 		}
 	}
 }
