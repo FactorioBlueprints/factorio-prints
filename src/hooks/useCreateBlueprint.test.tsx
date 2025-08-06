@@ -7,7 +7,6 @@ import type React from 'react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useCreateBlueprint} from './useCreateBlueprint';
 
-// Mock Firebase
 vi.mock('firebase/database', () => ({
 	getDatabase: vi.fn(),
 	ref: vi.fn(),
@@ -16,12 +15,10 @@ vi.mock('firebase/database', () => ({
 	serverTimestamp: vi.fn(() => 'SERVER_TIMESTAMP'),
 }));
 
-// Mock router
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: vi.fn(),
 }));
 
-// Mock base
 vi.mock('../base', () => ({
 	app: {},
 }));
@@ -82,7 +79,6 @@ describe('useCreateBlueprint', () => {
 				userId: 'user123',
 				displayName: 'Test User',
 			},
-			authorId: 'user123',
 			createdDate: 'SERVER_TIMESTAMP',
 			lastUpdatedDate: 'SERVER_TIMESTAMP',
 			favorites: {},

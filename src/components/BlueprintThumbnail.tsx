@@ -89,9 +89,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 						try {
 							target.onerror = null;
 							target.src = '/icons/entity-unknown.png';
-						} catch {
-							// Silently handle error
-						}
+						} catch {}
 					}}
 				/>
 			</Link>
