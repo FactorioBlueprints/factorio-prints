@@ -9,8 +9,8 @@ export const useEnrichedBlueprint = (blueprintId: string, blueprintSummary: Enri
 	const enrichedData = useMemo(() => {
 		if (!rawBlueprintQuery.data) return undefined;
 
-		return enrichBlueprint(rawBlueprintQuery.data, blueprintId);
-	}, [rawBlueprintQuery.data, blueprintId]);
+		return enrichBlueprint(rawBlueprintQuery.data, blueprintId, blueprintSummary);
+	}, [rawBlueprintQuery.data, blueprintId, blueprintSummary]);
 
 	return {
 		...rawBlueprintQuery,

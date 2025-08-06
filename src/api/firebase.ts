@@ -337,19 +337,14 @@ export const reconcileFavoritesCount = async (blueprintId: string): Promise<Reco
 
 	const actualCount = Object.values(favorites).filter(Boolean).length;
 
-	const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/numberOfFavorites`);
-	const blueprintSnapshot = await get(blueprintRef);
-	const currentBlueprintCount = blueprintSnapshot.exists() ? blueprintSnapshot.val() : 0;
-
 	const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}/numberOfFavorites`);
 	const summarySnapshot = await get(summaryRef);
 	const currentSummaryCount = summarySnapshot.exists() ? summarySnapshot.val() : 0;
 
-	const hasDiscrepancy = actualCount !== currentBlueprintCount || actualCount !== currentSummaryCount;
+	const hasDiscrepancy = actualCount !== currentSummaryCount;
 
 	if (hasDiscrepancy) {
 		const updates = {
-			[`/blueprints/${blueprintId}/numberOfFavorites`]: actualCount,
 			[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
 		};
 
@@ -359,7 +354,7 @@ export const reconcileFavoritesCount = async (blueprintId: string): Promise<Reco
 	return {
 		blueprintId,
 		actualCount,
-		previousBlueprintCount: currentBlueprintCount,
+		previousBlueprintCount: 0,
 		previousSummaryCount: currentSummaryCount,
 		hasDiscrepancy,
 		reconciled: hasDiscrepancy,
