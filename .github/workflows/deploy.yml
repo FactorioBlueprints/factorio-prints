@@ -53,7 +53,7 @@ jobs:
 
       - name: Deploy to Firebase
         run: |
-          npx firebase-tools@latest deploy --project facorio-blueprints
+          npm run deploy:all -- --project facorio-blueprints
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 

@@ -20,7 +20,9 @@
 		"typecheck": "tsc --noEmit",
 		"deploy:cloudflare": "wrangler pages deploy dist --project-name=factorio-prints",
 		"deploy:cloudflare:preview": "wrangler pages deploy dist --project-name=factorio-prints --branch=preview",
-		"deploy:cloudflare:production": "wrangler pages deploy dist --project-name=factorio-prints --branch=main"
+		"deploy:cloudflare:production": "wrangler pages deploy dist --project-name=factorio-prints --branch=main",
+		"deploy:functions": "cd functions && npm install && cd .. && firebase deploy --only functions",
+		"deploy:all": "cd functions && npm install && cd .. && firebase deploy"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-svg-core": "7.0.0",

@@ -82,9 +82,13 @@ build-ci: route-generate-ci install-ci
 precommit: format lint typecheck build-no-secrets test
     @echo "✅ All pre-commit checks passed!"
 
-# `firebase deploy`
+# Deploy all Firebase services
 deploy: install
-    firebase deploy
+    npm run deploy:all
+
+# Deploy only Cloud Functions
+deploy-functions: install
+    npm run deploy:functions
 
 # `firebase login`
 firebase-login: install

@@ -9,6 +9,19 @@ import type {Linter} from 'eslint';
 const config: Linter.Config[] = [
 	{ignores: ['dist', 'build', '.llm/**', 'functions/**']},
 	{
+		files: ['functions/**/*.js'],
+		languageOptions: {
+			ecmaVersion: 2020,
+			globals: {
+				...globals.node,
+			},
+			sourceType: 'commonjs',
+		},
+		rules: {
+			...js.configs.recommended.rules,
+		},
+	},
+	{
 		files: ['public/**/*.{ts,tsx}'],
 		languageOptions: {
 			parser: tsparser,
