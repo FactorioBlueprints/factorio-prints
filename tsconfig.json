@@ -30,6 +30,6 @@
 		"newLine": "lf",
 		"types": ["node", "vitest/globals"]
 	},
-	"include": ["src/**/*", "test/**/*", "tests/**/*", "public/**/*", "*.ts"],
+	"include": ["src/**/*", "test/**/*", "tests/**/*", "public/**/*", "scripts/**/*", "*.ts"],
 	"exclude": ["node_modules", "dist", "build", "coverage", "src/**/*.gen.ts"]
 }
