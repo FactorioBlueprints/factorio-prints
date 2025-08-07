@@ -27,6 +27,12 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ENVIRONMENT: production-firebase
 
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm ci
+          npm run build
+
       - name: Create Sentry release
         uses: getsentry/action-release@v3
         env:
@@ -47,7 +53,7 @@ jobs:
 
       - name: Deploy to Firebase
         run: |
-          npx firebase-tools@latest deploy --only hosting,database --project facorio-blueprints
+          npx firebase-tools@latest deploy --project facorio-blueprints
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 

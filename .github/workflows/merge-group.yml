@@ -72,10 +72,21 @@ jobs:
 
       - run: just test-ci
 
+  functions-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+
+      - name: Build Cloud Functions
+        run: |
+          cd functions
+          npm ci
+          npm run build
 
   all-checks:
     name: All checks
-    needs: [pre-commit, eslint, biome, prettier, typecheck, build, test]
+    needs: [pre-commit, eslint, biome, prettier, typecheck, build, test, functions-build]
     runs-on: ubuntu-latest
     steps:
       - name: All checks passed
