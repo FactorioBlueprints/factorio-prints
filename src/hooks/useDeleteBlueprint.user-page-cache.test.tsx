@@ -64,7 +64,6 @@ describe("useDeleteBlueprint user page cache invalidation", () =>
 
 		const blueprintId = "test-blueprint-id";
 		const authorId = "test-author-id";
-		const tags = ["combat", "logistics"];
 
 		// Set up cache spies to verify operations
 		const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -92,7 +91,6 @@ describe("useDeleteBlueprint user page cache invalidation", () =>
 			{
 				id: blueprintId,
 				authorId,
-				tags,
 			},
 		);
 
@@ -120,7 +118,6 @@ describe("useDeleteBlueprint user page cache invalidation", () =>
 
 		const blueprintId = "grid-test-blueprint";
 		const authorId = "grid-test-author";
-		const tags = ["test-tag"];
 
 		// Set up cache spies
 		const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -170,7 +167,6 @@ describe("useDeleteBlueprint user page cache invalidation", () =>
 			{
 				id: blueprintId,
 				authorId,
-				tags,
 			},
 		);
 
@@ -194,7 +190,6 @@ describe("useDeleteBlueprint user page cache invalidation", () =>
 
 		const blueprintId = "shared-blueprint";
 		const authorId = "original-author";
-		const tags = ["shared"];
 
 		// Set up cache spies
 		const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -230,7 +225,6 @@ describe("useDeleteBlueprint user page cache invalidation", () =>
 			{
 				id: blueprintId,
 				authorId,
-				tags,
 			},
 		);
 

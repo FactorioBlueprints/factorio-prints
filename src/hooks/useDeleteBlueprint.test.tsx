@@ -78,7 +78,6 @@ describe("useDeleteBlueprint", () =>
 		{
 			id: "test-blueprint-id",
 			authorId: "test-author-id",
-			tags: ["tag1", "tag2", "tag3"],
 		};
 
 		result.current.mutate(testData);
@@ -111,9 +110,6 @@ describe("useDeleteBlueprint", () =>
 				"/users/test-author-id/blueprints/test-blueprint-id": null,
 				"/users/test-author-id/collection/test-blueprint-id": null,
 				"/blueprintSummaries/test-blueprint-id": null,
-				"/byTag/tag1/test-blueprint-id": null,
-				"/byTag/tag2/test-blueprint-id": null,
-				"/byTag/tag3/test-blueprint-id": null,
 			},
 		);
 	});
@@ -138,7 +134,6 @@ describe("useDeleteBlueprint", () =>
 		{
 			id: "test-blueprint-id",
 			authorId: "test-author-id",
-			tags: [],
 		};
 
 		result.current.mutate(testData);
@@ -191,7 +186,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: [],
 			},
 		);
 
@@ -237,7 +231,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: [],
 			},
 		);
 
@@ -258,7 +251,7 @@ describe("useDeleteBlueprint", () =>
 		);
 	});
 
-	it("should update tag caches on success", async () =>
+	it("should leave tag caches to Cloud Functions", async () =>
 	{
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
@@ -293,7 +286,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: ["tag1", "tag2"],
 			},
 		);
 
@@ -304,19 +296,8 @@ describe("useDeleteBlueprint", () =>
 			},
 		);
 
-		// Verify setQueryData was called for tag updates
-		expect(setQueryDataSpy).toHaveBeenCalledWith(
-			tag1Key,
-			{
-				"other-blueprint": true,
-			},
-		);
-		expect(setQueryDataSpy).toHaveBeenCalledWith(
-			tag2Key,
-			{
-				"another-blueprint": true,
-			},
-		);
+		expect(setQueryDataSpy).not.toHaveBeenCalledWith(tag1Key, expect.anything());
+		expect(setQueryDataSpy).not.toHaveBeenCalledWith(tag2Key, expect.anything());
 	});
 
 	it("should remove blueprint queries from cache on success", async () =>
@@ -335,7 +316,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: [],
 			},
 		);
 
@@ -373,7 +353,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: [],
 			},
 		);
 
@@ -411,7 +390,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: [],
 			},
 		);
 
@@ -437,7 +415,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: [],
 			},
 		);
 
@@ -476,7 +453,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: ["tag1", "tag2"],
 			},
 		);
 
@@ -523,7 +499,6 @@ describe("useDeleteBlueprint", () =>
 			{
 				id: "test-id",
 				authorId: "test-author",
-				tags: [],
 			},
 		);
 

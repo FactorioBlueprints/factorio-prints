@@ -125,7 +125,6 @@ describe("useUpdateBlueprint", () =>
 				id: "blueprint123",
 				rawBlueprint,
 				formData,
-				availableTags: ["old-tag", "new-tag"],
 			},
 		);
 
@@ -148,8 +147,6 @@ describe("useUpdateBlueprint", () =>
 				"/blueprintSummaries/blueprint123/imgurId/": "abc1234",
 				"/blueprintSummaries/blueprint123/imgurType/": "image/jpeg",
 				"/blueprintsPrivate/blueprint123/imageUrl": "https://imgur.com/abc1234",
-				"/byTag/old-tag/blueprint123": null,
-				"/byTag/new-tag/blueprint123": true,
 			},
 		);
 
@@ -232,7 +229,6 @@ describe("useUpdateBlueprint", () =>
 				id: "blueprint123",
 				rawBlueprint,
 				formData,
-				availableTags: ["old-tag", "new-tag"],
 			},
 		);
 
@@ -306,7 +302,6 @@ describe("useUpdateBlueprint", () =>
 				id: "blueprint123",
 				rawBlueprint: existingBlueprint,
 				formData,
-				availableTags: ["old-tag"],
 			},
 		);
 

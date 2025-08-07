@@ -6,7 +6,7 @@
 	"scripts":
 	{
 		"build": "tsc",
-		"verify": "npm run build && node scripts/verify-runtime.cjs",
+		"verify": "npm run build && node --test test/*.node-test.cjs && node scripts/verify-runtime.cjs",
 		"build:watch": "tsc --watch",
 		"serve": "npm run build && firebase emulators:start --only functions",
 		"shell": "npm run build && firebase functions:shell",

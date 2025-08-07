@@ -161,6 +161,7 @@ describe("Tag Operations Cache Consistency", () =>
 					"other-bp-4": true,
 				},
 			);
+			queryClient.setQueryData(["tags"], ["combat", "logistics", "production", "trains"]);
 
 			const {result} = renderHook(
 				() => useUpdateBlueprint(),
@@ -179,7 +180,6 @@ describe("Tag Operations Cache Consistency", () =>
 							tags: newTags,
 						},
 					),
-					availableTags: ["combat", "logistics", "production", "trains", "circuits"],
 				},
 			);
 
@@ -255,6 +255,7 @@ describe("Tag Operations Cache Consistency", () =>
 					},
 				);
 			});
+			queryClient.setQueryData(["tags"], oldTags);
 
 			const {result} = renderHook(
 				() => useUpdateBlueprint(),
@@ -273,7 +274,6 @@ describe("Tag Operations Cache Consistency", () =>
 							tags: newTags,
 						},
 					),
-					availableTags: oldTags,
 				},
 			);
 
@@ -321,6 +321,7 @@ describe("Tag Operations Cache Consistency", () =>
 			{
 				queryClient.setQueryData(["byTag", tag], {});
 			});
+			queryClient.setQueryData(["tags"], newTags);
 
 			const {result} = renderHook(
 				() => useUpdateBlueprint(),
@@ -339,7 +340,6 @@ describe("Tag Operations Cache Consistency", () =>
 							tags: newTags,
 						},
 					),
-					availableTags: newTags,
 				},
 			);
 
@@ -414,7 +414,6 @@ describe("Tag Operations Cache Consistency", () =>
 							tags: newTags,
 						},
 					),
-					availableTags: ["combat", "logistics"], // uncached-tag not included
 				},
 			);
 
@@ -654,13 +653,12 @@ describe("Tag Operations Cache Consistency", () =>
 
 	describe("useDeleteBlueprint tag cache consistency", () =>
 	{
-		it("should update tag caches to remove deleted blueprint", async () =>
+		it("should remove the deleted blueprint from every cached tag", async () =>
 		{
 			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = "delete-test-blueprint";
 			const authorId = "test-author";
-			const tags = ["combat", "logistics", "production"];
 
 			// Set up tag caches with the blueprint
 			queryClient.setQueryData(
@@ -692,11 +690,6 @@ describe("Tag Operations Cache Consistency", () =>
 				},
 			);
 
-			// Spy on setQueryData to verify tag cache updates
-			const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
-			setQueryDataSpy.mockClear(); // Clear previous calls from setup
-
-			// Spy on removeQueries
 			const removeQueriesSpy = vi.spyOn(queryClient, "removeQueries");
 
 			const {result} = renderHook(
@@ -710,26 +703,30 @@ describe("Tag Operations Cache Consistency", () =>
 				{
 					id: blueprintId,
 					authorId,
-					tags,
 				},
 			);
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			// Verify setQueryData was called to update tag caches
-			expect(setQueryDataSpy).toHaveBeenCalledWith(
-				["byTag", "combat"],
+			expect(
 				{
-					"other-bp-1": true,
+					combat: queryClient.getQueryData(["byTag", "combat"]),
+					logistics: queryClient.getQueryData(["byTag", "logistics"]),
+					production: queryClient.getQueryData(["byTag", "production"]),
+				},
+			).toStrictEqual(
+				{
+					combat:
+					{
+						"other-bp-1": true,
+					},
+					logistics:
+					{
+						"other-bp-2": true,
+					},
+					production: {},
 				},
 			);
-			expect(setQueryDataSpy).toHaveBeenCalledWith(
-				["byTag", "logistics"],
-				{
-					"other-bp-2": true,
-				},
-			);
-			expect(setQueryDataSpy).toHaveBeenCalledWith(["byTag", "production"], {});
 
 			// Verify removeQueries was called for blueprint data
 			expect(removeQueriesSpy).toHaveBeenCalledWith(
@@ -744,13 +741,12 @@ describe("Tag Operations Cache Consistency", () =>
 			);
 		});
 
-		it("should handle deleting blueprint that is not in some tag caches", async () =>
+		it("should preserve unrelated entries in partial tag caches", async () =>
 		{
 			vi.mocked(dbUpdate).mockResolvedValue();
 
 			const blueprintId = "partial-cache-blueprint";
 			const authorId = "test-author";
-			const tags = ["combat", "logistics", "production"];
 
 			// Blueprint only exists in some tag caches
 			queryClient.setQueryData(
@@ -775,10 +771,6 @@ describe("Tag Operations Cache Consistency", () =>
 				},
 			);
 
-			// Spy on setQueryData to verify tag cache updates
-			const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
-			setQueryDataSpy.mockClear();
-
 			const {result} = renderHook(
 				() => useDeleteBlueprint(),
 				{
@@ -790,20 +782,27 @@ describe("Tag Operations Cache Consistency", () =>
 				{
 					id: blueprintId,
 					authorId,
-					tags,
 				},
 			);
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			// Verify only the combat cache was updated (blueprint removed)
-			expect(setQueryDataSpy).toHaveBeenCalledWith(["byTag", "combat"], {});
-
-			// Verify logistics cache was NOT updated (blueprint wasn't there)
-			expect(setQueryDataSpy).not.toHaveBeenCalledWith(["byTag", "logistics"], expect.anything());
-
-			// Verify production cache was NOT updated (cache didn't exist)
-			expect(setQueryDataSpy).not.toHaveBeenCalledWith(["byTag", "production"], expect.anything());
+			expect(
+				{
+					combat: queryClient.getQueryData(["byTag", "combat"]),
+					logistics: queryClient.getQueryData(["byTag", "logistics"]),
+					production: queryClient.getQueryData(["byTag", "production"]),
+				},
+			).toStrictEqual(
+				{
+					combat: {},
+					logistics:
+					{
+						"other-bp": true,
+					},
+					production: undefined,
+				},
+			);
 		});
 	});
 
@@ -900,7 +899,6 @@ describe("Tag Operations Cache Consistency", () =>
 							tags: ["logistics", "production"], // Remove combat, keep logistics, add production
 						},
 					),
-					availableTags: ["combat", "logistics", "production"],
 				},
 			);
 
@@ -931,14 +929,24 @@ describe("Tag Operations Cache Consistency", () =>
 				{
 					id: "lifecycle-blueprint",
 					authorId: "user-123",
-					tags: ["logistics", "production"],
 				},
 			);
 
 			await waitFor(() => expect(deleteResult.current.isSuccess).toBe(true));
 
-			// Verify deletion completed successfully
-			expect(deleteResult.current.isSuccess).toBe(true);
+			expect(
+				{
+					combat: queryClient.getQueryData(["byTag", "combat"]),
+					logistics: queryClient.getQueryData(["byTag", "logistics"]),
+					production: queryClient.getQueryData(["byTag", "production"]),
+				},
+			).toStrictEqual(
+				{
+					combat: {},
+					logistics: {},
+					production: {},
+				},
+			);
 		});
 
 		it("should handle concurrent operations on same tags", async () =>
@@ -990,7 +998,6 @@ describe("Tag Operations Cache Consistency", () =>
 							tags: [],
 						},
 					),
-					availableTags: ["combat"],
 				},
 			);
 
@@ -1013,7 +1020,6 @@ describe("Tag Operations Cache Consistency", () =>
 				{
 					id: "bp-2",
 					authorId: "author-2",
-					tags: ["combat"],
 				},
 			);
 
@@ -1024,9 +1030,11 @@ describe("Tag Operations Cache Consistency", () =>
 				expect(delete2.current.isSuccess).toBe(true);
 			});
 
-			// Verify both operations completed successfully
-			expect(update1.current.isSuccess).toBe(true);
-			expect(delete2.current.isSuccess).toBe(true);
+			expect(queryClient.getQueryData(["byTag", "combat"])).toStrictEqual(
+				{
+					"bp-3": true,
+				},
+			);
 		});
 
 		it("should maintain tag cache integrity when operations fail", async () =>
@@ -1076,7 +1084,6 @@ describe("Tag Operations Cache Consistency", () =>
 							tags: ["logistics"],
 						},
 					),
-					availableTags: ["combat", "logistics"],
 				},
 			);
 
@@ -1130,7 +1137,6 @@ describe("Tag Operations Cache Consistency", () =>
 								tags: ["combat"],
 							},
 						),
-						availableTags: ["combat"],
 					},
 				);
 			}).not.toThrow();
@@ -1158,10 +1164,6 @@ describe("Tag Operations Cache Consistency", () =>
 				},
 			);
 
-			// Spy on setQueryData
-			const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
-			setQueryDataSpy.mockClear();
-
 			const {result} = renderHook(
 				() => useDeleteBlueprint(),
 				{
@@ -1173,14 +1175,17 @@ describe("Tag Operations Cache Consistency", () =>
 				{
 					id: blueprintId,
 					authorId: "test-author",
-					tags: ["combat"],
 				},
 			);
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			// Verify cache wasn't modified since blueprint wasn't in it
-			expect(setQueryDataSpy).not.toHaveBeenCalledWith(["byTag", "combat"], expect.anything());
+			expect(queryClient.getQueryData(["byTag", "combat"])).toStrictEqual(
+				{
+					"other-bp": true,
+					"another-bp": true,
+				},
+			);
 		});
 	});
 });
