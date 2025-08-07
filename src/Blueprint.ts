@@ -109,10 +109,8 @@ interface V15DecodedObject {
 	[key: string]: unknown;
 }
 
-// Union type for all possible decoded objects
 type DecodedObject = V15DecodedObject | undefined;
 
-// Type for converted objects
 type ConvertedBlueprint = SingleBlueprint | BlueprintBook;
 
 class Blueprint {

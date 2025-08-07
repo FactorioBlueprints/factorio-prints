@@ -4,7 +4,7 @@ import type {EnrichedBlueprintSummary} from '../schemas';
 export const blueprintSummaryQuery = (blueprintId: string) => ({
 	queryKey: ['blueprintSummaries', 'blueprintId', blueprintId],
 	queryFn: () => fetchBlueprintSummary(blueprintId),
-	staleTime: 1000 * 60 * 60 * 24, // 24 hours
+	staleTime: 1000 * 60 * 60 * 24,
 });
 
 export const blueprintQuery = (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary) => ({

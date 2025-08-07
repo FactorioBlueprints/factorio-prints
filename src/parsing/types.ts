@@ -1,4 +1,3 @@
-// Import types from schemas that are already defined
 import type {
 	BlueprintContent as Blueprint,
 	BlueprintBook,
@@ -10,10 +9,8 @@ import type {
 	UpgradePlanner,
 } from '../schemas';
 
-// Re-export with the names expected by the migrated components
 export type {Icon, Entity, Tile, Blueprint, BlueprintBook, UpgradePlanner, DeconstructionPlanner, BlueprintString};
 
-// Additional types needed by components
 import type {Quality, SignalID, SignalType} from '../types/factorio';
 export type {SignalType, Quality, SignalID};
 

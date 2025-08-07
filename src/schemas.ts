@@ -110,18 +110,16 @@ export type RawPaginatedBlueprintSummaries = z.infer<typeof rawPaginatedBlueprin
 export type EnrichedBlueprintSummaryPage = z.infer<typeof enrichedBlueprintSummaryPageSchema>;
 export type EnrichedPaginatedBlueprintSummaries = z.infer<typeof enrichedPaginatedBlueprintSummariesSchema>;
 
-// Raw tag schemas - matching Firebase data structure
 export const rawTagsSchema = z.record(z.string(), z.array(z.string()));
 
 export const rawTagIndexSchema = z.record(z.string(), z.boolean());
 
-// Enriched tag schemas - transformed for UI consumption
 export const enrichedTagSchema = z
 	.object({
-		path: z.string(), // Full tag path with slashes (e.g., "/belt/balancer/")
-		category: z.string(), // Category name (e.g., "belt")
-		name: z.string(), // Tag name (e.g., "balancer")
-		label: z.string(), // Display-friendly label (e.g., "Balancer")
+		path: z.string(),
+		category: z.string(),
+		name: z.string(),
+		label: z.string(),
 	})
 	.strict();
 
@@ -145,10 +143,8 @@ const getValueAtPath = (obj: unknown, path: string[]): unknown => {
 };
 
 const extractBlueprintContext = (data: unknown, path: string[]): unknown => {
-	// Look for blueprint-related path segments and extract the nearest blueprint object
 	const pathString = path.join('.');
 
-	// Find patterns like blueprint_book.blueprints.X.blueprint or blueprint_book.blueprints.X.blueprint_book.blueprints.Y.blueprint
 	const blueprintPattern = /^(.*?\.blueprint)(?:\.|$)/;
 	const match = pathString.match(blueprintPattern);
 
@@ -157,7 +153,6 @@ const extractBlueprintContext = (data: unknown, path: string[]): unknown => {
 		return getValueAtPath(data, blueprintPath);
 	}
 
-	// Also check for blueprint_book at any level
 	const bookPattern = /^(.*?\.blueprint_book)(?:\.|$)/;
 	const bookMatch = pathString.match(bookPattern);
 
@@ -224,7 +219,6 @@ export const validate = <T>(
 			};
 			console.error('Schema validation failed', JSON.stringify(errorInfo, null, 2));
 
-			// Log blueprint context for nested blueprint errors
 			const blueprintContexts = new Map<string, unknown>();
 			for (const issue of error.issues) {
 				const context = extractBlueprintContext(data, issue.path.map(String));
@@ -244,19 +238,16 @@ export const validate = <T>(
 				});
 			}
 
-			// Log the full object for debugging
 			try {
 				const serialized = JSON.stringify(data);
-				const maxLength = 5000; // 5KB limit for Sentry
+				const maxLength = 5000;
 				if (serialized && serialized.length <= maxLength) {
 					console.error('Full object that failed validation:', serialized);
 				} else if (serialized) {
-					// For large objects, log a truncated version
 					const truncated = serialized.substring(0, maxLength) + '... (truncated)';
 					console.error('Full object that failed validation (truncated):', truncated);
 				}
 			} catch (error) {
-				// Handle circular references or other stringify errors
 				console.error('Unable to serialize full object due to:', error);
 				console.error('Object keys:', data && typeof data === 'object' ? Object.keys(data) : 'N/A');
 			}
@@ -333,7 +324,6 @@ export const validateEnrichedTags = (data: unknown): EnrichedTags => {
 	return validate(data, enrichedTagsSchema, 'enriched tags');
 };
 
-// Raw user schemas - matching Firebase data structure
 export const rawUserSchema = z
 	.object({
 		id: z.string(),
@@ -344,7 +334,6 @@ export const rawUserSchema = z
 	})
 	.strict();
 
-// Enriched user schemas - transformed for UI consumption
 export const enrichedUserSchema = rawUserSchema
 	.extend({
 		favoritesCount: z.number(),
@@ -373,10 +362,8 @@ export const validateEnrichedUser = (data: unknown): EnrichedUser => {
 	};
 };
 
-// Raw user blueprints schema - matching Firebase data structure
 export const rawUserBlueprintsSchema = z.record(z.string(), z.boolean());
 
-// Enriched user blueprints schema - transformed for UI consumption
 export const enrichedUserBlueprintsSchema = z
 	.object({
 		blueprintIds: z.record(z.string(), z.boolean()),
@@ -384,10 +371,8 @@ export const enrichedUserBlueprintsSchema = z
 	})
 	.strict();
 
-// Raw user favorites schema - matching Firebase data structure
 export const rawUserFavoritesSchema = z.record(z.string(), z.boolean());
 
-// Enriched user favorites schema - transformed for UI consumption
 export const enrichedUserFavoritesSchema = z
 	.object({
 		favoriteIds: z.record(z.string(), z.boolean()),
@@ -416,7 +401,6 @@ export const validateEnrichedUserFavorites = (data: unknown): EnrichedUserFavori
 	return validate(data, enrichedUserFavoritesSchema, 'enriched user favorites');
 };
 
-// Raw blueprint parsing schemas - for parsed blueprint data from game files
 export const blueprintIconSchema = z
 	.object({
 		signal: z
@@ -442,7 +426,7 @@ export const blueprintEntitySchema = z
 			})
 			.strict(),
 	})
-	.passthrough(); // Allow additional properties
+	.passthrough();
 
 export const blueprintTileSchema = z
 	.object({
@@ -454,7 +438,7 @@ export const blueprintTileSchema = z
 			})
 			.strict(),
 	})
-	.passthrough(); // Allow additional properties
+	.passthrough();
 
 export const blueprintContentSchema = z
 	.object({
@@ -467,7 +451,7 @@ export const blueprintContentSchema = z
 		item: z.string().optional(),
 		parameters: z.array(z.any()).optional(),
 	})
-	.passthrough(); // Allow additional properties
+	.passthrough();
 
 export const blueprintBookEntrySchema: z.ZodSchema<any> = z.lazy(() =>
 	z
@@ -490,7 +474,7 @@ export const blueprintBookSchema = z
 		active_index: z.number().optional(),
 		version: z.number().optional(),
 	})
-	.passthrough(); // Allow additional properties
+	.passthrough();
 
 export const upgradePlannerSchema = z
 	.object({
@@ -517,7 +501,7 @@ export const rawBlueprintDataSchema = z
 		upgrade_planner: upgradePlannerSchema.optional(),
 		deconstruction_planner: deconstructionPlannerSchema.optional(),
 	})
-	.passthrough(); // Allow additional properties
+	.passthrough();
 
 export type BlueprintIcon = z.infer<typeof blueprintIconSchema>;
 export type BlueprintEntity = z.infer<typeof blueprintEntitySchema>;

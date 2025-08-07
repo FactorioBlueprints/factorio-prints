@@ -213,7 +213,6 @@ function EditBlueprintWrapper() {
 					id: blueprintId,
 					rawBlueprint: rawBlueprintData,
 					formData: value,
-					availableTags: tags,
 				});
 			}
 		},
@@ -351,11 +350,10 @@ function EditBlueprintWrapper() {
 					id: blueprintId,
 					rawBlueprint: rawBlueprintData,
 					formData: form.state.values,
-					availableTags: tags,
 				});
 			}
 		},
-		[updateBlueprintMutation, blueprintId, form.state.values, rawBlueprintData, tags],
+		[updateBlueprintMutation, blueprintId, form.state.values, rawBlueprintData],
 	);
 
 	const handleCancel = useCallback(() => {
@@ -387,9 +385,8 @@ function EditBlueprintWrapper() {
 		deleteBlueprintMutation.mutate({
 			id: blueprintId,
 			authorId,
-			tags: currentTags,
 		});
-	}, [deleteBlueprintMutation, blueprintId, rawBlueprintData, currentTags]);
+	}, [deleteBlueprintMutation, blueprintId, rawBlueprintData]);
 
 	const handleTagSelection = useCallback(
 		(selectedTags: readonly SelectOption[] | null) => {

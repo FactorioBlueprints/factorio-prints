@@ -202,7 +202,6 @@ describe('firebase API', () => {
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
 			expect(result).toBeNull();
-			// Network errors (status 0) should not be logged
 			expect(consoleWarnSpy).not.toHaveBeenCalled();
 
 			consoleWarnSpy.mockRestore();
@@ -515,9 +514,12 @@ describe('firebase API', () => {
 
 			const sortedByDateDesc = [...entries].sort((a, b) => (b.lastUpdatedDate || 0) - (a.lastUpdatedDate || 0));
 
-			expect(sortedByDateDesc[0].key).toBe('blueprint1'); // Newest (300) should be first
-			expect(sortedByDateDesc[1].key).toBe('blueprint2'); // Second newest (200) should be second
-			expect(sortedByDateDesc[2].key).toBe('blueprint3'); // Oldest (100) should be last
+			// Newest (300) should be first
+			expect(sortedByDateDesc[0].key).toBe('blueprint1');
+			// Second newest (200) should be second
+			expect(sortedByDateDesc[1].key).toBe('blueprint2');
+			// Oldest (100) should be last
+			expect(sortedByDateDesc[2].key).toBe('blueprint3');
 
 			expect(entries[0].key).toBe('blueprint1');
 			expect(entries[1].key).toBe('blueprint2');

@@ -54,21 +54,26 @@ describe('useDeleteBlueprint', () => {
 		const testData = {
 			id: 'test-blueprint-id',
 			authorId: 'test-author-id',
-			tags: ['tag1', 'tag2', 'tag3'],
 		};
 
 		result.current.mutate(testData);
 
-		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
+		await waitFor(
+			() => {
+				if (result.current.error) {
+					console.error('Mutation error:', result.current.error);
+				}
+				return expect(result.current.isSuccess).toBe(true);
+			},
+			{timeout: 3000},
+		);
 
 		// Verify Firebase update was called with correct paths
+		// Note: byTag cleanup is now handled by Cloud Functions
 		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
 			'/blueprints/test-blueprint-id': null,
 			'/users/test-author-id/blueprints/test-blueprint-id': null,
 			'/blueprintSummaries/test-blueprint-id': null,
-			'/byTag/tag1/test-blueprint-id': null,
-			'/byTag/tag2/test-blueprint-id': null,
-			'/byTag/tag3/test-blueprint-id': null,
 		});
 	});
 
@@ -82,7 +87,6 @@ describe('useDeleteBlueprint', () => {
 		const testData = {
 			id: 'test-blueprint-id',
 			authorId: 'test-author-id',
-			tags: [],
 		};
 
 		result.current.mutate(testData);
@@ -106,7 +110,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: [],
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -134,7 +137,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: [],
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -146,7 +148,7 @@ describe('useDeleteBlueprint', () => {
 		});
 	});
 
-	it('should update tag caches on success', async () => {
+	it('should not update tag caches (handled by Cloud Functions)', async () => {
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		// Set up existing tag data in cache
@@ -168,14 +170,13 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: ['tag1', 'tag2'],
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
 
-		// Verify setQueryData was called for tag updates
-		expect(setQueryDataSpy).toHaveBeenCalledWith(tag1Key, {'other-blueprint': true});
-		expect(setQueryDataSpy).toHaveBeenCalledWith(tag2Key, {'another-blueprint': true});
+		// Verify tag caches are NOT updated (Cloud Functions handle this)
+		expect(setQueryDataSpy).not.toHaveBeenCalledWith(tag1Key, expect.anything());
+		expect(setQueryDataSpy).not.toHaveBeenCalledWith(tag2Key, expect.anything());
 	});
 
 	it('should remove blueprint queries from cache on success', async () => {
@@ -187,7 +188,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: [],
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -208,7 +208,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: [],
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -228,7 +227,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: [],
 		});
 
 		await waitFor(() => expect(result.current.isError).toBe(true));
@@ -246,7 +244,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: [],
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -267,7 +264,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: ['tag1', 'tag2'],
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -295,7 +291,6 @@ describe('useDeleteBlueprint', () => {
 		result.current.mutate({
 			id: 'test-id',
 			authorId: 'test-author',
-			tags: [],
 		});
 
 		// Wait for the mutation to start
