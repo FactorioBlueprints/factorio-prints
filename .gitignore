@@ -28,3 +28,11 @@ eslint_report.json
 
 # Firebase export data
 factorio-blueprints-export.json
+
+# Ignore compiled JS files in src and public (TypeScript project)
+src/**/*.js
+public/**/*.js
+!public/service-worker.js
+
+# TypeScript build info
+tsconfig.tsbuildinfo
