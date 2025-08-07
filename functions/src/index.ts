@@ -3,15 +3,82 @@ import * as functionsV1 from "firebase-functions/v1";
 import { initializeApp } from "firebase-admin/app";
 import { getDatabase } from "firebase-admin/database";
 import {
+  onValueCreated,
   onValueWritten,
   onValueDeleted,
+  onValueUpdated,
   DatabaseEvent,
   DataSnapshot,
 } from "firebase-functions/v2/database";
 import { Change } from "firebase-functions/v2";
 import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
+import {
+  createTagIndexAdditions,
+  createTagIndexRemovals,
+  createTagIndexUpdate,
+  readBlueprintTags,
+  readTagList,
+} from "./tag-index";
 
 initializeApp();
+
+export const onBlueprintCreate = onValueCreated(
+  "/blueprints/{blueprintId}",
+  async (event: DatabaseEvent<DataSnapshot>) => {
+    const blueprintId = event.params.blueprintId;
+    const tags = readBlueprintTags(event.data.val());
+
+    if (tags.length === 0) {
+      functions.logger.log(`Blueprint ${blueprintId} has no tags`);
+      return null;
+    }
+
+    await getDatabase().ref().update(createTagIndexAdditions(blueprintId, tags));
+    functions.logger.log(`Added blueprint ${blueprintId} to ${tags.length} tags`);
+    return null;
+  },
+);
+
+export const onBlueprintUpdate = onValueUpdated(
+  "/blueprints/{blueprintId}/tags",
+  async (event: DatabaseEvent<Change<DataSnapshot>>) => {
+    const blueprintId = event.params.blueprintId;
+    const previousTags = readTagList(event.data.before.val());
+    const currentTags = readTagList(event.data.after.val());
+    const addedTags = currentTags.filter((tag) => !previousTags.includes(tag));
+    const removedTags = previousTags.filter((tag) => !currentTags.includes(tag));
+
+    if (addedTags.length === 0 && removedTags.length === 0) {
+      functions.logger.log(`Blueprint ${blueprintId} has no tag changes`);
+      return null;
+    }
+
+    await getDatabase()
+      .ref()
+      .update(createTagIndexUpdate(blueprintId, previousTags, currentTags));
+    functions.logger.log(
+      `Updated tags for blueprint ${blueprintId}: +${addedTags.length} -${removedTags.length}`,
+    );
+    return null;
+  },
+);
+
+export const onBlueprintDelete = onValueDeleted(
+  "/blueprints/{blueprintId}",
+  async (event: DatabaseEvent<DataSnapshot>) => {
+    const blueprintId = event.params.blueprintId;
+    const tags = readBlueprintTags(event.data.val());
+
+    if (tags.length === 0) {
+      functions.logger.log(`Deleted blueprint ${blueprintId} had no tags`);
+      return null;
+    }
+
+    await getDatabase().ref().update(createTagIndexRemovals(blueprintId, tags));
+    functions.logger.log(`Removed blueprint ${blueprintId} from ${tags.length} tags`);
+    return null;
+  },
+);
 
 /**
  * Cloud Function to maintain numberOfFavorites count

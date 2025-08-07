@@ -22,13 +22,11 @@ interface UpdateBlueprintMutationParams {
   id: string;
   rawBlueprint: RawBlueprint;
   formData: UpdateBlueprintFormData;
-  availableTags: string[];
 }
 
 interface DeleteBlueprintMutationParams {
   id: string;
   authorId: string;
-  tags: string[];
 }
 
 interface ImgurRegexPatterns {
@@ -41,7 +39,7 @@ export const useUpdateBlueprint = () => {
   const navigate = useNavigate();
 
   return useMutation<string, Error, UpdateBlueprintMutationParams>({
-    mutationFn: async ({ id, rawBlueprint, formData, availableTags }) => {
+    mutationFn: async ({ id, rawBlueprint, formData }) => {
       // Process image URL if provided
       let image: ImgurImage | null = null;
       if (formData.imageUrl) {
@@ -84,14 +82,6 @@ export const useUpdateBlueprint = () => {
         updates[`/blueprintSummaries/${id}/imgurId/`] = image.id;
         updates[`/blueprintSummaries/${id}/imgurType/`] = image.type;
       }
-
-      availableTags.forEach((tag) => {
-        updates[`/byTag/${tag}/${id}`] = null;
-      });
-
-      formData.tags.forEach((tag) => {
-        updates[`/byTag/${tag}/${id}`] = true;
-      });
 
       await dbUpdate(ref(getFirebaseDatabase()), updates);
 
@@ -162,30 +152,27 @@ export const useUpdateBlueprint = () => {
       const lastUpdatedDateKey = ["blueprintSummaries", "orderByField", "lastUpdatedDate"];
       queryClient.invalidateQueries({ queryKey: lastUpdatedDateKey });
 
-      // Update tag cache
-      variables.availableTags.forEach((tag) => {
+      const oldTags = variables.rawBlueprint.tags || [];
+      const newTags = variables.formData.tags || [];
+
+      new Set([...oldTags, ...newTags]).forEach((tag) => {
         const tagKey = ["byTag", tag];
         const tagDataRaw = queryClient.getQueryData(tagKey);
 
-        if (tagDataRaw) {
+        if (tagDataRaw && typeof tagDataRaw === "object") {
           const tagData = validateRawUserBlueprints(tagDataRaw);
-          if (tagData[blueprintId]) {
+          const hadTag = oldTags.includes(tag);
+          const hasTag = newTags.includes(tag);
+
+          if (hasTag && !hadTag) {
+            queryClient.setQueryData(tagKey, {
+              ...tagData,
+              [blueprintId]: true,
+            });
+          } else if (!hasTag && hadTag) {
             const { [blueprintId]: _, ...rest } = tagData;
             queryClient.setQueryData(tagKey, rest);
           }
-        }
-      });
-
-      variables.formData.tags.forEach((tag) => {
-        const tagKey = ["byTag", tag];
-        const tagDataRaw = queryClient.getQueryData(tagKey);
-
-        if (tagDataRaw) {
-          const tagData = validateRawUserBlueprints(tagDataRaw);
-          queryClient.setQueryData(tagKey, {
-            ...tagData,
-            [blueprintId]: true,
-          });
         }
       });
 
@@ -199,7 +186,7 @@ export const useDeleteBlueprint = () => {
   const navigate = useNavigate();
 
   return useMutation<string, Error, DeleteBlueprintMutationParams>({
-    mutationFn: async ({ id, authorId, tags }) => {
+    mutationFn: async ({ id, authorId }) => {
       // Phase 1: Shrink the blueprint by removing the large blueprintString field.
       // This prevents TRIGGER_PAYLOAD_TOO_LARGE errors when the Cloud Function
       // receives the deleted blueprint data.
@@ -208,8 +195,7 @@ export const useDeleteBlueprint = () => {
       });
 
       // Phase 2: Delete the blueprint and all related data.
-      // The Cloud Function cleanupFavoritesOnBlueprintDelete will also run
-      // as a safety net for favorites cleanup.
+      // Cloud Functions remove the blueprint from favorites and tag indexes.
       const updates: Record<string, null> = {
         [`/blueprints/${id}`]: null,
         [`/users/${authorId}/blueprints/${id}`]: null,
@@ -217,17 +203,20 @@ export const useDeleteBlueprint = () => {
         [`/blueprintSummaries/${id}`]: null,
       };
 
-      tags.forEach((tag) => {
-        updates[`/byTag/${tag}/${id}`] = null;
-      });
-
       await dbUpdate(ref(getFirebaseDatabase()), updates);
 
       return authorId;
     },
-    onSuccess: (authorId, { id, tags }) => {
+    onSuccess: (authorId, { id }) => {
       const lastUpdatedDateKey = ["blueprintSummaries", "orderByField", "lastUpdatedDate"];
       queryClient.invalidateQueries({ queryKey: lastUpdatedDateKey });
+
+      queryClient.setQueriesData({ queryKey: ["byTag"] }, (tagDataRaw: unknown) => {
+        if (!tagDataRaw || typeof tagDataRaw !== "object") return tagDataRaw;
+        const tagData = validateRawUserBlueprints(tagDataRaw);
+        const { [id]: _, ...remainingBlueprints } = tagData;
+        return remainingBlueprints;
+      });
 
       const userBlueprintsKey = ["users", "userId", authorId, "blueprints"];
       const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
@@ -251,19 +240,6 @@ export const useDeleteBlueprint = () => {
 
       // Invalidate user blueprint queries to ensure UI refreshes
       queryClient.invalidateQueries({ queryKey: userBlueprintsKey });
-
-      tags.forEach((tag) => {
-        const tagKey = ["byTag", tag];
-        const tagDataRaw = queryClient.getQueryData(tagKey);
-
-        if (tagDataRaw) {
-          const tagData = validateRawUserBlueprints(tagDataRaw);
-          if (tagData[id]) {
-            const { [id]: _, ...rest } = tagData;
-            queryClient.setQueryData(tagKey, rest);
-          }
-        }
-      });
 
       // Remove the deleted blueprint from cache to prevent errors
       queryClient.removeQueries({ queryKey: ["blueprints", "blueprintId", id] });
