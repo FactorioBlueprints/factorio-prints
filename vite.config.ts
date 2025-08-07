@@ -36,9 +36,10 @@ export default defineConfig(
 								setCommits: {
 									auto: true,
 								},
-								...(process.env.SENTRY_ENVIRONMENT === 'production' && {
+								...((process.env.SENTRY_ENVIRONMENT === 'production-firebase' ||
+									process.env.SENTRY_ENVIRONMENT === 'production-cloudflare') && {
 									deploy: {
-										env: 'production',
+										env: process.env.SENTRY_ENVIRONMENT,
 									},
 								}),
 							},
