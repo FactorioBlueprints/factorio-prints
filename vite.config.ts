@@ -3,14 +3,14 @@ import react from '@vitejs/plugin-react';
 import {TanStackRouterVite} from '@tanstack/router-vite-plugin';
 import {sentryVitePlugin} from '@sentry/vite-plugin';
 import {execSync} from 'child_process';
-import type {ConfigEnv, UserConfig} from 'vite';
+import type {UserConfig} from 'vite';
 
 const version = execSync('git describe --always --tags', {encoding: 'utf8'}).trim();
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', {encoding: 'utf8'}).trim();
 const buildTime = new Date().toISOString();
 
 export default defineConfig(
-	({mode}: ConfigEnv): UserConfig => ({
+	({}): UserConfig => ({
 		define: {
 			'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
 			'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),
@@ -25,7 +25,7 @@ export default defineConfig(
 				autoCodeSplitting: false,
 			}),
 			react(),
-			...(mode === 'production' && process.env.SENTRY_AUTH_TOKEN
+			...(process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
 				? [
 						sentryVitePlugin({
 							org: process.env.SENTRY_ORG,
@@ -36,9 +36,11 @@ export default defineConfig(
 								setCommits: {
 									auto: true,
 								},
-								deploy: {
-									env: process.env.SENTRY_ENVIRONMENT || 'production',
-								},
+								...(process.env.SENTRY_ENVIRONMENT === 'production' && {
+									deploy: {
+										env: 'production',
+									},
+								}),
 							},
 							sourcemaps: {
 								assets: './dist/**',
