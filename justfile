@@ -71,7 +71,9 @@ build-ci: route-generate-ci install-ci
     npm run build
 
 # Run all pre-commit checks
-precommit: format lint typecheck build test
+precommit: format lint typecheck test
+    @echo "✅ Running build without Sentry integration for precommit checks..."
+    @SENTRY_AUTH_TOKEN= SENTRY_ORG= SENTRY_PROJECT= npm run build
     @echo "✅ All pre-commit checks passed!"
 
 # `firebase deploy`

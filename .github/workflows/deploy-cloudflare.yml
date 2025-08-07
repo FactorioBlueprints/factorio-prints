@@ -1,4 +1,4 @@
-name: Deploy to Firebase Production
+name: Deploy to Cloudflare Production
 
 on:
   release:
@@ -7,8 +7,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages Production
+    permissions:
+      contents: read
+      deployments: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -25,7 +30,7 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ENVIRONMENT: production-firebase
+          SENTRY_ENVIRONMENT: production-cloudflare
 
       - name: Create Sentry release
         uses: getsentry/action-release@v3
@@ -34,22 +39,20 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         with:
-          environment: production-firebase
+          environment: production-cloudflare
           sourcemaps: "./dist"
           version: ${{ github.event.release.tag_name }}
 
-      - name: Authenticate to Google Cloud
-        id: auth
-        uses: google-github-actions/auth@v2
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          create_credentials_file: true
-
-      - name: Deploy to Firebase
-        run: |
-          npx firebase-tools@latest deploy --only hosting,database --project facorio-blueprints
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: factorio-prints
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          wranglerVersion: '3'
 
       - name: Finalize Sentry release
         uses: getsentry/action-release@v3
@@ -58,6 +61,6 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         with:
-          environment: production-firebase
+          environment: production-cloudflare
           version: ${{ github.event.release.tag_name }}
           finalize: true
