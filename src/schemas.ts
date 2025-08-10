@@ -238,15 +238,10 @@ export const validate = <T>(
 			}
 
 			if (blueprintContexts.size > 0) {
-				const validContexts = Array.from(blueprintContexts.entries()).filter(
-					([, context]) => context !== undefined && context !== null,
-				);
-				if (validContexts.length > 0) {
-					console.error('Blueprint context for errors:');
-					validContexts.forEach(([path, context]) => {
-						console.error(`  At path "${path}":`, context);
-					});
-				}
+				console.error('Blueprint context for errors:');
+				blueprintContexts.forEach((context, path) => {
+					console.error(`  At path "${path}": ${serializeValue(context)}`);
+				});
 			}
 
 			// Log the full object for debugging
@@ -254,10 +249,11 @@ export const validate = <T>(
 				const serialized = JSON.stringify(data);
 				const maxLength = 5000; // 5KB limit for Sentry
 				if (serialized && serialized.length <= maxLength) {
-					console.error('Full object that failed validation:', data);
+					console.error('Full object that failed validation:', serialized);
 				} else {
-					// For large objects, still log the actual object to console
-					console.error('Full object that failed validation (large object):', data);
+					// For large objects, log a truncated version
+					const truncated = serialized.substring(0, maxLength) + '... (truncated)';
+					console.error('Full object that failed validation (truncated):', truncated);
 				}
 			} catch (error) {
 				// Handle circular references or other stringify errors
