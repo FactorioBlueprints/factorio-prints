@@ -228,7 +228,7 @@ export const validate = <T>(
 			const blueprintContexts = new Map<string, unknown>();
 			for (const issue of error.issues) {
 				const context = extractBlueprintContext(data, issue.path.map(String));
-				if (context) {
+				if (context !== undefined && context !== null) {
 					const contextPath = issue.path.join('.');
 					const blueprintPath = contextPath.match(/^(.*?\.blueprint(?:_book)?)(?:\.|$)/)?.[1] || contextPath;
 					if (!blueprintContexts.has(blueprintPath)) {
@@ -238,10 +238,15 @@ export const validate = <T>(
 			}
 
 			if (blueprintContexts.size > 0) {
-				console.error('Blueprint context for errors:');
-				blueprintContexts.forEach((context, path) => {
-					console.error(`  At path "${path}":`, context);
-				});
+				const validContexts = Array.from(blueprintContexts.entries()).filter(
+					([, context]) => context !== undefined && context !== null,
+				);
+				if (validContexts.length > 0) {
+					console.error('Blueprint context for errors:');
+					validContexts.forEach(([path, context]) => {
+						console.error(`  At path "${path}":`, context);
+					});
+				}
 			}
 
 			// Log the full object for debugging
