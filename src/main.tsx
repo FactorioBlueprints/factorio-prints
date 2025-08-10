@@ -237,6 +237,8 @@ window.addEventListener(
 			e.preventDefault();
 			return true;
 		}
+
+		return false;
 	},
 	true,
 );
