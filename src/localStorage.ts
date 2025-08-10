@@ -173,11 +173,43 @@ function getWorker() {
 
 		try {
 			workerReconnectAttempts++;
+			console.log(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
 			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
 
 			worker.onerror = (event) => {
 				let errorToCapture: Error;
 				let errorMessage: string;
+
+				// Handle null/undefined event (shouldn't happen but being defensive)
+				if (!event) {
+					errorMessage = 'Worker error: null or undefined event';
+					console.error('[IndexedDB Worker] Received null/undefined error event');
+					errorToCapture = new Error(errorMessage);
+					errorToCapture.name = 'WorkerError';
+
+					Sentry.captureException(errorToCapture, {
+						tags: {
+							component: 'indexeddb-worker',
+							operation: 'worker-error',
+							reconnectAttempt: workerReconnectAttempts,
+						},
+						extra: {
+							eventIsNull: true,
+						},
+					});
+
+					if (worker) {
+						worker.terminate();
+						worker = undefined;
+					}
+
+					pendingOperations.forEach((op) => {
+						op.reject(errorToCapture);
+					});
+					pendingOperations.clear();
+
+					return;
+				}
 
 				if (event instanceof ErrorEvent) {
 					errorMessage = event.message || 'Unknown worker error';
@@ -204,12 +236,56 @@ function getWorker() {
 						},
 					});
 				} else {
-					errorMessage = 'Non-ErrorEvent worker error occurred';
+					// Safari sometimes emits a plain Event instead of ErrorEvent
+					const genericEvent = event as Event;
 					const eventType =
-						event && typeof event === 'object' && event !== null
-							? Object.prototype.toString.call(event).slice(8, -1)
+						genericEvent && typeof genericEvent === 'object' && genericEvent !== null
+							? Object.prototype.toString.call(genericEvent).slice(8, -1)
 							: 'Unknown';
-					console.error('[IndexedDB Worker] Worker error:', errorMessage, {eventType});
+
+					// Detect Safari browser
+					const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+					// Extract any available properties from the event
+					const eventProperties: Record<string, unknown> = {};
+					if (genericEvent && typeof genericEvent === 'object') {
+						// Attempt to extract standard Event properties
+						if ('type' in genericEvent) eventProperties.type = genericEvent.type;
+						if ('target' in genericEvent) eventProperties.hasTarget = genericEvent.target !== null;
+						if ('currentTarget' in genericEvent)
+							eventProperties.hasCurrentTarget = genericEvent.currentTarget !== null;
+						if ('defaultPrevented' in genericEvent)
+							eventProperties.defaultPrevented = genericEvent.defaultPrevented;
+						if ('bubbles' in genericEvent) eventProperties.bubbles = genericEvent.bubbles;
+						if ('cancelable' in genericEvent) eventProperties.cancelable = genericEvent.cancelable;
+						if ('timeStamp' in genericEvent) eventProperties.timeStamp = genericEvent.timeStamp;
+						if ('isTrusted' in genericEvent) eventProperties.isTrusted = genericEvent.isTrusted;
+
+						// Try to get any custom properties
+						try {
+							const allKeys = Object.keys(genericEvent);
+							if (allKeys.length > 0) {
+								eventProperties.availableKeys = allKeys;
+							}
+						} catch {
+							// Ignore if we can't enumerate keys
+						}
+					}
+
+					// Create a more descriptive error message
+					if (isSafari && eventType === 'Event') {
+						errorMessage = `Safari worker initialization error: The worker script may have failed to load or encountered a syntax error`;
+					} else {
+						errorMessage = `Worker error (${eventType}): Unable to extract error details from event object`;
+					}
+
+					console.error('[IndexedDB Worker] Worker error:', errorMessage, {
+						eventType,
+						eventProperties,
+						isSafari,
+						userAgent: navigator.userAgent,
+						workerUrl: './localStorage.worker.ts',
+					});
 					errorToCapture = new Error(errorMessage);
 					errorToCapture.name = 'WorkerError';
 
@@ -218,10 +294,16 @@ function getWorker() {
 							component: 'indexeddb-worker',
 							operation: 'worker-error',
 							reconnectAttempt: workerReconnectAttempts,
+							browser: isSafari ? 'safari' : 'other',
 						},
 						extra: {
 							eventType,
+							eventProperties,
 							eventString: String(event),
+							isSafari,
+							userAgent: navigator.userAgent,
+							workerUrl: './localStorage.worker.ts',
+							currentUrl: window.location.href,
 						},
 					});
 				}

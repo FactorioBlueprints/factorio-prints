@@ -92,10 +92,24 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 
 	try {
 		if (!store && storeConfig) {
-			store = createStore(storeConfig.dbName, storeConfig.storeName);
+			try {
+				store = createStore(storeConfig.dbName, storeConfig.storeName);
+			} catch (storeError) {
+				console.error('[IndexedDB Worker] Failed to create store:', storeError);
+				throw new Error(
+					`Failed to create IndexedDB store: ${storeError instanceof Error ? storeError.message : String(storeError)}`,
+				);
+			}
 		}
 
 		let result: SuccessResult;
+
+		// Ensure store is initialized for operations that need it
+		if ((type === 'set' || type === 'get' || type === 'delete') && !store) {
+			throw new Error(
+				'IndexedDB store not initialized. This may indicate a browser compatibility issue or storage restrictions.',
+			);
+		}
 
 		switch (type) {
 			case 'set':
