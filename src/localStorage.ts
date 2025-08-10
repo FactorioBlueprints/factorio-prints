@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react';
 import {createStore, del, get, set} from 'idb-keyval';
+import {compressForStorage, decompressFromStorage, formatBytes, checkStorageQuota} from './utils/dataCompression';
 
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
@@ -392,7 +393,44 @@ function getWorker() {
 							}
 							pendingOp.resolve(undefined);
 						} else {
-							pendingOp.reject(new Error(error.message));
+							// 🛡️ Handle blob write failures specifically
+							const isBlobWriteError =
+								error.message.includes('Failed to write blobs') ||
+								error.message.includes('IOError') ||
+								error.message.includes('blob') ||
+								error.message.includes('Blob');
+
+							if (isBlobWriteError) {
+								console.warn('[IndexedDB] Blob write failure detected:', error.message);
+
+								// 📊 Log to Sentry for monitoring with specific context
+								try {
+									const blobError = new Error(`IndexedDB blob write failed: ${error.message}`);
+									blobError.name = 'IndexedDBBlobWriteError';
+
+									Sentry.captureException(blobError, {
+										level: 'warning',
+										tags: {
+											component: 'localStorage',
+											errorType: 'blob-write-failure',
+											operationType: e.data.type || 'unknown',
+										},
+										extra: {
+											errorMessage: error.message,
+											key: e.data.key,
+											dataSize: e.data.data ? JSON.stringify(e.data.data).length : 0,
+										},
+									});
+								} catch (sentryError) {
+									console.warn('[IndexedDB] Failed to log blob error to Sentry:', sentryError);
+								}
+
+								// Resolve with undefined instead of rejecting to prevent cache persistence failure
+								// This allows the app to continue functioning even if caching fails
+								pendingOp.resolve(undefined);
+							} else {
+								pendingOp.reject(new Error(error.message));
+							}
 						}
 					}
 					pendingOperations.delete(id);
@@ -427,7 +465,12 @@ function getWorker() {
 
 type WorkerOperationResult = {success: true; data?: any} | {success: false} | {data: any};
 
-async function workerOperation(type: string, key: string, data = null, retryCount = 0): Promise<WorkerOperationResult> {
+async function workerOperation(
+	type: string,
+	key: string,
+	data: any = null,
+	retryCount = 0,
+): Promise<WorkerOperationResult> {
 	const maxRetries = 3;
 	const baseDelay = 100;
 
@@ -560,16 +603,6 @@ async function workerOperation(type: string, key: string, data = null, retryCoun
 	}
 }
 
-function formatBytes(bytes: number) {
-	if (bytes > 1024 * 1024) {
-		return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-	} else if (bytes > 1024) {
-		return `${(bytes / 1024).toFixed(2)} KB`;
-	} else {
-		return `${bytes} bytes`;
-	}
-}
-
 interface Persister {
 	persistClient: (client: any) => Promise<void>;
 	restoreClient: () => Promise<any>;
@@ -580,7 +613,54 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 	const debouncedPersist = debounce(
 		async (client: any) => {
 			try {
-				const result = await workerOperation('set', idbValidKey, client);
+				// 🗜️ Compress data before storing
+				const compressedData = compressForStorage(client);
+				const originalSize = JSON.stringify(client).length;
+				const compressedSize = compressedData.data.length;
+
+				if (compressedData.compressed) {
+					console.log(
+						`[IndexedDB] Compressed cache: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)}`,
+					);
+				}
+
+				// 💾 Check storage quota before attempting to write
+				const quotaCheck = await checkStorageQuota(compressedSize);
+				if (!quotaCheck.hasSpace) {
+					console.warn('[IndexedDB] Insufficient storage space available');
+
+					// Log to Sentry for monitoring
+					const quotaError = new Error(
+						`IndexedDB quota exceeded: need ${formatBytes(compressedSize)}, available ${formatBytes(quotaCheck.available || 0)}`,
+					);
+					quotaError.name = 'IndexedDBQuotaError';
+
+					Sentry.captureException(quotaError, {
+						level: 'warning',
+						tags: {
+							component: 'localStorage',
+							errorType: 'quota-exceeded',
+						},
+						extra: {
+							requiredSize: compressedSize,
+							availableSpace: quotaCheck.available,
+							usedSpace: quotaCheck.used,
+						},
+					});
+
+					// Try to clear old data and retry once
+					console.log('[IndexedDB] Attempting to clear old cache data');
+					await workerOperation('delete', idbValidKey);
+
+					// Check quota again after clearing
+					const quotaCheckAfterClear = await checkStorageQuota(compressedSize);
+					if (!quotaCheckAfterClear.hasSpace) {
+						console.error('[IndexedDB] Still insufficient space after clearing cache');
+						return; // Give up
+					}
+				}
+
+				const result = await workerOperation('set', idbValidKey, compressedData);
 
 				if (result && 'success' in result && !result.success) {
 					console.warn('[IndexedDB] Persistence operation did not succeed, but continuing gracefully');
@@ -617,7 +697,9 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				const duration = Date.now() - startTime;
 
 				if (result?.data) {
-					const dataSize = JSON.stringify(result.data).length;
+					// 🎈 Decompress data if it was compressed
+					const decompressedData = decompressFromStorage(result.data);
+					const dataSize = JSON.stringify(decompressedData).length;
 					const formattedSize = formatBytes(dataSize);
 
 					if (duration > 5000) {
@@ -647,7 +729,12 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					}
 				}
 
-				return result?.data;
+				if (result?.data) {
+					// 🎈 Decompress data if it was compressed
+					const decompressedData = decompressFromStorage(result.data);
+					return decompressedData;
+				}
+				return undefined;
 			} catch (error) {
 				console.error('[IndexedDB] Error restoring from IndexedDB:', error);
 
