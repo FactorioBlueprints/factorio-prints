@@ -50,7 +50,10 @@ function Root() {
 			};
 
 			const userRef = ref(getDatabase(app), `/users/${uid}/`);
-			runTransaction(userRef, buildUserInformation);
+			runTransaction(userRef, buildUserInformation).catch((error) => {
+				// Silently ignore transaction errors - user data will be updated on next sign-in
+				console.log('User data update skipped:', error?.message || 'Transaction failed');
+			});
 		}
 	}, [user]);
 
