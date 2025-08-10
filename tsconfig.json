@@ -23,7 +23,7 @@
 		// Making build lenient - will gradually re-strict
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
-		"noImplicitReturns": false,
+		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		// Making build lenient - will gradually re-strict
 		"noUncheckedIndexedAccess": false,

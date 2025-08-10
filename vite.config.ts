@@ -56,6 +56,7 @@ export default defineConfig(
 				output: {
 					manualChunks: (id: string) => {
 						if (id.includes('entitiesWithIcons')) return 'entities';
+						return undefined;
 					},
 				},
 			},
