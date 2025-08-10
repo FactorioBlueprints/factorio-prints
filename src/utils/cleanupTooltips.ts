@@ -24,7 +24,9 @@ export const cleanupOrphanedTooltips = (): void => {
 				} catch {
 					// If direct removal fails, try parent removal
 					try {
-						tooltip.parentNode.removeChild(tooltip);
+						if (tooltip.parentNode && tooltip.parentNode.contains(tooltip)) {
+							tooltip.parentNode.removeChild(tooltip);
+						}
 					} catch {
 						// Silently ignore if already removed
 					}
