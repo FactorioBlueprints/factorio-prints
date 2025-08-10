@@ -1,6 +1,7 @@
 import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
 import {
+	blueprintBookSchema,
 	enrichedBlueprintSummarySchema,
 	enrichedTagSchema,
 	enrichedTagsSchema,
@@ -18,6 +19,7 @@ import {
 	validateEnrichedUser,
 	validateEnrichedUserBlueprints,
 	validateEnrichedUserFavorites,
+	validateRawBlueprintData,
 	validateRawBlueprintSummaryPage,
 	validateRawPaginatedBlueprintSummaries,
 	validateRawTags,
@@ -1454,6 +1456,79 @@ describe('Schema validation', () => {
 					});
 				});
 			});
+		});
+	});
+
+	describe('blueprintBookSchema', () => {
+		it('should handle blueprint books with undefined blueprints field', () => {
+			const bookWithUndefinedBlueprints = {
+				label: 'Test Book',
+				description: 'A test blueprint book',
+			};
+
+			const result = blueprintBookSchema.parse(bookWithUndefinedBlueprints);
+			expect(result.blueprints).toEqual([]);
+		});
+
+		it('should handle nested blueprint books with undefined blueprints field', () => {
+			const nestedBookData = {
+				blueprint_book: {
+					blueprints: [
+						{
+							index: 0,
+							blueprint: {
+								label: 'Blueprint 1',
+							},
+						},
+						{
+							index: 1,
+							blueprint_book: {
+								label: 'Nested Book',
+								// No blueprints field - this was causing the error
+							},
+						},
+					],
+				},
+			};
+
+			const consoleCalls: any[][] = [];
+			const originalConsoleError = console.error;
+			console.error = (...args) => consoleCalls.push(args);
+
+			const result = validateRawBlueprintData(nestedBookData);
+
+			console.error = originalConsoleError;
+
+			expect(result).toBeDefined();
+			expect(result.blueprint_book?.blueprints[1].blueprint_book?.blueprints).toEqual([]);
+		});
+
+		it('should handle blueprint books with empty array blueprints field', () => {
+			const bookWithEmptyBlueprints = {
+				label: 'Empty Book',
+				blueprints: [],
+			};
+
+			const result = blueprintBookSchema.parse(bookWithEmptyBlueprints);
+			expect(result.blueprints).toEqual([]);
+		});
+
+		it('should preserve existing blueprints array when provided', () => {
+			const bookWithBlueprints = {
+				label: 'Book with blueprints',
+				blueprints: [
+					{
+						index: 0,
+						blueprint: {
+							label: 'Test Blueprint',
+						},
+					},
+				],
+			};
+
+			const result = blueprintBookSchema.parse(bookWithBlueprints);
+			expect(result.blueprints).toHaveLength(1);
+			expect(result.blueprints[0].blueprint?.label).toBe('Test Blueprint');
 		});
 	});
 });

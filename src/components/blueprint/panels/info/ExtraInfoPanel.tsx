@@ -103,7 +103,7 @@ export const ExtraInfoPanelComponent = ({blueprint}: ExtraInfoPanelProps) => {
 						<col span={1} />
 					</colgroup>
 					<tbody>
-						{book.blueprints.map((entry, entryIndex) => {
+						{(book.blueprints || []).map((entry, entryIndex) => {
 							const entryData = getBookEntry(entry);
 							if (!entryData) {
 								return (
