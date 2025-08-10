@@ -30,14 +30,6 @@ import {RequirementsCard} from './single/RequirementsCard';
 import {TagsCard} from './single/TagsCard';
 import {UpgradePlannerCard} from './single/UpgradePlannerCard';
 
-declare global {
-	interface Window {
-		DISQUS?: {
-			reset: (config: {reload: boolean}) => void;
-		};
-	}
-}
-
 function SingleBlueprint() {
 	const {blueprintId} = useParams({from: '/view/$blueprintId'});
 	const navigate = useNavigate();
@@ -127,21 +119,6 @@ function SingleBlueprint() {
 
 	// Use the custom hook for histograms
 	const {entityHistogram, itemHistogram} = useBlueprintHistograms(blueprintData?.parsedData);
-
-	// Clean up Disqus on unmount to prevent DOM manipulation errors
-	useEffect(() => {
-		return () => {
-			if (window.DISQUS) {
-				try {
-					window.DISQUS.reset({
-						reload: false,
-					});
-				} catch {
-					// Silently ignore Disqus cleanup errors
-				}
-			}
-		};
-	}, []);
 
 	const error = summaryError || blueprintError;
 	const isDeleted = summaryIsSuccess && !blueprintSummary;
