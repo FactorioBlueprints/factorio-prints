@@ -176,7 +176,7 @@ describe('Schema validation', () => {
 			// Check that one of the calls contains the full object
 			const fullObjectCall = consoleCalls.find((call) => call[0] === 'Full object that failed validation:');
 			expect(fullObjectCall).toBeDefined();
-			expect(fullObjectCall![1]).toEqual(testData);
+			expect(fullObjectCall![1]).toEqual(JSON.stringify(testData));
 		});
 
 		it('should truncate very large objects in console logs', () => {
@@ -202,8 +202,7 @@ describe('Schema validation', () => {
 			// Should have console calls for large object
 			const largeObjectCall = consoleCalls.find(
 				(call) =>
-					typeof call[0] === 'string' &&
-					call[0].includes('Full object that failed validation (large object):'),
+					typeof call[0] === 'string' && call[0].includes('Full object that failed validation (truncated):'),
 			);
 			expect(largeObjectCall).toBeDefined();
 		});
