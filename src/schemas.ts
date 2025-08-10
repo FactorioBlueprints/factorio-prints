@@ -483,7 +483,7 @@ export const blueprintBookEntrySchema: z.ZodSchema<any> = z.lazy(() =>
 
 export const blueprintBookSchema = z
 	.object({
-		blueprints: z.array(blueprintBookEntrySchema),
+		blueprints: z.array(blueprintBookEntrySchema).optional().default([]),
 		item: z.string().optional(),
 		label: z.string().optional(),
 		description: z.string().optional(),
