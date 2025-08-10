@@ -315,7 +315,12 @@ function getWorker() {
 				}
 
 				pendingOperations.forEach((op) => {
-					op.resolve({data: undefined, success: false});
+					// Resolve with appropriate fallback based on operation type
+					if (op.operationType === 'get') {
+						op.resolve({data: undefined});
+					} else {
+						op.resolve({success: false});
+					}
 				});
 				pendingOperations.clear();
 			};
@@ -391,7 +396,8 @@ function getWorker() {
 								// Silently ignore Sentry errors to prevent secondary errors
 								console.warn('[IndexedDB] Failed to log to Sentry:', sentryError);
 							}
-							pendingOp.resolve(undefined);
+							// Return a safe fallback result based on the operation type
+							pendingOp.resolve(pendingOp.operationType === 'get' ? {data: undefined} : {success: false});
 						} else {
 							// 🛡️ Handle blob write failures specifically
 							const isBlobWriteError =
@@ -424,13 +430,14 @@ function getWorker() {
 								} catch (sentryError) {
 									console.warn('[IndexedDB] Failed to log blob error to Sentry:', sentryError);
 								}
-
-								// Resolve with undefined instead of rejecting to prevent cache persistence failure
-								// This allows the app to continue functioning even if caching fails
-								pendingOp.resolve(undefined);
 							} else {
-								pendingOp.reject(new Error(error.message));
+								// For other errors, log but don't throw
+								console.warn('[IndexedDB] Operation failed, using fallback:', error.message);
 							}
+
+							// Always resolve with fallback instead of rejecting to prevent cache persistence failure
+							// This allows the app to continue functioning even if caching fails
+							pendingOp.resolve(pendingOp.operationType === 'get' ? {data: undefined} : {success: false});
 						}
 					}
 					pendingOperations.delete(id);
@@ -517,7 +524,7 @@ async function workerOperation(
 		return new Promise((resolve, reject) => {
 			const id = operationCounter++;
 
-			pendingOperations.set(id, {resolve, reject});
+			pendingOperations.set(id, {resolve, reject, operationType: type});
 
 			worker.postMessage({type, key, data, id});
 
@@ -669,17 +676,21 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				console.error('[IndexedDB] Error persisting to IndexedDB:', error);
 
 				// Don't throw - allow the app to continue functioning
-				Sentry.captureException(error, {
-					level: 'warning',
-					tags: {
-						component: 'localStorage',
-						operation: 'persist',
-					},
-					extra: {
-						key: idbValidKey,
-						errorMessage: error instanceof Error ? error.message : String(error),
-					},
-				});
+				try {
+					Sentry.captureException(error, {
+						level: 'warning',
+						tags: {
+							component: 'localStorage',
+							operation: 'persist',
+						},
+						extra: {
+							key: idbValidKey,
+							errorMessage: error instanceof Error ? error.message : String(error),
+						},
+					});
+				} catch (sentryError) {
+					console.warn('[IndexedDB] Failed to log to Sentry:', sentryError);
+				}
 			}
 		},
 		2000,
@@ -688,7 +699,12 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 
 	return {
 		persistClient: async (client: any) => {
-			return debouncedPersist(client);
+			try {
+				return await debouncedPersist(client);
+			} catch (error) {
+				console.warn('[IndexedDB] Failed to persist client:', error);
+				// Don't throw - allow the app to continue without persistence
+			}
 		},
 		restoreClient: async () => {
 			try {
@@ -738,15 +754,19 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 			} catch (error) {
 				console.error('[IndexedDB] Error restoring from IndexedDB:', error);
 
-				Sentry.captureException(error, {
-					tags: {
-						component: 'localStorage',
-						errorType: 'restore-error',
-					},
-					extra: {
-						key: idbValidKey,
-					},
-				});
+				try {
+					Sentry.captureException(error, {
+						tags: {
+							component: 'localStorage',
+							errorType: 'restore-error',
+						},
+						extra: {
+							key: idbValidKey,
+						},
+					});
+				} catch (sentryError) {
+					console.warn('[IndexedDB] Failed to log to Sentry:', sentryError);
+				}
 
 				try {
 					await workerOperation('delete', idbValidKey);
