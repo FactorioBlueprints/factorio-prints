@@ -31,11 +31,13 @@ interface MigrationStats {
 	threadsProcessed: number;
 	commentsImported: number;
 	commentsSkipped: number;
+	spamComments: Array<{author: string; content: string}>;
+	deletedComments: number;
 	errors: Array<{threadId: string; error: string}>;
 }
 
 class DisqusToFirebaseMigrator {
-	private db!: Database;
+	public db!: Database;
 	private options: MigrationOptions;
 	private stats: MigrationStats;
 	private commentIdMap: Map<string, string>; // Maps Disqus ID to Firebase ID
@@ -46,6 +48,8 @@ class DisqusToFirebaseMigrator {
 			threadsProcessed: 0,
 			commentsImported: 0,
 			commentsSkipped: 0,
+			spamComments: [],
+			deletedComments: 0,
 			errors: [],
 		};
 		this.commentIdMap = new Map();
@@ -79,16 +83,15 @@ class DisqusToFirebaseMigrator {
 	): Promise<string | null> {
 		if (this.options.skipSpam && comment.isSpam) {
 			this.stats.commentsSkipped++;
+			// Collect first 10 spam examples
+			if (this.stats.spamComments.length < 10) {
+				this.stats.spamComments.push({
+					author: comment.authorName,
+					content: comment.content.substring(0, 100) + (comment.content.length > 100 ? '...' : ''),
+				});
+			}
 			if (!this.options.quiet) {
 				console.log(`   ⚠️  Skipping spam comment: ${comment.id}`);
-			}
-			return null;
-		}
-
-		if (comment.isDeleted) {
-			this.stats.commentsSkipped++;
-			if (!this.options.quiet) {
-				console.log(`   ⚠️  Skipping deleted comment: ${comment.id}`);
 			}
 			return null;
 		}
@@ -100,8 +103,18 @@ class DisqusToFirebaseMigrator {
 			createdAt: new Date(comment.createdAt).getTime(),
 			updatedAt: new Date(comment.createdAt).getTime(),
 			parentId: parentFirebaseId,
-			isDeleted: false,
+			isDeleted: comment.isDeleted,
 		};
+
+		// If comment was deleted in Disqus, add deletion metadata
+		if (comment.isDeleted) {
+			firebaseComment.deletedReason = 'Migrated from Disqus as deleted';
+			firebaseComment.deletedAt = new Date(comment.createdAt).getTime(); // We don't have actual deletion time
+			this.stats.deletedComments++;
+			if (!this.options.quiet) {
+				console.log(`   📝 Importing deleted comment: ${comment.id} -> will be soft-deleted in Firebase`);
+			}
+		}
 
 		let firebaseId: string;
 
@@ -202,8 +215,23 @@ async function migrateDisqusToFirebase(options: MigrationOptions): Promise<void>
 	console.log('='.repeat(60));
 	console.log(`Threads processed: ${stats.threadsProcessed}`);
 	console.log(`Comments imported: ${stats.commentsImported}`);
+	console.log(`  - Active comments: ${stats.commentsImported - stats.deletedComments}`);
+	console.log(`  - Soft-deleted comments: ${stats.deletedComments}`);
 	console.log(`Comments skipped: ${stats.commentsSkipped}`);
+	if (stats.spamComments.length > 0) {
+		console.log(`  - Spam comments: ${stats.commentsSkipped}`);
+	}
 	console.log(`Errors: ${stats.errors.length}`);
+
+	if (stats.spamComments.length > 0 && options.skipSpam) {
+		console.log('\n🚫 Sample Spam Comments (showing first 10):');
+		console.log('─'.repeat(60));
+		for (const spam of stats.spamComments) {
+			console.log(`Author: ${spam.author}`);
+			console.log(`Content: ${spam.content}`);
+			console.log('─'.repeat(60));
+		}
+	}
 
 	if (stats.errors.length > 0) {
 		console.log('\n❌ Errors encountered:');
@@ -216,6 +244,10 @@ async function migrateDisqusToFirebase(options: MigrationOptions): Promise<void>
 		console.log('\n⚠️  This was a dry run. No data was actually imported to Firebase.');
 	} else {
 		console.log('\n✅ Migration completed successfully!');
+		// Close Firebase connection to allow process to exit
+		if (migrator.db) {
+			await migrator.db.goOffline();
+		}
 	}
 }
 

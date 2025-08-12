@@ -151,10 +151,13 @@ function extractBlueprintId(url: string): string | null {
 	// http://factorioprints.com/view/xyz789
 	// http://localhost:3000/view/-KYRW23YkS4VHKUwvCRX
 	// http://localhost:3000/view/-KYRR7ABI6-80jYnJxtG#!newthread
+
+	// Extract blueprint ID from any URL with /view/ pattern
+	// This includes localhost:3000 development URLs which have valid Firebase IDs
 	const match = url.match(/\/view\/([a-zA-Z0-9_-]+)/);
 	if (!match) return null;
 
-	// Extract the ID and remove any hash fragments
+	// Extract the ID (Firebase push IDs like -KYRW23YkS4VHKUwvCRX are valid)
 	const id = match[1];
 	return id;
 }
