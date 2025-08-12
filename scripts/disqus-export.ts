@@ -22,18 +22,28 @@ const disqusThreadSchema = z.object({
 		.optional(),
 	link: z.array(z.string()).transform((arr) => arr[0]),
 	title: z.array(z.string()).transform((arr) => arr[0]),
-	message: z.array(z.string()).transform((arr) => arr[0]).optional(),
+	message: z
+		.array(z.string())
+		.transform((arr) => arr[0])
+		.optional(),
 	createdAt: z.array(z.string()).transform((arr) => arr[0]),
 	author: z
 		.array(
 			z.object({
-				email: z.array(z.string()).transform((arr) => arr[0]),
+				email: z
+					.array(z.string())
+					.optional()
+					.transform((arr) => arr?.[0]),
 				name: z.array(z.string()).transform((arr) => arr[0]),
 				isAnonymous: z.array(z.string()).transform((arr) => arr[0] === 'true'),
-				username: z.array(z.string()).optional().transform((arr) => arr?.[0]),
+				username: z
+					.array(z.string())
+					.optional()
+					.transform((arr) => arr?.[0]),
 			}),
 		)
-		.transform((arr) => arr[0]),
+		.optional()
+		.transform((arr) => arr?.[0]),
 	isClosed: z.array(z.string()).transform((arr) => arr[0] === 'true'),
 	isDeleted: z.array(z.string()).transform((arr) => arr[0] === 'true'),
 });
@@ -50,10 +60,16 @@ const disqusPostSchema = z.object({
 	author: z
 		.array(
 			z.object({
-				email: z.array(z.string()).transform((arr) => arr[0]).optional(),
+				email: z
+					.array(z.string())
+					.transform((arr) => arr[0])
+					.optional(),
 				name: z.array(z.string()).transform((arr) => arr[0]),
 				isAnonymous: z.array(z.string()).transform((arr) => arr[0] === 'true'),
-				username: z.array(z.string()).optional().transform((arr) => arr?.[0]),
+				username: z
+					.array(z.string())
+					.optional()
+					.transform((arr) => arr?.[0]),
 			}),
 		)
 		.transform((arr) => arr[0]),
@@ -86,16 +102,18 @@ const disqusExportSchema = z.object({
 			'xmlns:xsi': z.string(),
 			'xsi:schemaLocation': z.string(),
 		}),
-		category: z.array(
-			z.object({
-				$: z.object({
-					'dsq:id': z.string(),
+		category: z
+			.array(
+				z.object({
+					$: z.object({
+						'dsq:id': z.string(),
+					}),
+					forum: z.array(z.string()).transform((arr) => arr[0]),
+					title: z.array(z.string()).transform((arr) => arr[0]),
+					isDefault: z.array(z.string()).transform((arr) => arr[0] === 'true'),
 				}),
-				forum: z.array(z.string()).transform((arr) => arr[0]),
-				title: z.array(z.string()).transform((arr) => arr[0]),
-				isDefault: z.array(z.string()).transform((arr) => arr[0] === 'true'),
-			}),
-		).optional(),
+			)
+			.optional(),
 		thread: z.array(disqusThreadSchema),
 		post: z.array(disqusPostSchema),
 	}),
@@ -131,8 +149,14 @@ export interface ProcessedThread {
 function extractBlueprintId(url: string): string | null {
 	// https://factorioprints.com/view/abc123
 	// http://factorioprints.com/view/xyz789
-	const match = url.match(/factorioprints\.com\/view\/([a-zA-Z0-9]+)/);
-	return match ? match[1] : null;
+	// http://localhost:3000/view/-KYRW23YkS4VHKUwvCRX
+	// http://localhost:3000/view/-KYRR7ABI6-80jYnJxtG#!newthread
+	const match = url.match(/\/view\/([a-zA-Z0-9_-]+)/);
+	if (!match) return null;
+
+	// Extract the ID and remove any hash fragments
+	const id = match[1];
+	return id;
 }
 
 function buildCommentTree(posts: DisqusPost[], threadId: string): ProcessedComment[] {

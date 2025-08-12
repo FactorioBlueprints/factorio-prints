@@ -159,6 +159,10 @@ console.log('\n🚀 You can now test the migration with:');
 console.log('\n1. Export to JSON:');
 console.log('   tsx scripts/disqus-export.ts test-disqus-export.xml test-comments.json');
 console.log('\n2. Test migration (dry run):');
-console.log('   tsx scripts/migrate-to-firebase.ts --dry-run service-account.json https://your-app.firebaseio.com test-comments.json');
+console.log(
+	'   tsx scripts/migrate-to-firebase.ts --dry-run service-account.json https://your-app.firebaseio.com test-comments.json',
+);
 console.log('\n3. Test with spam filtering:');
-console.log('   tsx scripts/migrate-to-firebase.ts --dry-run --skip-spam service-account.json https://your-app.firebaseio.com test-comments.json');
+console.log(
+	'   tsx scripts/migrate-to-firebase.ts --dry-run --skip-spam service-account.json https://your-app.firebaseio.com test-comments.json',
+);

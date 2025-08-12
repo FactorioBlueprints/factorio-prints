@@ -24,6 +24,7 @@ interface MigrationOptions {
 	dryRun?: boolean;
 	skipSpam?: boolean;
 	authorIdPrefix?: string;
+	quiet?: boolean;
 }
 
 interface MigrationStats {
@@ -78,13 +79,17 @@ class DisqusToFirebaseMigrator {
 	): Promise<string | null> {
 		if (this.options.skipSpam && comment.isSpam) {
 			this.stats.commentsSkipped++;
-			console.log(`   ⚠️  Skipping spam comment: ${comment.id}`);
+			if (!this.options.quiet) {
+				console.log(`   ⚠️  Skipping spam comment: ${comment.id}`);
+			}
 			return null;
 		}
 
 		if (comment.isDeleted) {
 			this.stats.commentsSkipped++;
-			console.log(`   ⚠️  Skipping deleted comment: ${comment.id}`);
+			if (!this.options.quiet) {
+				console.log(`   ⚠️  Skipping deleted comment: ${comment.id}`);
+			}
 			return null;
 		}
 
@@ -111,7 +116,9 @@ class DisqusToFirebaseMigrator {
 		this.commentIdMap.set(comment.id, firebaseId);
 		this.stats.commentsImported++;
 
-		console.log(`   ✅ Imported comment: ${comment.id} -> ${firebaseId}`);
+		if (!this.options.quiet) {
+			console.log(`   ✅ Imported comment: ${comment.id} -> ${firebaseId}`);
+		}
 
 		for (const reply of comment.replies) {
 			await this.importComment(reply, blueprintId, firebaseId);
@@ -122,14 +129,18 @@ class DisqusToFirebaseMigrator {
 
 	private async importThread(thread: ProcessedThread): Promise<void> {
 		if (!thread.blueprintId) {
-			console.log(`⚠️  Skipping thread without blueprint ID: ${thread.url}`);
+			if (!this.options.quiet) {
+				console.log(`⚠️  Skipping thread without blueprint ID: ${thread.url}`);
+			}
 			this.stats.threadsProcessed++;
 			return;
 		}
 
-		console.log(`\n📝 Processing thread: ${thread.title}`);
-		console.log(`   Blueprint ID: ${thread.blueprintId}`);
-		console.log(`   Comments: ${thread.comments.length}`);
+		if (!this.options.quiet) {
+			console.log(`\n📝 Processing thread: ${thread.title}`);
+			console.log(`   Blueprint ID: ${thread.blueprintId}`);
+			console.log(`   Comments: ${thread.comments.length}`);
+		}
 
 		try {
 			for (const comment of thread.comments) {
@@ -151,9 +162,27 @@ class DisqusToFirebaseMigrator {
 		console.log(`\n🚀 Starting migration of ${threads.length} threads`);
 		console.log(`   Dry run: ${this.options.dryRun ? 'YES' : 'NO'}`);
 		console.log(`   Skip spam: ${this.options.skipSpam ? 'YES' : 'NO'}`);
+		console.log(`   Quiet mode: ${this.options.quiet ? 'YES (showing summary only)' : 'NO'}`);
 
-		for (const thread of threads) {
-			await this.importThread(thread);
+		if (this.options.quiet) {
+			console.log('\n⏳ Processing... (this may take a few minutes)');
+			let processed = 0;
+			const updateInterval = Math.max(100, Math.floor(threads.length / 20));
+
+			for (const thread of threads) {
+				await this.importThread(thread);
+				processed++;
+
+				if (processed % updateInterval === 0 || processed === threads.length) {
+					const percentage = Math.round((processed / threads.length) * 100);
+					process.stdout.write(`\r   Progress: ${percentage}% (${processed}/${threads.length} threads)`);
+				}
+			}
+			console.log('\n');
+		} else {
+			for (const thread of threads) {
+				await this.importThread(thread);
+			}
 		}
 
 		return this.stats;
@@ -203,6 +232,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 			options.dryRun = true;
 		} else if (arg === '--skip-spam') {
 			options.skipSpam = true;
+		} else if (arg === '--quiet' || arg === '-q') {
+			options.quiet = true;
 		} else if (arg === '--author-prefix' && i + 1 < args.length) {
 			options.authorIdPrefix = args[++i];
 		} else if (!arg.startsWith('--')) {
@@ -211,13 +242,18 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 	}
 
 	if (positionalArgs.length !== 3) {
-		console.error('Usage: tsx migrate-to-firebase.ts [options] <service-account.json> <database-url> <disqus-export.json>');
+		console.error(
+			'Usage: tsx migrate-to-firebase.ts [options] <service-account.json> <database-url> <disqus-export.json>',
+		);
 		console.error('\nOptions:');
 		console.error('  --dry-run          Run without actually importing to Firebase');
 		console.error('  --skip-spam        Skip comments marked as spam');
+		console.error('  --quiet, -q        Show summary only (no individual comment logs)');
 		console.error('  --author-prefix    Prefix for generated author IDs (default: "disqus")');
 		console.error('\nExample:');
-		console.error('  tsx migrate-to-firebase.ts --dry-run service-account.json https://my-app.firebaseio.com export.json');
+		console.error(
+			'  tsx migrate-to-firebase.ts --dry-run --quiet service-account.json https://my-app.firebaseio.com export.json',
+		);
 		process.exit(1);
 	}
 

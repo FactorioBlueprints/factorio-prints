@@ -6,6 +6,7 @@
 			"public/**",
 			"functions/**",
 			"test/**",
+			"scripts/**",
 			"*.json",
 			"*.json5",
 			"*.ts",
