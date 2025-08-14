@@ -14,7 +14,7 @@ jobs:
   install-and-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: jdx/mise-action@v2
 
       - run: just install
