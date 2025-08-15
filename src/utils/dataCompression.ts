@@ -6,7 +6,6 @@ import {gzipSync, gunzipSync} from 'fflate';
 export function compressForStorage(data: any): {compressed: boolean; data: string} {
 	const jsonString = JSON.stringify(data);
 
-	// Don't compress small data (under 10KB)
 	if (jsonString.length < 10240) {
 		return {compressed: false, data: jsonString};
 	}
@@ -14,9 +13,17 @@ export function compressForStorage(data: any): {compressed: boolean; data: strin
 	try {
 		const bytes = new TextEncoder().encode(jsonString);
 		const compressed = gzipSync(bytes, {level: 6});
-		const base64 = btoa(String.fromCharCode(...compressed));
 
-		// Only use compression if it actually reduces size
+		// Convert Uint8Array to base64 without using spread operator to avoid stack overflow
+		// on large arrays (fixes FACTORIO-PRINTS-HY and FACTORIO-PRINTS-HZ)
+		let binaryString = '';
+		const chunkSize = 8192; // Process in chunks to avoid memory issues
+		for (let i = 0; i < compressed.length; i += chunkSize) {
+			const chunk = compressed.slice(i, i + chunkSize);
+			binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+		}
+		const base64 = btoa(binaryString);
+
 		if (base64.length < jsonString.length * 0.9) {
 			return {compressed: true, data: base64};
 		}
@@ -33,7 +40,6 @@ export function compressForStorage(data: any): {compressed: boolean; data: strin
 export function decompressFromStorage(storedData: any): any {
 	if (!storedData) return storedData;
 
-	// Handle non-compressed data or already parsed data
 	if (typeof storedData !== 'object' || !storedData.compressed) {
 		return storedData;
 	}
@@ -45,12 +51,10 @@ export function decompressFromStorage(storedData: any): any {
 		return JSON.parse(jsonString);
 	} catch (error) {
 		console.error('[Compression] Failed to decompress data:', error);
-		// Try to parse as regular JSON if decompression fails
 		if (typeof storedData.data === 'string') {
 			try {
 				return JSON.parse(storedData.data);
 			} catch {
-				// Return original data if all parsing fails
 				return storedData;
 			}
 		}
@@ -84,7 +88,6 @@ export async function checkStorageQuota(
 	requiredBytes: number,
 ): Promise<{hasSpace: boolean; available?: number; used?: number}> {
 	if (!navigator.storage || !navigator.storage.estimate) {
-		// Storage API not available, assume we have space
 		return {hasSpace: true};
 	}
 
@@ -94,7 +97,6 @@ export async function checkStorageQuota(
 		const quota = estimate.quota || 0;
 		const available = quota - usage;
 
-		// Add 10% buffer for safety
 		const requiredWithBuffer = requiredBytes * 1.1;
 
 		return {
@@ -104,7 +106,6 @@ export async function checkStorageQuota(
 		};
 	} catch (error) {
 		console.warn('[Storage] Failed to estimate storage quota:', error);
-		// On error, assume we have space
 		return {hasSpace: true};
 	}
 }
