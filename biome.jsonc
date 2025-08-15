@@ -23,7 +23,8 @@
 			"yarn.lock",
 			"src/routeTree.gen.ts",
 			"worker-configuration.d.ts",
-			"functions/lib"
+			"functions/lib",
+			"database.rules.json"
 		],
 		"ignoreUnknown": true
 	},

@@ -6,7 +6,7 @@ repos:
             args: ['--allow-multiple-documents']
           - id: check-json
             # Exclude JSONC files (JSON with Comments) as they need comment support
-            exclude: "tsconfig.*\\.json|package-lock\\.json|biome\\.jsonc"
+            exclude: "tsconfig.*\\.json|package-lock\\.json|biome\\.jsonc|database\\.rules\\.json"
           - id: check-toml
           - id: check-xml
           - id: end-of-file-fixer
@@ -29,7 +29,7 @@ repos:
             language: system
             types: [file]
             files: \.(js|jsx|ts|tsx|mjs|cjs|json|json5)$
-            exclude: "package(-lock)?\\.json"
+            exclude: "package(-lock)?\\.json|database\\.rules\\.json"
 
           - id: prettier
             name: prettier
