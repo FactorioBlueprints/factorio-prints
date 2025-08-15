@@ -478,8 +478,8 @@ async function workerOperation(
 	data: any = null,
 	retryCount = 0,
 ): Promise<WorkerOperationResult> {
-	const maxRetries = 3;
-	const baseDelay = 100;
+	const maxRetries = type === 'set' ? 2 : 3;
+	const baseDelay = type === 'set' ? 500 : 100;
 
 	try {
 		const worker = getWorker();
@@ -528,7 +528,7 @@ async function workerOperation(
 
 			worker.postMessage({type, key, data, id});
 
-			const timeoutDuration = 10000;
+			const timeoutDuration = type === 'set' ? 30000 : type === 'delete' ? 5000 : 10000;
 			const startTime = Date.now();
 
 			setTimeout(() => {
@@ -536,29 +536,46 @@ async function workerOperation(
 					pendingOperations.delete(id);
 					const duration = Date.now() - startTime;
 
-					// Log timeout errors to Sentry
+					// Log timeout errors to Sentry with rate limiting
 					try {
-						const timeoutError = new Error(
-							`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`,
-						);
-						timeoutError.name = 'IndexedDBTimeoutError';
+						const isExpectedTimeout = type === 'set' && duration < 35000;
 
-						Sentry.captureException(timeoutError, {
-							level: 'warning',
-							tags: {
-								component: 'localStorage',
-								errorType: 'timeout',
-								operationType: type,
-								database: 'FACTORIO_PRINTS_QUERY_CACHE',
-							},
-							extra: {
-								operationType: type,
-								key: key,
-								timeout: timeoutDuration,
-								actualDuration: duration,
-								userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-							},
-						});
+						if (!isExpectedTimeout) {
+							const timeoutError = new Error(
+								`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`,
+							);
+							timeoutError.name = 'IndexedDBTimeoutError';
+
+							Sentry.captureException(timeoutError, {
+								level: duration > 60000 ? 'error' : 'warning',
+								tags: {
+									component: 'localStorage',
+									errorType: 'timeout',
+									operationType: type,
+									database: 'FACTORIO_PRINTS_QUERY_CACHE',
+									timeoutRange:
+										duration < 15000
+											? '10-15s'
+											: duration < 30000
+												? '15-30s'
+												: duration < 60000
+													? '30-60s'
+													: '60s+',
+								},
+								extra: {
+									operationType: type,
+									key: key,
+									timeout: timeoutDuration,
+									actualDuration: duration,
+									retryCount: retryCount,
+									userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+								},
+							});
+						} else {
+							console.warn(
+								`[IndexedDB] Operation timeout (expected range): ${type} ${key} after ${duration}ms`,
+							);
+						}
 					} catch (sentryError) {
 						// Silently ignore Sentry errors to prevent secondary errors
 						console.warn('[IndexedDB] Failed to log timeout to Sentry:', sentryError);
