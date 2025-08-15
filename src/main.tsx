@@ -13,22 +13,18 @@ const releaseInfo = getReleaseInfo();
 function getSentryEnvironment(): string {
 	const hostname = window.location.hostname;
 
-	// Local development
 	if (hostname === 'localhost' || hostname === '127.0.0.1') {
 		return 'development';
 	}
 
-	// Production
 	if (hostname === 'factorioprints.com' || hostname === 'www.factorioprints.com') {
 		return 'production';
 	}
 
-	// Cloudflare Pages preview deployments (staging)
 	if (hostname.includes('.pages.dev') || hostname.includes('cloudflare')) {
 		return 'staging';
 	}
 
-	// Default to staging for any other hostnames
 	return 'staging';
 }
 
@@ -51,6 +47,23 @@ Sentry.init({
 				'iframe[name*="dsq-"]',
 				'iframe[title*="Disqus"]',
 			],
+			beforeAddRecordingEvent: (event) => {
+				// Filter out cross-origin CSS error console logs from replay recordings
+				if (event.data?.tag === 'breadcrumb' && event.data?.payload?.category === 'console') {
+					const message = event.data?.payload?.message;
+					if (message && typeof message === 'string') {
+						if (
+							message.includes("Cannot get CSS styles from text's parentNode") ||
+							message.includes('CSSStyleSheet.cssRules getter') ||
+							message.includes('cross-origin stylesheet') ||
+							message.includes('SecurityError')
+						) {
+							return null;
+						}
+					}
+				}
+				return event;
+			},
 		}),
 		Sentry.captureConsoleIntegration({
 			levels: ['error', 'warn'],
@@ -75,26 +88,21 @@ Sentry.init({
 	replaysOnErrorSampleRate: 1.0,
 	allowUrls: ['http://localhost', 'https://localhost', /localhost:\d{4}/, 'https://factorioprints.com'],
 	enabled: !(window.location.hostname === 'localhost' && window.location.port === '3000'),
-	// Set maxBreadcrumbs to capture more console logs
 	maxBreadcrumbs: 100,
-	// Attach stack traces to messages
 	attachStacktrace: true,
 	beforeSend: (event, hint) => {
 		const error = hint.originalException;
 
-		// Filter out third-party errors (Disqus, ads, etc.)
 		if (error && error instanceof Error) {
 			if (error.stack && (error.stack.includes('embed.js') || error.stack.includes('disqus'))) {
 				return null;
 			}
 		}
 
-		// Last-resort filter for any network errors that weren't caught earlier
 		if (error && error instanceof TypeError && error.message === 'Failed to fetch') {
 			return null;
 		}
 
-		// Filter out cross-origin errors
 		if (error && error instanceof Error && error.message) {
 			if (
 				error.message.includes("Cannot get CSS styles from text's parentNode") ||
@@ -106,7 +114,6 @@ Sentry.init({
 			}
 		}
 
-		// Filter out Chrome extension errors
 		if (event.exception?.values?.[0]?.stacktrace?.frames) {
 			const frames = event.exception.values[0].stacktrace.frames;
 			const hasExtensionFrame = frames.some(
@@ -120,18 +127,16 @@ Sentry.init({
 						frame.filename.includes('chrome://')),
 			);
 			if (hasExtensionFrame) {
-				return null; // Don't send browser extension errors to Sentry
+				return null;
 			}
 		}
 
 		if (import.meta.env.DEV) {
-			// Use console.log instead of console.error to avoid triggering Sentry again
 			console.log('Sentry Error:', hint.originalException || hint.syntheticException);
 		}
 		return event;
 	},
 	beforeBreadcrumb: (breadcrumb) => {
-		// Filter out cross-origin CSS warnings from console breadcrumbs
 		if (breadcrumb.category === 'console' && breadcrumb.message) {
 			const message = breadcrumb.message;
 			if (
@@ -141,24 +146,21 @@ Sentry.init({
 				message.includes('Blocked a frame with origin') ||
 				message.includes('SecurityError')
 			) {
-				return null; // Don't create breadcrumb for cross-origin CSS warnings
+				return null;
 			}
 		}
 		return breadcrumb;
 	},
 });
 
-// Set release metadata as context
 Sentry.setContext('release_metadata', getReleaseMetadata());
 
-// Set global Sentry scope with environment context
 Sentry.setTag('environment', getSentryEnvironment());
 Sentry.setContext('deployment', {
 	hostname: window.location.hostname,
 	environment: getSentryEnvironment(),
 });
 
-// Set git commit as a tag for easier filtering
 Sentry.setTag('git_commit', releaseInfo.gitCommit);
 Sentry.setTag('git_branch', releaseInfo.gitBranch);
 
@@ -190,7 +192,6 @@ window.addEventListener(
 			return true;
 		}
 
-		// Handle SecurityError for cross-origin iframe access
 		if (
 			e.error &&
 			e.error instanceof Error &&
@@ -205,7 +206,6 @@ window.addEventListener(
 			return true;
 		}
 
-		// Handle third-party script errors (like Google Ads embed.js)
 		if (
 			e.filename &&
 			(e.filename.includes('embed.js') ||
@@ -221,7 +221,6 @@ window.addEventListener(
 			return true;
 		}
 
-		// Handle browser extension errors
 		if (
 			e.filename &&
 			(e.filename.includes('chrome-extension://') ||
@@ -243,7 +242,6 @@ window.addEventListener(
 	true,
 );
 
-// Setup tooltip cleanup to prevent DOM manipulation issues
 setupTooltipCleanup();
 
 const container = document.getElementById('root');
