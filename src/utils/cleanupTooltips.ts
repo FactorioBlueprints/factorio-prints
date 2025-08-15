@@ -4,13 +4,11 @@
  */
 export const cleanupOrphanedTooltips = (): void => {
 	try {
-		// Find all tooltip elements
 		const tooltips = document.querySelectorAll(
 			'.tooltip, .bs-tooltip-top, .bs-tooltip-bottom, .bs-tooltip-start, .bs-tooltip-end',
 		);
 
 		tooltips.forEach((tooltip) => {
-			// Check if the tooltip is orphaned (not properly attached or visible)
 			const rect = tooltip.getBoundingClientRect();
 			const isOrphaned =
 				!tooltip.classList.contains('show') ||
@@ -19,23 +17,14 @@ export const cleanupOrphanedTooltips = (): void => {
 
 			if (isOrphaned && tooltip.parentNode) {
 				try {
-					// Safely remove the tooltip
-					tooltip.remove();
-				} catch {
-					// If direct removal fails, try parent removal
-					try {
-						if (tooltip.parentNode && tooltip.parentNode.contains(tooltip)) {
-							tooltip.parentNode.removeChild(tooltip);
-						}
-					} catch {
-						// Silently ignore if already removed
-					}
-				}
+					tooltip.classList.remove('show');
+					(tooltip as HTMLElement).style.display = 'none';
+					(tooltip as HTMLElement).style.visibility = 'hidden';
+					(tooltip as HTMLElement).setAttribute('aria-hidden', 'true');
+				} catch {}
 			}
 		});
-	} catch {
-		// Silently handle any errors during cleanup
-	}
+	} catch {}
 };
 
 /**
