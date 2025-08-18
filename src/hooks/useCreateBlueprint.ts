@@ -1,9 +1,9 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from '@tanstack/react-router';
 import type {User} from 'firebase/auth';
-import {update as dbUpdate, getDatabase, push, ref, serverTimestamp} from 'firebase/database';
+import {update as dbUpdate, push, ref, serverTimestamp} from 'firebase/database';
 import flatMap from 'lodash/flatMap';
-import {app} from '../base';
+import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import {
 	validateRawBlueprintSummary,
 	validateRawPaginatedBlueprintSummaries,
@@ -86,7 +86,7 @@ export const useCreateBlueprint = () => {
 				lastUpdatedDate: serverTimestamp(),
 			};
 
-			const blueprintsRef = ref(getDatabase(app), '/blueprints');
+			const blueprintsRef = ref(getFirebaseDatabase(), '/blueprints');
 			const newBlueprintRef = push(blueprintsRef, blueprintData);
 			const newBlueprintKey = newBlueprintRef.key;
 
@@ -104,7 +104,7 @@ export const useCreateBlueprint = () => {
 				updates[`/byTag/${tag}/${newBlueprintKey}`] = true;
 			});
 
-			await dbUpdate(ref(getDatabase(app)), updates);
+			await dbUpdate(ref(getFirebaseDatabase()), updates);
 
 			return {
 				blueprintId: newBlueprintKey,

@@ -1,15 +1,5 @@
-import {
-	update as dbUpdate,
-	endAt,
-	get,
-	getDatabase,
-	limitToLast,
-	orderByChild,
-	query,
-	ref,
-	startAt,
-} from 'firebase/database';
-import {app} from '../base';
+import {update as dbUpdate, endAt, get, limitToLast, orderByChild, query, ref, startAt} from 'firebase/database';
+import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import {
 	type EnrichedBlueprintSummary,
 	type RawBlueprint,
@@ -161,7 +151,7 @@ export const fetchBlueprint = async (
 		}
 
 		// Fall back to Firebase if CDN failed or data was stale
-		const blueprintRef = ref(getDatabase(app), `/blueprints/${blueprintId}/`);
+		const blueprintRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/`);
 		const snapshot = await get(blueprintRef);
 
 		if (!snapshot.exists()) {
@@ -179,7 +169,7 @@ export const fetchBlueprint = async (
 
 export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]> => {
 	try {
-		const tagsRef = ref(getDatabase(app), `/blueprints/${blueprintId}/tags/`);
+		const tagsRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/tags/`);
 		const snapshot = await get(tagsRef);
 		return snapshot.exists() ? snapshot.val() : [];
 	} catch (error) {
@@ -192,7 +182,7 @@ export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]>
 
 export const fetchTags = async (): Promise<Record<string, string[]>> => {
 	try {
-		const tagsRef = ref(getDatabase(app), '/tags/');
+		const tagsRef = ref(getFirebaseDatabase(), '/tags/');
 		const snapshot = await get(tagsRef);
 
 		if (!snapshot.exists()) {
@@ -220,7 +210,7 @@ export const fetchByTagData = async (tagId: string): Promise<Record<string, bool
 	}
 
 	try {
-		const snapshot = await get(ref(getDatabase(app), `/byTag/${tagId}`));
+		const snapshot = await get(ref(getFirebaseDatabase(), `/byTag/${tagId}`));
 		return snapshot.val() || {};
 	} catch (error) {
 		if (isNetworkError(error)) {
@@ -232,7 +222,7 @@ export const fetchByTagData = async (tagId: string): Promise<Record<string, bool
 
 export const fetchModerator = async (userId: string): Promise<boolean> => {
 	try {
-		const moderatorRef = ref(getDatabase(app), `/moderators/${userId}`);
+		const moderatorRef = ref(getFirebaseDatabase(), `/moderators/${userId}`);
 		const snapshot = await get(moderatorRef);
 
 		return Boolean(snapshot.val());
@@ -246,7 +236,7 @@ export const fetchModerator = async (userId: string): Promise<boolean> => {
 
 export const fetchUserDisplayName = async (userId: string): Promise<string | null> => {
 	try {
-		const userRef = ref(getDatabase(app), `/users/${userId}/displayName`);
+		const userRef = ref(getFirebaseDatabase(), `/users/${userId}/displayName`);
 		const snapshot = await get(userRef);
 
 		return snapshot.val();
@@ -260,7 +250,7 @@ export const fetchUserDisplayName = async (userId: string): Promise<string | nul
 
 export const fetchUserBlueprints = async (userId: string): Promise<Record<string, boolean>> => {
 	try {
-		const snapshot = await get(ref(getDatabase(app), `/users/${userId}/blueprints`));
+		const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/blueprints`));
 		return snapshot.val() || {};
 	} catch (error) {
 		if (isNetworkError(error)) {
@@ -272,7 +262,7 @@ export const fetchUserBlueprints = async (userId: string): Promise<Record<string
 
 export const fetchUserFavorites = async (userId: string): Promise<Record<string, boolean>> => {
 	try {
-		const snapshot = await get(ref(getDatabase(app), `/users/${userId}/favorites`));
+		const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/favorites`));
 		return snapshot.val() || {};
 	} catch (error) {
 		if (isNetworkError(error)) {
@@ -284,7 +274,7 @@ export const fetchUserFavorites = async (userId: string): Promise<Record<string,
 
 export const fetchUser = async (userId: string): Promise<RawUser | null> => {
 	try {
-		const userRef = ref(getDatabase(app), `/users/${userId}`);
+		const userRef = ref(getFirebaseDatabase(), `/users/${userId}`);
 		const snapshot = await get(userRef);
 
 		if (!snapshot.exists()) {
@@ -309,7 +299,7 @@ export const fetchUser = async (userId: string): Promise<RawUser | null> => {
 
 export const fetchAllUsers = async (): Promise<UserData[]> => {
 	try {
-		const usersRef = ref(getDatabase(app), '/users/');
+		const usersRef = ref(getFirebaseDatabase(), '/users/');
 		const snapshot = await get(usersRef);
 
 		if (!snapshot.exists()) {
@@ -338,13 +328,13 @@ export const fetchAllUsers = async (): Promise<UserData[]> => {
 };
 
 export const reconcileFavoritesCount = async (blueprintId: string): Promise<ReconcileResult> => {
-	const favoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites`);
+	const favoritesRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/favorites`);
 	const favoritesSnapshot = await get(favoritesRef);
 	const favorites = favoritesSnapshot.exists() ? favoritesSnapshot.val() : {};
 
 	const actualCount = Object.values(favorites).filter(Boolean).length;
 
-	const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}/numberOfFavorites`);
+	const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}/numberOfFavorites`);
 	const summarySnapshot = await get(summaryRef);
 	const currentSummaryCount = summarySnapshot.exists() ? summarySnapshot.val() : 0;
 
@@ -355,7 +345,7 @@ export const reconcileFavoritesCount = async (blueprintId: string): Promise<Reco
 			[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
 		};
 
-		await dbUpdate(ref(getDatabase(app)), updates);
+		await dbUpdate(ref(getFirebaseDatabase()), updates);
 	}
 
 	return {
@@ -370,7 +360,7 @@ export const reconcileFavoritesCount = async (blueprintId: string): Promise<Reco
 
 // TODO 2025-04-12: Move this out of firebase.js, and refactor it to use react query hooks from the hooks/ dir. The problem with the current implementation is that it performs many queries but doesn't cache anything. /users/${userId}/favorites already has a hook useUserFavorites in useUser. But `/blueprints/${blueprintId}/favorites/${userId}` doesn't have a hook or a mutation yet, so we need to add them.
 export const reconcileUserFavorites = async (userId: string): Promise<UserReconcileResult> => {
-	const userFavoritesRef = ref(getDatabase(app), `/users/${userId}/favorites`);
+	const userFavoritesRef = ref(getFirebaseDatabase(), `/users/${userId}/favorites`);
 	const userFavoritesSnapshot = await get(userFavoritesRef);
 	const userFavorites = userFavoritesSnapshot.exists() ? userFavoritesSnapshot.val() : {};
 
@@ -386,7 +376,7 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
 			continue;
 		}
 
-		const blueprintFavoritesRef = ref(getDatabase(app), `/blueprints/${blueprintId}/favorites/${userId}`);
+		const blueprintFavoritesRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/favorites/${userId}`);
 		const blueprintFavoriteSnapshot = await get(blueprintFavoritesRef);
 
 		if (!blueprintFavoriteSnapshot.exists() || !blueprintFavoriteSnapshot.val()) {
@@ -406,7 +396,7 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
 	}
 
 	if (Object.keys(updates).length > 0) {
-		await dbUpdate(ref(getDatabase(app)), updates);
+		await dbUpdate(ref(getFirebaseDatabase()), updates);
 	}
 
 	return {
@@ -419,7 +409,7 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
 
 export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: string): Promise<boolean> => {
 	try {
-		const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}`);
+		const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
 		const summarySnapshot = await get(summaryRef);
 
 		if (summarySnapshot.exists()) {
@@ -430,7 +420,7 @@ export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: st
 			[`/users/${userId}/favorites/${blueprintId}`]: null,
 		};
 
-		await dbUpdate(ref(getDatabase(app)), updates);
+		await dbUpdate(ref(getFirebaseDatabase()), updates);
 
 		return true;
 	} catch {
@@ -440,7 +430,7 @@ export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: st
 
 export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlueprintSummary | null> => {
 	try {
-		const summaryRef = ref(getDatabase(app), `/blueprintSummaries/${blueprintId}`);
+		const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
 		const snapshot = await get(summaryRef);
 
 		if (!snapshot.exists()) {
@@ -469,14 +459,14 @@ export const fetchPaginatedSummaries = async (
 	try {
 		if (lastKey && lastValue) {
 			summariesQuery = query(
-				ref(getDatabase(app), '/blueprintSummaries/'),
+				ref(getFirebaseDatabase(), '/blueprintSummaries/'),
 				orderByChild(orderByField),
 				endAt(lastValue, lastKey),
 				limitToLast(pageSize + 1),
 			);
 		} else {
 			summariesQuery = query(
-				ref(getDatabase(app), '/blueprintSummaries/'),
+				ref(getFirebaseDatabase(), '/blueprintSummaries/'),
 				orderByChild(orderByField),
 				limitToLast(pageSize + 1),
 			);
@@ -544,7 +534,7 @@ export const fetchSummariesNewerThan = async (
 ): Promise<RawBlueprintSummary[]> => {
 	try {
 		const summariesQuery = query(
-			ref(getDatabase(app), '/blueprintSummaries/'),
+			ref(getFirebaseDatabase(), '/blueprintSummaries/'),
 			orderByChild('lastUpdatedDate'),
 			startAt(highWatermark + 1),
 			limitToLast(pageSize),

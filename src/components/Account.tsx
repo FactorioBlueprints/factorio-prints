@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from '@tanstack/react-router';
 import {getAuth, updateProfile} from 'firebase/auth';
-import {getDatabase, ref, set} from 'firebase/database';
+import {ref, set} from 'firebase/database';
 import type React from 'react';
 import {useEffect, useState} from 'react';
 import Button from 'react-bootstrap/Button';
@@ -15,6 +15,7 @@ import Row from 'react-bootstrap/Row';
 import {useAuthState} from 'react-firebase-hooks/auth';
 
 import {app} from '../base';
+import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import PageHeader from './PageHeader';
 
 const Account = () => {
@@ -29,7 +30,7 @@ const Account = () => {
 				displayName: newDisplayName,
 			});
 
-			const userRef = ref(getDatabase(app), `/users/${user!.uid}/displayName/`);
+			const userRef = ref(getFirebaseDatabase(), `/users/${user!.uid}/displayName/`);
 			await set(userRef, newDisplayName);
 
 			return newDisplayName;
