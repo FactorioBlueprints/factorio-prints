@@ -734,10 +734,42 @@ interface Persister {
 }
 
 export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister {
+	let lastPersistedData: string | null = null;
+
+	const extractQueryData = (client: any): any => {
+		if (!client || !client.clientState) {
+			return client;
+		}
+
+		const dataOnly = {
+			queries: client.clientState.queries?.map((query: any) => ({
+				queryKey: query.queryKey,
+				queryHash: query.queryHash,
+				data: query.state?.data,
+				...(query.state?.error ? {error: query.state.error} : {}),
+			})),
+			mutations: client.clientState.mutations?.map((mutation: any) => ({
+				mutationKey: mutation.mutationKey,
+				state: mutation.state?.status,
+				data: mutation.state?.data,
+				error: mutation.state?.error,
+			})),
+		};
+
+		return dataOnly;
+	};
+
 	const debouncedPersist = debounce(
 		async (client: any) => {
 			try {
-				// 🗜️ Compress data before storing
+				const dataOnly = extractQueryData(client);
+				const currentData = JSON.stringify(dataOnly);
+
+				if (lastPersistedData === currentData) {
+					console.log('[IndexedDB] Cache state unchanged, skipping persistence');
+					return;
+				}
+
 				const compressedData = compressForStorage(client);
 				const originalSize = JSON.stringify(client).length;
 				const compressedSize = compressedData.data.length;
@@ -748,12 +780,10 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					);
 				}
 
-				// 💾 Check storage quota before attempting to write
 				const quotaCheck = await checkStorageQuota(compressedSize);
 				if (!quotaCheck.hasSpace) {
 					console.warn('[IndexedDB] Insufficient storage space available');
 
-					// Log to Sentry for monitoring
 					const quotaError = new Error(
 						`IndexedDB quota exceeded: need ${formatBytes(compressedSize)}, available ${formatBytes(quotaCheck.available || 0)}`,
 					);
@@ -772,15 +802,13 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 						},
 					});
 
-					// Try to clear old data and retry once
 					console.log('[IndexedDB] Attempting to clear old cache data');
 					await workerOperation('delete', idbValidKey);
 
-					// Check quota again after clearing
 					const quotaCheckAfterClear = await checkStorageQuota(compressedSize);
 					if (!quotaCheckAfterClear.hasSpace) {
 						console.error('[IndexedDB] Still insufficient space after clearing cache');
-						return; // Give up
+						return;
 					}
 				}
 
@@ -788,11 +816,12 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 
 				if (result && 'success' in result && !result.success) {
 					console.warn('[IndexedDB] Persistence operation did not succeed, but continuing gracefully');
+				} else {
+					lastPersistedData = currentData;
 				}
 			} catch (error) {
 				console.error('[IndexedDB] Error persisting to IndexedDB:', error);
 
-				// Don't throw - allow the app to continue functioning
 				try {
 					Sentry.captureException(error, {
 						level: 'warning',
@@ -824,7 +853,6 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				return await debouncedPersist(client);
 			} catch (error) {
 				console.warn('[IndexedDB] Failed to persist client:', error);
-				// Don't throw - allow the app to continue without persistence
 			}
 		},
 		restoreClient: async () => {
@@ -901,6 +929,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 		removeClient: async () => {
 			try {
 				await workerOperation('delete', idbValidKey);
+				lastPersistedData = null;
 			} catch (error) {
 				console.error('[IndexedDB] Error removing from IndexedDB:', error);
 			}
