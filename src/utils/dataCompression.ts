@@ -20,7 +20,10 @@ export function compressForStorage(data: any): {compressed: boolean; data: strin
 		const chunkSize = 8192; // Process in chunks to avoid memory issues
 		for (let i = 0; i < compressed.length; i += chunkSize) {
 			const chunk = compressed.slice(i, i + chunkSize);
-			binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+			// Process each byte individually to avoid stack overflow with apply()
+			for (let j = 0; j < chunk.length; j++) {
+				binaryString += String.fromCharCode(chunk[j]);
+			}
 		}
 		const base64 = btoa(binaryString);
 
