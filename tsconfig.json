@@ -6,6 +6,7 @@
 		// Making build lenient - will gradually re-strict
 		"strict": false,
 		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
 		// Making build lenient - will gradually re-strict
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
