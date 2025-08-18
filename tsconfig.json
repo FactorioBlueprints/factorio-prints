@@ -3,11 +3,8 @@
 		"target": "ES2022",
 		"module": "ESNext",
 		"lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
-		// Making build lenient - will gradually re-strict
-		"strict": false,
+		"strict": true,
 		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true,
-		// Making build lenient - will gradually re-strict
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"moduleResolution": "bundler",
@@ -15,19 +12,11 @@
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"noEmit": true,
-		"strictNullChecks": true,
-		"strictFunctionTypes": true,
-		"strictBindCallApply": true,
-		"noImplicitThis": true,
-		// Making build lenient - will gradually re-strict
-		"noImplicitAny": true,
 		"jsx": "react-jsx",
-		// Making build lenient - will gradually re-strict
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
-		// Making build lenient - will gradually re-strict
 		"noUncheckedIndexedAccess": false,
 		"exactOptionalPropertyTypes": false,
 		"noImplicitOverride": false,
