@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react';
 import {createStore, del, get, set} from 'idb-keyval';
 import {compressForStorage, decompressFromStorage, formatBytes, checkStorageQuota} from './utils/dataCompression';
+import LocalStorageWorker from './localStorage.worker.wrapper';
 
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
@@ -175,7 +176,38 @@ function getWorker() {
 		try {
 			workerReconnectAttempts++;
 			console.log(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
-			worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
+
+			const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+			try {
+				worker = new LocalStorageWorker();
+				console.log('[IndexedDB Worker] Successfully created worker using Vite import');
+			} catch (viteWorkerError) {
+				console.warn(
+					'[IndexedDB Worker] Failed to create worker using Vite import, trying URL approach:',
+					viteWorkerError,
+				);
+
+				if (isSafari) {
+					console.log('[IndexedDB Worker] Safari detected, attempting URL-based worker creation');
+				}
+
+				try {
+					worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
+				} catch (moduleWorkerError) {
+					console.warn(
+						'[IndexedDB Worker] Failed to create module worker, trying classic mode:',
+						moduleWorkerError,
+					);
+
+					try {
+						worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url));
+					} catch (classicWorkerError) {
+						console.error('[IndexedDB Worker] Failed to create classic worker:', classicWorkerError);
+						throw classicWorkerError;
+					}
+				}
+			}
 
 			worker.onerror = (event) => {
 				let errorToCapture: Error;
@@ -280,16 +312,8 @@ function getWorker() {
 						}
 					}
 
-					// Create a more descriptive error message
 					if (isSafari && eventType === 'Event') {
-						// For Safari, provide a more specific error message
-						errorMessage = `Safari worker initialization error: Worker script loading failed. This may be due to a network issue, CORS restriction, or syntax error in the worker file.`;
-					} else if (eventType === 'Event' && !eventProperties.message) {
-						// Generic Event without error details
-						errorMessage = `Worker initialization failed: The worker script could not be loaded or parsed. Check network connectivity and worker file syntax.`;
-					} else if (eventProperties.message) {
-						// If we found a message property, use it
-						errorMessage = `Worker error: ${eventProperties.message}`;
+						errorMessage = `Safari worker initialization error: Worker script failed to load. This may be due to module loading issues in Safari.`;
 					} else {
 						// Fallback with event type information
 						errorMessage = `Worker error (${eventType}): Worker script execution failed. Event type: ${eventType}, Properties found: ${Object.keys(eventProperties).join(', ') || 'none'}`;
