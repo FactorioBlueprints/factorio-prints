@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import MarkdownIt from 'markdown-it';
-import React from 'react';
+import React, {useMemo} from 'react';
 import {RichText} from './RichText';
 
 const md = new MarkdownIt({
@@ -36,10 +36,11 @@ const processTextContent = (content: string): React.ReactNode => {
 };
 
 const processHtmlWithRichText = (html: string): React.ReactNode => {
-	const container = document.createElement('div');
-	container.innerHTML = html;
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(html, 'text/html');
+	const container = doc.body;
 
-	const processNode = (node: Node): React.ReactNode => {
+	const processNode = (node: Node, nodeIndex: number = 0): React.ReactNode => {
 		if (node.nodeType === Node.TEXT_NODE) {
 			const text = node.textContent || '';
 			return processTextContent(text);
@@ -50,10 +51,9 @@ const processHtmlWithRichText = (html: string): React.ReactNode => {
 			const tagName = element.tagName.toLowerCase();
 
 			const children = Array.from(node.childNodes).map((child, index) => (
-				<React.Fragment key={index}>{processNode(child)}</React.Fragment>
+				<React.Fragment key={`${nodeIndex}-${index}`}>{processNode(child, index)}</React.Fragment>
 			));
 
-			const key = Math.random();
 			const props: any = {};
 
 			if (element.hasAttribute('href')) props.href = element.getAttribute('href');
@@ -75,239 +75,61 @@ const processHtmlWithRichText = (html: string): React.ReactNode => {
 
 			switch (tagName) {
 				case 'p':
-					return (
-						<p
-							key={key}
-							{...props}
-						>
-							{children}
-						</p>
-					);
+					return <p {...props}>{children}</p>;
 				case 'h1':
-					return (
-						<h1
-							key={key}
-							{...props}
-						>
-							{children}
-						</h1>
-					);
+					return <h1 {...props}>{children}</h1>;
 				case 'h2':
-					return (
-						<h2
-							key={key}
-							{...props}
-						>
-							{children}
-						</h2>
-					);
+					return <h2 {...props}>{children}</h2>;
 				case 'h3':
-					return (
-						<h3
-							key={key}
-							{...props}
-						>
-							{children}
-						</h3>
-					);
+					return <h3 {...props}>{children}</h3>;
 				case 'h4':
-					return (
-						<h4
-							key={key}
-							{...props}
-						>
-							{children}
-						</h4>
-					);
+					return <h4 {...props}>{children}</h4>;
 				case 'h5':
-					return (
-						<h5
-							key={key}
-							{...props}
-						>
-							{children}
-						</h5>
-					);
+					return <h5 {...props}>{children}</h5>;
 				case 'h6':
-					return (
-						<h6
-							key={key}
-							{...props}
-						>
-							{children}
-						</h6>
-					);
+					return <h6 {...props}>{children}</h6>;
 				case 'strong':
 				case 'b':
-					return (
-						<strong
-							key={key}
-							{...props}
-						>
-							{children}
-						</strong>
-					);
+					return <strong {...props}>{children}</strong>;
 				case 'em':
 				case 'i':
-					return (
-						<em
-							key={key}
-							{...props}
-						>
-							{children}
-						</em>
-					);
+					return <em {...props}>{children}</em>;
 				case 'code':
-					return (
-						<code
-							key={key}
-							{...props}
-						>
-							{children}
-						</code>
-					);
+					return <code {...props}>{children}</code>;
 				case 'pre':
-					return (
-						<pre
-							key={key}
-							{...props}
-						>
-							{children}
-						</pre>
-					);
+					return <pre {...props}>{children}</pre>;
 				case 'blockquote':
-					return (
-						<blockquote
-							key={key}
-							{...props}
-						>
-							{children}
-						</blockquote>
-					);
+					return <blockquote {...props}>{children}</blockquote>;
 				case 'ul':
-					return (
-						<ul
-							key={key}
-							{...props}
-						>
-							{children}
-						</ul>
-					);
+					return <ul {...props}>{children}</ul>;
 				case 'ol':
-					return (
-						<ol
-							key={key}
-							{...props}
-						>
-							{children}
-						</ol>
-					);
+					return <ol {...props}>{children}</ol>;
 				case 'li':
-					return (
-						<li
-							key={key}
-							{...props}
-						>
-							{children}
-						</li>
-					);
+					return <li {...props}>{children}</li>;
 				case 'a':
-					return (
-						<a
-							key={key}
-							{...props}
-						>
-							{children}
-						</a>
-					);
+					return <a {...props}>{children}</a>;
 				case 'br':
-					return (
-						<br
-							key={key}
-							{...props}
-						/>
-					);
+					return <br {...props} />;
 				case 'hr':
-					return (
-						<hr
-							key={key}
-							{...props}
-						/>
-					);
+					return <hr {...props} />;
 				case 'table':
-					return (
-						<table
-							key={key}
-							{...props}
-						>
-							{children}
-						</table>
-					);
+					return <table {...props}>{children}</table>;
 				case 'thead':
-					return (
-						<thead
-							key={key}
-							{...props}
-						>
-							{children}
-						</thead>
-					);
+					return <thead {...props}>{children}</thead>;
 				case 'tbody':
-					return (
-						<tbody
-							key={key}
-							{...props}
-						>
-							{children}
-						</tbody>
-					);
+					return <tbody {...props}>{children}</tbody>;
 				case 'tr':
-					return (
-						<tr
-							key={key}
-							{...props}
-						>
-							{children}
-						</tr>
-					);
+					return <tr {...props}>{children}</tr>;
 				case 'th':
-					return (
-						<th
-							key={key}
-							{...props}
-						>
-							{children}
-						</th>
-					);
+					return <th {...props}>{children}</th>;
 				case 'td':
-					return (
-						<td
-							key={key}
-							{...props}
-						>
-							{children}
-						</td>
-					);
+					return <td {...props}>{children}</td>;
 				case 'span':
-					return (
-						<span
-							key={key}
-							{...props}
-						>
-							{children}
-						</span>
-					);
+					return <span {...props}>{children}</span>;
 				case 'div':
-					return (
-						<div
-							key={key}
-							{...props}
-						>
-							{children}
-						</div>
-					);
+					return <div {...props}>{children}</div>;
 				default:
-					return <React.Fragment key={key}>{children}</React.Fragment>;
+					return <>{children}</>;
 			}
 		}
 
@@ -317,52 +139,56 @@ const processHtmlWithRichText = (html: string): React.ReactNode => {
 	return (
 		<>
 			{Array.from(container.childNodes).map((node, index) => (
-				<React.Fragment key={index}>{processNode(node)}</React.Fragment>
+				<React.Fragment key={`root-${index}`}>{processNode(node, index)}</React.Fragment>
 			))}
 		</>
 	);
 };
 
 export const MarkdownWithRichText: React.FC<MarkdownWithRichTextProps> = ({markdown, className}) => {
-	if (!markdown) return null;
+	const content = useMemo(() => {
+		if (!markdown) return null;
 
-	const html = md.render(markdown);
+		const html = md.render(markdown);
 
-	const sanitizedHtml = DOMPurify.sanitize(html, {
-		ALLOWED_TAGS: [
-			'p',
-			'h1',
-			'h2',
-			'h3',
-			'h4',
-			'h5',
-			'h6',
-			'strong',
-			'b',
-			'em',
-			'i',
-			'code',
-			'pre',
-			'blockquote',
-			'ul',
-			'ol',
-			'li',
-			'a',
-			'br',
-			'hr',
-			'table',
-			'thead',
-			'tbody',
-			'tr',
-			'th',
-			'td',
-			'span',
-			'div',
-		],
-		ALLOWED_ATTR: ['href', 'title', 'style', 'class'],
-	});
+		const sanitizedHtml = DOMPurify.sanitize(html, {
+			ALLOWED_TAGS: [
+				'p',
+				'h1',
+				'h2',
+				'h3',
+				'h4',
+				'h5',
+				'h6',
+				'strong',
+				'b',
+				'em',
+				'i',
+				'code',
+				'pre',
+				'blockquote',
+				'ul',
+				'ol',
+				'li',
+				'a',
+				'br',
+				'hr',
+				'table',
+				'thead',
+				'tbody',
+				'tr',
+				'th',
+				'td',
+				'span',
+				'div',
+			],
+			ALLOWED_ATTR: ['href', 'title', 'style', 'class'],
+		});
 
-	const content = processHtmlWithRichText(sanitizedHtml);
+		return processHtmlWithRichText(sanitizedHtml);
+	}, [markdown]);
+
+	if (!content) return null;
 
 	return <div className={className}>{content}</div>;
 };
