@@ -108,7 +108,11 @@ Sentry.init({
 				error.message.includes("Cannot get CSS styles from text's parentNode") ||
 				error.message.includes('SecurityError') ||
 				error.message.includes('cross-origin') ||
-				error.message.includes('Blocked a frame with origin')
+				error.message.includes('Blocked a frame with origin') ||
+				error.message.includes("Failed to execute 'insertBefore'") ||
+				error.message.includes("Failed to execute 'removeChild'") ||
+				error.message.includes("Failed to execute 'appendChild'") ||
+				error.message.includes('NotFoundError')
 			) {
 				return null;
 			}
@@ -197,10 +201,14 @@ window.addEventListener(
 			e.error instanceof Error &&
 			e.error.message &&
 			(e.error.message.includes('Blocked a frame with origin') ||
-				e.error.message.includes('SecurityError: Blocked a frame'))
+				e.error.message.includes('SecurityError: Blocked a frame') ||
+				e.error.message.includes("Failed to execute 'insertBefore'") ||
+				e.error.message.includes("Failed to execute 'removeChild'") ||
+				e.error.message.includes("Failed to execute 'appendChild'") ||
+				e.error.message.includes('NotFoundError'))
 		) {
 			if (import.meta.env.DEV) {
-				console.warn('Cross-origin iframe error suppressed:', e.error.message);
+				console.warn('DOM manipulation or cross-origin error suppressed:', e.error.message);
 			}
 			e.preventDefault();
 			return true;
