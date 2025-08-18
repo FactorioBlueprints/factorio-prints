@@ -262,6 +262,13 @@ function getWorker() {
 						if ('timeStamp' in genericEvent) eventProperties.timeStamp = genericEvent.timeStamp;
 						if ('isTrusted' in genericEvent) eventProperties.isTrusted = genericEvent.isTrusted;
 
+						// Try to extract error-specific properties that might exist
+						if ('message' in genericEvent) eventProperties.message = genericEvent.message;
+						if ('filename' in genericEvent) eventProperties.filename = genericEvent.filename;
+						if ('lineno' in genericEvent) eventProperties.lineno = genericEvent.lineno;
+						if ('colno' in genericEvent) eventProperties.colno = genericEvent.colno;
+						if ('error' in genericEvent) eventProperties.hasError = genericEvent.error !== undefined;
+
 						// Try to get any custom properties
 						try {
 							const allKeys = Object.keys(genericEvent);
@@ -275,9 +282,17 @@ function getWorker() {
 
 					// Create a more descriptive error message
 					if (isSafari && eventType === 'Event') {
-						errorMessage = `Safari worker initialization error: The worker script may have failed to load or encountered a syntax error`;
+						// For Safari, provide a more specific error message
+						errorMessage = `Safari worker initialization error: Worker script loading failed. This may be due to a network issue, CORS restriction, or syntax error in the worker file.`;
+					} else if (eventType === 'Event' && !eventProperties.message) {
+						// Generic Event without error details
+						errorMessage = `Worker initialization failed: The worker script could not be loaded or parsed. Check network connectivity and worker file syntax.`;
+					} else if (eventProperties.message) {
+						// If we found a message property, use it
+						errorMessage = `Worker error: ${eventProperties.message}`;
 					} else {
-						errorMessage = `Worker error (${eventType}): Unable to extract error details from event object`;
+						// Fallback with event type information
+						errorMessage = `Worker error (${eventType}): Worker script execution failed. Event type: ${eventType}, Properties found: ${Object.keys(eventProperties).join(', ') || 'none'}`;
 					}
 
 					console.error('[IndexedDB Worker] Worker error:', errorMessage, {
@@ -296,6 +311,7 @@ function getWorker() {
 							operation: 'worker-error',
 							reconnectAttempt: workerReconnectAttempts,
 							browser: isSafari ? 'safari' : 'other',
+							errorCategory: eventProperties.message ? 'with-message' : 'no-message',
 						},
 						extra: {
 							eventType,
@@ -305,6 +321,13 @@ function getWorker() {
 							userAgent: navigator.userAgent,
 							workerUrl: './localStorage.worker.ts',
 							currentUrl: window.location.href,
+							errorDetails: {
+								hasMessage: 'message' in eventProperties,
+								hasFilename: 'filename' in eventProperties,
+								hasError: 'hasError' in eventProperties && eventProperties.hasError,
+								propertyCount: Object.keys(eventProperties).length,
+								availableKeys: eventProperties.availableKeys || [],
+							},
 						},
 					});
 				}
