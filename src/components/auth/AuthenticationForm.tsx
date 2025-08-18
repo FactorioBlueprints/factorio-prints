@@ -60,6 +60,7 @@ export const AuthenticationForm: React.FC<AuthenticationFormProps> = ({
 				<Form.Group className="mb-2">
 					<Form.Control
 						type="email"
+						autoComplete="email"
 						placeholder="Enter your email address"
 						value={email}
 						onChange={(event) => setEmail(event.target.value)}
