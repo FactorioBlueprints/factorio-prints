@@ -6,7 +6,7 @@ interface StoreConfig {
 }
 
 interface WorkerMessage {
-	type: 'set' | 'get' | 'delete' | 'init';
+	type: 'set' | 'get' | 'delete' | 'init' | 'healthCheck';
 	key?: string;
 	data?: any;
 	id?: number;
@@ -37,8 +37,37 @@ interface WorkerResponse {
 }
 
 let store: UseStore | undefined;
+let storeConfig: StoreConfig | undefined;
+let isStoreInitialized = false;
 
 declare const self: DedicatedWorkerGlobalScope;
+
+function resetStore() {
+	store = undefined;
+	isStoreInitialized = false;
+	console.log('[IndexedDB Worker] Store reset for reconnection');
+}
+
+async function initializeStore(): Promise<void> {
+	if (!storeConfig) {
+		throw new Error('Store configuration not provided');
+	}
+
+	try {
+		store = createStore(storeConfig.dbName, storeConfig.storeName);
+		isStoreInitialized = true;
+		console.log('[IndexedDB Worker] Store initialized successfully');
+	} catch (error) {
+		console.error('[IndexedDB Worker] Failed to initialize store:', error);
+		throw new Error(`Failed to create IndexedDB store: ${error instanceof Error ? error.message : String(error)}`);
+	}
+}
+
+async function ensureStoreConnection(): Promise<void> {
+	if (!isStoreInitialized || !store) {
+		await initializeStore();
+	}
+}
 
 // Global error handler for uncaught errors in the worker
 self.addEventListener('error', (event: ErrorEvent) => {
@@ -88,27 +117,29 @@ self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
 });
 
 self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
-	const {type, key, data, id, storeConfig} = e.data;
+	const {type, key, data, id} = e.data;
 
 	try {
-		if (!store && storeConfig) {
-			try {
-				store = createStore(storeConfig.dbName, storeConfig.storeName);
-			} catch (storeError) {
-				console.error('[IndexedDB Worker] Failed to create store:', storeError);
-				throw new Error(
-					`Failed to create IndexedDB store: ${storeError instanceof Error ? storeError.message : String(storeError)}`,
-				);
+		if (type === 'init' && e.data.storeConfig) {
+			if (!storeConfig) {
+				storeConfig = e.data.storeConfig;
 			}
+			await initializeStore();
+			const response: WorkerResponse = {id, result: {success: true}, success: true};
+			self.postMessage(response);
+			return;
 		}
 
 		let result: SuccessResult;
 
 		// Ensure store is initialized for operations that need it
-		if ((type === 'set' || type === 'get' || type === 'delete') && !store) {
-			throw new Error(
-				'IndexedDB store not initialized. This may indicate a browser compatibility issue or storage restrictions.',
-			);
+		if (type === 'set' || type === 'get' || type === 'delete' || type === 'healthCheck') {
+			await ensureStoreConnection();
+			if (!store) {
+				throw new Error(
+					'IndexedDB store not initialized. This may indicate a browser compatibility issue or storage restrictions.',
+				);
+			}
 		}
 
 		switch (type) {
@@ -132,6 +163,19 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 				await del(key, store);
 				result = {success: true};
 				break;
+			case 'healthCheck':
+				// Perform a simple operation to check connection health
+				try {
+					const testKey = '__health_check__';
+					await set(testKey, Date.now(), store);
+					await del(testKey, store);
+					result = {success: true, data: 'healthy'};
+				} catch (healthError) {
+					console.warn('[IndexedDB Worker] Health check failed:', healthError);
+					resetStore();
+					throw new Error('Health check failed - connection may be lost');
+				}
+				break;
 			default:
 				throw new Error('Unknown operation type');
 		}
@@ -148,10 +192,14 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 			errorMessage.includes('backing store') ||
 			errorMessage.includes('Connection to Indexed Database server lost') ||
 			errorMessage.includes('InvalidStateError') ||
-			errorMessage.includes('Failed to execute');
+			errorMessage.includes('Failed to execute') ||
+			errorMessage.includes('TransactionInactiveError') ||
+			errorMessage.includes('AbortError');
 
 		if (isConnectionClosing) {
 			console.warn('[IndexedDB Worker] Database connection issue detected:', type, key, errorMessage);
+			// Reset the store to force reconnection on next operation
+			resetStore();
 		}
 
 		const response: WorkerResponse = {

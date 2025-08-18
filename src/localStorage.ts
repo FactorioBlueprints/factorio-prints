@@ -153,9 +153,11 @@ let worker: Worker | undefined;
 let operationCounter = 0;
 const pendingOperations = new Map();
 let workerReconnectAttempts = 0;
-const maxWorkerReconnectAttempts = 3;
+const maxWorkerReconnectAttempts = 5;
 let lastWorkerResetTime = 0;
-const workerResetCooldown = 60000;
+const workerResetCooldown = 30000;
+let isWorkerInitializing = false;
+let workerInitPromise: Promise<void> | undefined;
 
 function resetWorkerIfNeeded() {
 	const now = Date.now();
@@ -165,352 +167,397 @@ function resetWorkerIfNeeded() {
 	}
 }
 
-function getWorker() {
-	if (!worker) {
+function terminateWorker() {
+	if (worker) {
+		try {
+			worker.terminate();
+		} catch (error) {
+			console.warn('[IndexedDB Worker] Error terminating worker:', error);
+		}
+		worker = undefined;
+	}
+	isWorkerInitializing = false;
+	workerInitPromise = undefined;
+}
+
+async function getWorker(): Promise<Worker | undefined> {
+	// If worker is being initialized, wait for it
+	if (isWorkerInitializing && workerInitPromise) {
+		try {
+			await workerInitPromise;
+			return worker;
+		} catch (error) {
+			console.error('[IndexedDB Worker] Failed to wait for worker initialization:', error);
+			return undefined;
+		}
+	}
+
+	if (!worker && !isWorkerInitializing) {
 		resetWorkerIfNeeded();
 
 		if (workerReconnectAttempts >= maxWorkerReconnectAttempts) {
 			return undefined;
 		}
 
-		try {
-			workerReconnectAttempts++;
-			console.log(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
+		isWorkerInitializing = true;
 
-			const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
+		workerInitPromise = new Promise<void>((resolve, reject) => {
 			try {
-				worker = new LocalStorageWorker();
-				console.log('[IndexedDB Worker] Successfully created worker using Vite import');
-			} catch (viteWorkerError) {
-				console.warn(
-					'[IndexedDB Worker] Failed to create worker using Vite import, trying URL approach:',
-					viteWorkerError,
-				);
+				workerReconnectAttempts++;
+				console.log(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
 
-				if (isSafari) {
-					console.log('[IndexedDB Worker] Safari detected, attempting URL-based worker creation');
-				}
+				const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 				try {
-					worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
-				} catch (moduleWorkerError) {
+					worker = new LocalStorageWorker();
+					console.log('[IndexedDB Worker] Successfully created worker using Vite import');
+				} catch (viteWorkerError) {
 					console.warn(
-						'[IndexedDB Worker] Failed to create module worker, trying classic mode:',
-						moduleWorkerError,
+						'[IndexedDB Worker] Failed to create worker using Vite import, trying URL approach:',
+						viteWorkerError,
 					);
 
+					if (isSafari) {
+						console.log('[IndexedDB Worker] Safari detected, attempting URL-based worker creation');
+					}
+
 					try {
-						worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url));
-					} catch (classicWorkerError) {
-						console.error('[IndexedDB Worker] Failed to create classic worker:', classicWorkerError);
-						throw classicWorkerError;
-					}
-				}
-			}
+						worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
+					} catch (moduleWorkerError) {
+						console.warn(
+							'[IndexedDB Worker] Failed to create module worker, trying classic mode:',
+							moduleWorkerError,
+						);
 
-			worker.onerror = (event) => {
-				let errorToCapture: Error;
-				let errorMessage: string;
-
-				// Handle null/undefined event (shouldn't happen but being defensive)
-				if (!event) {
-					errorMessage = 'Worker error: null or undefined event';
-					console.error('[IndexedDB Worker] Received null/undefined error event');
-					errorToCapture = new Error(errorMessage);
-					errorToCapture.name = 'WorkerError';
-
-					Sentry.captureException(errorToCapture, {
-						tags: {
-							component: 'indexeddb-worker',
-							operation: 'worker-error',
-							reconnectAttempt: workerReconnectAttempts,
-						},
-						extra: {
-							eventIsNull: true,
-						},
-					});
-
-					if (worker) {
-						worker.terminate();
-						worker = undefined;
-					}
-
-					pendingOperations.forEach((op) => {
-						op.reject(errorToCapture);
-					});
-					pendingOperations.clear();
-
-					return;
-				}
-
-				if (event instanceof ErrorEvent) {
-					errorMessage = event.message || 'Unknown worker error';
-					console.error('[IndexedDB Worker] Worker error:', errorMessage);
-					if (event.error instanceof Error) {
-						errorToCapture = event.error;
-					} else {
-						errorToCapture = new Error(errorMessage);
-						errorToCapture.name = 'WorkerError';
-					}
-
-					Sentry.captureException(errorToCapture, {
-						tags: {
-							component: 'indexeddb-worker',
-							operation: 'worker-error',
-							reconnectAttempt: workerReconnectAttempts,
-						},
-						extra: {
-							filename: event.filename,
-							lineno: event.lineno,
-							colno: event.colno,
-							message: errorMessage,
-							errorType: event.error ? event.error.constructor.name : 'Unknown',
-						},
-					});
-				} else {
-					// Safari sometimes emits a plain Event instead of ErrorEvent
-					const genericEvent = event as Event;
-					const eventType =
-						genericEvent && typeof genericEvent === 'object' && genericEvent !== null
-							? Object.prototype.toString.call(genericEvent).slice(8, -1)
-							: 'Unknown';
-
-					// Detect Safari browser
-					const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-					// Extract any available properties from the event
-					const eventProperties: Record<string, unknown> = {};
-					if (genericEvent && typeof genericEvent === 'object') {
-						// Attempt to extract standard Event properties
-						if ('type' in genericEvent) eventProperties.type = genericEvent.type;
-						if ('target' in genericEvent) eventProperties.hasTarget = genericEvent.target !== null;
-						if ('currentTarget' in genericEvent)
-							eventProperties.hasCurrentTarget = genericEvent.currentTarget !== null;
-						if ('defaultPrevented' in genericEvent)
-							eventProperties.defaultPrevented = genericEvent.defaultPrevented;
-						if ('bubbles' in genericEvent) eventProperties.bubbles = genericEvent.bubbles;
-						if ('cancelable' in genericEvent) eventProperties.cancelable = genericEvent.cancelable;
-						if ('timeStamp' in genericEvent) eventProperties.timeStamp = genericEvent.timeStamp;
-						if ('isTrusted' in genericEvent) eventProperties.isTrusted = genericEvent.isTrusted;
-
-						// Try to extract error-specific properties that might exist
-						if ('message' in genericEvent) eventProperties.message = genericEvent.message;
-						if ('filename' in genericEvent) eventProperties.filename = genericEvent.filename;
-						if ('lineno' in genericEvent) eventProperties.lineno = genericEvent.lineno;
-						if ('colno' in genericEvent) eventProperties.colno = genericEvent.colno;
-						if ('error' in genericEvent) eventProperties.hasError = genericEvent.error !== undefined;
-
-						// Try to get any custom properties
 						try {
-							const allKeys = Object.keys(genericEvent);
-							if (allKeys.length > 0) {
-								eventProperties.availableKeys = allKeys;
-							}
-						} catch {
-							// Ignore if we can't enumerate keys
+							worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url));
+						} catch (classicWorkerError) {
+							console.error('[IndexedDB Worker] Failed to create classic worker:', classicWorkerError);
+							throw classicWorkerError;
 						}
 					}
+				}
 
-					if (isSafari && eventType === 'Event') {
-						errorMessage = `Safari worker initialization error: Worker script failed to load. This may be due to module loading issues in Safari.`;
-					} else {
-						// Fallback with event type information
-						errorMessage = `Worker error (${eventType}): Worker script execution failed. Event type: ${eventType}, Properties found: ${Object.keys(eventProperties).join(', ') || 'none'}`;
+				worker.onerror = (event) => {
+					let errorToCapture: Error;
+					let errorMessage: string;
+
+					// Handle null/undefined event (shouldn't happen but being defensive)
+					if (!event) {
+						errorMessage = 'Worker error: null or undefined event';
+						console.error('[IndexedDB Worker] Received null/undefined error event');
+						errorToCapture = new Error(errorMessage);
+						errorToCapture.name = 'WorkerError';
+
+						Sentry.captureException(errorToCapture, {
+							tags: {
+								component: 'indexeddb-worker',
+								operation: 'worker-error',
+								reconnectAttempt: workerReconnectAttempts,
+							},
+							extra: {
+								eventIsNull: true,
+							},
+						});
+
+						if (worker) {
+							worker.terminate();
+							worker = undefined;
+						}
+
+						pendingOperations.forEach((op) => {
+							op.reject(errorToCapture);
+						});
+						pendingOperations.clear();
+
+						return;
 					}
 
-					console.error('[IndexedDB Worker] Worker error:', errorMessage, {
-						eventType,
-						eventProperties,
-						isSafari,
-						userAgent: navigator.userAgent,
-						workerUrl: './localStorage.worker.ts',
-					});
-					errorToCapture = new Error(errorMessage);
-					errorToCapture.name = 'WorkerError';
+					if (event instanceof ErrorEvent) {
+						errorMessage = event.message || 'Unknown worker error';
+						console.error('[IndexedDB Worker] Worker error:', errorMessage);
+						if (event.error instanceof Error) {
+							errorToCapture = event.error;
+						} else {
+							errorToCapture = new Error(errorMessage);
+							errorToCapture.name = 'WorkerError';
+						}
 
-					Sentry.captureException(errorToCapture, {
-						tags: {
-							component: 'indexeddb-worker',
-							operation: 'worker-error',
-							reconnectAttempt: workerReconnectAttempts,
-							browser: isSafari ? 'safari' : 'other',
-							errorCategory: eventProperties.message ? 'with-message' : 'no-message',
-						},
-						extra: {
+						Sentry.captureException(errorToCapture, {
+							tags: {
+								component: 'indexeddb-worker',
+								operation: 'worker-error',
+								reconnectAttempt: workerReconnectAttempts,
+							},
+							extra: {
+								filename: event.filename,
+								lineno: event.lineno,
+								colno: event.colno,
+								message: errorMessage,
+								errorType: event.error ? event.error.constructor.name : 'Unknown',
+							},
+						});
+					} else {
+						// Safari sometimes emits a plain Event instead of ErrorEvent
+						const genericEvent = event as Event;
+						const eventType =
+							genericEvent && typeof genericEvent === 'object' && genericEvent !== null
+								? Object.prototype.toString.call(genericEvent).slice(8, -1)
+								: 'Unknown';
+
+						// Detect Safari browser
+						const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+						// Extract any available properties from the event
+						const eventProperties: Record<string, unknown> = {};
+						if (genericEvent && typeof genericEvent === 'object') {
+							// Attempt to extract standard Event properties
+							if ('type' in genericEvent) eventProperties.type = genericEvent.type;
+							if ('target' in genericEvent) eventProperties.hasTarget = genericEvent.target !== null;
+							if ('currentTarget' in genericEvent)
+								eventProperties.hasCurrentTarget = genericEvent.currentTarget !== null;
+							if ('defaultPrevented' in genericEvent)
+								eventProperties.defaultPrevented = genericEvent.defaultPrevented;
+							if ('bubbles' in genericEvent) eventProperties.bubbles = genericEvent.bubbles;
+							if ('cancelable' in genericEvent) eventProperties.cancelable = genericEvent.cancelable;
+							if ('timeStamp' in genericEvent) eventProperties.timeStamp = genericEvent.timeStamp;
+							if ('isTrusted' in genericEvent) eventProperties.isTrusted = genericEvent.isTrusted;
+
+							// Try to get any custom properties
+							try {
+								const allKeys = Object.keys(genericEvent);
+								if (allKeys.length > 0) {
+									eventProperties.availableKeys = allKeys;
+								}
+							} catch {
+								// Ignore if we can't enumerate keys
+							}
+						}
+
+						// Create a more descriptive error message
+						if (isSafari && eventType === 'Event') {
+							errorMessage = `Safari worker initialization error: The worker script may have failed to load or encountered a syntax error`;
+						} else {
+							errorMessage = `Worker error (${eventType}): Unable to extract error details from event object`;
+						}
+
+						console.error('[IndexedDB Worker] Worker error:', errorMessage, {
 							eventType,
 							eventProperties,
-							eventString: String(event),
 							isSafari,
 							userAgent: navigator.userAgent,
 							workerUrl: './localStorage.worker.ts',
-							currentUrl: window.location.href,
-							errorDetails: {
-								hasMessage: 'message' in eventProperties,
-								hasFilename: 'filename' in eventProperties,
-								hasError: 'hasError' in eventProperties && eventProperties.hasError,
-								propertyCount: Object.keys(eventProperties).length,
-								availableKeys: eventProperties.availableKeys || [],
+						});
+						errorToCapture = new Error(errorMessage);
+						errorToCapture.name = 'WorkerError';
+
+						Sentry.captureException(errorToCapture, {
+							tags: {
+								component: 'indexeddb-worker',
+								operation: 'worker-error',
+								reconnectAttempt: workerReconnectAttempts,
+								browser: isSafari ? 'safari' : 'other',
 							},
-						},
-					});
-				}
-
-				if (worker) {
-					worker.terminate();
-					worker = undefined;
-				}
-
-				pendingOperations.forEach((op) => {
-					// Resolve with appropriate fallback based on operation type
-					if (op.operationType === 'get') {
-						op.resolve({data: undefined});
-					} else {
-						op.resolve({success: false});
+							extra: {
+								eventType,
+								eventProperties,
+								eventString: String(event),
+								isSafari,
+								userAgent: navigator.userAgent,
+								workerUrl: './localStorage.worker.ts',
+								currentUrl: window.location.href,
+							},
+						});
 					}
-				});
-				pendingOperations.clear();
-			};
 
-			worker.onmessage = (e) => {
-				const {id, result, error, success} = e.data;
+					terminateWorker();
+					reject(new Error(errorMessage));
 
-				if (e.data.type === 'error' && error?.isUncaught) {
-					const uncaughtError = new Error(error.message);
-					uncaughtError.name = 'WorkerUncaughtError';
-
-					Sentry.captureException(uncaughtError, {
-						tags: {
-							component: 'indexeddb-worker',
-							operation: 'worker-runtime',
-							errorType: 'uncaught-error',
-						},
-						extra: {
-							details: error.details,
-							stack: error.stack,
-						},
-					});
-					return;
-				}
-
-				if (e.data.type === 'error' && error?.isUnhandledRejection) {
-					const rejectionError = new Error(error.message);
-					rejectionError.name = 'WorkerUnhandledRejection';
-
-					Sentry.captureException(rejectionError, {
-						tags: {
-							component: 'indexeddb-worker',
-							operation: 'worker-runtime',
-							errorType: 'unhandled-rejection',
-						},
-						extra: {
-							reason: error.reason,
-							stack: error.stack,
-						},
-					});
-					return;
-				}
-
-				const pendingOp = pendingOperations.get(id);
-
-				if (pendingOp) {
-					if (success) {
-						pendingOp.resolve(result);
-					} else {
-						if (error?.isConnectionClosing) {
-							console.warn(
-								'[IndexedDB] Operation failed due to closing connection, resolving with undefined',
-							);
-
-							// 📊 Log to Sentry for monitoring
-							try {
-								const connectionError = new Error(`IndexedDB connection closing: ${error.message}`);
-								connectionError.name = 'IndexedDBConnectionError';
-
-								Sentry.captureException(connectionError, {
-									level: 'info',
-									tags: {
-										component: 'localStorage',
-										errorType: 'connection-closing',
-									},
-									extra: {
-										errorMessage: error.message,
-										operationType: e.data.type,
-										key: e.data.key,
-									},
-								});
-							} catch (sentryError) {
-								// Silently ignore Sentry errors to prevent secondary errors
-								console.warn('[IndexedDB] Failed to log to Sentry:', sentryError);
-							}
-							// Return a safe fallback result based on the operation type
-							pendingOp.resolve(pendingOp.operationType === 'get' ? {data: undefined} : {success: false});
+					pendingOperations.forEach((op) => {
+						// Resolve with appropriate fallback based on operation type
+						if (op.operationType === 'get') {
+							op.resolve({data: undefined});
 						} else {
-							// 🛡️ Handle blob write failures specifically
-							const isBlobWriteError =
-								error.message.includes('Failed to write blobs') ||
-								error.message.includes('IOError') ||
-								error.message.includes('blob') ||
-								error.message.includes('Blob');
+							op.resolve({success: false});
+						}
+					});
+					pendingOperations.clear();
+				};
 
-							if (isBlobWriteError) {
-								console.warn('[IndexedDB] Blob write failure detected:', error.message);
+				worker.onmessage = (e) => {
+					const {id, result, error, success} = e.data;
 
-								// 📊 Log to Sentry for monitoring with specific context
+					if (e.data.type === 'error' && error?.isUncaught) {
+						const uncaughtError = new Error(error.message);
+						uncaughtError.name = 'WorkerUncaughtError';
+
+						Sentry.captureException(uncaughtError, {
+							tags: {
+								component: 'indexeddb-worker',
+								operation: 'worker-runtime',
+								errorType: 'uncaught-error',
+							},
+							extra: {
+								details: error.details,
+								stack: error.stack,
+							},
+						});
+						return;
+					}
+
+					if (e.data.type === 'error' && error?.isUnhandledRejection) {
+						const rejectionError = new Error(error.message);
+						rejectionError.name = 'WorkerUnhandledRejection';
+
+						Sentry.captureException(rejectionError, {
+							tags: {
+								component: 'indexeddb-worker',
+								operation: 'worker-runtime',
+								errorType: 'unhandled-rejection',
+							},
+							extra: {
+								reason: error.reason,
+								stack: error.stack,
+							},
+						});
+						return;
+					}
+
+					const pendingOp = pendingOperations.get(id);
+
+					if (pendingOp) {
+						if (success) {
+							pendingOp.resolve(result);
+						} else {
+							if (error?.isConnectionClosing) {
+								// Connection lost - reset worker for next operation
+								terminateWorker();
+								console.warn(
+									'[IndexedDB] Operation failed due to closing connection, resolving with undefined',
+								);
+
+								// 📊 Log to Sentry for monitoring
 								try {
-									const blobError = new Error(`IndexedDB blob write failed: ${error.message}`);
-									blobError.name = 'IndexedDBBlobWriteError';
+									const connectionError = new Error(`IndexedDB connection closing: ${error.message}`);
+									connectionError.name = 'IndexedDBConnectionError';
 
-									Sentry.captureException(blobError, {
-										level: 'warning',
+									Sentry.captureException(connectionError, {
+										level: 'info',
 										tags: {
 											component: 'localStorage',
-											errorType: 'blob-write-failure',
-											operationType: e.data.type || 'unknown',
+											errorType: 'connection-closing',
 										},
 										extra: {
 											errorMessage: error.message,
+											operationType: e.data.type,
 											key: e.data.key,
-											dataSize: e.data.data ? JSON.stringify(e.data.data).length : 0,
 										},
 									});
 								} catch (sentryError) {
-									console.warn('[IndexedDB] Failed to log blob error to Sentry:', sentryError);
+									// Silently ignore Sentry errors to prevent secondary errors
+									console.warn('[IndexedDB] Failed to log to Sentry:', sentryError);
 								}
+								// Return a safe fallback result based on the operation type
+								pendingOp.resolve(
+									pendingOp.operationType === 'get' ? {data: undefined} : {success: false},
+								);
 							} else {
-								// For other errors, log but don't throw
-								console.warn('[IndexedDB] Operation failed, using fallback:', error.message);
+								// 🛡️ Handle blob write failures specifically
+								const isBlobWriteError =
+									error.message.includes('Failed to write blobs') ||
+									error.message.includes('IOError') ||
+									error.message.includes('blob') ||
+									error.message.includes('Blob');
+
+								if (isBlobWriteError) {
+									console.warn('[IndexedDB] Blob write failure detected:', error.message);
+
+									// 📊 Log to Sentry for monitoring with specific context
+									try {
+										const blobError = new Error(`IndexedDB blob write failed: ${error.message}`);
+										blobError.name = 'IndexedDBBlobWriteError';
+
+										Sentry.captureException(blobError, {
+											level: 'warning',
+											tags: {
+												component: 'localStorage',
+												errorType: 'blob-write-failure',
+												operationType: e.data.type || 'unknown',
+											},
+											extra: {
+												errorMessage: error.message,
+												key: e.data.key,
+												dataSize: e.data.data ? JSON.stringify(e.data.data).length : 0,
+											},
+										});
+									} catch (sentryError) {
+										console.warn('[IndexedDB] Failed to log blob error to Sentry:', sentryError);
+									}
+								} else {
+									// For other errors, log but don't throw
+									console.warn('[IndexedDB] Operation failed, using fallback:', error.message);
+								}
+
+								// Always resolve with fallback instead of rejecting to prevent cache persistence failure
+								// This allows the app to continue functioning even if caching fails
+								pendingOp.resolve(
+									pendingOp.operationType === 'get' ? {data: undefined} : {success: false},
+								);
 							}
-
-							// Always resolve with fallback instead of rejecting to prevent cache persistence failure
-							// This allows the app to continue functioning even if caching fails
-							pendingOp.resolve(pendingOp.operationType === 'get' ? {data: undefined} : {success: false});
 						}
+						pendingOperations.delete(id);
 					}
-					pendingOperations.delete(id);
-				}
-			};
+				};
 
-			worker.postMessage({
-				type: 'init',
-				storeConfig: {
-					dbName: 'factorio-prints-db',
-					storeName: 'query-cache-store',
-				},
-			});
+				// Wait for initialization confirmation
+				const initTimeout = setTimeout(() => {
+					console.error('[IndexedDB Worker] Worker initialization timeout');
+					terminateWorker();
+					reject(new Error('Worker initialization timeout'));
+				}, 5000);
 
-			workerReconnectAttempts = 0;
+				const originalOnMessage = worker.onmessage;
+				worker.onmessage = (e) => {
+					if (!e.data.id && e.data.success) {
+						clearTimeout(initTimeout);
+						worker!.onmessage = originalOnMessage;
+						workerReconnectAttempts = 0;
+						isWorkerInitializing = false;
+						console.log('[IndexedDB Worker] Worker initialized successfully');
+						resolve();
+					} else if (originalOnMessage && worker) {
+						originalOnMessage.call(worker, e);
+					}
+				};
+
+				worker.postMessage({
+					type: 'init',
+					storeConfig: {
+						dbName: 'factorio-prints-db',
+						storeName: 'query-cache-store',
+					},
+				});
+			} catch (error) {
+				console.error('[IndexedDB Worker] Failed to create worker:', error);
+				terminateWorker();
+
+				Sentry.captureException(error, {
+					tags: {
+						component: 'indexeddb-worker',
+						operation: 'worker-creation',
+						reconnectAttempt: workerReconnectAttempts,
+					},
+				});
+
+				reject(error);
+			}
+		});
+
+		try {
+			await workerInitPromise;
 		} catch (error) {
-			console.error('[IndexedDB Worker] Failed to create worker:', error);
-			worker = undefined;
-
-			Sentry.captureException(error, {
-				tags: {
-					component: 'indexeddb-worker',
-					operation: 'worker-creation',
-					reconnectAttempt: workerReconnectAttempts,
-				},
-			});
+			console.error('[IndexedDB Worker] Worker initialization failed:', error);
+			return undefined;
 		}
 	}
 
@@ -525,11 +572,11 @@ async function workerOperation(
 	data: any = null,
 	retryCount = 0,
 ): Promise<WorkerOperationResult> {
-	const maxRetries = type === 'set' ? 2 : 3;
-	const baseDelay = type === 'set' ? 500 : 100;
+	const maxRetries = type === 'set' ? 3 : 4;
+	const baseDelay = type === 'set' ? 1000 : 500;
 
 	try {
-		const worker = getWorker();
+		const worker = await getWorker();
 
 		if (!worker) {
 			try {
@@ -550,7 +597,9 @@ async function workerOperation(
 					error instanceof Error &&
 					(error.message.includes('Connection to Indexed Database server lost') ||
 						error.message.includes('database connection is closing') ||
-						error.message.includes('IDBDatabase'))
+						error.message.includes('IDBDatabase') ||
+						error.message.includes('TransactionInactiveError') ||
+						error.message.includes('AbortError'))
 				) {
 					if (retryCount < maxRetries) {
 						const delay = baseDelay * Math.pow(2, retryCount);
@@ -643,13 +692,17 @@ async function workerOperation(
 			error instanceof Error &&
 			(error.message.includes('Connection to Indexed Database server lost') ||
 				error.message.includes('Failed to execute') ||
-				error.message.includes('InvalidStateError'))
+				error.message.includes('InvalidStateError') ||
+				error.message.includes('TransactionInactiveError') ||
+				error.message.includes('AbortError'))
 		) {
 			if (retryCount < maxRetries) {
 				const delay = baseDelay * Math.pow(2, retryCount);
 				console.warn(
 					`[IndexedDB] Worker operation failed, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`,
 				);
+				// Reset worker to force reconnection
+				terminateWorker();
 				await new Promise((resolve) => setTimeout(resolve, delay));
 				return workerOperation(type, key, data, retryCount + 1);
 			}
