@@ -112,7 +112,10 @@ Sentry.init({
 				error.message.includes("Failed to execute 'insertBefore'") ||
 				error.message.includes("Failed to execute 'removeChild'") ||
 				error.message.includes("Failed to execute 'appendChild'") ||
-				error.message.includes('NotFoundError')
+				error.message.includes('NotFoundError') ||
+				error.message.includes('Java bridge') ||
+				error.message.includes('Java object') ||
+				error.message.includes('Method not found')
 			) {
 				return null;
 			}
@@ -130,7 +133,14 @@ Sentry.init({
 						frame.filename.includes('edge://') ||
 						frame.filename.includes('chrome://')),
 			);
-			if (hasExtensionFrame) {
+			const hasPasswordManagerFrame = frames.some(
+				(frame) =>
+					frame.function &&
+					(frame.function.includes('scanForForms') ||
+						frame.function.includes('fillForm') ||
+						frame.function.includes('autofill')),
+			);
+			if (hasExtensionFrame || hasPasswordManagerFrame) {
 				return null;
 			}
 		}
@@ -148,7 +158,10 @@ Sentry.init({
 				message.includes('CSSStyleSheet.cssRules getter') ||
 				message.includes('cross-origin stylesheet') ||
 				message.includes('Blocked a frame with origin') ||
-				message.includes('SecurityError')
+				message.includes('SecurityError') ||
+				message.includes('Java bridge') ||
+				message.includes('Java object') ||
+				message.includes('Method not found')
 			) {
 				return null;
 			}
@@ -205,10 +218,13 @@ window.addEventListener(
 				e.error.message.includes("Failed to execute 'insertBefore'") ||
 				e.error.message.includes("Failed to execute 'removeChild'") ||
 				e.error.message.includes("Failed to execute 'appendChild'") ||
-				e.error.message.includes('NotFoundError'))
+				e.error.message.includes('NotFoundError') ||
+				e.error.message.includes('Java bridge') ||
+				e.error.message.includes('Java object') ||
+				e.error.message.includes('Method not found'))
 		) {
 			if (import.meta.env.DEV) {
-				console.warn('DOM manipulation or cross-origin error suppressed:', e.error.message);
+				console.warn('DOM manipulation, cross-origin, or extension error suppressed:', e.error.message);
 			}
 			e.preventDefault();
 			return true;
