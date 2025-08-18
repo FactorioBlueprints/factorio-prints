@@ -239,7 +239,7 @@ async function getWorker(): Promise<Worker | undefined> {
 				}
 
 				worker.onerror = (event) => {
-					let errorToCapture: Error;
+					let errorToCapture: Error | null;
 					let errorMessage: string;
 
 					// Handle null/undefined event (shouldn't happen but being defensive)
@@ -341,33 +341,53 @@ async function getWorker(): Promise<Worker | undefined> {
 							errorMessage = `Worker error (${eventType}): Unable to extract error details from event object`;
 						}
 
-						console.error('[IndexedDB Worker] Worker error:', errorMessage, {
-							eventType,
-							eventProperties,
-							isSafari,
-							userAgent: navigator.userAgent,
-							workerUrl: './localStorage.worker.ts',
-						});
-						errorToCapture = new Error(errorMessage);
-						errorToCapture.name = 'WorkerError';
-
-						Sentry.captureException(errorToCapture, {
-							tags: {
-								component: 'indexeddb-worker',
-								operation: 'worker-error',
-								reconnectAttempt: workerReconnectAttempts,
-								browser: isSafari ? 'safari' : 'other',
-							},
-							extra: {
+						// Log Safari worker issues as info level since they're expected
+						if (isSafari && eventType === 'Event') {
+							if (typeof Sentry !== 'undefined') {
+								Sentry.addBreadcrumb({
+									message: 'Safari worker initialization issue',
+									category: 'indexeddb',
+									level: 'info',
+									data: {
+										eventType,
+										eventProperties,
+										userAgent: navigator.userAgent,
+									},
+								});
+							}
+							// Don't capture Safari worker init issues as exceptions
+							errorToCapture = null;
+						} else {
+							console.error('[IndexedDB Worker] Worker error:', errorMessage, {
 								eventType,
 								eventProperties,
-								eventString: String(event),
 								isSafari,
 								userAgent: navigator.userAgent,
 								workerUrl: './localStorage.worker.ts',
-								currentUrl: window.location.href,
-							},
-						});
+							});
+							errorToCapture = new Error(errorMessage);
+							errorToCapture.name = 'WorkerError';
+						}
+
+						if (errorToCapture) {
+							Sentry.captureException(errorToCapture, {
+								tags: {
+									component: 'indexeddb-worker',
+									operation: 'worker-error',
+									reconnectAttempt: workerReconnectAttempts,
+									browser: isSafari ? 'safari' : 'other',
+								},
+								extra: {
+									eventType,
+									eventProperties,
+									eventString: String(event),
+									isSafari,
+									userAgent: navigator.userAgent,
+									workerUrl: './localStorage.worker.ts',
+									currentUrl: window.location.href,
+								},
+							});
+						}
 					}
 
 					terminateWorker();
@@ -815,7 +835,16 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				const result = await workerOperation('set', idbValidKey, compressedData);
 
 				if (result && 'success' in result && !result.success) {
-					console.warn('[IndexedDB] Persistence operation did not succeed, but continuing gracefully');
+					// Silent failure - app continues without persistence
+					// Add breadcrumb for debugging if needed
+					if (typeof Sentry !== 'undefined') {
+						Sentry.addBreadcrumb({
+							message: 'IndexedDB persistence failed gracefully',
+							category: 'indexeddb',
+							level: 'info',
+							data: {key: idbValidKey},
+						});
+					}
 				} else {
 					lastPersistedData = currentData;
 				}

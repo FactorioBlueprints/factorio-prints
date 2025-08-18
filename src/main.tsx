@@ -93,6 +93,26 @@ Sentry.init({
 	beforeSend: (event, hint) => {
 		const error = hint.originalException;
 
+		// Filter out IndexedDB errors to reduce noise
+		if (event.message && typeof event.message === 'string' && event.message.startsWith('[IndexedDB')) {
+			const isWorkerError = event.message.includes('Worker');
+			const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+			// Add breadcrumb for tracking instead of error capture
+			Sentry.addBreadcrumb({
+				message: 'IndexedDB issue filtered',
+				category: 'indexeddb',
+				level: 'info',
+				data: {
+					type: isWorkerError ? 'worker' : 'persistence',
+					browser: isSafari ? 'safari' : 'other',
+					environment: getSentryEnvironment(),
+				},
+			});
+
+			return null;
+		}
+
 		if (error && error instanceof Error) {
 			if (error.stack && (error.stack.includes('embed.js') || error.stack.includes('disqus'))) {
 				return null;
@@ -104,6 +124,26 @@ Sentry.init({
 		}
 
 		if (error && error instanceof Error && error.message) {
+			// Filter out IndexedDB errors to reduce noise
+			if (error.message.startsWith('[IndexedDB')) {
+				const isWorkerError = error.message.includes('Worker');
+				const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+				// Add breadcrumb for tracking instead of error capture
+				Sentry.addBreadcrumb({
+					message: 'IndexedDB issue filtered',
+					category: 'indexeddb',
+					level: 'info',
+					data: {
+						type: isWorkerError ? 'worker' : 'persistence',
+						browser: isSafari ? 'safari' : 'other',
+						environment: getSentryEnvironment(),
+					},
+				});
+
+				return null;
+			}
+
 			if (
 				error.message.includes("Cannot get CSS styles from text's parentNode") ||
 				error.message.includes('SecurityError') ||
@@ -153,6 +193,12 @@ Sentry.init({
 	beforeBreadcrumb: (breadcrumb) => {
 		if (breadcrumb.category === 'console' && breadcrumb.message) {
 			const message = breadcrumb.message;
+
+			// Fast path for IndexedDB messages
+			if (message.startsWith('[IndexedDB')) {
+				return null;
+			}
+
 			if (
 				message.includes("Cannot get CSS styles from text's parentNode") ||
 				message.includes('CSSStyleSheet.cssRules getter') ||
