@@ -9,20 +9,45 @@ export const cleanupOrphanedTooltips = (): void => {
 		);
 
 		tooltips.forEach((tooltip) => {
-			const rect = tooltip.getBoundingClientRect();
-			const isOrphaned =
-				!tooltip.classList.contains('show') ||
-				(rect.width === 0 && rect.height === 0) ||
-				!document.body.contains(tooltip);
+			try {
+				if (!tooltip || !tooltip.parentNode) {
+					return;
+				}
 
-			if (isOrphaned && tooltip.parentNode) {
-				try {
+				const parentExists = document.body.contains(tooltip);
+				if (!parentExists) {
+					return;
+				}
+
+				const rect = tooltip.getBoundingClientRect();
+				const isOrphaned =
+					!tooltip.classList.contains('show') ||
+					(rect.width === 0 && rect.height === 0) ||
+					!document.body.contains(tooltip);
+
+				if (isOrphaned) {
 					tooltip.classList.remove('show');
 					(tooltip as HTMLElement).style.display = 'none';
 					(tooltip as HTMLElement).style.visibility = 'hidden';
 					(tooltip as HTMLElement).setAttribute('aria-hidden', 'true');
-				} catch {}
-			}
+
+					requestAnimationFrame(() => {
+						try {
+							if (tooltip.parentNode && document.body.contains(tooltip)) {
+								tooltip.parentNode.removeChild(tooltip);
+							}
+						} catch (error) {
+							if (
+								error instanceof Error &&
+								!error.message.includes('insertBefore') &&
+								!error.message.includes('removeChild')
+							) {
+								console.warn('Tooltip cleanup error:', error.message);
+							}
+						}
+					});
+				}
+			} catch {}
 		});
 	} catch {}
 };
