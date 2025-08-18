@@ -1,6 +1,6 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {update as dbUpdate, getDatabase, ref} from 'firebase/database';
-import {app} from '../base';
+import {update as dbUpdate, ref} from 'firebase/database';
+import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserFavorites} from '../schemas';
 
 interface ToggleFavoriteMutationParams {
@@ -39,7 +39,7 @@ export const useToggleFavoriteMutation = () => {
 				[`/users/${userId}/favorites/${blueprintId}`]: newIsFavorite ? true : null,
 			};
 
-			await dbUpdate(ref(getDatabase(app)), updates);
+			await dbUpdate(ref(getFirebaseDatabase()), updates);
 
 			return {
 				blueprintId,

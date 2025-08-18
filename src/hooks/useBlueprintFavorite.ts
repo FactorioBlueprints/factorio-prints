@@ -5,9 +5,9 @@ import {
 	useQuery,
 	useQueryClient,
 } from '@tanstack/react-query';
-import {update as dbUpdate, get, getDatabase, ref} from 'firebase/database';
+import {update as dbUpdate, get, ref} from 'firebase/database';
 import React from 'react';
-import {app} from '../base';
+import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 
 interface ReconcileResult {
 	userId: string;
@@ -41,7 +41,7 @@ const reconcileFavorites = async (
 	}
 
 	if (Object.keys(updates).length > 0) {
-		await dbUpdate(ref(getDatabase(app)), updates);
+		await dbUpdate(ref(getFirebaseDatabase()), updates);
 	}
 };
 
@@ -53,7 +53,7 @@ export const useIsUserFavorite = (
 		queryKey: ['users', 'userId', userId, 'favorites', 'blueprintId', blueprintId],
 		queryFn: async () => {
 			if (!userId || !blueprintId) return false;
-			const snapshot = await get(ref(getDatabase(app), `/users/${userId}/favorites/${blueprintId}`));
+			const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/favorites/${blueprintId}`));
 			return snapshot.exists() && snapshot.val() === true;
 		},
 		enabled: !!userId && !!blueprintId,
@@ -68,7 +68,7 @@ export const useIsBlueprintFavorite = (
 		queryKey: ['blueprints', 'blueprintId', blueprintId, 'favorites', 'userId', userId],
 		queryFn: async () => {
 			if (!userId || !blueprintId) return false;
-			const snapshot = await get(ref(getDatabase(app), `/blueprints/${blueprintId}/favorites/${userId}`));
+			const snapshot = await get(ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/favorites/${userId}`));
 			return snapshot.exists() && snapshot.val() === true;
 		},
 		enabled: !!blueprintId && !!userId,

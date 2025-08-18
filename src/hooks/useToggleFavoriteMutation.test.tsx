@@ -1,15 +1,19 @@
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {renderHook, waitFor} from '@testing-library/react';
-import {update as dbUpdate, getDatabase, ref} from 'firebase/database';
+import {update as dbUpdate, ref} from 'firebase/database';
+import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import type React from 'react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useToggleFavoriteMutation} from './useToggleFavoriteMutation';
 
 // Mock Firebase
 vi.mock('firebase/database', () => ({
-	getDatabase: vi.fn(),
 	ref: vi.fn(),
 	update: vi.fn(),
+}));
+
+vi.mock('../utils/firebaseDatabase', () => ({
+	getFirebaseDatabase: vi.fn(),
 }));
 
 vi.mock('../base', () => ({
@@ -36,7 +40,7 @@ describe('useToggleFavoriteMutation', () => {
 
 		mockDatabase = {};
 		mockRef = {};
-		vi.mocked(getDatabase).mockReturnValue(mockDatabase);
+		vi.mocked(getFirebaseDatabase).mockReturnValue(mockDatabase);
 		vi.mocked(ref).mockReturnValue(mockRef);
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 	});
@@ -456,7 +460,7 @@ describe('useToggleFavoriteMutation', () => {
 
 			// Should only call dbUpdate, no other Firebase operations
 			expect(vi.mocked(dbUpdate)).toHaveBeenCalledTimes(1);
-			expect(vi.mocked(getDatabase)).toHaveBeenCalledTimes(1);
+			expect(vi.mocked(getFirebaseDatabase)).toHaveBeenCalledTimes(1);
 			expect(vi.mocked(ref)).toHaveBeenCalledTimes(1);
 		});
 	});

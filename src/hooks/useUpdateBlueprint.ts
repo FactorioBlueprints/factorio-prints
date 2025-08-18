@@ -1,7 +1,7 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from '@tanstack/react-router';
-import {update as dbUpdate, getDatabase, ref, serverTimestamp} from 'firebase/database';
-import {app} from '../base';
+import {update as dbUpdate, ref, serverTimestamp} from 'firebase/database';
+import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import type {ImgurImage, RawBlueprint} from '../schemas';
 import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserBlueprints} from '../schemas';
 
@@ -88,7 +88,7 @@ export const useUpdateBlueprint = () => {
 				updates[`/byTag/${tag}/${id}`] = true;
 			});
 
-			await dbUpdate(ref(getDatabase(app)), updates);
+			await dbUpdate(ref(getFirebaseDatabase()), updates);
 
 			return id;
 		},
@@ -205,7 +205,7 @@ export const useDeleteBlueprint = () => {
 				updates[`/byTag/${tag}/${id}`] = null;
 			});
 
-			await dbUpdate(ref(getDatabase(app)), updates);
+			await dbUpdate(ref(getFirebaseDatabase()), updates);
 
 			return authorId;
 		},
