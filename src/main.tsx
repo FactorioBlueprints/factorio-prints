@@ -162,7 +162,12 @@ Sentry.init({
 				error.message.includes('NotFoundError') ||
 				error.message.includes('Java bridge') ||
 				error.message.includes('Java object') ||
-				error.message.includes('Method not found')
+				error.message.includes('Method not found') ||
+				error.message.includes('[IndexedDB] Persistence operation did not succeed') ||
+				error.message.includes('@firebase/app: Firebase: Error thrown when') ||
+				error.message.includes('IDBDatabase') ||
+				error.message.includes('database connection is closing') ||
+				error.message.includes('app/idb-')
 			) {
 				return null;
 			}
@@ -214,7 +219,12 @@ Sentry.init({
 				message.includes('SecurityError') ||
 				message.includes('Java bridge') ||
 				message.includes('Java object') ||
-				message.includes('Method not found')
+				message.includes('Method not found') ||
+				message.includes('[IndexedDB] Persistence operation did not succeed') ||
+				message.includes('@firebase/app: Firebase: Error thrown when') ||
+				message.includes('IDBDatabase') ||
+				message.includes('database connection is closing') ||
+				message.includes('app/idb-')
 			) {
 				return null;
 			}
