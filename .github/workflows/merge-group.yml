@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
       - run: npm ci
       - run: uv tool run pre-commit run --all-files
 
@@ -25,7 +25,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v5
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
 
       - run: just eslint-ci
         continue-on-error: true
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
 
       - run: just biome-ci
 
@@ -45,7 +45,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v5
-        - uses: jdx/mise-action@v2
+        - uses: jdx/mise-action@v3
 
         - run: just prettier-ci
 
@@ -53,14 +53,14 @@ jobs:
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v5
-          - uses: jdx/mise-action@v2
+          - uses: jdx/mise-action@v3
           - run: just typecheck-ci
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
 
       - run: just build-ci
 
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
 
       - run: just test-ci
 
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
 
       - name: Build Cloud Functions
         run: |
