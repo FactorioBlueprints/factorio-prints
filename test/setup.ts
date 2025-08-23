@@ -4,13 +4,25 @@ import {afterEach, vi} from 'vitest';
 import 'fake-indexeddb/auto';
 import React from 'react';
 
-// Mock the entire FontAwesome React component to avoid package.json import issues
-vi.mock('@fortawesome/react-fontawesome', () => ({
-	FontAwesomeIcon: ({icon, ...props}: any) =>
-		React.createElement('i', {'data-testid': 'font-awesome-icon', 'data-icon': icon, ...props}),
+vi.mock('@fortawesome/fontawesome-svg-core', () => ({
+	library: {
+		add: vi.fn(),
+	},
+	icon: vi.fn(() => ({
+		abstract: [],
+		html: ['<svg></svg>'],
+	})),
+	config: {
+		autoAddCss: false,
+	},
 }));
 
-// Cleanup after each test
+vi.mock('@fortawesome/react-fontawesome', () => ({
+	FontAwesomeIcon: vi.fn(({icon, className}) => {
+		return `<i class="${className}" data-testid="font-awesome-icon" data-icon="${typeof icon === 'string' ? icon : 'mocked-icon'}"></i>`;
+	}),
+}));
+
 afterEach(() => {
 	cleanup();
 });
