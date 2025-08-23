@@ -250,7 +250,7 @@ export const validate = <T>(
 				const maxLength = 5000; // 5KB limit for Sentry
 				if (serialized && serialized.length <= maxLength) {
 					console.error('Full object that failed validation:', serialized);
-				} else {
+				} else if (serialized) {
 					// For large objects, log a truncated version
 					const truncated = serialized.substring(0, maxLength) + '... (truncated)';
 					console.error('Full object that failed validation (truncated):', truncated);

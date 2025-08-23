@@ -34,7 +34,10 @@ export const cleanupOrphanedTooltips = (): void => {
 					requestAnimationFrame(() => {
 						try {
 							if (tooltip.parentNode && document.body.contains(tooltip)) {
-								tooltip.parentNode.removeChild(tooltip);
+								const parent = tooltip.parentNode;
+								if (parent && Array.from(parent.childNodes).includes(tooltip)) {
+									parent.removeChild(tooltip);
+								}
 							}
 						} catch (error) {
 							if (
@@ -57,10 +60,8 @@ export const cleanupOrphanedTooltips = (): void => {
  * This can help prevent accumulation of DOM nodes
  */
 export const setupTooltipCleanup = (): (() => void) => {
-	// Run cleanup every 5 seconds
 	const intervalId = setInterval(cleanupOrphanedTooltips, 5000);
 
-	// Also cleanup on navigation events
 	const handleNavigation = () => {
 		setTimeout(cleanupOrphanedTooltips, 100);
 	};
@@ -68,7 +69,6 @@ export const setupTooltipCleanup = (): (() => void) => {
 	window.addEventListener('popstate', handleNavigation);
 	window.addEventListener('hashchange', handleNavigation);
 
-	// Return cleanup function
 	return () => {
 		clearInterval(intervalId);
 		window.removeEventListener('popstate', handleNavigation);
