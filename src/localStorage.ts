@@ -644,8 +644,16 @@ async function workerOperation(
 
 			worker.postMessage({type, key, data, id});
 
-			const timeoutDuration = type === 'set' ? 30000 : type === 'delete' ? 5000 : 10000;
+			const baseTimeout = type === 'set' ? 30000 : type === 'delete' ? 5000 : 20000;
+			const retryMultiplier = Math.min(retryCount + 1, 3);
+			const timeoutDuration = baseTimeout * retryMultiplier;
 			const startTime = Date.now();
+
+			if (retryCount > 0) {
+				console.log(
+					`[IndexedDB] Operation ${type} with retry ${retryCount}, timeout increased to ${timeoutDuration}ms`,
+				);
+			}
 
 			setTimeout(() => {
 				if (pendingOperations.has(id)) {
@@ -654,7 +662,8 @@ async function workerOperation(
 
 					// Log timeout errors to Sentry with rate limiting
 					try {
-						const isExpectedTimeout = type === 'set' && duration < 35000;
+						const expectedMaxDuration = timeoutDuration + 5000;
+						const isExpectedTimeout = duration < expectedMaxDuration;
 
 						if (!isExpectedTimeout) {
 							const timeoutError = new Error(
@@ -670,20 +679,23 @@ async function workerOperation(
 									operationType: type,
 									database: 'FACTORIO_PRINTS_QUERY_CACHE',
 									timeoutRange:
-										duration < 15000
-											? '10-15s'
-											: duration < 30000
-												? '15-30s'
+										duration < 20000
+											? '10-20s'
+											: duration < 40000
+												? '20-40s'
 												: duration < 60000
-													? '30-60s'
+													? '40-60s'
 													: '60s+',
 								},
 								extra: {
 									operationType: type,
 									key: key,
-									timeout: timeoutDuration,
+									configuredTimeout: timeoutDuration,
+									baseTimeout: baseTimeout,
+									retryMultiplier: retryMultiplier,
 									actualDuration: duration,
 									retryCount: retryCount,
+									maxRetries: maxRetries,
 									userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
 								},
 							});
