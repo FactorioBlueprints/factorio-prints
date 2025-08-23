@@ -87,6 +87,7 @@ function isUnactionableError(message: string): boolean {
 
 		// Cross-origin and security errors
 		"Cannot get CSS styles from text's parentNode",
+		'CSSStyleSheet.cssRules getter',
 		'SecurityError',
 		'cross-origin',
 		'Blocked a frame with origin',
