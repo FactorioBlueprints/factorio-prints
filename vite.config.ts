@@ -75,6 +75,9 @@ export default defineConfig(
 				src: '/src',
 			},
 		},
+		optimizeDeps: {
+			include: ['@fortawesome/fontawesome-svg-core'],
+		},
 		test: {
 			globals: true,
 			environment: 'jsdom',

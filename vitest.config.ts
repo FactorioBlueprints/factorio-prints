@@ -7,4 +7,7 @@ export default defineConfig({
 		setupFiles: ['./test/setup.ts'],
 		exclude: ['**/.llm/**', '**/node_modules/**'],
 	},
+	esbuild: {
+		target: 'node18',
+	},
 });

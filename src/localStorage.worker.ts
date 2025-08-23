@@ -117,7 +117,7 @@ self.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
 });
 
 self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
-	const {type, key, data, id} = e.data;
+	const {type, key, data: requestData, id} = e.data;
 
 	try {
 		if (type === 'init' && e.data.storeConfig) {
@@ -147,14 +147,26 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 				if (key === undefined) {
 					throw new Error('Key is required for set operation');
 				}
-				await set(key, data, store);
+				await set(key, requestData, store);
 				result = {success: true};
 				break;
 			case 'get':
 				if (key === undefined) {
 					throw new Error('Key is required for get operation');
 				}
-				result = {success: true, data: await get(key, store)};
+				const getStart = Date.now();
+				const data = await get(key, store);
+				const getDuration = Date.now() - getStart;
+
+				if (getDuration > 1000 && data) {
+					const dataSize =
+						typeof data === 'object' && data.data ? data.data.length : JSON.stringify(data).length;
+					console.log(
+						`[IndexedDB Worker] Slow read detected: ${getDuration}ms for ${(dataSize / 1024).toFixed(2)}KB`,
+					);
+				}
+
+				result = {success: true, data};
 				break;
 			case 'delete':
 				if (key === undefined) {

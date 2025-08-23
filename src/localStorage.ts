@@ -858,20 +858,52 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 		restoreClient: async () => {
 			try {
 				const startTime = Date.now();
+
+				if (typeof performance !== 'undefined' && performance.mark) {
+					performance.mark('indexeddb-restore-start');
+				}
+
 				const result = (await workerOperation('get', idbValidKey)) as {data?: any} | undefined;
-				const duration = Date.now() - startTime;
+				const fetchDuration = Date.now() - startTime;
 
 				if (result?.data) {
-					// 🎈 Decompress data if it was compressed
+					const decompressionStart = Date.now();
 					const decompressedData = decompressFromStorage(result.data);
+					const decompressionDuration = Date.now() - decompressionStart;
+					const totalDuration = Date.now() - startTime;
+
+					const compressedSize =
+						typeof result.data === 'object' && result.data.data
+							? result.data.data.length
+							: JSON.stringify(result.data).length;
 					const dataSize = JSON.stringify(decompressedData).length;
 					const formattedSize = formatBytes(dataSize);
+					const formattedCompressedSize = formatBytes(compressedSize);
 
-					if (duration > 5000) {
-						// Log slow restore to Sentry
+					if (typeof performance !== 'undefined' && performance.mark) {
+						performance.mark('indexeddb-restore-end');
+						try {
+							performance.measure(
+								'indexeddb-restore',
+								'indexeddb-restore-start',
+								'indexeddb-restore-end',
+							);
+						} catch {
+							// Ignore performance API errors
+						}
+					}
+
+					if (totalDuration > 2000 || dataSize > 1048576) {
+						console.log(
+							`[IndexedDB] Restore performance: Total ${totalDuration}ms (Fetch: ${fetchDuration}ms, Decompress: ${decompressionDuration}ms), ` +
+								`Size: ${formattedCompressedSize} → ${formattedSize}`,
+						);
+					}
+
+					if (totalDuration > 5000) {
 						try {
 							const slowRestoreError = new Error(
-								`IndexedDB slow restore: took ${duration}ms to restore ${formattedSize}`,
+								`IndexedDB slow restore: took ${totalDuration}ms to restore ${formattedSize}`,
 							);
 							slowRestoreError.name = 'IndexedDBSlowRestoreError';
 
@@ -882,9 +914,15 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 									errorType: 'slow-restore',
 								},
 								extra: {
-									duration: duration,
+									totalDuration: totalDuration,
+									fetchDuration: fetchDuration,
+									decompressionDuration: decompressionDuration,
 									dataSize: dataSize,
+									compressedSize: compressedSize,
 									formattedSize: formattedSize,
+									formattedCompressedSize: formattedCompressedSize,
+									compressionRatio:
+										compressedSize > 0 ? (dataSize / compressedSize).toFixed(2) : 'N/A',
 								},
 							});
 						} catch (sentryError) {
@@ -892,11 +930,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 							console.warn('[IndexedDB] Failed to log slow restore to Sentry:', sentryError);
 						}
 					}
-				}
 
-				if (result?.data) {
-					// 🎈 Decompress data if it was compressed
-					const decompressedData = decompressFromStorage(result.data);
 					return decompressedData;
 				}
 				return undefined;

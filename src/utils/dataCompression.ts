@@ -45,7 +45,19 @@ export function decompressFromStorage(storedData: any): any {
 	}
 
 	try {
-		const bytes = Uint8Array.from(atob(storedData.data), (c) => c.charCodeAt(0));
+		const base64 = storedData.data;
+		const binaryString = atob(base64);
+		const len = binaryString.length;
+		const bytes = new Uint8Array(len);
+
+		const chunkSize = 32768;
+		for (let i = 0; i < len; i += chunkSize) {
+			const end = Math.min(i + chunkSize, len);
+			for (let j = i; j < end; j++) {
+				bytes[j] = binaryString.charCodeAt(j);
+			}
+		}
+
 		const decompressed = gunzipSync(bytes);
 		const jsonString = new TextDecoder().decode(decompressed);
 		return JSON.parse(jsonString);
