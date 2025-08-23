@@ -73,7 +73,7 @@ const SafeOverlayTrigger: React.FC<SafeOverlayTriggerProps> = ({children, overla
 							rect.width === 0 &&
 							rect.height === 0 &&
 							tooltip.parentNode &&
-							!document.body.contains(tooltip)
+							document.body.contains(tooltip)
 						) {
 							tooltip.classList.remove('show');
 							(tooltip as HTMLElement).style.display = 'none';
