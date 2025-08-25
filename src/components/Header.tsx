@@ -1,4 +1,4 @@
-import {faDiscord, faPatreon} from '@fortawesome/free-brands-svg-icons';
+import {faDiscord, faGithub, faPatreon} from '@fortawesome/free-brands-svg-icons';
 import {
 	faClock,
 	faCogs,
@@ -285,6 +285,19 @@ const Header: React.FC = () => {
 							fixedWidth
 						/>
 						{' Contributors'}
+					</Nav.Link>
+					<Nav.Link
+						href="https://github.com/FactorioBlueprints/factorio-prints"
+						className="text-light"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<FontAwesomeIcon
+							icon={faGithub}
+							size="lg"
+							fixedWidth
+						/>
+						{' GitHub'}
 					</Nav.Link>
 					<Nav.Link
 						href="https://www.patreon.com/FactorioBlueprints"
