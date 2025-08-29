@@ -78,7 +78,7 @@
 		"@types/node": "24.3.0",
 		"@types/react": "19.1.11",
 		"@types/react-dom": "19.1.8",
-		"@types/serviceworker": "0.0.150",
+		"@types/serviceworker": "0.0.152",
 		"@typescript-eslint/eslint-plugin": "8.41.0",
 		"@typescript-eslint/parser": "8.41.0",
 		"@vitejs/plugin-react": "5.0.1",
