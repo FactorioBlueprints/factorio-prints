@@ -33,7 +33,7 @@
 		"@popperjs/core": "2.11.8",
 		"@sentry/react": "10.12.0",
 		"@tanstack/query-sync-storage-persister": "5.89.0",
-		"@tanstack/react-form": "1.20.0",
+		"@tanstack/react-form": "1.21.1",
 		"@tanstack/react-query": "5.89.0",
 		"@tanstack/react-query-persist-client": "5.89.0",
 		"@tanstack/react-router": "1.131.44",
