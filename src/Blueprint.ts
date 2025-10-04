@@ -1,6 +1,5 @@
 import {deserializeBlueprintNoThrow} from './parsing/blueprintParser';
 
-// Blueprint data structure interfaces
 interface BlueprintIcon {
 	signal: {
 		name: string;
@@ -78,7 +77,6 @@ interface UpgradePlanner {
 	};
 }
 
-// V15+ format interfaces
 interface V15DecodedObject {
 	blueprint?: {
 		icons?: BlueprintIcon[];
@@ -109,10 +107,8 @@ interface V15DecodedObject {
 	[key: string]: unknown;
 }
 
-// Union type for all possible decoded objects
 type DecodedObject = V15DecodedObject | undefined;
 
-// Type for converted objects
 type ConvertedBlueprint = SingleBlueprint | BlueprintBook;
 
 class Blueprint {
@@ -121,7 +117,9 @@ class Blueprint {
 	private context?: {blueprintId?: string};
 
 	constructor(encodedText: string, context?: {blueprintId?: string}) {
-		// TODO 2025-04-22: Assert that encodedText is truthy
+		if (!encodedText) {
+			throw new Error('Blueprint encodedText must be a non-empty string');
+		}
 		this.encodedText = encodedText;
 		this.context = context;
 	}
