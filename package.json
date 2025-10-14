@@ -63,7 +63,7 @@
 		"zod": "4.1.12"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.5",
+		"@biomejs/biome": "2.2.6",
 		"@eslint/js": "9.37.0",
 		"@sentry/vite-plugin": "4.4.0",
 		"@tanstack/react-query-devtools": "5.90.2",
