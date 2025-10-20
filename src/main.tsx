@@ -144,6 +144,10 @@ Sentry.init({
 				return null;
 			}
 
+			if (error.message.includes('auth/network-request-failed')) {
+				return null;
+			}
+
 			if (
 				error.message.includes("Cannot get CSS styles from text's parentNode") ||
 				error.message.includes('SecurityError') ||
