@@ -107,6 +107,14 @@ const initialState: CreateState = {
 	blueprintValidationError: null,
 };
 
+function checkIfBlueprintBookHasEntriesWithNoName(blueprintBook: BlueprintBook): boolean {
+	return some(blueprintBook.blueprints, (eachEntry: BlueprintBookEntry) => {
+		if (eachEntry.blueprint_book) return checkIfBlueprintBookHasEntriesWithNoName(eachEntry.blueprint_book);
+		if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
+		return false;
+	});
+}
+
 const Create: React.FC = () => {
 	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const navigate = useNavigate();
@@ -323,14 +331,6 @@ const Create: React.FC = () => {
 		[parseBlueprint],
 	);
 
-	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean => {
-		return some(blueprintBook.blueprints, (eachEntry: BlueprintBookEntry) => {
-			if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
-			if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
-			return false;
-		});
-	}, []);
-
 	const validateInputs = useCallback((): string[] => {
 		const submissionErrors: string[] = [];
 		const {blueprint} = state;
@@ -395,12 +395,12 @@ const Create: React.FC = () => {
 			submissionWarnings.push('The blueprint has no icons. Consider adding icons.');
 		}
 
-		if (blueprint.isBook() && v15Decoded && someHaveNoName(v15Decoded.blueprint_book)) {
+		if (blueprint.isBook() && v15Decoded && checkIfBlueprintBookHasEntriesWithNoName(v15Decoded.blueprint_book)) {
 			submissionWarnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 		}
 
 		return submissionWarnings;
-	}, [state.blueprint, v15Decoded, someHaveNoName, state.blueprintValidationError]);
+	}, [state.blueprint, v15Decoded, state.blueprintValidationError]);
 
 	useEffect(() => {
 		if (user && pendingSubmission) {

@@ -113,6 +113,14 @@ type FormValues = {
 	tags: string[];
 };
 
+function checkIfBlueprintBookHasEntriesWithNoName(blueprintBook: BlueprintBook): boolean {
+	return some(blueprintBook.blueprints, (eachEntry) => {
+		if (eachEntry.blueprint_book) return checkIfBlueprintBookHasEntriesWithNoName(eachEntry.blueprint_book);
+		if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
+		return false;
+	});
+}
+
 function EditBlueprintWrapper() {
 	const {blueprintId} = useParams({from: '/edit/$blueprintId'});
 	const navigate = useNavigate();
@@ -224,6 +232,7 @@ function EditBlueprintWrapper() {
 	useEffect(() => {
 		if (allDataLoaded && form && !formInitialized) {
 			form.reset(defaultValues);
+
 			setCurrentTags(defaultValues.tags);
 			setFormInitialized(true);
 
@@ -277,14 +286,6 @@ function EditBlueprintWrapper() {
 		}
 	}, [form.state.values.descriptionMarkdown]);
 
-	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean => {
-		return some(blueprintBook.blueprints, (eachEntry) => {
-			if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
-			if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
-			return false;
-		});
-	}, []);
-
 	const validateWarnings = useCallback(
 		(formValues: FormValues) => {
 			const warnings: string[] = [];
@@ -322,7 +323,7 @@ function EditBlueprintWrapper() {
 					uiState.v15Decoded &&
 					'blueprint_book' in uiState.v15Decoded &&
 					uiState.v15Decoded.blueprint_book &&
-					someHaveNoName(uiState.v15Decoded.blueprint_book)
+					checkIfBlueprintBookHasEntriesWithNoName(uiState.v15Decoded.blueprint_book)
 				) {
 					warnings.push('Some blueprints in the book have no name. Consider naming all blueprints.');
 				}
@@ -332,7 +333,7 @@ function EditBlueprintWrapper() {
 
 			return warnings;
 		},
-		[uiState.v15Decoded, someHaveNoName, blueprintId],
+		[uiState.v15Decoded, blueprintId],
 	);
 
 	const handleDismissWarnings = useCallback(() => {

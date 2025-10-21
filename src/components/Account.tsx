@@ -5,7 +5,7 @@ import {useNavigate} from '@tanstack/react-router';
 import {getAuth, updateProfile} from 'firebase/auth';
 import {ref, set} from 'firebase/database';
 import type React from 'react';
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -21,7 +21,7 @@ import PageHeader from './PageHeader';
 const Account = () => {
 	const [user] = useAuthState(getAuth(app));
 	const navigate = useNavigate();
-	const [displayName, setDisplayName] = useState('');
+	const [displayName, setDisplayName] = useState(user?.displayName || '');
 	const queryClient = useQueryClient();
 
 	const updateDisplayNameMutation = useMutation({
@@ -40,12 +40,6 @@ const Account = () => {
 			navigate({to: '/user/$userId', params: {userId: user!.uid}});
 		},
 	});
-
-	useEffect(() => {
-		if (user) {
-			setDisplayName(user.displayName || '');
-		}
-	}, [user]);
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		event.preventDefault();
