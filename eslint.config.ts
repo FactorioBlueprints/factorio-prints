@@ -91,7 +91,6 @@ const config: Linter.Config[] = [
 		},
 		rules: {
 			...js.configs.recommended.rules,
-			...reactHooks.configs.recommended.rules,
 			'react-hooks/exhaustive-deps': 'error',
 			'no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]'}],
 			'react-refresh/only-export-components': ['warn', {allowConstantExport: true}],
@@ -122,7 +121,6 @@ const config: Linter.Config[] = [
 		},
 		rules: {
 			...tseslint.configs.recommended.rules,
-			...reactHooks.configs.recommended.rules,
 			'react-hooks/exhaustive-deps': 'error',
 			'@typescript-eslint/no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]'}],
 			'@typescript-eslint/no-explicit-any': 'off', // TODO: Consider enabling this later
