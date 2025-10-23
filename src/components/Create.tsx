@@ -173,9 +173,10 @@ const Create: React.FC = () => {
 	);
 
 	useEffect(() => {
-		const blueprint = loadFromStorage(STORAGE_KEYS.CREATE_FORM);
-		if (blueprint) {
-			cacheBlueprintState(blueprint);
+		const savedBlueprint = loadFromStorage(STORAGE_KEYS.CREATE_FORM);
+		if (savedBlueprint?.blueprintString) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
+			cacheBlueprintState(savedBlueprint);
 		}
 	}, [cacheBlueprintState]);
 
@@ -323,14 +324,6 @@ const Create: React.FC = () => {
 		[parseBlueprint],
 	);
 
-	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean => {
-		return some(blueprintBook.blueprints, (eachEntry: BlueprintBookEntry) => {
-			if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
-			if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
-			return false;
-		});
-	}, []);
-
 	const validateInputs = useCallback((): string[] => {
 		const submissionErrors: string[] = [];
 		const {blueprint} = state;
@@ -371,6 +364,14 @@ const Create: React.FC = () => {
 	}, [state]);
 
 	const validateWarnings = useCallback((): string[] => {
+		const someHaveNoName = (blueprintBook: BlueprintBook): boolean => {
+			return some(blueprintBook.blueprints, (eachEntry: BlueprintBookEntry) => {
+				if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
+				if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
+				return false;
+			});
+		};
+
 		const submissionWarnings: string[] = [];
 
 		if (isEmpty(state.blueprint.tags)) {
@@ -400,43 +401,46 @@ const Create: React.FC = () => {
 		}
 
 		return submissionWarnings;
-	}, [state.blueprint, v15Decoded, someHaveNoName, state.blueprintValidationError]);
+	}, [state.blueprint, v15Decoded, state.blueprintValidationError]);
 
 	useEffect(() => {
-		if (user && pendingSubmission) {
-			setPendingSubmission(false);
-
-			const submissionErrors = validateInputs();
-			if (submissionErrors.length > 0) {
-				setState((prevState) => ({
-					...prevState,
-					submissionErrors,
-				}));
-				return;
-			}
-
-			const submissionWarnings = validateWarnings();
-			if (submissionWarnings.length > 0) {
-				setState((prevState) => ({
-					...prevState,
-					submissionWarnings,
-				}));
-				return;
-			}
-
-			createBlueprintMutation.mutate(
-				{
-					formData: state.blueprint,
-					user: user,
-				},
-				{
-					onSuccess: () => {
-						setState(initialState);
-						removeFromStorage(STORAGE_KEYS.CREATE_FORM);
-					},
-				},
-			);
+		if (!user || !pendingSubmission) {
+			return;
 		}
+
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setPendingSubmission(false);
+
+		const submissionErrors = validateInputs();
+		if (submissionErrors.length > 0) {
+			setState((prevState) => ({
+				...prevState,
+				submissionErrors,
+			}));
+			return;
+		}
+
+		const submissionWarnings = validateWarnings();
+		if (submissionWarnings.length > 0) {
+			setState((prevState) => ({
+				...prevState,
+				submissionWarnings,
+			}));
+			return;
+		}
+
+		createBlueprintMutation.mutate(
+			{
+				formData: state.blueprint,
+				user: user,
+			},
+			{
+				onSuccess: () => {
+					setState(initialState);
+					removeFromStorage(STORAGE_KEYS.CREATE_FORM);
+				},
+			},
+		);
 	}, [user, pendingSubmission, createBlueprintMutation, state.blueprint, validateInputs, validateWarnings]);
 
 	const handleCreateBlueprint = useCallback(

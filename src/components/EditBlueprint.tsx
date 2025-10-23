@@ -222,20 +222,24 @@ function EditBlueprintWrapper() {
 	const [formInitialized, setFormInitialized] = useState(false);
 
 	useEffect(() => {
-		if (allDataLoaded && form && !formInitialized) {
-			form.reset(defaultValues);
-			setCurrentTags(defaultValues.tags);
-			setFormInitialized(true);
+		if (!allDataLoaded || !form || formInitialized) {
+			return;
+		}
 
-			// Initialize rendered markdown
-			if (defaultValues.descriptionMarkdown) {
-				const html = md.render(defaultValues.descriptionMarkdown);
-				const renderedMarkdown = sanitizeHtml(html);
-				setUiState((prev) => ({
-					...prev,
-					renderedMarkdown,
-				}));
-			}
+		form.reset(defaultValues);
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setCurrentTags(defaultValues.tags);
+
+		setFormInitialized(true);
+
+		if (defaultValues.descriptionMarkdown) {
+			const html = md.render(defaultValues.descriptionMarkdown);
+			const renderedMarkdown = sanitizeHtml(html);
+
+			setUiState((prev) => ({
+				...prev,
+				renderedMarkdown,
+			}));
 		}
 	}, [allDataLoaded, defaultValues, form, formInitialized]);
 
@@ -245,6 +249,7 @@ function EditBlueprintWrapper() {
 				const parsedBlueprint = new Blueprint(form.state.values.blueprintString, {blueprintId});
 				const v15Decoded = parsedBlueprint.getV15Decoded();
 
+				// eslint-disable-next-line react-hooks/set-state-in-effect
 				setUiState((prev) => ({
 					...prev,
 					parsedBlueprint,
@@ -265,6 +270,7 @@ function EditBlueprintWrapper() {
 			const html = md.render(form.state.values.descriptionMarkdown);
 			const renderedMarkdown = sanitizeHtml(html);
 
+			// eslint-disable-next-line react-hooks/set-state-in-effect
 			setUiState((prev) => ({
 				...prev,
 				renderedMarkdown,
@@ -277,16 +283,16 @@ function EditBlueprintWrapper() {
 		}
 	}, [form.state.values.descriptionMarkdown]);
 
-	const someHaveNoName = useCallback((blueprintBook: BlueprintBook): boolean => {
-		return some(blueprintBook.blueprints, (eachEntry) => {
-			if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
-			if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
-			return false;
-		});
-	}, []);
-
 	const validateWarnings = useCallback(
 		(formValues: FormValues) => {
+			const someHaveNoName = (blueprintBook: BlueprintBook): boolean => {
+				return some(blueprintBook.blueprints, (eachEntry) => {
+					if (eachEntry.blueprint_book) return someHaveNoName(eachEntry.blueprint_book);
+					if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
+					return false;
+				});
+			};
+
 			const warnings: string[] = [];
 
 			if (isEmpty(formValues.tags)) {
@@ -332,7 +338,7 @@ function EditBlueprintWrapper() {
 
 			return warnings;
 		},
-		[uiState.v15Decoded, someHaveNoName, blueprintId],
+		[uiState.v15Decoded, blueprintId],
 	);
 
 	const handleDismissWarnings = useCallback(() => {

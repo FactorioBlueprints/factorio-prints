@@ -2,29 +2,27 @@ import {faDiscord} from '@fortawesome/free-brands-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {getAuth} from 'firebase/auth';
 import type React from 'react';
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base.js';
 import {CACHE_BUSTER} from '../localStorage.js';
 
 const WelcomeBanner: React.FC = () => {
 	const [user, loading] = useAuthState(getAuth(app));
-	const [isDismissed, setIsDismissed] = useState(false);
-
-	useEffect(() => {
+	const [isDismissed, setIsDismissed] = useState(() => {
 		try {
 			const dismissalData = localStorage.getItem('welcomeBannerDismissal');
 			if (dismissalData) {
 				const {dismissed, cacheBuster} = JSON.parse(dismissalData);
-				// Only honor the dismissal if it was made with the same cache buster
 				if (dismissed && cacheBuster === CACHE_BUSTER) {
-					setIsDismissed(true);
+					return true;
 				}
 			}
 		} catch {
 			// If there's any error parsing, treat as not dismissed
 		}
-	}, []);
+		return false;
+	});
 
 	const handleDismiss = () => {
 		const dismissalData = {
