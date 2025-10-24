@@ -95,6 +95,6 @@
 		"typescript": "5.9.3",
 		"vite": "7.1.12",
 		"vitest": "4.0.1",
-		"wrangler": "^4.44.0"
+		"wrangler": "^4.45.0"
 	}
 }
