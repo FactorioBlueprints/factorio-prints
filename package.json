@@ -89,7 +89,7 @@
 		"fake-indexeddb": "6.2.4",
 		"globals": "16.4.0",
 		"jiti": "2.6.1",
-		"jsdom": "27.0.1",
+		"jsdom": "27.1.0",
 		"less": "4.4.2",
 		"prettier": "3.6.2",
 		"typescript": "5.9.3",
