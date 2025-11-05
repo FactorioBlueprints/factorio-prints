@@ -39,7 +39,7 @@
 		"@tanstack/react-router": "1.134.12",
 		"@tanstack/react-store": "0.8.0",
 		"atob": "2.1.2",
-		"axios": "1.13.1",
+		"axios": "1.13.2",
 		"bootstrap": "5.3.8",
 		"classnames": "2.5.1",
 		"date-fns": "4.1.0",
