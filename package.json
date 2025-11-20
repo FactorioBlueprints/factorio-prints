@@ -94,7 +94,7 @@
 		"prettier": "3.6.2",
 		"typescript": "5.9.3",
 		"vite": "7.2.4",
-		"vitest": "4.0.10",
+		"vitest": "4.0.12",
 		"wrangler": "^4.49.0"
 	}
 }
