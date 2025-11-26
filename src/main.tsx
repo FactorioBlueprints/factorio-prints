@@ -231,6 +231,26 @@ Sentry.init({
 			}
 		}
 
+		// 🔍 Extract the actual message from various locations for console-captured events
+		// The captureConsoleIntegration stores messages in exception.values[0].value
+		// and in extra.arguments, but not always in event.message
+		const getEventMessage = (): string => {
+			if (event.message && typeof event.message === 'string') {
+				return event.message;
+			}
+			const exceptionValue = event.exception?.values?.[0]?.value;
+			if (exceptionValue && typeof exceptionValue === 'string') {
+				return exceptionValue;
+			}
+			const extraArgs = event.extra?.arguments;
+			if (Array.isArray(extraArgs) && extraArgs.length > 0) {
+				return extraArgs.join(' ');
+			}
+			return '';
+		};
+
+		const eventMessage = getEventMessage();
+
 		// 🛡️ Filter React DOM manipulation errors caused by third-party scripts (ads, Disqus)
 		// These errors occur when third-party scripts modify DOM nodes that React is managing.
 		// DOMException with code 8 (NOT_FOUND_ERR) or name 'NotFoundError' indicates this issue.
@@ -266,7 +286,8 @@ Sentry.init({
 		}
 
 		// 🔇 Filter unactionable errors using centralized pattern matching
-		const errorMessage = error instanceof Error ? error.message : event.message;
+		// This also handles "withScope" errors from captureConsoleIntegration
+		const errorMessage = error instanceof Error ? error.message : eventMessage;
 		if (errorMessage && typeof errorMessage === 'string') {
 			if (isUnactionableError(errorMessage)) {
 				Sentry.addBreadcrumb({
@@ -282,7 +303,7 @@ Sentry.init({
 			}
 
 			// Filter IndexedDB errors with detailed breadcrumb
-			if (errorMessage.startsWith('[IndexedDB')) {
+			if (errorMessage.includes('[IndexedDB')) {
 				Sentry.addBreadcrumb({
 					message: 'IndexedDB issue filtered',
 					category: 'indexeddb',
@@ -311,7 +332,6 @@ Sentry.init({
 		if (error instanceof TypeError && error.message === 'Failed to fetch') {
 			return null;
 		}
-
 		if (event.exception?.values?.[0]?.stacktrace?.frames) {
 			const frames = event.exception.values[0].stacktrace.frames;
 			const hasExtensionFrame = frames.some(
@@ -346,7 +366,7 @@ Sentry.init({
 			const message = breadcrumb.message;
 
 			// 🔇 Filter noisy console messages using centralized pattern matching
-			if (message.startsWith('[IndexedDB') || isUnactionableError(message)) {
+			if (message.includes('[IndexedDB') || isUnactionableError(message)) {
 				return null;
 			}
 
