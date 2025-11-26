@@ -40,7 +40,7 @@ describe('useCreateBlueprint', () => {
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 		navigateMock = vi.fn();
-		vi.mocked(useNavigate).mockReturnValue(navigateMock);
+		vi.mocked(useNavigate).mockReturnValue(navigateMock as any);
 	});
 
 	it('should create blueprint with raw data', async () => {
