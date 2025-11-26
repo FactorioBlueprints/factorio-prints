@@ -22,7 +22,7 @@ export default defineConfig(
 				routesDirectory: './src/routes',
 				generatedRouteTree: './src/routeTree.gen.ts',
 				disableTypes: false,
-				autoCodeSplitting: false,
+				autoCodeSplitting: true,
 			}),
 			react(),
 			...(process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
