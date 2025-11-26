@@ -190,7 +190,10 @@ Sentry.init({
 				error.message.includes('Connection to Indexed Database server lost') ||
 				error.message.includes('Internal error opening backing store') ||
 				error.message.includes('IndexedDB connection closing') ||
-				error.name === 'IndexedDBConnectionError'
+				error.name === 'IndexedDBConnectionError' ||
+				// 🔥 Firebase Realtime Database internal transport error (FACTORIO-PRINTS-XW)
+				// Occurs when scriptTag/long-polling fallback transport fails during connection state changes
+				error.message.includes('scriptTagHolder is null')
 			) {
 				return null;
 			}
