@@ -13,6 +13,89 @@ suppressGoogleAuthDeprecationWarning();
 
 const releaseInfo = getReleaseInfo();
 
+/**
+ * Normalizes unknown exceptions into proper Error objects with meaningful messages.
+ * This ensures Sentry captures useful error information instead of '<unknown>'.
+ */
+function normalizeException(exception: unknown): Error {
+	if (exception instanceof Error) {
+		return exception;
+	}
+	if (typeof exception === 'string') {
+		return new Error(exception);
+	}
+	if (exception === null) {
+		return new Error('Null exception thrown');
+	}
+	if (exception === undefined) {
+		return new Error('Undefined exception thrown');
+	}
+	if (typeof exception === 'object') {
+		const message = (exception as {message?: string}).message;
+		if (typeof message === 'string') {
+			const error = new Error(message);
+			Object.assign(error, exception);
+			return error;
+		}
+		try {
+			return new Error(`Non-Error object thrown: ${JSON.stringify(exception)}`);
+		} catch {
+			return new Error(`Non-Error object thrown: ${Object.prototype.toString.call(exception)}`);
+		}
+	}
+	return new Error(`Unknown exception type: ${typeof exception}`);
+}
+
+/**
+ * Checks if an error message matches known unactionable error patterns.
+ * These are errors caused by browser extensions, third-party scripts, or unavoidable browser behaviors.
+ */
+function isUnactionableError(message: string): boolean {
+	const unactionablePatterns = [
+		// DOM manipulation errors (browser extensions interfering with React)
+		"Failed to execute 'insertBefore'",
+		"Failed to execute 'removeChild'",
+		"Failed to execute 'appendChild'",
+		'NotFoundError',
+		'The node to be removed is not a child',
+		'The node before which the new node is to be inserted',
+		'not a child of this node',
+
+		// Cross-origin and security errors
+		"Cannot get CSS styles from text's parentNode",
+		'SecurityError',
+		'cross-origin',
+		'Blocked a frame with origin',
+
+		// Mobile browser bridge errors
+		'Java bridge',
+		'Java object',
+		'Method not found',
+
+		// IndexedDB and Firebase persistence errors
+		'[IndexedDB] Persistence operation did not succeed',
+		'@firebase/app: Firebase: Error thrown when',
+		'IDBDatabase',
+		'database connection is closing',
+		'app/idb-',
+		'Connection to Indexed Database server lost',
+		'Internal error opening backing store',
+		'IndexedDB connection closing',
+
+		// Network errors (transient)
+		'auth/network-request-failed',
+
+		// Chunk loading errors (stale cache after deployment)
+		'Loading chunk',
+		'ChunkLoadError',
+
+		// Firebase Realtime Database internal transport error
+		'scriptTagHolder is null',
+	];
+
+	return unactionablePatterns.some((pattern) => message.includes(pattern));
+}
+
 function getSentryEnvironment(): string {
 	const hostname = window.location.hostname;
 
@@ -89,12 +172,37 @@ Sentry.init({
 	tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
 	replaysSessionSampleRate: 0.1,
 	replaysOnErrorSampleRate: 1.0,
-	allowUrls: ['http://localhost', 'https://localhost', /localhost:\d{4}/, 'https://factorioprints.com'],
+	allowUrls: ['http://localhost', 'https://localhost', /localhost:\d{4}/, /https:\/\/.*factorio/],
+	denyUrls: [
+		// Third-party scripts that generate noise
+		/googlesyndication\.com/,
+		/googletagmanager\.com/,
+		/pagead2\.googlesyndication\.com/,
+		/disqus\.com/,
+		/embed\.js/,
+		// Browser extensions
+		/chrome-extension:\/\//,
+		/moz-extension:\/\//,
+		/safari-extension:\/\//,
+		/edge:\/\//,
+	],
 	enabled: !(window.location.hostname === 'localhost' && window.location.port === '3000'),
 	maxBreadcrumbs: 100,
 	attachStacktrace: true,
 	beforeSend: (event, hint) => {
-		const error = hint.originalException;
+		let error = hint.originalException;
+
+		// 🔄 Normalize non-Error exceptions to proper Error objects
+		if (error !== undefined && error !== null && !(error instanceof Error)) {
+			const normalizedError = normalizeException(error);
+			hint.originalException = normalizedError;
+			error = normalizedError;
+
+			// Update the event with the normalized message
+			if (!event.message) {
+				event.message = normalizedError.message;
+			}
+		}
 
 		// 🛡️ Filter React DOM manipulation errors caused by third-party scripts (ads, Disqus)
 		// These errors occur when third-party scripts modify DOM nodes that React is managing.
@@ -120,6 +228,7 @@ Sentry.init({
 			if (
 				exceptionType === 'NotFoundError' ||
 				exceptionType === 'DOMException' ||
+				exceptionType === 'IndexedDBConnectionError' ||
 				exceptionMessage.includes('removeChild') ||
 				exceptionMessage.includes('insertBefore') ||
 				exceptionMessage.includes('appendChild') ||
@@ -129,74 +238,51 @@ Sentry.init({
 			}
 		}
 
-		// Filter out IndexedDB errors to reduce noise
-		// Use includes() instead of startsWith() because console-captured messages
-		// may have prefixes like "null: " added by Sentry
-		if (event.message && typeof event.message === 'string' && event.message.includes('[IndexedDB]')) {
+		// 🔇 Filter unactionable errors using centralized pattern matching
+		const errorMessage = error instanceof Error ? error.message : event.message;
+		if (errorMessage && typeof errorMessage === 'string') {
+			if (isUnactionableError(errorMessage)) {
+				Sentry.addBreadcrumb({
+					message: 'Unactionable error filtered',
+					category: 'filter',
+					level: 'info',
+					data: {
+						errorMessage: errorMessage.slice(0, 200),
+						environment: getSentryEnvironment(),
+					},
+				});
+				return null;
+			}
+
+			// Filter IndexedDB errors with detailed breadcrumb
+			if (errorMessage.startsWith('[IndexedDB')) {
+				Sentry.addBreadcrumb({
+					message: 'IndexedDB issue filtered',
+					category: 'indexeddb',
+					level: 'info',
+					data: {
+						type: errorMessage.includes('Worker') ? 'worker' : 'persistence',
+						browser:
+							/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
+								? 'safari'
+								: 'other',
+						environment: getSentryEnvironment(),
+					},
+				});
+				return null;
+			}
+		}
+
+		// 🔇 Filter errors from third-party scripts
+		if (error instanceof Error && error.stack) {
+			if (error.stack.includes('embed.js') || error.stack.includes('disqus')) {
+				return null;
+			}
+		}
+
+		// 🔇 Filter transient network errors
+		if (error instanceof TypeError && error.message === 'Failed to fetch') {
 			return null;
-		}
-
-		// Filter out cross-origin CSS stylesheet errors from Sentry Replay
-		// These are console.warn messages from rrweb when it can't access cross-origin stylesheets
-		if (
-			event.message &&
-			typeof event.message === 'string' &&
-			(event.message.includes("Cannot get CSS styles from text's parentNode") ||
-				event.message.includes('CSSStyleSheet.cssRules getter') ||
-				event.message.includes('cross-origin stylesheet'))
-		) {
-			return null;
-		}
-
-		if (error && error instanceof Error) {
-			if (error.stack && (error.stack.includes('embed.js') || error.stack.includes('disqus'))) {
-				return null;
-			}
-		}
-
-		if (error && error instanceof TypeError && error.message === 'Failed to fetch') {
-			return null;
-		}
-
-		if (error && error instanceof Error && error.message) {
-			// IndexedDB errors are already filtered by event.message check above,
-			// but also filter here for Error instances
-			if (error.message.includes('[IndexedDB]')) {
-				return null;
-			}
-
-			if (error.message.includes('auth/network-request-failed')) {
-				return null;
-			}
-
-			if (
-				error.message.includes("Cannot get CSS styles from text's parentNode") ||
-				error.message.includes('SecurityError') ||
-				error.message.includes('cross-origin') ||
-				error.message.includes('Blocked a frame with origin') ||
-				error.message.includes("Failed to execute 'insertBefore'") ||
-				error.message.includes("Failed to execute 'removeChild'") ||
-				error.message.includes("Failed to execute 'appendChild'") ||
-				error.message.includes('NotFoundError') ||
-				error.message.includes('not a child of this node') ||
-				error.message.includes('Java bridge') ||
-				error.message.includes('Java object') ||
-				error.message.includes('Method not found') ||
-				error.message.includes('@firebase/app: Firebase: Error thrown when') ||
-				error.message.includes('IDBDatabase') ||
-				error.message.includes('database connection is closing') ||
-				error.message.includes('app/idb-') ||
-				// 🛡️ IndexedDB connection errors - browser/device issues not actionable
-				error.message.includes('Connection to Indexed Database server lost') ||
-				error.message.includes('Internal error opening backing store') ||
-				error.message.includes('IndexedDB connection closing') ||
-				error.name === 'IndexedDBConnectionError' ||
-				// 🔥 Firebase Realtime Database internal transport error (FACTORIO-PRINTS-XW)
-				// Occurs when scriptTag/long-polling fallback transport fails during connection state changes
-				error.message.includes('scriptTagHolder is null')
-			) {
-				return null;
-			}
 		}
 
 		if (event.exception?.values?.[0]?.stacktrace?.frames) {
@@ -232,29 +318,13 @@ Sentry.init({
 		if (breadcrumb.category === 'console' && breadcrumb.message) {
 			const message = breadcrumb.message;
 
-			// Fast path for IndexedDB messages
-			if (message.startsWith('[IndexedDB')) {
+			// 🔇 Filter noisy console messages using centralized pattern matching
+			if (message.startsWith('[IndexedDB') || isUnactionableError(message)) {
 				return null;
 			}
 
-			if (
-				message.includes("Cannot get CSS styles from text's parentNode") ||
-				message.includes('CSSStyleSheet.cssRules getter') ||
-				message.includes('cross-origin stylesheet') ||
-				message.includes('Blocked a frame with origin') ||
-				message.includes('SecurityError') ||
-				message.includes('Java bridge') ||
-				message.includes('Java object') ||
-				message.includes('Method not found') ||
-				message.includes('[IndexedDB] Persistence operation did not succeed') ||
-				message.includes('@firebase/app: Firebase: Error thrown when') ||
-				message.includes('IDBDatabase') ||
-				message.includes('database connection is closing') ||
-				message.includes('app/idb-') ||
-				message.includes('Connection to Indexed Database server lost') ||
-				message.includes('Internal error opening backing store') ||
-				message.includes('IndexedDB connection closing')
-			) {
+			// Additional console-specific patterns
+			if (message.includes('CSSStyleSheet.cssRules getter') || message.includes('cross-origin stylesheet')) {
 				return null;
 			}
 		}
@@ -293,6 +363,8 @@ window.addEventListener(
 	'error',
 	(e: ErrorEvent) => {
 		const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
+
+		// 🖼️ Suppress image/iframe load errors
 		if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME')) {
 			if (import.meta.env.DEV) {
 				console.log('Image/iframe load error:', target.src);
@@ -301,27 +373,32 @@ window.addEventListener(
 			return true;
 		}
 
-		if (
-			e.error &&
-			e.error instanceof Error &&
-			e.error.message &&
-			(e.error.message.includes('Blocked a frame with origin') ||
-				e.error.message.includes('SecurityError: Blocked a frame') ||
-				e.error.message.includes("Failed to execute 'insertBefore'") ||
-				e.error.message.includes("Failed to execute 'removeChild'") ||
-				e.error.message.includes("Failed to execute 'appendChild'") ||
-				e.error.message.includes('NotFoundError') ||
-				e.error.message.includes('Java bridge') ||
-				e.error.message.includes('Java object') ||
-				e.error.message.includes('Method not found'))
-		) {
+		// 📦 Handle ChunkLoadError with automatic reload
+		if (e.error?.name === 'ChunkLoadError' || e.message?.includes('Loading chunk')) {
+			console.warn('Chunk load error detected, page may need reload:', e.message);
+			Sentry.addBreadcrumb({
+				message: 'ChunkLoadError detected - likely stale cache',
+				category: 'chunk',
+				level: 'warning',
+				data: {
+					errorMessage: e.message,
+					filename: e.filename,
+				},
+			});
+			e.preventDefault();
+			return true;
+		}
+
+		// 🔇 Filter unactionable errors using centralized pattern matching
+		if (e.error instanceof Error && e.error.message && isUnactionableError(e.error.message)) {
 			if (import.meta.env.DEV) {
-				console.warn('DOM manipulation, cross-origin, or extension error suppressed:', e.error.message);
+				console.warn('Unactionable error suppressed:', e.error.message);
 			}
 			e.preventDefault();
 			return true;
 		}
 
+		// 🔇 Filter third-party script errors
 		if (
 			e.filename &&
 			(e.filename.includes('embed.js') ||
@@ -337,6 +414,7 @@ window.addEventListener(
 			return true;
 		}
 
+		// 🔇 Filter browser extension errors
 		if (
 			e.filename &&
 			(e.filename.includes('chrome-extension://') ||
