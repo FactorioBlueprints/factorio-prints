@@ -11,6 +11,26 @@ import {suppressGoogleAuthDeprecationWarning} from './utils/suppressGoogleAuthWa
 
 suppressGoogleAuthDeprecationWarning();
 
+/**
+ * Global handler for unhandled promise rejections.
+ * Filters out rejections with undefined/null values which typically come from
+ * third-party code and provide no useful debugging information.
+ * Must be registered BEFORE Sentry.init() to intercept events first.
+ */
+window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+	const reason = event.reason;
+
+	// Filter out undefined/null rejections - these are unactionable
+	// Common causes: third-party scripts, browser extensions, Safari quirks
+	if (reason === undefined || reason === null) {
+		if (import.meta.env.DEV) {
+			console.warn('Filtered unhandled rejection with undefined/null value');
+		}
+		event.preventDefault();
+		return;
+	}
+});
+
 const releaseInfo = getReleaseInfo();
 
 /**
@@ -52,6 +72,10 @@ function normalizeException(exception: unknown): Error {
  */
 function isUnactionableError(message: string): boolean {
 	const unactionablePatterns = [
+		// Promise rejections with undefined/null values (third-party code)
+		'Non-Error promise rejection captured with value: undefined',
+		'Non-Error promise rejection captured with value: null',
+
 		// DOM manipulation errors (browser extensions interfering with React)
 		"Failed to execute 'insertBefore'",
 		"Failed to execute 'removeChild'",
