@@ -96,6 +96,9 @@ function isUnactionableError(message: string): boolean {
 		'Java object',
 		'Method not found',
 
+		// Third-party iframe/postMessage errors (e.g., Disqus RPC failures)
+		'Error invoking',
+
 		// IndexedDB and Firebase persistence errors
 		'[IndexedDB] Persistence operation did not succeed',
 		'@firebase/app: Firebase: Error thrown when',
