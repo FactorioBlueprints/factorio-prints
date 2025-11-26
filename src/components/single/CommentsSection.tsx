@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import Disqus from 'disqus-react';
 import Row from 'react-bootstrap/Row';
 import DisqusErrorBoundary from '../DisqusErrorBoundary';
+import DOMIsolation from '../DOMIsolation';
 
 interface DisqusConfig {
 	url: string;
@@ -36,17 +37,16 @@ export function CommentsSection({blueprintId, blueprintTitle}: CommentsSectionPr
 	return (
 		<Row className="w-100">
 			<DisqusErrorBoundary>
-				<div
-					id="disqus_thread"
-					style={{minHeight: '100px'}}
-				>
-					{shouldRenderDisqus && (
-						<Disqus.DiscussionEmbed
-							shortname="factorio-blueprints"
-							config={disqusConfig}
-						/>
-					)}
-				</div>
+				<DOMIsolation style={{minHeight: '100px', width: '100%'}}>
+					<div id="disqus_thread">
+						{shouldRenderDisqus && (
+							<Disqus.DiscussionEmbed
+								shortname="factorio-blueprints"
+								config={disqusConfig}
+							/>
+						)}
+					</div>
+				</DOMIsolation>
 			</DisqusErrorBoundary>
 		</Row>
 	);
