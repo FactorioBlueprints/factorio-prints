@@ -425,27 +425,17 @@ async function getWorker(): Promise<Worker | undefined> {
 									'[IndexedDB] Operation failed due to closing connection, resolving with undefined',
 								);
 
-								// 📊 Log to Sentry for monitoring
-								try {
-									const connectionError = new Error(`IndexedDB connection closing: ${error.message}`);
-									connectionError.name = 'IndexedDBConnectionError';
-
-									Sentry.captureException(connectionError, {
-										level: 'info',
-										tags: {
-											component: 'localStorage',
-											errorType: 'connection-closing',
-										},
-										extra: {
-											errorMessage: error.message,
-											operationType: e.data.type,
-											key: e.data.key,
-										},
-									});
-								} catch (sentryError) {
-									// Silently ignore Sentry errors to prevent secondary errors
-									console.warn('[IndexedDB] Failed to log to Sentry:', sentryError);
-								}
+								// 📊 Log as breadcrumb for debugging (error is already handled gracefully)
+								Sentry.addBreadcrumb({
+									message: 'IndexedDB connection closing - handled gracefully',
+									category: 'indexeddb',
+									level: 'warning',
+									data: {
+										errorMessage: error.message,
+										operationType: e.data.type,
+										key: e.data.key,
+									},
+								});
 								// Return a safe fallback result based on the operation type
 								pendingOp.resolve(
 									pendingOp.operationType === 'get' ? {data: undefined} : {success: false},

@@ -167,7 +167,12 @@ Sentry.init({
 				error.message.includes('@firebase/app: Firebase: Error thrown when') ||
 				error.message.includes('IDBDatabase') ||
 				error.message.includes('database connection is closing') ||
-				error.message.includes('app/idb-')
+				error.message.includes('app/idb-') ||
+				// 🛡️ IndexedDB connection errors - browser/device issues not actionable
+				error.message.includes('Connection to Indexed Database server lost') ||
+				error.message.includes('Internal error opening backing store') ||
+				error.message.includes('IndexedDB connection closing') ||
+				error.name === 'IndexedDBConnectionError'
 			) {
 				return null;
 			}
@@ -224,7 +229,10 @@ Sentry.init({
 				message.includes('@firebase/app: Firebase: Error thrown when') ||
 				message.includes('IDBDatabase') ||
 				message.includes('database connection is closing') ||
-				message.includes('app/idb-')
+				message.includes('app/idb-') ||
+				message.includes('Connection to Indexed Database server lost') ||
+				message.includes('Internal error opening backing store') ||
+				message.includes('IndexedDB connection closing')
 			) {
 				return null;
 			}
