@@ -206,37 +206,8 @@ async function getWorker(): Promise<Worker | undefined> {
 				workerReconnectAttempts++;
 				console.log(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
 
-				const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-				try {
-					worker = new LocalStorageWorker();
-					console.log('[IndexedDB Worker] Successfully created worker using Vite import');
-				} catch (viteWorkerError) {
-					console.warn(
-						'[IndexedDB Worker] Failed to create worker using Vite import, trying URL approach:',
-						viteWorkerError,
-					);
-
-					if (isSafari) {
-						console.log('[IndexedDB Worker] Safari detected, attempting URL-based worker creation');
-					}
-
-					try {
-						worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url), {type: 'module'});
-					} catch (moduleWorkerError) {
-						console.warn(
-							'[IndexedDB Worker] Failed to create module worker, trying classic mode:',
-							moduleWorkerError,
-						);
-
-						try {
-							worker = new Worker(new URL('./localStorage.worker.ts', import.meta.url));
-						} catch (classicWorkerError) {
-							console.error('[IndexedDB Worker] Failed to create classic worker:', classicWorkerError);
-							throw classicWorkerError;
-						}
-					}
-				}
+				worker = new LocalStorageWorker();
+				console.log('[IndexedDB Worker] Successfully created worker using Vite import');
 
 				worker.onerror = (event) => {
 					let errorToCapture: Error | null;
@@ -363,7 +334,6 @@ async function getWorker(): Promise<Worker | undefined> {
 								eventProperties,
 								isSafari,
 								userAgent: navigator.userAgent,
-								workerUrl: './localStorage.worker.ts',
 							});
 							errorToCapture = new Error(errorMessage);
 							errorToCapture.name = 'WorkerError';
@@ -383,7 +353,6 @@ async function getWorker(): Promise<Worker | undefined> {
 									eventString: String(event),
 									isSafari,
 									userAgent: navigator.userAgent,
-									workerUrl: './localStorage.worker.ts',
 									currentUrl: window.location.href,
 								},
 							});
