@@ -1,4 +1,5 @@
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import type {UseNavigateResult} from '@tanstack/react-router';
 import {useNavigate} from '@tanstack/react-router';
 import {renderHook} from '@testing-library/react';
 import type {User} from 'firebase/auth';
@@ -40,7 +41,7 @@ describe('useCreateBlueprint', () => {
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 		navigateMock = vi.fn();
-		vi.mocked(useNavigate).mockReturnValue(navigateMock as any);
+		vi.mocked(useNavigate).mockReturnValue(navigateMock as unknown as UseNavigateResult<string>);
 	});
 
 	it('should create blueprint with raw data', async () => {
