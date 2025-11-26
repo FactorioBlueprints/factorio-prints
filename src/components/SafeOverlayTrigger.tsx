@@ -10,24 +10,46 @@ interface ErrorBoundaryState {
 	hasError: boolean;
 }
 
+/** 🛡️ Check if error is a DOM manipulation error from tooltip operations. */
+function isDOMManipulationError(error: Error): boolean {
+	if (error instanceof DOMException) {
+		return (
+			error.code === 8 ||
+			error.name === 'NotFoundError' ||
+			error.message.includes('removeChild') ||
+			error.message.includes('insertBefore') ||
+			error.message.includes('appendChild')
+		);
+	}
+
+	const message = error.message || '';
+	return (
+		message.includes('removeChild') ||
+		message.includes('insertBefore') ||
+		message.includes('appendChild') ||
+		message.includes('not a child of this node')
+	);
+}
+
 class OverlayErrorBoundary extends Component<{children: ReactNode}, ErrorBoundaryState> {
 	constructor(props: {children: ReactNode}) {
 		super(props);
 		this.state = {hasError: false};
 	}
 
-	static getDerivedStateFromError(): ErrorBoundaryState {
+	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+		// 🛡️ Don't show error state for DOM manipulation errors
+		if (isDOMManipulationError(error)) {
+			return {hasError: false};
+		}
 		return {hasError: true};
 	}
 
 	componentDidCatch(error: Error): void {
-		if (
-			error.message &&
-			(error.message.includes('insertBefore') ||
-				error.message.includes('removeChild') ||
-				error.message.includes('appendChild'))
-		) {
-			console.warn('Tooltip DOM manipulation error caught:', error.message);
+		if (isDOMManipulationError(error)) {
+			if (import.meta.env.DEV) {
+				console.warn('🛡️ Tooltip DOM manipulation error suppressed:', error.message);
+			}
 		}
 	}
 

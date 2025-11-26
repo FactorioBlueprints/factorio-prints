@@ -14,8 +14,7 @@ export function compressForStorage(data: any): {compressed: boolean; data: strin
 		const bytes = new TextEncoder().encode(jsonString);
 		const compressed = gzipSync(bytes, {level: 6});
 
-		// Convert Uint8Array to base64 without using spread operator to avoid stack overflow
-		// on large arrays (fixes FACTORIO-PRINTS-HY and FACTORIO-PRINTS-HZ)
+		// Convert Uint8Array to base64 without using spread operator to avoid stack overflow on large arrays
 		let binaryString = '';
 		const chunkSize = 8192; // Process in chunks to avoid memory issues
 		for (let i = 0; i < compressed.length; i += chunkSize) {

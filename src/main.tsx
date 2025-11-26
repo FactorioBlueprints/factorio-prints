@@ -96,6 +96,39 @@ Sentry.init({
 	beforeSend: (event, hint) => {
 		const error = hint.originalException;
 
+		// 🛡️ Filter React DOM manipulation errors caused by third-party scripts (ads, Disqus)
+		// These errors occur when third-party scripts modify DOM nodes that React is managing.
+		// DOMException with code 8 (NOT_FOUND_ERR) or name 'NotFoundError' indicates this issue.
+		if (error instanceof DOMException) {
+			if (
+				error.code === 8 ||
+				error.name === 'NotFoundError' ||
+				error.message.includes('removeChild') ||
+				error.message.includes('insertBefore') ||
+				error.message.includes('appendChild')
+			) {
+				return null;
+			}
+		}
+
+		// 🛡️ Also check event exception values for DOMException patterns
+		const exceptionValue = event.exception?.values?.[0];
+		if (exceptionValue) {
+			const exceptionType = exceptionValue.type;
+			const exceptionMessage = exceptionValue.value || '';
+
+			if (
+				exceptionType === 'NotFoundError' ||
+				exceptionType === 'DOMException' ||
+				exceptionMessage.includes('removeChild') ||
+				exceptionMessage.includes('insertBefore') ||
+				exceptionMessage.includes('appendChild') ||
+				exceptionMessage.includes('not a child of this node')
+			) {
+				return null;
+			}
+		}
+
 		// Filter out IndexedDB errors to reduce noise
 		// Use includes() instead of startsWith() because console-captured messages
 		// may have prefixes like "null: " added by Sentry
@@ -145,6 +178,7 @@ Sentry.init({
 				error.message.includes("Failed to execute 'removeChild'") ||
 				error.message.includes("Failed to execute 'appendChild'") ||
 				error.message.includes('NotFoundError') ||
+				error.message.includes('not a child of this node') ||
 				error.message.includes('Java bridge') ||
 				error.message.includes('Java object') ||
 				error.message.includes('Method not found') ||
