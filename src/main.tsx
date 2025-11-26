@@ -97,22 +97,21 @@ Sentry.init({
 		const error = hint.originalException;
 
 		// Filter out IndexedDB errors to reduce noise
-		if (event.message && typeof event.message === 'string' && event.message.startsWith('[IndexedDB')) {
-			const isWorkerError = event.message.includes('Worker');
-			const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+		// Use includes() instead of startsWith() because console-captured messages
+		// may have prefixes like "null: " added by Sentry
+		if (event.message && typeof event.message === 'string' && event.message.includes('[IndexedDB]')) {
+			return null;
+		}
 
-			// Add breadcrumb for tracking instead of error capture
-			Sentry.addBreadcrumb({
-				message: 'IndexedDB issue filtered',
-				category: 'indexeddb',
-				level: 'info',
-				data: {
-					type: isWorkerError ? 'worker' : 'persistence',
-					browser: isSafari ? 'safari' : 'other',
-					environment: getSentryEnvironment(),
-				},
-			});
-
+		// Filter out cross-origin CSS stylesheet errors from Sentry Replay
+		// These are console.warn messages from rrweb when it can't access cross-origin stylesheets
+		if (
+			event.message &&
+			typeof event.message === 'string' &&
+			(event.message.includes("Cannot get CSS styles from text's parentNode") ||
+				event.message.includes('CSSStyleSheet.cssRules getter') ||
+				event.message.includes('cross-origin stylesheet'))
+		) {
 			return null;
 		}
 
@@ -127,23 +126,9 @@ Sentry.init({
 		}
 
 		if (error && error instanceof Error && error.message) {
-			// Filter out IndexedDB errors to reduce noise
-			if (error.message.startsWith('[IndexedDB')) {
-				const isWorkerError = error.message.includes('Worker');
-				const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-
-				// Add breadcrumb for tracking instead of error capture
-				Sentry.addBreadcrumb({
-					message: 'IndexedDB issue filtered',
-					category: 'indexeddb',
-					level: 'info',
-					data: {
-						type: isWorkerError ? 'worker' : 'persistence',
-						browser: isSafari ? 'safari' : 'other',
-						environment: getSentryEnvironment(),
-					},
-				});
-
+			// IndexedDB errors are already filtered by event.message check above,
+			// but also filter here for Error instances
+			if (error.message.includes('[IndexedDB]')) {
 				return null;
 			}
 
@@ -163,7 +148,6 @@ Sentry.init({
 				error.message.includes('Java bridge') ||
 				error.message.includes('Java object') ||
 				error.message.includes('Method not found') ||
-				error.message.includes('[IndexedDB] Persistence operation did not succeed') ||
 				error.message.includes('@firebase/app: Firebase: Error thrown when') ||
 				error.message.includes('IDBDatabase') ||
 				error.message.includes('database connection is closing') ||
