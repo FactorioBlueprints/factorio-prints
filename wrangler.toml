@@ -62,15 +62,16 @@ for = "/serviceWorker.ts"
 Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
 Service-Worker-Allowed = "/"
 
+# Content-hashed assets from Vite build - cache aggressively
 [[headers]]
-for = "/*.js"
+for = "/assets/*.js"
 [headers.values]
-Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-for = "/*.css"
+for = "/assets/*.css"
 [headers.values]
-Cache-Control = "max-age=0, no-cache, no-store, must-revalidate"
+Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
 for = "/*.html"
