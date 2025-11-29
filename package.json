@@ -22,7 +22,7 @@
 		"deploy:cloudflare:preview": "wrangler pages deploy dist --project-name=factorio-prints --branch=preview",
 		"deploy:cloudflare:production": "wrangler pages deploy dist --project-name=factorio-prints --branch=main",
 		"deploy:functions": "cd functions && npm install && cd .. && npx firebase deploy --only functions",
-		"deploy:all": "cd functions && npm install && cd .. && npx firebase deploy"
+		"deploy:all": "cd functions && npm install && cd .. && npx firebase deploy --force"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-svg-core": "7.1.0",
