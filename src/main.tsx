@@ -12,6 +12,51 @@ import {suppressGoogleAuthDeprecationWarning} from './utils/suppressGoogleAuthWa
 suppressGoogleAuthDeprecationWarning();
 
 /**
+ * Check if an error is a DOM manipulation error from React/third-party conflicts.
+ * These occur when third-party scripts (ads, Disqus, browser extensions) modify
+ * DOM nodes that React is trying to manage.
+ */
+function isDOMManipulationError(error: unknown): boolean {
+	if (!error) return false;
+
+	// Check DOMException by name or code
+	if (error instanceof DOMException) {
+		if (error.code === 8 || error.name === 'NotFoundError') {
+			return true;
+		}
+	}
+
+	// Check error message patterns
+	const message = error instanceof Error ? error.message : String(error);
+	return (
+		message.includes("Failed to execute 'insertBefore'") ||
+		message.includes("Failed to execute 'removeChild'") ||
+		message.includes("Failed to execute 'appendChild'") ||
+		message.includes('not a child of this node') ||
+		message.includes('NotFoundError')
+	);
+}
+
+/**
+ * Global error handler to suppress DOM manipulation errors BEFORE Sentry sees them.
+ * Must be registered BEFORE Sentry.init() and in capture phase to intercept first.
+ * This catches errors from React's commit phase when third-party scripts interfere.
+ */
+window.addEventListener(
+	'error',
+	(event: ErrorEvent) => {
+		if (isDOMManipulationError(event.error)) {
+			if (import.meta.env.DEV) {
+				console.warn('DOM manipulation error suppressed (pre-Sentry):', event.error?.message);
+			}
+			event.preventDefault();
+			event.stopImmediatePropagation();
+		}
+	},
+	true, // Capture phase - runs before Sentry's handler
+);
+
+/**
  * Global handler for unhandled promise rejections.
  * Filters out rejections with undefined/null values which typically come from
  * third-party code and provide no useful debugging information.
@@ -227,12 +272,14 @@ Sentry.init({
 		/IndexedDBQuotaError/,
 		/IndexedDBTimeoutError/,
 		/IndexedDBBlobWriteError/,
-		// React DOM manipulation errors from browser extensions (Google Translate, etc.)
+		// DOM manipulation errors from third-party scripts (ads, Disqus, browser extensions)
+		// These occur when external code modifies DOM nodes that React is managing
 		/Failed to execute 'removeChild' on 'Node'/,
 		/Failed to execute 'insertBefore' on 'Node'/,
 		/Failed to execute 'appendChild' on 'Node'/,
 		/The node to be removed is not a child of this node/,
 		/The node before which the new node is to be inserted is not a child/,
+		'NotFoundError',
 	],
 	enabled: !(window.location.hostname === 'localhost' && window.location.port === '3000'),
 	maxBreadcrumbs: 100,
