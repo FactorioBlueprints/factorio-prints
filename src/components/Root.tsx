@@ -7,6 +7,7 @@ import {Helmet} from 'react-helmet';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {QueryParamProvider} from 'use-query-params';
 import {ReactRouter6Adapter} from 'use-query-params/adapters/react-router-6';
+import ChunkErrorBoundary from './ChunkErrorBoundary';
 import Header from './Header';
 import ScrollToTop from './ScrollToTop';
 import UserState from './user/UserState';
@@ -59,65 +60,67 @@ function Root() {
 					<QueryParamProvider adapter={ReactRouter6Adapter}>
 						<ScrollToTop />
 						<Header />
-						<Suspense fallback={<div>Loading...</div>}>
-							<Routes>
-								<Route
-									path="/"
-									element={
-										<div>
-											<Intro />
-											<BlueprintGrid />
-										</div>
-									}
-								/>
-								<Route
-									path="/blueprints"
-									element={<BlueprintGrid />}
-								/>
-								<Route
-									path="/duplicates"
-									element={<DuplicateBlueprintGrid />}
-								/>
-								<Route
-									path="/top"
-									element={<MostFavoritedGrid />}
-								/>
-								{/* <Route path='/create' element={<Create />} /> */}
-								<Route
-									path="/favorites"
-									element={<MyFavoritesGrid />}
-								/>
-								<Route
-									path="/chat"
-									element={<Chat />}
-								/>
-								<Route
-									path="/account"
-									element={<Account />}
-								/>
-								<Route
-									path="/view/:blueprintId"
-									element={<SingleBlueprint />}
-								/>
-								<Route
-									path="/edit/:blueprintId"
-									element={<EfficientEditBlueprint />}
-								/>
-								<Route
-									path="/user/:userId"
-									element={<UserGrid />}
-								/>
-								<Route
-									path="/contributors"
-									element={<Contributors />}
-								/>
-								<Route
-									path="/search"
-									element={<Search />}
-								/>
-								<Route element={<NoMatch />} />
-							</Routes>
-						</Suspense>
+						<ChunkErrorBoundary>
+							<Suspense fallback={<div>Loading...</div>}>
+								<Routes>
+									<Route
+										path="/"
+										element={
+											<div>
+												<Intro />
+												<BlueprintGrid />
+											</div>
+										}
+									/>
+									<Route
+										path="/blueprints"
+										element={<BlueprintGrid />}
+									/>
+									<Route
+										path="/duplicates"
+										element={<DuplicateBlueprintGrid />}
+									/>
+									<Route
+										path="/top"
+										element={<MostFavoritedGrid />}
+									/>
+									{/* <Route path='/create' element={<Create />} /> */}
+									<Route
+										path="/favorites"
+										element={<MyFavoritesGrid />}
+									/>
+									<Route
+										path="/chat"
+										element={<Chat />}
+									/>
+									<Route
+										path="/account"
+										element={<Account />}
+									/>
+									<Route
+										path="/view/:blueprintId"
+										element={<SingleBlueprint />}
+									/>
+									<Route
+										path="/edit/:blueprintId"
+										element={<EfficientEditBlueprint />}
+									/>
+									<Route
+										path="/user/:userId"
+										element={<UserGrid />}
+									/>
+									<Route
+										path="/contributors"
+										element={<Contributors />}
+									/>
+									<Route
+										path="/search"
+										element={<Search />}
+									/>
+									<Route element={<NoMatch />} />
+								</Routes>
+							</Suspense>
+						</ChunkErrorBoundary>
 					</QueryParamProvider>
 				</BrowserRouter>
 			</UserState>

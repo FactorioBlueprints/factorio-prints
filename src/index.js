@@ -6,32 +6,7 @@ import Root from './components/Root';
 import './css/style.css';
 
 import reportWebVitals from './reportWebVitals';
-
-/**
- * Check if an error is a DOM manipulation error from React/third-party conflicts.
- * These occur when third-party scripts (ads, Disqus, browser extensions) modify
- * DOM nodes that React is trying to manage.
- */
-function isDOMManipulationError(error) {
-	if (!error) return false;
-
-	// Check DOMException by name or code
-	if (error instanceof DOMException) {
-		if (error.code === 8 || error.name === 'NotFoundError') {
-			return true;
-		}
-	}
-
-	// Check error message patterns
-	const message = error instanceof Error ? error.message : String(error);
-	return (
-		message.includes("Failed to execute 'insertBefore'") ||
-		message.includes("Failed to execute 'removeChild'") ||
-		message.includes("Failed to execute 'appendChild'") ||
-		message.includes('not a child of this node') ||
-		message.includes('NotFoundError')
-	);
-}
+import {isChunkLoadError, isDOMManipulationError} from './utils/errorFiltering';
 
 /**
  * Global error handler to suppress DOM manipulation errors BEFORE Sentry sees them.
@@ -45,9 +20,28 @@ window.addEventListener(
 			event.preventDefault();
 			event.stopImmediatePropagation();
 		}
+
+		// Handle chunk load errors by auto-reloading to get fresh HTML with correct chunks.
+		// This is expected self-healing behavior, not logged to Sentry.
+		if (isChunkLoadError(event.error)) {
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			window.location.reload();
+		}
 	},
 	true, // Capture phase - runs before Sentry's handler
 );
+
+/**
+ * Handle unhandled promise rejections from dynamic imports.
+ * When a chunk fails to load via React.lazy(), it surfaces as an unhandled rejection.
+ */
+window.addEventListener('unhandledrejection', (event) => {
+	if (isChunkLoadError(event.reason)) {
+		event.preventDefault();
+		window.location.reload();
+	}
+});
 
 Sentry.init({
 	dsn: 'https://fa524dc2921181e29c183ca96949a681@o4509417677914112.ingest.us.sentry.io/4509423655911424',
@@ -64,6 +58,12 @@ Sentry.init({
 		/The node before which the new node is to be inserted is not a child of this node/,
 		/not a child of this node/,
 		'NotFoundError',
+		// Chunk load errors from stale deployments - handled by auto-reload, not actionable
+		'ChunkLoadError',
+		/Loading chunk/,
+		/Loading CSS chunk/,
+		/dynamically imported module/,
+		/Failed to fetch dynamically imported module/,
 	],
 	integrations: [
 		Sentry.browserTracingIntegration(),

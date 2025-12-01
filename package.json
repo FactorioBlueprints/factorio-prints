@@ -93,6 +93,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.8",
 		"@sentry/webpack-plugin": "3.5.0",
+		"@testing-library/dom": "10.4.1",
 		"@testing-library/react": "16.3.0"
 	},
 	"overrides": {
