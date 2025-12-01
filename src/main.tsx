@@ -116,6 +116,9 @@ function isUnactionableError(message: string): boolean {
 		// Chunk loading errors (stale cache after deployment)
 		'Loading chunk',
 		'ChunkLoadError',
+		'Failed to fetch dynamically imported module',
+		'dynamically imported module',
+		'Importing a module script failed',
 
 		// Firebase Realtime Database internal transport error
 		'scriptTagHolder is null',
@@ -415,18 +418,16 @@ Sentry.setContext('deployment', {
 Sentry.setTag('git_commit', releaseInfo.gitCommit);
 Sentry.setTag('git_branch', releaseInfo.gitBranch);
 
+/**
+ * Handle Vite preload errors (stale chunk hash mismatches after deployment).
+ * These occur when users have cached HTML referencing old chunk hashes that no longer exist.
+ * The fix is to reload the page to get fresh HTML with current chunk references.
+ * We don't log to Sentry since this is expected behavior during/after deployments.
+ */
 window.addEventListener('vite:preloadError', (event) => {
-	console.error('Vite preload error detected, reloading page...', event.payload);
-	Sentry.captureException(event.payload, {
-		tags: {
-			error_type: 'vite_preload_error',
-			environment: getSentryEnvironment(),
-		},
-		extra: {
-			message: 'Module import failed during preload',
-			hostname: window.location.hostname,
-		},
-	});
+	if (import.meta.env.DEV) {
+		console.warn('Vite preload error detected, reloading page...', event.payload);
+	}
 	event.preventDefault();
 	window.location.reload();
 });
