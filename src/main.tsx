@@ -214,6 +214,23 @@ Sentry.init({
 		/safari-extension:\/\//,
 		/edge:\/\//,
 	],
+	ignoreErrors: [
+		// Safari IndexedDB bug (iOS 17.4+) - connections spontaneously close
+		// https://dexie.org/docs/IndexedDB-on-Safari
+		/Connection to Indexed Database server lost/,
+		/IndexedDB connection closing/,
+		/IndexedDBConnectionError/,
+		/IndexedDBSlowRestoreError/,
+		/IndexedDBQuotaError/,
+		/IndexedDBTimeoutError/,
+		/IndexedDBBlobWriteError/,
+		// React DOM manipulation errors from browser extensions (Google Translate, etc.)
+		/Failed to execute 'removeChild' on 'Node'/,
+		/Failed to execute 'insertBefore' on 'Node'/,
+		/Failed to execute 'appendChild' on 'Node'/,
+		/The node to be removed is not a child of this node/,
+		/The node before which the new node is to be inserted is not a child/,
+	],
 	enabled: !(window.location.hostname === 'localhost' && window.location.port === '3000'),
 	maxBreadcrumbs: 100,
 	attachStacktrace: true,
@@ -274,13 +291,20 @@ Sentry.init({
 			const exceptionMessage = exceptionValue.value || '';
 
 			if (
+				// React DOM manipulation errors (browser extensions like Google Translate)
 				exceptionType === 'NotFoundError' ||
 				exceptionType === 'DOMException' ||
-				exceptionType === 'IndexedDBConnectionError' ||
 				exceptionMessage.includes('removeChild') ||
 				exceptionMessage.includes('insertBefore') ||
 				exceptionMessage.includes('appendChild') ||
-				exceptionMessage.includes('not a child of this node')
+				exceptionMessage.includes('not a child of this node') ||
+				// Safari IndexedDB bug (iOS 17.4+) - all custom error types
+				exceptionType === 'IndexedDBConnectionError' ||
+				exceptionType === 'IndexedDBSlowRestoreError' ||
+				exceptionType === 'IndexedDBQuotaError' ||
+				exceptionType === 'IndexedDBTimeoutError' ||
+				exceptionType === 'IndexedDBBlobWriteError' ||
+				exceptionMessage.includes('Connection to Indexed Database server lost')
 			) {
 				return null;
 			}
