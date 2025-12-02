@@ -78,11 +78,5 @@ export default defineConfig(
 		optimizeDeps: {
 			include: ['@fortawesome/fontawesome-svg-core'],
 		},
-		test: {
-			globals: true,
-			environment: 'jsdom',
-			setupFiles: ['./src/setupTests.ts'],
-			exclude: ['.llm/**', 'node_modules/**'],
-		},
 	}),
 );
