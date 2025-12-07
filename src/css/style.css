@@ -156,10 +156,6 @@ td.number {
   margin-right: 0px;
   margin-bottom: 4px;
 }
-:root {
-  width: -webkit-fit-content;
-  width: fit-content;
-}
 .navbar {
   background: linear-gradient(#faa123, #f89406 60%, #e48806);
 }
