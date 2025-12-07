@@ -183,6 +183,19 @@ function formatBytes(bytes: number): string {
 }
 
 /**
+ * 🔇 Check if an error is a browser shutdown abort error.
+ * These occur when the user closes the tab/browser while an async operation is pending.
+ * They are expected during normal browser lifecycle and should not be logged.
+ */
+export function isShutdownAbortError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const message = error.message.toLowerCase();
+  return message.includes("aborted") && message.includes("shutdown");
+}
+
+/**
  * 💾 Check if there's enough storage quota available
  */
 export async function checkStorageQuota(
@@ -206,6 +219,9 @@ export async function checkStorageQuota(
       used: usage,
     };
   } catch (error) {
+    if (isShutdownAbortError(error)) {
+      return { hasSpace: true };
+    }
     console.warn("[Storage] Failed to estimate storage quota:", error);
     return { hasSpace: true };
   }

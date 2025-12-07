@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vite-plus/test";
-import { compressForStorage, decompressFromStorage } from "./dataCompression";
+import { compressForStorage, decompressFromStorage, isShutdownAbortError } from "./dataCompression";
 
 describe("dataCompression", () => {
   describe("compressForStorage", () => {
@@ -145,6 +145,38 @@ describe("dataCompression", () => {
           : JSON.parse(compressed.data);
         expect(decompressed).toEqual(testCase.data);
       }
+    });
+  });
+
+  describe("isShutdownAbortError", () => {
+    it("returns true for a shutdown abort error", () => {
+      expect(
+        isShutdownAbortError(new TypeError("The operation was aborted due to shutdown.")),
+      ).toBe(true);
+    });
+
+    it("matches shutdown abort errors case-insensitively", () => {
+      expect(isShutdownAbortError(new Error("THE OPERATION WAS ABORTED DUE TO SHUTDOWN"))).toBe(
+        true,
+      );
+    });
+
+    it("returns false for non-Error values", () => {
+      expect(isShutdownAbortError(null)).toBe(false);
+      expect(isShutdownAbortError(undefined)).toBe(false);
+      expect(isShutdownAbortError("string error")).toBe(false);
+      expect(isShutdownAbortError({ message: "object error" })).toBe(false);
+    });
+
+    it("returns false for unrelated errors", () => {
+      expect(isShutdownAbortError(new Error("Network error"))).toBe(false);
+      expect(isShutdownAbortError(new Error("Storage quota exceeded"))).toBe(false);
+      expect(isShutdownAbortError(new TypeError("undefined is not a function"))).toBe(false);
+    });
+
+    it("returns false for partial matches", () => {
+      expect(isShutdownAbortError(new Error("The operation was aborted"))).toBe(false);
+      expect(isShutdownAbortError(new Error("System shutdown initiated"))).toBe(false);
     });
   });
 });
