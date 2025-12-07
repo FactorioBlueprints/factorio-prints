@@ -2,7 +2,6 @@ import {createSyncStoragePersister} from '@tanstack/query-sync-storage-persister
 import {QueryClient} from '@tanstack/react-query';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {PersistQueryClientProvider, removeOldestQuery} from '@tanstack/react-query-persist-client';
-import {forbidExtraProps} from 'airbnb-prop-types';
 import React, {Suspense} from 'react';
 import {Helmet} from 'react-helmet';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
@@ -125,7 +124,5 @@ function Root() {
 		</PersistQueryClientProvider>
 	);
 }
-
-Root.propTypes = forbidExtraProps({});
 
 export default Root;
