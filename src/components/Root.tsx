@@ -1,4 +1,3 @@
-import {forbidExtraProps} from 'airbnb-prop-types';
 import React              from 'react';
 import {Helmet}           from 'react-helmet';
 
@@ -89,7 +88,5 @@ function Root()
 		</PersistQueryClientProvider>
 	);
 }
-
-Root.propTypes = forbidExtraProps({});
 
 export default Root;
