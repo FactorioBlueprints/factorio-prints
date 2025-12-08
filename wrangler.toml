@@ -1,0 +1,5 @@
+# Cloudflare Pages configuration
+name = "factorio-prints"
+
+[pages]
+build_output_dir = "build"
