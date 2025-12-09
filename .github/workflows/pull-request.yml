@@ -1,7 +1,11 @@
-# Jobs that run on pull_request, but not on merge_group. This is useful for jobs that post comments on Pull Requests, like a code coverage report or a preview of rendered docs.
+# Jobs that run on pull_request, but not on merge_group. This is useful for jobs that post comments on Pull Requests.
 
 on:
   pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -12,8 +16,8 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       pull-requests: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
