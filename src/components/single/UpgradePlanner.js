@@ -9,7 +9,7 @@ import React     from 'react';
 import Card      from 'react-bootstrap/Card';
 import Table     from 'react-bootstrap/Table';
 
-import ItemIcon from '../ItemIcon';
+import {FactorioIcon} from '../core/icons/FactorioIcon';
 
 UpgradePlanner.propTypes = forbidExtraProps({
 	mappers: PropTypes.arrayOf(PropTypes.shape({
@@ -33,9 +33,9 @@ function UpgradePlanner(props)
 							// eslint-disable-next-line react/no-array-index-key
 							<tr key={index}>
 								<td className='d-flex align-items-center justify-content-center'>
-									<ItemIcon item={from} />
+									<FactorioIcon name={from} type='item' size='small' inline />
 									<FontAwesomeIcon icon={faArrowRight} size='lg' fixedWidth />
-									<ItemIcon item={to} />
+									<FactorioIcon name={to} type='item' size='small' inline />
 								</td>
 							</tr>,
 						)

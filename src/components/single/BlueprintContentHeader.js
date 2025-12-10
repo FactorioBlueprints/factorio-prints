@@ -7,8 +7,7 @@ import Button    from 'react-bootstrap/Button';
 import Card      from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 
-import ItemIcon from '../ItemIcon';
-import NewIcon  from '../NewIcon';
+import {FactorioIcon, Placeholder} from '../core/icons/FactorioIcon';
 
 BlueprintContentHeader.propTypes = forbidExtraProps({
 	data              : PropTypes.object.isRequired,
@@ -84,7 +83,7 @@ function getBlueprint(data, positionArray, blueprintStringSha)
 
 	return (
 		<>
-			<NewIcon iconType={'item'} iconName={item} />
+			<FactorioIcon type='item' name={item} size='small' inline />
 			<span className='p-1' />
 			{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 			<span className='p-1' />
@@ -125,7 +124,7 @@ function getFirstRow(data)
 
 	return (
 		<>
-			<ItemIcon item={item} />
+			<FactorioIcon type='item' name={item} size='small' inline />
 			<span className='p-1' />
 			{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 			<span className='p-1' />
@@ -138,7 +137,7 @@ function getItemIconIfExists(icons, index)
 {
 	if (index >= icons.length)
 	{
-		return <ItemIcon key={index} item='blank' />;
+		return <Placeholder key={index} size='small' inline />;
 	}
 
 	const signal                           = icons[index].signal;
@@ -146,10 +145,10 @@ function getItemIconIfExists(icons, index)
 
 	if (iconName === undefined)
 	{
-		return <ItemIcon key={index} item='blank' />;
+		return <Placeholder key={index} size='small' inline />;
 	}
 
-	return <NewIcon key={index} iconName={iconName} iconType={iconType} />;
+	return <FactorioIcon key={index} name={iconName} type={iconType} size='small' inline />;
 }
 
 export default BlueprintContentHeader;
