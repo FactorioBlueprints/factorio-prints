@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React     from 'react';
 import Card      from 'react-bootstrap/Card';
 import Table     from 'react-bootstrap/Table';
-import NewIcon   from '../NewIcon';
+import {FactorioIcon} from '../core/icons/FactorioIcon';
 
 NewItemHistogram.propTypes = forbidExtraProps({
 	title: PropTypes.string.isRequired,
@@ -22,7 +22,7 @@ function ItemHistogramRow(item)
 	return <tr>
 		<td className={`icon icon-${item.name}`}>
 			{
-				<NewIcon iconName={item.name} iconType={item.type} />
+				<FactorioIcon name={item.name} type={item.type} size='small' inline />
 			}
 		</td>
 		<td className='number'>

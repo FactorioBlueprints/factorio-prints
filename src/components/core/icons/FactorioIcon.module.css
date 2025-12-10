@@ -1,0 +1,32 @@
+.icon {
+	display: inline-block;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	vertical-align: middle;
+}
+
+.inline {
+	vertical-align: middle;
+}
+
+.small {
+	width: 32px;
+	height: 32px;
+}
+
+.medium {
+	width: 48px;
+	height: 48px;
+}
+
+.large {
+	width: 64px;
+	height: 64px;
+}
+
+.placeholder {
+	background-color: transparent;
+	border: 1px dashed #666;
+	border-radius: 4px;
+}
