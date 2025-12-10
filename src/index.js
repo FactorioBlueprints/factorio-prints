@@ -18,7 +18,7 @@ Sentry.init({
 		}),
 	],
 	tracesSampleRate: 0.1,
-	tracePropagationTargets: ['localhost', /^https:\/\/factorioprints\.com/],
+	tracePropagationTargets: ['localhost', /^https:\/\/(www\.)?factorioprints\.(com|xyz)/],
 	replaysSessionSampleRate: 0.001,
 	replaysOnErrorSampleRate: 1.0,
 });
