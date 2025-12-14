@@ -2,8 +2,8 @@ import {useQuery} from '@tanstack/react-query';
 import axios from 'axios';
 import {useState} from 'react';
 import Row from 'react-bootstrap/Row';
-import BlueprintThumbnail from '../BlueprintThumbnail';
 import BlueprintThumbnailPlaceholder from '../BlueprintThumbnailPlaceholder';
+import FactorioPrintsThumbnail from '../FactorioPrintsThumbnail';
 import CustomPagination from '../pagination/CustomPagination';
 import ReactQueryStatus from './ReactQueryStatus';
 
@@ -105,7 +105,7 @@ const SearchResults = ({searchState}) => {
 				<ReactQueryStatus {...result} />
 			</div>
 			{blueprintSummaries.map((blueprintSummary) => (
-				<BlueprintThumbnail
+				<FactorioPrintsThumbnail
 					key={blueprintSummary.key}
 					blueprintSummary={blueprintSummary}
 				/>
