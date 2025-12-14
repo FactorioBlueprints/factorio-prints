@@ -6,6 +6,7 @@ import PropTypes          from 'prop-types';
 import React              from 'react';
 import {Helmet}           from 'react-helmet';
 import useBlueprint       from '../../hooks/useBlueprint';
+import RichText           from '../core/RichText';
 
 BlueprintTitle.propTypes = forbidExtraProps({
 	blueprintKey: PropTypes.string.isRequired,
@@ -26,7 +27,8 @@ function BlueprintTitle({blueprintKey})
 			</Helmet>
 			<h1>
 				<FontAwesomeIcon icon={faLink} className='text-warning' />
-				{` ${title}`}
+				{' '}
+				<RichText text={title} inline iconSize='large' />
 			</h1>
 		</a>
 	);

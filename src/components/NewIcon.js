@@ -1,6 +1,17 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes          from 'prop-types';
-import React              from 'react';
+
+const CDN_BASE_URL = 'https://factorio-icon-cdn.pages.dev';
+
+function getUrlType(type) {
+	if (type === 'virtual' || type === 'virtual-signal') {
+		return 'virtual-signal';
+	}
+	if (type === 'planet') {
+		return 'space-location';
+	}
+	return type;
+}
 
 NewIcon.propTypes = forbidExtraProps({
 	iconName: PropTypes.string,
@@ -9,20 +20,13 @@ NewIcon.propTypes = forbidExtraProps({
 
 function NewIcon({iconName, iconType})
 {
-	if (iconType === 'virtual')
-	{
-		iconType = 'virtual-signal';
-	}
-	if (iconType === undefined)
-	{
-		iconType = 'item';
-	}
+	const urlType   = getUrlType(iconType || 'item');
 	const iconClass = `icon-${iconName}`;
-	const iconSrc   = `/icons/${iconType}/${iconName}.png`;
+	const iconSrc   = `${CDN_BASE_URL}/${urlType}/${iconName}.webp`;
 
 	return (
 		<span className={`icon item-icon ${iconClass}`}>
-			{/* eslint-disable-next-line */}
+			{ }
 			<img
 				height='32px'
 				width='32px'

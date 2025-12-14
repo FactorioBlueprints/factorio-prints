@@ -1,13 +1,13 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 
 import PropTypes from 'prop-types';
-import React     from 'react';
 
 import Button    from 'react-bootstrap/Button';
 import Card      from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 
 import {FactorioIcon, Placeholder} from '../core/icons/FactorioIcon';
+import RichText from '../core/RichText';
 
 BlueprintContentHeader.propTypes = forbidExtraProps({
 	data              : PropTypes.object.isRequired,
@@ -79,15 +79,15 @@ function getFbeButton(positionArray, blueprintStringSha)
 
 function getBlueprint(data, positionArray, blueprintStringSha)
 {
-	const {icons, item, labelHtml} = data;
+	const {icons, item, label} = data;
 
 	return (
 		<>
-			<FactorioIcon type='item' name={item} size='small' inline />
+			<FactorioIcon icon={{type: 'item', name: item}} size='small' inline />
 			<span className='p-1' />
 			{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 			<span className='p-1' />
-			<span dangerouslySetInnerHTML={{__html: labelHtml}} />
+			{label && <RichText text={label} inline iconSize='small' />}
 			<span className='p-1' />
 			{getFbeButton(positionArray, blueprintStringSha)}
 		</>
@@ -120,15 +120,15 @@ function BlueprintContentHeader({data, blueprintStringSha, blueprintKey, positio
 
 function getFirstRow(data)
 {
-	const {icons, item, labelHtml} = data;
+	const {icons, item, label} = data;
 
 	return (
 		<>
-			<FactorioIcon type='item' name={item} size='small' inline />
+			<FactorioIcon icon={{type: 'item', name: item}} size='small' inline />
 			<span className='p-1' />
 			{icons && [...Array(4).keys()].map(index => getItemIconIfExists(icons, index))}
 			<span className='p-1' />
-			<span dangerouslySetInnerHTML={{__html: labelHtml}} />
+			{label && <RichText text={label} inline iconSize='small' />}
 		</>
 	);
 }
@@ -140,15 +140,15 @@ function getItemIconIfExists(icons, index)
 		return <Placeholder key={index} size='small' inline />;
 	}
 
-	const signal                           = icons[index].signal;
-	const {name: iconName, type: iconType} = signal;
+	const signal                                                  = icons[index].signal;
+	const {name: iconName, type: iconType, quality: iconQuality} = signal;
 
 	if (iconName === undefined)
 	{
 		return <Placeholder key={index} size='small' inline />;
 	}
 
-	return <FactorioIcon key={index} name={iconName} type={iconType} size='small' inline />;
+	return <FactorioIcon key={index} icon={{name: iconName, type: iconType, quality: iconQuality}} size='small' inline />;
 }
 
 export default BlueprintContentHeader;

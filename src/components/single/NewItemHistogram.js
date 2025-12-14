@@ -22,7 +22,7 @@ function ItemHistogramRow(item)
 	return <tr>
 		<td className={`icon icon-${item.name}`}>
 			{
-				<FactorioIcon name={item.name} type={item.type} size='small' inline />
+				<FactorioIcon icon={{name: item.name, type: item.type}} size='small' inline />
 			}
 		</td>
 		<td className='number'>
