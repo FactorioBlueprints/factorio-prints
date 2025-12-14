@@ -24,7 +24,7 @@ repos:
         entry: npx biome check --write
         language: system
         files: \.(js|ts|jsx|tsx)$
-        exclude: ^(package\.json|package-lock\.json|database\.rules\.json)$
+        exclude: ^(package\.json|package-lock\.json|database\.rules\.json|eslint\.config\.ts)$
         pass_filenames: true
       - id: prettier
         name: prettier

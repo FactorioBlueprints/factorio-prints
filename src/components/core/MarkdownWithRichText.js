@@ -12,7 +12,7 @@ ${header}</thead>
 ${body}</tbody>
 </table>
 `;
-renderer.image = (href, title, text) => `<img src="${href}" alt="${text}" class="img-responsive">`;
+renderer.image = (href, _title, text) => `<img src="${href}" alt="${text}" class="img-responsive">`;
 
 marked.setOptions({
 	renderer,
