@@ -8,8 +8,7 @@ default:
     @just --list --unsorted
 
 # Build and sync to {{FACTORIO_PRINTS_DIR}}
-build:
-    npm install --legacy-peer-deps
+build: install
     GENERATE_SOURCEMAP=true op run --env-file=".envrc" -- npm run build
     npm run styles
     # Source maps are uploaded to Sentry during build, then deleted by the Sentry webpack plugin
@@ -45,6 +44,10 @@ sync-icon-sprites:
 # My `woof` command uses `echo`, `say`, and sends a Pushover notification.
 echo_command := env('ECHO_COMMAND', "echo")
 
+# Install npm dependencies
+install:
+    npm install --legacy-peer-deps
+
 # Run lint check
 lint:
     npx eslint src/**/*.{js,ts,tsx}
@@ -62,4 +65,4 @@ test:
     npm test -- --watchAll=false
 
 # Run all validation checks before committing
-precommit: lint typecheck styles test
+precommit: install lint typecheck styles test
