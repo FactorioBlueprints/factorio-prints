@@ -1,6 +1,5 @@
 import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
-import React from 'react';
 import useBlueprint from '../../hooks/useBlueprint';
 import MarkdownWithRichText from '../core/MarkdownWithRichText';
 

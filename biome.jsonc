@@ -9,16 +9,14 @@
 			"public/**/*.js",
 			"public/**/*.jsx",
 			"public/**/*.ts",
-			"public/**/*.tsx"
-		],
-		"experimentalScannerIgnores": [
-			".llm/**/*",
-			"node_modules",
-			"dist",
-			"build",
-			"coverage",
-			"package-lock.json",
-			"src/css/style.css"
+			"public/**/*.tsx",
+			"!!**/.llm/**/*",
+			"!!**/node_modules",
+			"!!**/dist",
+			"!!**/build",
+			"!!**/coverage",
+			"!!**/package-lock.json",
+			"!!**/src/css/style.css"
 		],
 		"ignoreUnknown": true
 	},

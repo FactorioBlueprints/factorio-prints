@@ -3,7 +3,6 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
 import {forbidExtraProps} from 'airbnb-prop-types';
 import PropTypes from 'prop-types';
-import React from 'react';
 import {Helmet} from 'react-helmet';
 import useBlueprint from '../../hooks/useBlueprint';
 import RichText from '../core/RichText';

@@ -95,8 +95,16 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.8",
+		"@eslint/js": "^9.39.2",
 		"@sentry/webpack-plugin": "3.5.0",
 		"@testing-library/react": "16.3.0",
+		"@typescript-eslint/eslint-plugin": "^8.49.0",
+		"@typescript-eslint/parser": "^8.49.0",
+		"eslint": "^9.39.2",
+		"eslint-plugin-react-hooks": "^7.0.1",
+		"eslint-plugin-react-refresh": "^0.4.25",
+		"globals": "^16.5.0",
+		"jiti": "^2.6.1",
 		"prettier": "^3.5.0"
 	}
 }
