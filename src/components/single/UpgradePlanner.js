@@ -33,9 +33,9 @@ function UpgradePlanner(props)
 							// eslint-disable-next-line react/no-array-index-key
 							<tr key={index}>
 								<td className='d-flex align-items-center justify-content-center'>
-									<FactorioIcon name={from} type='item' size='small' inline />
+									<FactorioIcon icon={{name: from, type: 'item'}} size='small' inline />
 									<FontAwesomeIcon icon={faArrowRight} size='lg' fixedWidth />
-									<FactorioIcon name={to} type='item' size='small' inline />
+									<FactorioIcon icon={{name: to, type: 'item'}} size='small' inline />
 								</td>
 							</tr>,
 						)
