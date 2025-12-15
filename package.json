@@ -75,7 +75,7 @@
 		"@types/atob": "2.1.4",
 		"@types/lodash": "4.17.21",
 		"@types/markdown-it": "14.1.2",
-		"@types/node": "25.0.1",
+		"@types/node": "25.0.2",
 		"@types/react": "19.2.7",
 		"@types/react-dom": "19.2.3",
 		"@types/serviceworker": "0.0.168",
