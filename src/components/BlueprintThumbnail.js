@@ -10,6 +10,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip        from 'react-bootstrap/Tooltip';
 import {Link}         from 'react-router-dom';
 
+import RichText from './core/RichText';
+
 import NoAvailableImage from '../gif/No_available_image.gif';
 
 import buildImageUrl              from '../helpers/buildImageUrl';
@@ -64,7 +66,7 @@ function BlueprintThumbnail({blueprintSummary: {key, title, imgurImage, voteSumm
 				<OverlayTrigger placement='bottom' overlay={tooltip}>
 					<Link to={`/view/${key}`}>
 						<span className={mineStyle}>
-							{title}
+							<RichText text={title} inline />
 						</span>
 					</Link>
 				</OverlayTrigger>
