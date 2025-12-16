@@ -7,8 +7,8 @@ ui_module := env('UI_MODULE', 'factorio-prints-dropwizard-application-ui-static'
 default:
     @just --list --unsorted
 
-# Build and sync to {{FACTORIO_PRINTS_DIR}}
-build: install
+# Build and rsync UI to {{FACTORIO_PRINTS_DIR}}
+deploy-rsync-ui: install
     GENERATE_SOURCEMAP=true op run --env-file=".envrc" -- npm run build
     npm run styles
     # Source maps are uploaded to Sentry during build, then deleted by the Sentry webpack plugin
