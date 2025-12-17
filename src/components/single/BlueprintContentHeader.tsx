@@ -149,6 +149,7 @@ function getItemIconIfExists(icons: BlueprintIcon[], index: number): React.React
 			key={index}
 			name={signal.name}
 			type={signal.type || 'item'}
+			quality={signal.quality}
 			size="small"
 			inline
 		/>
