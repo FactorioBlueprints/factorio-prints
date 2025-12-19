@@ -196,18 +196,19 @@ const Header: React.FC = () => {
 
 			<Navbar.Collapse>
 				<Nav className="mr-auto">
-					{/* From https://github.com/ReactTraining/react-router/issues/4463#issuecomment-342838735 */}
-					<Nav.Link
-						href="https://www.factorio.school/search"
-						className="text-light"
-					>
-						<FontAwesomeIcon
-							icon={faSearch}
-							size="lg"
-							fixedWidth
-						/>
-						{' Search'}
-					</Nav.Link>
+					<Nav.Item>
+						<Link
+							to="/search"
+							className="nav-link text-light"
+						>
+							<FontAwesomeIcon
+								icon={faSearch}
+								size="lg"
+								fixedWidth
+							/>
+							{' Search'}
+						</Link>
+					</Nav.Item>
 					<Nav.Item>
 						<Link
 							to="/blueprints"
@@ -275,17 +276,19 @@ const Header: React.FC = () => {
 							{' Chat'}
 						</Link>
 					</Nav.Item>
-					<Nav.Link
-						href="https://www.factorio.school/contributors"
-						className="text-light"
-					>
-						<FontAwesomeIcon
-							icon={faPatreon}
-							size="lg"
-							fixedWidth
-						/>
-						{' Contributors'}
-					</Nav.Link>
+					<Nav.Item>
+						<Link
+							to="/contributors"
+							className="nav-link text-light"
+						>
+							<FontAwesomeIcon
+								icon={faPatreon}
+								size="lg"
+								fixedWidth
+							/>
+							{' Contributors'}
+						</Link>
+					</Nav.Item>
 					<Nav.Link
 						href="https://github.com/FactorioBlueprints/factorio-prints"
 						className="text-light"

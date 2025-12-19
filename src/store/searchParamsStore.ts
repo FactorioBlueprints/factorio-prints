@@ -17,9 +17,9 @@ export const searchParamsStore = new Store<SearchParamsState>({
 	titleFilter: '',
 });
 
-searchParamsStore.subscribe((state) => {
+searchParamsStore.subscribe(({currentVal}) => {
 	try {
-		storeSchema.parse(state);
+		storeSchema.parse(currentVal);
 	} catch (error: unknown) {
 		const zodError = error as z.ZodError;
 		throw new Error(`SearchParams validation failed: ${zodError.issues.map((e) => e.message).join(', ')}`);
