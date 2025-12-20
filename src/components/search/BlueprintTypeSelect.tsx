@@ -6,7 +6,7 @@ import type {BlueprintType} from '../../api/rest/types';
 import {advancedSearchStore, setBlueprintType} from '../../store/advancedSearchStore';
 
 const blueprintTypeOptions: Array<{value: BlueprintType | ''; label: string}> = [
-	{value: '', label: 'Any Type'},
+	{value: '', label: 'Any blueprint Type'},
 	{value: 'blueprint', label: 'Blueprint'},
 	{value: 'blueprint-book', label: 'Blueprint Book'},
 	{value: 'upgrade-planner', label: 'Upgrade Planner'},
@@ -23,8 +23,10 @@ const BlueprintTypeSelect: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Blueprint Type</Form.Label>
+			<Form.Label>Blueprint type</Form.Label>
 			<Form.Select
+				size="sm"
+				aria-label="Select blueprint type"
 				value={blueprintType ?? ''}
 				onChange={handleChange}
 			>

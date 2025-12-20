@@ -1,5 +1,3 @@
-import {faSearch} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useStore} from '@tanstack/react-store';
 import type React from 'react';
 import Form from 'react-bootstrap/Form';
@@ -22,18 +20,16 @@ const SearchTextInput: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Text Search</Form.Label>
+			<Form.Label>Text</Form.Label>
 			<InputGroup>
 				<Form.Control
+					size="sm"
 					type="text"
-					placeholder="Search blueprints..."
+					placeholder="Text..."
 					value={text}
 					onChange={handleChange}
 					onKeyDown={handleKeyDown}
 				/>
-				<InputGroup.Text>
-					<FontAwesomeIcon icon={faSearch} />
-				</InputGroup.Text>
 			</InputGroup>
 		</Form.Group>
 	);

@@ -6,6 +6,7 @@ import Select, {type SingleValue} from 'react-select';
 
 import {useRecipeOptions} from '../../hooks/useRecipeOptions';
 import {advancedSearchStore, setRecipe} from '../../store/advancedSearchStore';
+import {darkThemeStyles} from './reactSelectDarkTheme';
 
 interface RecipeOption {
 	value: string;
@@ -31,7 +32,7 @@ const RecipeFilterSelect: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Recipe</Form.Label>
+			<Form.Label>Recipes</Form.Label>
 			<Select<RecipeOption>
 				value={selectedOption}
 				options={options}
@@ -39,7 +40,8 @@ const RecipeFilterSelect: React.FC = () => {
 				isLoading={isLoading}
 				isClearable={true}
 				isSearchable={true}
-				placeholder="Select recipe..."
+				placeholder="Any recipe"
+				styles={darkThemeStyles}
 			/>
 		</Form.Group>
 	);

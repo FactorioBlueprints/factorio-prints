@@ -6,6 +6,7 @@ import Select, {type SingleValue} from 'react-select';
 
 import gameVersions from '../../data/gameVersions.json';
 import {advancedSearchStore, setGameVersion} from '../../store/advancedSearchStore';
+import {darkThemeStyles} from './reactSelectDarkTheme';
 
 interface VersionOption {
 	value: number;
@@ -44,14 +45,15 @@ const VersionFilterSelect: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Game Version</Form.Label>
+			<Form.Label>Versions</Form.Label>
 			<Select<VersionOption>
 				value={selectedOption}
 				options={options}
 				onChange={handleChange}
 				isClearable={true}
 				isSearchable={true}
-				placeholder="Select version..."
+				placeholder="Any version"
+				styles={darkThemeStyles}
 			/>
 		</Form.Group>
 	);

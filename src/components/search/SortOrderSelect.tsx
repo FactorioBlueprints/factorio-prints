@@ -14,13 +14,15 @@ const SortOrderSelect: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Sort By</Form.Label>
+			<Form.Label>Sort Order</Form.Label>
 			<Form.Select
+				size="sm"
+				aria-label="Select Sort Order"
 				value={orderBy}
 				onChange={handleChange}
 			>
-				<option value="Favorites">Most Favorited</option>
-				<option value="Updated">Most Recent</option>
+				<option value="Favorites">Favorites</option>
+				<option value="Updated">Updated</option>
 			</Form.Select>
 		</Form.Group>
 	);

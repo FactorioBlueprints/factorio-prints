@@ -6,9 +6,10 @@ import type {ModFilter} from '../../api/rest/types';
 import {advancedSearchStore, setMod} from '../../store/advancedSearchStore';
 
 const modOptions: Array<{value: ModFilter | ''; label: string}> = [
-	{value: '', label: 'Any Mod'},
-	{value: 'base', label: 'Base Game Only'},
-	{value: 'base&creative', label: 'Base + Creative'},
+	{value: '', label: 'Any mod'},
+	{value: 'base', label: 'Base game only'},
+	{value: 'base&creative', label: 'Only base and creative'},
+	{value: 'unknown', label: 'Includes unknown mod'},
 	{value: 'aai', label: 'AAI (Advanced Autonomous Industries)'},
 	{value: 'ltn', label: 'LTN (Logistic Train Network)'},
 	{value: 'krastorio', label: 'Krastorio'},
@@ -16,7 +17,6 @@ const modOptions: Array<{value: ModFilter | ''; label: string}> = [
 	{value: 'bobs', label: "Bob's Mods"},
 	{value: 'creative-mod', label: 'Creative Mod'},
 	{value: 'lighted-electric-poles', label: 'Lighted Electric Poles +'},
-	{value: 'unknown', label: 'Unknown Mod'},
 ];
 
 const ModFilterSelect: React.FC = () => {
@@ -29,8 +29,10 @@ const ModFilterSelect: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Mod Filter</Form.Label>
+			<Form.Label>Mod</Form.Label>
 			<Form.Select
+				size="sm"
+				aria-label="Select mod"
 				value={mod ?? ''}
 				onChange={handleChange}
 			>
