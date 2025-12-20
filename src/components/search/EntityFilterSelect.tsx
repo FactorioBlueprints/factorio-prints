@@ -6,6 +6,7 @@ import Select, {type SingleValue} from 'react-select';
 
 import {useEntityOptions} from '../../hooks/useEntityOptions';
 import {advancedSearchStore, setEntity} from '../../store/advancedSearchStore';
+import {darkThemeStyles} from './reactSelectDarkTheme';
 
 interface EntityOption {
 	value: string;
@@ -31,7 +32,7 @@ const EntityFilterSelect: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Entity</Form.Label>
+			<Form.Label>Entities</Form.Label>
 			<Select<EntityOption>
 				value={selectedOption}
 				options={options}
@@ -39,7 +40,8 @@ const EntityFilterSelect: React.FC = () => {
 				isLoading={isLoading}
 				isClearable={true}
 				isSearchable={true}
-				placeholder="Select entity..."
+				placeholder="Any entity"
+				styles={darkThemeStyles}
 			/>
 		</Form.Group>
 	);

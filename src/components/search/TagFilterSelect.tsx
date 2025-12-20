@@ -6,6 +6,7 @@ import Select, {type SingleValue} from 'react-select';
 
 import {useRestTags} from '../../hooks/useRestTags';
 import {advancedSearchStore, setTag} from '../../store/advancedSearchStore';
+import {darkThemeStyles} from './reactSelectDarkTheme';
 
 interface TagOption {
 	value: string;
@@ -31,7 +32,7 @@ const TagFilterSelect: React.FC = () => {
 
 	return (
 		<Form.Group className="mb-3">
-			<Form.Label>Tag</Form.Label>
+			<Form.Label>Tags</Form.Label>
 			<Select<TagOption>
 				value={selectedOption}
 				options={options}
@@ -39,7 +40,8 @@ const TagFilterSelect: React.FC = () => {
 				isLoading={isLoading}
 				isClearable={true}
 				isSearchable={true}
-				placeholder="Select tag..."
+				placeholder="Any tag"
+				styles={darkThemeStyles}
 			/>
 		</Form.Group>
 	);

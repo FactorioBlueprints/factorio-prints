@@ -30,7 +30,7 @@ const defaultState: AdvancedSearchState = {
 	blueprintType: null,
 	mod: null,
 	page: 1,
-	searchTrigger: 0,
+	searchTrigger: 1,
 };
 
 export const advancedSearchStore = new Store<AdvancedSearchState>(defaultState);

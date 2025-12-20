@@ -1,9 +1,6 @@
-import {faEraser, faSearch} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import type React from 'react';
 import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import Stack from 'react-bootstrap/Stack';
+import Container from 'react-bootstrap/Container';
 
 import {resetAdvancedSearch, submitSearch} from '../../store/advancedSearchStore';
 import BlueprintTypeSelect from './BlueprintTypeSelect';
@@ -25,40 +22,25 @@ const SearchQueryPanel: React.FC = () => {
 	};
 
 	return (
-		<Card>
-			<Card.Header>
-				<FontAwesomeIcon icon={faSearch} /> Advanced Search
-			</Card.Header>
-			<Card.Body>
-				<SearchTextInput />
-				<SortOrderSelect />
-				<BlueprintTypeSelect />
-				<ModFilterSelect />
-				<TagFilterSelect />
-				<EntityFilterSelect />
-				<RecipeFilterSelect />
-				<VersionFilterSelect />
+		<Container>
+			<SearchTextInput />
+			<SortOrderSelect />
+			<ModFilterSelect />
+			<TagFilterSelect />
+			<EntityFilterSelect />
+			<RecipeFilterSelect />
+			<VersionFilterSelect />
+			<BlueprintTypeSelect />
 
-				<Stack
-					direction="horizontal"
-					gap={2}
-					className="mt-3"
-				>
-					<Button
-						variant="primary"
-						onClick={handleSearch}
-					>
-						<FontAwesomeIcon icon={faSearch} /> Search
-					</Button>
-					<Button
-						variant="outline-secondary"
-						onClick={handleClear}
-					>
-						<FontAwesomeIcon icon={faEraser} /> Clear
-					</Button>
-				</Stack>
-			</Card.Body>
-		</Card>
+			<Button
+				variant="warning"
+				onClick={handleSearch}
+			>
+				Search
+			</Button>
+
+			<Button onClick={handleClear}>Clear</Button>
+		</Container>
 	);
 };
 
