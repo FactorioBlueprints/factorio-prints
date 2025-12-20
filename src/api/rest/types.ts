@@ -20,39 +20,39 @@ export const modFilterSchema = z.enum([
 ]);
 export type ModFilter = z.infer<typeof modFilterSchema>;
 
-export const restBlueprintSummarySchema = z
-	.object({
-		key: z.string(),
-		title: z.string(),
+export const restBlueprintSummarySchema = z.object({
+	key: z.string(),
+	title: z.string(),
+	voteSummary: z.object({
+		numberOfUpvotes: z.number(),
+	}),
+	imgurImage: z.object({
 		imgurId: z.string(),
 		imgurType: z.string(),
-		numberOfFavorites: z.number(),
-		lastUpdatedDate: z.number().optional(),
-		height: z.number().optional(),
-		width: z.number().optional(),
-	})
-	.strict();
+	}),
+});
 
 export type RestBlueprintSummary = z.infer<typeof restBlueprintSummarySchema>;
 
-export const restPaginationMetadataSchema = z
-	.object({
-		pagination: z.object({
-			numberOfPages: z.number(),
-			pageNumber: z.number(),
-			pageSize: z.number(),
-		}),
-	})
-	.strict();
+export const restPaginationMetadataSchema = z.object({
+	pagination: z.object({
+		numberOfPages: z.number(),
+		pageNumber: z.number(),
+		pageSize: z.number(),
+	}),
+	criteria: z.string().optional(),
+	orderBy: z.string().optional(),
+	multiplicity: z.string().optional(),
+	projection: z.string().optional(),
+	transactionTimestamp: z.string().optional(),
+});
 
 export type RestPaginationMetadata = z.infer<typeof restPaginationMetadataSchema>;
 
-export const restPaginatedResponseSchema = z
-	.object({
-		_data: z.array(restBlueprintSummarySchema),
-		_metadata: restPaginationMetadataSchema,
-	})
-	.strict();
+export const restPaginatedResponseSchema = z.object({
+	_data: z.array(restBlueprintSummarySchema),
+	_metadata: restPaginationMetadataSchema,
+});
 
 export type RestPaginatedResponse = z.infer<typeof restPaginatedResponseSchema>;
 

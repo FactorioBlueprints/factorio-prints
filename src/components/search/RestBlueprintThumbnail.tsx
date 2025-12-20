@@ -15,7 +15,9 @@ interface RestBlueprintThumbnailProps {
 }
 
 const RestBlueprintThumbnail: React.FC<RestBlueprintThumbnailProps> = ({blueprintSummary}) => {
-	const {key, title, imgurId, imgurType, numberOfFavorites} = blueprintSummary;
+	const {key, title, imgurImage, voteSummary} = blueprintSummary;
+	const {imgurId, imgurType} = imgurImage;
+	const numberOfFavorites = voteSummary.numberOfUpvotes;
 
 	const tooltip = (
 		<Tooltip>

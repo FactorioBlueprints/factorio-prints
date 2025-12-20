@@ -6,7 +6,6 @@ import Select, {type SingleValue} from 'react-select';
 
 import {useEntityOptions} from '../../hooks/useEntityOptions';
 import {advancedSearchStore, setEntity} from '../../store/advancedSearchStore';
-import {darkThemeStyles} from './reactSelectDarkTheme';
 
 interface EntityOption {
 	value: string;
@@ -41,7 +40,6 @@ const EntityFilterSelect: React.FC = () => {
 				isClearable={true}
 				isSearchable={true}
 				placeholder="Any entity"
-				styles={darkThemeStyles}
 			/>
 		</Form.Group>
 	);
