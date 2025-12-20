@@ -64,5 +64,9 @@ styles:
 test:
     npm test -- --watchAll=false
 
+# Build the project
+build:
+    SENTRY_AUTH_TOKEN="" npm run build
+
 # Run all validation checks before committing
-precommit: install lint typecheck styles test
+precommit: install lint typecheck styles test build
