@@ -6,7 +6,6 @@ import Select, {type SingleValue} from 'react-select';
 
 import {useRecipeOptions} from '../../hooks/useRecipeOptions';
 import {advancedSearchStore, setRecipe} from '../../store/advancedSearchStore';
-import {darkThemeStyles} from './reactSelectDarkTheme';
 
 interface RecipeOption {
 	value: string;
@@ -41,7 +40,6 @@ const RecipeFilterSelect: React.FC = () => {
 				isClearable={true}
 				isSearchable={true}
 				placeholder="Any recipe"
-				styles={darkThemeStyles}
 			/>
 		</Form.Group>
 	);

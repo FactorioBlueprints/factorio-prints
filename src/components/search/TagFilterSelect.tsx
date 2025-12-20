@@ -6,7 +6,6 @@ import Select, {type SingleValue} from 'react-select';
 
 import {useRestTags} from '../../hooks/useRestTags';
 import {advancedSearchStore, setTag} from '../../store/advancedSearchStore';
-import {darkThemeStyles} from './reactSelectDarkTheme';
 
 interface TagOption {
 	value: string;
@@ -41,7 +40,6 @@ const TagFilterSelect: React.FC = () => {
 				isClearable={true}
 				isSearchable={true}
 				placeholder="Any tag"
-				styles={darkThemeStyles}
 			/>
 		</Form.Group>
 	);
