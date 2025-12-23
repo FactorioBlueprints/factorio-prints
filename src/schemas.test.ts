@@ -322,6 +322,31 @@ describe('Schema validation', () => {
 			expect(() => rawBlueprintSchema.parse(invalidRawBlueprint)).toThrow();
 		});
 
+		it('should validate a raw blueprint with ISO string dates', () => {
+			const fakeRawBlueprint = {
+				title: 'Test Blueprint',
+				blueprintString: 'base64string',
+				createdDate: '2020-12-26T08:42:26.506Z',
+				descriptionMarkdown: 'Description',
+				lastUpdatedDate: '2021-04-25T08:22:16.341Z',
+				numberOfFavorites: 0,
+				tags: ['tag1', 'tag2'],
+				author: {
+					userId: 'user123',
+					displayName: 'Test User',
+				},
+				image: {
+					id: 'img123',
+					type: 'image/png',
+				},
+				favorites: {},
+			};
+
+			const result = rawBlueprintSchema.parse(fakeRawBlueprint);
+			expect(result.createdDate).toBe(1608972146506);
+			expect(result.lastUpdatedDate).toBe(1619338936341);
+		});
+
 		it('should validate a raw blueprint summary page', () => {
 			const fakeRawPage = {
 				data: {
