@@ -1,6 +1,6 @@
 import {Link} from '@tanstack/react-router';
 import type React from 'react';
-import Badge from 'react-bootstrap/Badge';
+import Button from 'react-bootstrap/Button';
 
 interface TagBadgeProps {
 	tag: string;
@@ -29,12 +29,12 @@ const TagBadge: React.FC<TagBadgeProps> = ({tag}) => {
 			className="m-1"
 			from="/"
 		>
-			<Badge
-				bg="warning"
-				text="light"
+			<Button
+				variant="outline-warning"
+				size="sm"
 			>
-				{tag}
-			</Badge>
+				{normalizedTag}
+			</Button>
 		</Link>
 	);
 };
