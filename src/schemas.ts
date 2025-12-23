@@ -1,5 +1,14 @@
 import {z} from 'zod';
 
+const dateToTimestamp = z.preprocess((val) => {
+	if (typeof val === 'number') return val;
+	if (typeof val === 'string') {
+		const date = new Date(val);
+		return isNaN(date.getTime()) ? val : date.getTime();
+	}
+	return val;
+}, z.number());
+
 export const imgurImageSchema = z
 	.object({
 		id: z.string(),
@@ -23,7 +32,7 @@ export const rawBlueprintSummarySchema = z
 		imgurId: z.string(),
 		imgurType: z.string(),
 		numberOfFavorites: z.number(),
-		lastUpdatedDate: z.number().optional(),
+		lastUpdatedDate: dateToTimestamp.optional(),
 		height: z.number().optional(),
 		width: z.number().optional(),
 	})
@@ -33,10 +42,10 @@ export const rawBlueprintSchema = z
 	.object({
 		title: z.string(),
 		blueprintString: z.string(),
-		createdDate: z.number(),
+		createdDate: dateToTimestamp,
 		descriptionMarkdown: z.string(),
 		imageUrl: z.string().optional(),
-		lastUpdatedDate: z.number(),
+		lastUpdatedDate: dateToTimestamp,
 		numberOfFavorites: z.number().optional().default(0),
 		tags: z.array(z.string()).optional().default([]),
 		authorId: z.string().optional(),
