@@ -1,4 +1,4 @@
-import {createRootRoute, Outlet} from '@tanstack/react-router';
+import {createRootRoute, Outlet, useRouter} from '@tanstack/react-router';
 import {getAuth} from 'firebase/auth';
 import {ref, runTransaction} from 'firebase/database';
 import React, {useEffect} from 'react';
@@ -9,8 +9,23 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import Header from '../components/Header';
 import {useSentryUser} from '../hooks/useSentryUser';
 
+function NotFoundComponent() {
+	const router = useRouter();
+	const pathname = router.state.location.pathname;
+
+	return (
+		<div className="p-5 rounded-lg jumbotron">
+			<title>Factorio Prints: 404</title>
+			<h1 className="display-4">404</h1>
+			<p className="lead">This is not the webpage you are looking for.</p>
+			<p>Path: {pathname}</p>
+		</div>
+	);
+}
+
 export const Route = createRootRoute({
 	component: Root,
+	notFoundComponent: NotFoundComponent,
 });
 
 function Root() {
