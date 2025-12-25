@@ -32,3 +32,10 @@ jobs:
           git config user.email "actions@github.com"
           git tag "${{ steps.generate-tag.outputs.tag }}" HEAD
           git push origin "${{ steps.generate-tag.outputs.tag }}"
+
+      - name: Output release link
+        run: |
+          TAG="${{ steps.generate-tag.outputs.tag }}"
+          echo "## ✅ Tag Created: \`$TAG\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 👉 [Create Release for $TAG](https://github.com/${{ github.repository }}/releases/new?tag=$TAG&title=$TAG)" >> $GITHUB_STEP_SUMMARY
