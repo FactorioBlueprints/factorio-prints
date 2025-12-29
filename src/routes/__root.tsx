@@ -35,16 +35,18 @@ function Root() {
 
 	useEffect(() => {
 		if (user) {
-			const {uid, email, photoURL, emailVerified, providerData} = user;
+			const {uid, email, photoURL, emailVerified, providerData, displayName: userDisplayName} = user;
 
 			const providerId = providerData && providerData.length && providerData[0].providerId;
 			const providerDisplayName = providerId ? providerData[0].displayName : undefined;
+			// Fallback chain: provider -> user -> email prefix
+			const effectiveDisplayName = providerDisplayName || userDisplayName || email?.split('@')[0];
 
 			const buildUserInformation = (existingUser: any) => {
 				// Firebase transactions pass null when no data exists
 				if (existingUser === null) {
 					return {
-						displayName: providerDisplayName,
+						displayName: effectiveDisplayName,
 						providerDisplayName,
 						photoURL,
 						email,
@@ -53,7 +55,7 @@ function Root() {
 					};
 				}
 
-				const displayName = existingUser.displayName || providerDisplayName;
+				const displayName = existingUser.displayName || effectiveDisplayName;
 				return {
 					...existingUser,
 					displayName,
