@@ -55,20 +55,31 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-blueprint-id',
 			authorId: 'test-author-id',
 			tags: ['tag1', 'tag2', 'tag3'],
+			favorites: {user1: true, user2: true},
 		};
 
 		result.current.mutate(testData);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
 
-		// Verify Firebase update was called with correct paths
-		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+		// Verify two-phase deletion: first shrink blueprint, then delete
+		expect(dbUpdate).toHaveBeenCalledTimes(2);
+
+		// Phase 1: Remove large blueprintString to prevent TRIGGER_PAYLOAD_TOO_LARGE
+		expect(dbUpdate).toHaveBeenNthCalledWith(1, mockRef, {
+			'/blueprints/test-blueprint-id/blueprintString': null,
+		});
+
+		// Phase 2: Delete blueprint and related data
+		expect(dbUpdate).toHaveBeenNthCalledWith(2, mockRef, {
 			'/blueprints/test-blueprint-id': null,
 			'/users/test-author-id/blueprints/test-blueprint-id': null,
 			'/blueprintSummaries/test-blueprint-id': null,
 			'/byTag/tag1/test-blueprint-id': null,
 			'/byTag/tag2/test-blueprint-id': null,
 			'/byTag/tag3/test-blueprint-id': null,
+			'/users/user1/favorites/test-blueprint-id': null,
+			'/users/user2/favorites/test-blueprint-id': null,
 		});
 	});
 
@@ -83,14 +94,23 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-blueprint-id',
 			authorId: 'test-author-id',
 			tags: [],
+			favorites: {},
 		};
 
 		result.current.mutate(testData);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
 
-		// Verify Firebase update was called without tag paths
-		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
+		// Verify two-phase deletion
+		expect(dbUpdate).toHaveBeenCalledTimes(2);
+
+		// Phase 1: Shrink blueprint
+		expect(dbUpdate).toHaveBeenNthCalledWith(1, mockRef, {
+			'/blueprints/test-blueprint-id/blueprintString': null,
+		});
+
+		// Phase 2: Delete without tag paths
+		expect(dbUpdate).toHaveBeenNthCalledWith(2, mockRef, {
 			'/blueprints/test-blueprint-id': null,
 			'/users/test-author-id/blueprints/test-blueprint-id': null,
 			'/blueprintSummaries/test-blueprint-id': null,
@@ -107,6 +127,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: [],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -135,6 +156,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: [],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -169,6 +191,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: ['tag1', 'tag2'],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -188,6 +211,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: [],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -209,6 +233,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: [],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -229,6 +254,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: [],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isError).toBe(true));
@@ -247,6 +273,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: [],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -268,6 +295,7 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: ['tag1', 'tag2'],
+			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -280,11 +308,11 @@ describe('useDeleteBlueprint', () => {
 	});
 
 	it('should provide loading states', async () => {
-		let resolvePromise: any;
+		const resolvers: Array<() => void> = [];
 		vi.mocked(dbUpdate).mockImplementation(
 			() =>
 				new Promise((resolve) => {
-					resolvePromise = resolve;
+					resolvers.push(resolve);
 				}),
 		);
 
@@ -296,16 +324,54 @@ describe('useDeleteBlueprint', () => {
 			id: 'test-id',
 			authorId: 'test-author',
 			tags: [],
+			favorites: {},
 		});
 
 		// Wait for the mutation to start
 		await waitFor(() => expect(result.current.isPending).toBe(true));
 
-		// Resolve the promise to complete the mutation
-		resolvePromise?.();
+		// Resolve both promises (phase 1: shrink, phase 2: delete)
+		await waitFor(() => expect(resolvers.length).toBeGreaterThanOrEqual(1));
+		resolvers[0]?.();
+		await waitFor(() => expect(resolvers.length).toBeGreaterThanOrEqual(2));
+		resolvers[1]?.();
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
 
 		expect(result.current.isPending).toBe(false);
+	});
+
+	it('should clean up user favorites when deleting blueprint', async () => {
+		const mockRef = {path: 'mock-ref'};
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
+
+		const {result} = renderHook(() => useDeleteBlueprint(), {wrapper});
+
+		result.current.mutate({
+			id: 'test-blueprint',
+			authorId: 'author-id',
+			tags: [],
+			favorites: {user1: true, user2: true, user3: false},
+		});
+
+		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
+
+		// Verify two-phase deletion with favorites cleanup (only true values)
+		expect(dbUpdate).toHaveBeenCalledTimes(2);
+
+		// Phase 1: Shrink blueprint
+		expect(dbUpdate).toHaveBeenNthCalledWith(1, mockRef, {
+			'/blueprints/test-blueprint/blueprintString': null,
+		});
+
+		// Phase 2: Delete with favorites cleanup
+		expect(dbUpdate).toHaveBeenNthCalledWith(2, mockRef, {
+			'/blueprints/test-blueprint': null,
+			'/users/author-id/blueprints/test-blueprint': null,
+			'/blueprintSummaries/test-blueprint': null,
+			'/users/user1/favorites/test-blueprint': null,
+			'/users/user2/favorites/test-blueprint': null,
+		});
 	});
 });

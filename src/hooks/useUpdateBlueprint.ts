@@ -24,6 +24,7 @@ interface DeleteBlueprintMutationParams {
 	id: string;
 	authorId: string;
 	tags: string[];
+	favorites: Record<string, boolean>;
 }
 
 interface ImgurRegexPatterns {
@@ -194,7 +195,17 @@ export const useDeleteBlueprint = () => {
 	const navigate = useNavigate();
 
 	return useMutation<string, Error, DeleteBlueprintMutationParams>({
-		mutationFn: async ({id, authorId, tags}) => {
+		mutationFn: async ({id, authorId, tags, favorites}) => {
+			// Phase 1: Shrink the blueprint by removing the large blueprintString field.
+			// This prevents TRIGGER_PAYLOAD_TOO_LARGE errors when the Cloud Function
+			// receives the deleted blueprint data.
+			await dbUpdate(ref(getFirebaseDatabase()), {
+				[`/blueprints/${id}/blueprintString`]: null,
+			});
+
+			// Phase 2: Delete the blueprint and all related data.
+			// The Cloud Function cleanupFavoritesOnBlueprintDelete will also run
+			// as a safety net for favorites cleanup.
 			const updates: Record<string, null> = {
 				[`/blueprints/${id}`]: null,
 				[`/users/${authorId}/blueprints/${id}`]: null,
@@ -204,6 +215,14 @@ export const useDeleteBlueprint = () => {
 			tags.forEach((tag) => {
 				updates[`/byTag/${tag}/${id}`] = null;
 			});
+
+			// Clean up favorites from all users who favorited this blueprint.
+			// This is done client-side for immediate cleanup; the Cloud Function
+			// serves as a backup in case this fails.
+			const userIds = Object.keys(favorites).filter((userId) => favorites[userId] === true);
+			for (const userId of userIds) {
+				updates[`/users/${userId}/favorites/${id}`] = null;
+			}
 
 			await dbUpdate(ref(getFirebaseDatabase()), updates);
 

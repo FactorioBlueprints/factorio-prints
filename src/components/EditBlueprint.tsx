@@ -389,6 +389,7 @@ function EditBlueprintWrapper() {
 			id: blueprintId,
 			authorId,
 			tags: currentTags,
+			favorites: rawBlueprintData?.favorites ?? {},
 		});
 	}, [deleteBlueprintMutation, blueprintId, rawBlueprintData, currentTags]);
 
