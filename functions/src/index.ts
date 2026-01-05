@@ -60,7 +60,12 @@ export const updateFavoriteCount = onValueWritten(
 );
 
 /**
- * Cloud Function to clean up user favorites when a blueprint is deleted
+ * Cloud Function to clean up user favorites when a blueprint is deleted.
+ * This serves as a safety net - the client also performs this cleanup,
+ * but this ensures consistency if the client-side cleanup fails.
+ *
+ * Note: The client first nulls out the blueprintString field before deletion
+ * to prevent TRIGGER_PAYLOAD_TOO_LARGE errors for large blueprints.
  */
 export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 	'/blueprints/{blueprintId}',
@@ -69,29 +74,26 @@ export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 		const snapshot = event.data;
 		const blueprint = snapshot.val();
 
-		if (!blueprint || !blueprint.favorites) {
+		// Remove this blueprint from all users' favorites
+		const favorites = blueprint?.favorites ?? {};
+		const userIds = Object.keys(favorites).filter((userId) => favorites[userId] === true);
+
+		if (userIds.length === 0) {
+			functions.logger.log(`Blueprint ${blueprintId} deleted with no favorites to clean up`);
 			return null;
 		}
 
 		const database = admin.database();
 		const updates: Record<string, null> = {};
 
-		// Remove this blueprint from all users' favorites
-		const userIds = Object.keys(blueprint.favorites).filter((userId) => blueprint.favorites[userId] === true);
-
 		for (const userId of userIds) {
 			updates[`/users/${userId}/favorites/${blueprintId}`] = null;
 		}
 
-		// Also remove the summary entry
-		updates[`/blueprintSummaries/${blueprintId}`] = null;
-
-		if (Object.keys(updates).length > 0) {
-			await database.ref().update(updates);
-			functions.logger.log(
-				`Cleaned up favorites for deleted blueprint ${blueprintId} from ${userIds.length} users`,
-			);
-		}
+		await database.ref().update(updates);
+		functions.logger.log(
+			`Cleaned up deleted blueprint ${blueprintId}: removed favorites from ${userIds.length} users`,
+		);
 
 		return null;
 	},
