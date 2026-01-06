@@ -389,9 +389,8 @@ function EditBlueprintWrapper() {
 			id: blueprintId,
 			authorId,
 			tags: currentTags,
-			favorites: rawBlueprintData?.favorites ?? {},
 		});
-	}, [deleteBlueprintMutation, blueprintId, rawBlueprintData, currentTags]);
+	}, [deleteBlueprintMutation, blueprintId, rawBlueprintData?.author?.userId, currentTags]);
 
 	const handleTagSelection = useCallback(
 		(selectedTags: readonly SelectOption[] | null) => {

@@ -37,7 +37,6 @@ const createMockBlueprint = (overrides: any) => ({
 	createdDate: 900,
 	author: {userId: 'user-1', displayName: 'Test User'},
 	image: {id: 'img123', type: 'image/png'},
-	favorites: {},
 	authorId: 'user-1',
 	...overrides,
 });
@@ -452,7 +451,6 @@ describe('Tag Operations Cache Consistency', () => {
 				id: blueprintId,
 				authorId,
 				tags,
-				favorites: {},
 			});
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -506,7 +504,6 @@ describe('Tag Operations Cache Consistency', () => {
 				id: blueprintId,
 				authorId,
 				tags,
-				favorites: {},
 			});
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -603,7 +600,6 @@ describe('Tag Operations Cache Consistency', () => {
 				id: 'lifecycle-blueprint',
 				authorId: 'user-123',
 				tags: ['logistics', 'production'],
-				favorites: {},
 			});
 
 			await waitFor(() => expect(deleteResult.current.isSuccess).toBe(true));
@@ -653,7 +649,6 @@ describe('Tag Operations Cache Consistency', () => {
 				id: 'bp-2',
 				authorId: 'author-2',
 				tags: ['combat'],
-				favorites: {},
 			});
 
 			// Wait for both operations
@@ -755,7 +750,6 @@ describe('Tag Operations Cache Consistency', () => {
 				id: blueprintId,
 				authorId: 'test-author',
 				tags: ['combat'],
-				favorites: {},
 			});
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));

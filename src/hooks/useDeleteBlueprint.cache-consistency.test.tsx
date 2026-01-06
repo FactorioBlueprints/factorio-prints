@@ -92,7 +92,6 @@ describe('useDeleteBlueprint cache consistency', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -152,7 +151,6 @@ describe('useDeleteBlueprint cache consistency', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -209,7 +207,6 @@ describe('useDeleteBlueprint cache consistency', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -270,7 +267,6 @@ describe('useDeleteBlueprint cache consistency', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});
@@ -320,7 +316,6 @@ describe('useDeleteBlueprint cache consistency', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true), {timeout: 3000});

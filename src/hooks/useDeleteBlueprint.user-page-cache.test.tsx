@@ -69,7 +69,6 @@ describe('useDeleteBlueprint user page cache invalidation', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -124,7 +123,6 @@ describe('useDeleteBlueprint user page cache invalidation', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -169,7 +167,6 @@ describe('useDeleteBlueprint user page cache invalidation', () => {
 			id: blueprintId,
 			authorId,
 			tags,
-			favorites: {},
 		});
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
