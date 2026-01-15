@@ -34,7 +34,11 @@ export const updateFavoriteCount = onValueWritten(
 
 		// Update the blueprint's favorites record to match
 		const blueprintFavoriteRef = database.ref(`/blueprints/${blueprintId}/favorites/${userId}`);
-		await blueprintFavoriteRef.set(afterValue);
+		if (afterValue === true) {
+			await blueprintFavoriteRef.set(true);
+		} else {
+			await blueprintFavoriteRef.remove();
+		}
 
 		// Get all favorites for this blueprint to calculate the accurate count
 		const favoritesSnapshot = await database.ref(`/blueprints/${blueprintId}/favorites`).once('value');
