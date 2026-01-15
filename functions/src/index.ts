@@ -1,4 +1,5 @@
 import * as functions from 'firebase-functions';
+import * as functionsV1 from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 import {onValueWritten, onValueDeleted, DatabaseEvent, DataSnapshot} from 'firebase-functions/v2/database';
 import {Change} from 'firebase-functions/v2';
@@ -149,4 +150,31 @@ export const reconcileFavoriteCounts = onRequest(async (req, res) => {
 			reconciled: 0,
 		});
 	}
+});
+
+/**
+ * Cloud Function to initialize user profile when a new user signs up.
+ * Creates the /users/{userId} record with displayName, email, and empty collections.
+ * This ensures all users have a profile in the database for consistent data access.
+ */
+export const initializeUserProfile = functionsV1.auth.user().onCreate(async (user) => {
+	const database = admin.database();
+	const userRef = database.ref(`/users/${user.uid}`);
+
+	// Check if user profile already exists (safety check)
+	const existingProfile = await userRef.once('value');
+	if (existingProfile.exists()) {
+		functions.logger.log(`User profile already exists for ${user.uid}, skipping initialization`);
+		return null;
+	}
+
+	await userRef.set({
+		displayName: user.displayName || 'Anonymous',
+		email: user.email || null,
+		favorites: {},
+		blueprints: {},
+	});
+
+	functions.logger.log(`Initialized user profile for ${user.uid} (${user.email || 'no email'})`);
+	return null;
 });
