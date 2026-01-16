@@ -66,11 +66,6 @@ export const updateFavoriteCount = onValueWritten(
 
 /**
  * Cloud Function to clean up user favorites when a blueprint is deleted.
- * This serves as a safety net - the client also performs this cleanup,
- * but this ensures consistency if the client-side cleanup fails.
- *
- * Note: The client first nulls out the blueprintString field before deletion
- * to prevent TRIGGER_PAYLOAD_TOO_LARGE errors for large blueprints.
  */
 export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 	'/blueprints/{blueprintId}',

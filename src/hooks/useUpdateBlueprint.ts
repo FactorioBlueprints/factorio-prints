@@ -215,10 +215,6 @@ export const useDeleteBlueprint = () => {
 				updates[`/byTag/${tag}/${id}`] = null;
 			});
 
-			// Note: Favorites cleanup is handled by the Cloud Function
-			// cleanupFavoritesOnBlueprintDelete. We don't do it client-side because
-			// moderators don't have write access to other users' favorites paths.
-
 			await dbUpdate(ref(getFirebaseDatabase()), updates);
 
 			return authorId;
