@@ -66,7 +66,6 @@ describe('useToggleFavoriteMutation', () => {
 
 			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/favorites/user456': true,
-				'/blueprintSummaries/blueprint123/numberOfFavorites': 6,
 				'/users/user456/favorites/blueprint123': true,
 			});
 		});
@@ -87,7 +86,6 @@ describe('useToggleFavoriteMutation', () => {
 
 			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/favorites/user456': null,
-				'/blueprintSummaries/blueprint123/numberOfFavorites': 4,
 				'/users/user456/favorites/blueprint123': null,
 			});
 		});
@@ -108,7 +106,6 @@ describe('useToggleFavoriteMutation', () => {
 
 			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/favorites/user456': null,
-				'/blueprintSummaries/blueprint123/numberOfFavorites': 0,
 				'/users/user456/favorites/blueprint123': null,
 			});
 		});
@@ -129,7 +126,6 @@ describe('useToggleFavoriteMutation', () => {
 
 			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/favorites/user456': true,
-				'/blueprintSummaries/blueprint123/numberOfFavorites': 1,
 				'/users/user456/favorites/blueprint123': true,
 			});
 		});
@@ -150,7 +146,6 @@ describe('useToggleFavoriteMutation', () => {
 
 			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/favorites/user456': true,
-				'/blueprintSummaries/blueprint123/numberOfFavorites': 1,
 				'/users/user456/favorites/blueprint123': true,
 			});
 		});
@@ -422,7 +417,7 @@ describe('useToggleFavoriteMutation', () => {
 	});
 
 	describe('raw data pattern compliance', () => {
-		it('should use provided numberOfFavorites without fetching', async () => {
+		it('should use provided numberOfFavorites for cache updates without fetching', async () => {
 			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
 
 			const params = {
@@ -436,10 +431,8 @@ describe('useToggleFavoriteMutation', () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			// Should use the provided numberOfFavorites (42) directly
 			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
 				'/blueprints/blueprint123/favorites/user456': true,
-				'/blueprintSummaries/blueprint123/numberOfFavorites': 43,
 				'/users/user456/favorites/blueprint123': true,
 			});
 		});

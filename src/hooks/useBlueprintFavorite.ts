@@ -119,6 +119,21 @@ export const useIsFavorite = (
 				['blueprints', 'blueprintId', blueprintId, 'favorites', 'userId', userId],
 				result.isFavorite,
 			);
+
+			// Also update the bulk user favorites cache used by the list page
+			queryClient.setQueryData(
+				['users', 'userId', result.userId, 'favorites'],
+				(oldData: Record<string, boolean> | undefined) => {
+					if (!oldData) return oldData;
+
+					if (result.isFavorite) {
+						return {...oldData, [result.blueprintId]: true};
+					} else {
+						const {[result.blueprintId]: _, ...rest} = oldData;
+						return rest;
+					}
+				},
+			);
 		},
 	});
 
