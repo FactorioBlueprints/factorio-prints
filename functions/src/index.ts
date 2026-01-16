@@ -177,3 +177,40 @@ export const initializeUserProfile = functionsV1.auth.user().onCreate(async (use
 	functions.logger.log(`Initialized user profile for ${user.uid} (${user.email || 'no email'})`);
 	return null;
 });
+
+/**
+ * Cloud Function to clean up when a user deletes their account.
+ * Removes the user from all blueprints' favorites lists and deletes the user record.
+ * User's authored blueprints remain in the database (orphaned).
+ */
+export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user) => {
+	const database = admin.database();
+	const userId = user.uid;
+
+	try {
+		// Get user's favorites and blueprints
+		const userSnapshot = await database.ref(`/users/${userId}`).once('value');
+		const userData = userSnapshot.val() || {};
+
+		const updates: Record<string, null> = {};
+
+		// Remove this user from all blueprints' favorites lists
+		for (const blueprintId of Object.keys(userData.favorites || {})) {
+			updates[`/blueprints/${blueprintId}/favorites/${userId}`] = null;
+		}
+
+		// Delete the user record itself
+		updates[`/users/${userId}`] = null;
+
+		await database.ref().update(updates);
+
+		functions.logger.log(
+			`Cleaned up deleted user ${userId}: removed from ${Object.keys(userData.favorites || {}).length} blueprints' favorites`,
+		);
+
+		return null;
+	} catch (error) {
+		functions.logger.error(`Error cleaning up deleted user ${userId}:`, error);
+		throw error;
+	}
+});
