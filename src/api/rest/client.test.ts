@@ -20,7 +20,7 @@ describe('REST API client', () => {
 			const result = await fetchEntities();
 
 			expect(globalThis.fetch).toHaveBeenCalledTimes(1);
-			expect(globalThis.fetch).toHaveBeenCalledWith('https://www.factorioprints.xyz/api/entities/');
+			expect(globalThis.fetch).toHaveBeenCalledWith('https://factorioprints.xyz/api/entities/');
 			expect(result).toEqual(['entity1', 'entity2']);
 		});
 
@@ -35,7 +35,7 @@ describe('REST API client', () => {
 			const result = await fetchEntities();
 
 			expect(globalThis.fetch).toHaveBeenCalledTimes(2);
-			expect(globalThis.fetch).toHaveBeenNthCalledWith(1, 'https://www.factorioprints.xyz/api/entities/');
+			expect(globalThis.fetch).toHaveBeenNthCalledWith(1, 'https://factorioprints.xyz/api/entities/');
 			expect(globalThis.fetch).toHaveBeenNthCalledWith(2, 'https://www.factorio.school/api/entities/');
 			expect(result).toEqual(['entity1', 'entity2']);
 		});
@@ -55,7 +55,7 @@ describe('REST API client', () => {
 			const result = await fetchEntities();
 
 			expect(globalThis.fetch).toHaveBeenCalledTimes(2);
-			expect(globalThis.fetch).toHaveBeenNthCalledWith(1, 'https://www.factorioprints.xyz/api/entities/');
+			expect(globalThis.fetch).toHaveBeenNthCalledWith(1, 'https://factorioprints.xyz/api/entities/');
 			expect(globalThis.fetch).toHaveBeenNthCalledWith(2, 'https://www.factorio.school/api/entities/');
 			expect(result).toEqual(['entity1', 'entity2']);
 		});
@@ -166,7 +166,7 @@ describe('REST API client', () => {
 
 			const result = await fetchRecipes();
 
-			expect(globalThis.fetch).toHaveBeenCalledWith('https://www.factorioprints.xyz/api/recipes/');
+			expect(globalThis.fetch).toHaveBeenCalledWith('https://factorioprints.xyz/api/recipes/');
 			expect(result).toEqual(['iron-plate', 'copper-cable']);
 		});
 	});
@@ -184,7 +184,7 @@ describe('REST API client', () => {
 
 			const result = await fetchRestTags();
 
-			expect(globalThis.fetch).toHaveBeenCalledWith('https://www.factorioprints.xyz/api/tags/');
+			expect(globalThis.fetch).toHaveBeenCalledWith('https://factorioprints.xyz/api/tags/');
 			expect(result).toEqual(mockTags);
 		});
 	});
@@ -206,7 +206,7 @@ describe('REST API client', () => {
 
 			const result = await fetchDuplicates();
 
-			expect(globalThis.fetch).toHaveBeenCalledWith('https://www.factorioprints.xyz/api/duplicates/');
+			expect(globalThis.fetch).toHaveBeenCalledWith('https://factorioprints.xyz/api/duplicates/');
 			expect(result).toEqual(mockDuplicates);
 		});
 	});
