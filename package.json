@@ -92,7 +92,7 @@
 		"jiti": "2.6.1",
 		"jsdom": "27.4.0",
 		"less": "4.5.1",
-		"prettier": "3.8.0",
+		"prettier": "3.8.1",
 		"typescript": "5.9.3",
 		"vite": "7.3.1",
 		"vitest": "4.0.17",
