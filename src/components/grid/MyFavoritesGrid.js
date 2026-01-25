@@ -1,12 +1,11 @@
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {useContext, useState} from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
+import apiClient from '../../api/apiClient';
 
 import UserContext from '../../context/userContext';
 
@@ -24,7 +23,7 @@ function MyFavoritesGrid() {
 	const [selectedTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const fetchBlueprintSummaries = async (page, titleFilter, selectedTags, user) => {
-		const url = `${process.env.REACT_APP_REST_URL}/api/my/favoriteBlueprints/page/${page}`;
+		const url = `/api/my/favoriteBlueprints/page/${page}`;
 		const params = new URLSearchParams();
 		if (titleFilter) {
 			params.append('title', titleFilter);
@@ -42,7 +41,7 @@ function MyFavoritesGrid() {
 			},
 		};
 
-		const result = await axios.get(url, options);
+		const result = await apiClient.get(url, options);
 		return result.data;
 	};
 

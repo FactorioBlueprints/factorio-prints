@@ -2,7 +2,6 @@ import {faArrowLeft, faBan, faSave, faTrash} from '@fortawesome/free-solid-svg-i
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import type {AxiosError, AxiosResponse} from 'axios';
-import axios from 'axios';
 import classNames from 'classnames';
 import type {User} from 'firebase/auth';
 import type {UploadTask, UploadTaskSnapshot} from 'firebase/storage';
@@ -32,6 +31,7 @@ import {ErrorBoundary} from 'react-error-boundary';
 import {useNavigate, useParams} from 'react-router-dom';
 import type {MultiValue} from 'react-select';
 import Select from 'react-select';
+import apiClient from '../api/apiClient';
 import Blueprint from '../Blueprint';
 import {app} from '../base';
 import UserContext from '../context/userContext';
@@ -129,7 +129,7 @@ function convertTagOptionToTag(selectedTag: TagOption): BlueprintDetailsTag {
 const editBlueprint = async ({user, blueprintKey, blueprint}: EditBlueprintParams): Promise<AxiosResponse> => {
 	console.log({user, blueprintKey, blueprint});
 	const idToken = await user.getIdToken();
-	return axios.patch(`${process.env.REACT_APP_REST_URL}/api/blueprint/${blueprintKey}`, blueprint, {
+	return apiClient.patch(`/api/blueprint/${blueprintKey}`, blueprint, {
 		headers: {
 			Authorization: `Bearer ${idToken}`,
 		},
