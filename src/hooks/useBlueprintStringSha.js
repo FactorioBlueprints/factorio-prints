@@ -1,9 +1,9 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 
 function useBlueprintStringSha(blueprintStringSha) {
 	const queryKey = ['blueprintStringSha', blueprintStringSha];
-	const url = `${process.env.REACT_APP_REST_URL}/api/blueprintStringBySha/${blueprintStringSha}`;
+	const url = `/api/blueprintStringBySha/${blueprintStringSha}`;
 	const options = {
 		enabled: blueprintStringSha !== undefined,
 		gcTime: 'Infinity',
@@ -12,7 +12,7 @@ function useBlueprintStringSha(blueprintStringSha) {
 		refetchOnWindowFocus: false,
 		refetchOnReconnect: false,
 	};
-	return useQuery({queryKey, queryFn: () => axios.get(url), ...options});
+	return useQuery({queryKey, queryFn: () => apiClient.get(url), ...options});
 }
 
 export default useBlueprintStringSha;

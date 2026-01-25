@@ -1,7 +1,7 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {useState} from 'react';
 import Row from 'react-bootstrap/Row';
+import apiClient from '../../api/apiClient';
 import type {BlueprintSummary} from '../../propTypes/BlueprintSummaryProjection';
 import BlueprintThumbnail from '../BlueprintThumbnail';
 import BlueprintThumbnailPlaceholder from '../BlueprintThumbnailPlaceholder';
@@ -30,7 +30,7 @@ function SearchResults({searchState}: SearchResultsProps) {
 		searchState || {};
 
 	const fetchBlueprintSummaries = async (): Promise<SearchResultsData> => {
-		const url = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/search/page/${page}`;
+		const url = `/api/blueprintSummaries/search/page/${page}`;
 		const params = new URLSearchParams();
 		params.append('pageSize', '12');
 		if (textState) {
@@ -58,7 +58,7 @@ function SearchResults({searchState}: SearchResultsProps) {
 			params.append('mod', modState);
 		}
 
-		const result = await axios.get(url, {params});
+		const result = await apiClient.get(url, {params});
 		return result.data;
 	};
 

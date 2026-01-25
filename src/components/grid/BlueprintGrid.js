@@ -1,12 +1,11 @@
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {useState} from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
+import apiClient from '../../api/apiClient';
 
 import useTagOptions from '../../hooks/useTagOptions';
 
@@ -28,7 +27,7 @@ function BlueprintGrid() {
 	const selectedTagValues = selectedTags.filter((each) => tagValuesSet.has(each));
 
 	const fetchBlueprintSummaries = async (page, titleFilter, selectedTagValues) => {
-		const url = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/filtered/page/${page}`;
+		const url = `/api/blueprintSummaries/filtered/page/${page}`;
 		const params = new URLSearchParams();
 		if (titleFilter) {
 			params.append('title', titleFilter);
@@ -36,7 +35,7 @@ function BlueprintGrid() {
 		for (const tag of selectedTagValues) {
 			params.append('tag', `/${tag}/`);
 		}
-		const result = await axios.get(url, {params});
+		const result = await apiClient.get(url, {params});
 		return result.data;
 	};
 

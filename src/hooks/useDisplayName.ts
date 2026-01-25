@@ -1,9 +1,9 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 
 async function fetchDisplayName(userId: string) {
-	const url: string = `${process.env.REACT_APP_REST_URL}/api/user/${userId}/displayName/`;
-	const result = await axios.get(url);
+	const url = `/api/user/${userId}/displayName/`;
+	const result = await apiClient.get(url);
 	return result.data;
 }
 

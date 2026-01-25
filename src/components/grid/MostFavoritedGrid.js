@@ -1,12 +1,11 @@
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {useState} from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
-
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
+import apiClient from '../../api/apiClient';
 
 import BlueprintThumbnail from '../BlueprintThumbnail';
 import PageHeader from '../PageHeader';
@@ -22,7 +21,7 @@ function MostFavoritedGrid() {
 	const [selectedTags] = useQueryParam('tags', withDefault(ArrayParam, []));
 
 	const fetchBlueprintSummaries = async (page, titleFilter, selectedTags) => {
-		const url = `${process.env.REACT_APP_REST_URL}/api/blueprintSummaries/top/page/${page}`;
+		const url = `/api/blueprintSummaries/top/page/${page}`;
 		const params = new URLSearchParams();
 		if (titleFilter) {
 			params.append('title', titleFilter);
@@ -30,7 +29,7 @@ function MostFavoritedGrid() {
 		for (const tag of selectedTags) {
 			params.append('tag', `/${tag}/`);
 		}
-		const result = await axios.get(url, {params});
+		const result = await apiClient.get(url, {params});
 		return result.data;
 	};
 

@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import Card from 'react-bootstrap/Card';
+import apiClient from '../../api/apiClient';
 import LoadingIcon from '../LoadingIcon';
 import BlueprintContentHeader from './BlueprintContentHeader';
 
@@ -14,8 +14,7 @@ function BlueprintTitles({blueprintKey, blueprintStringSha}: BlueprintTitlesProp
 
 	const {isPending, isError, isSuccess, data, error} = useQuery({
 		queryKey,
-		queryFn: () =>
-			axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
+		queryFn: () => apiClient.get(`/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
 		enabled: blueprintStringSha !== undefined,
 		retry: false,
 		gcTime: Infinity,

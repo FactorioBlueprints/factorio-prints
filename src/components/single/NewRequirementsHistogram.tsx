@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import Card from 'react-bootstrap/Card';
+import apiClient from '../../api/apiClient';
 import NewItemHistogram from './NewItemHistogram';
 
 interface NewRequirementsHistogramProps {
@@ -12,7 +12,7 @@ function NewRequirementsHistogram({blueprintStringSha}: NewRequirementsHistogram
 
 	const result = useQuery({
 		queryKey,
-		queryFn: () => axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintTableBySha/${blueprintStringSha}`),
+		queryFn: () => apiClient.get(`/api/blueprintTableBySha/${blueprintStringSha}`),
 		enabled: blueprintStringSha !== undefined,
 		retry: false,
 		gcTime: Infinity,

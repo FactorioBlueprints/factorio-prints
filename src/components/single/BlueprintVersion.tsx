@@ -1,5 +1,5 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import apiClient from '../../api/apiClient';
 import ReactQueryStatus from '../search/ReactQueryStatus';
 
 interface BlueprintVersionProps {
@@ -19,8 +19,7 @@ function BlueprintVersion({blueprintStringSha}: BlueprintVersionProps) {
 
 	const result = useQuery({
 		queryKey,
-		queryFn: () =>
-			axios.get(`${process.env.REACT_APP_REST_URL}/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
+		queryFn: () => apiClient.get(`/api/blueprintContentTitlesBySha/${blueprintStringSha}`),
 		enabled: blueprintStringSha !== undefined,
 		retry: false,
 		gcTime: Infinity,

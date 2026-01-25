@@ -1,5 +1,5 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 
 export type TagOption = {label: string; value: string};
 
@@ -10,7 +10,7 @@ const useTagOptions = (): {
 	tagOptionsSet: Set<TagOption>;
 } => {
 	async function fetchTagValues(): Promise<string[]> {
-		const tags = await axios.get(`${process.env.REACT_APP_REST_URL}/api/tags/`);
+		const tags = await apiClient.get('/api/tags/');
 		return tags.data.map((tag: {category: string; name: string}) => `${tag.category}/${tag.name}`);
 	}
 

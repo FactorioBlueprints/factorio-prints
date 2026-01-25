@@ -1,9 +1,9 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 
 const useSimpleTagOptions = () => {
 	async function fetchTagValues() {
-		const {data} = await axios.get(`${process.env.REACT_APP_REST_URL}/api/tags/`);
+		const {data} = await apiClient.get('/api/tags/');
 		return data.map((tag) => `${tag.category}/${tag.name}`);
 	}
 

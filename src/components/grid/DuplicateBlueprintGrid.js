@@ -1,9 +1,9 @@
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
+import apiClient from '../../api/apiClient';
 
 import FactorioPrintsThumbnail from '../FactorioPrintsThumbnail';
 import PageHeader from '../PageHeader';
@@ -13,9 +13,9 @@ import Spinner from '../single/Spinner';
 
 function DuplicateBlueprintGrid() {
 	const fetchDuplicateBlueprintSummaries = async () => {
-		const url = `${process.env.REACT_APP_REST_URL}/api/duplicates/`;
+		const url = '/api/duplicates/';
 		const params = new URLSearchParams();
-		const result = await axios.get(url, {params});
+		const result = await apiClient.get(url, {params});
 		return result.data;
 	};
 

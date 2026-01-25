@@ -1,13 +1,12 @@
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {useContext, useState} from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import {useParams} from 'react-router-dom';
-
 import {ArrayParam, StringParam, useQueryParam, withDefault} from 'use-query-params';
+import apiClient from '../../api/apiClient';
 
 import UserContext from '../../context/userContext';
 import useDisplayName from '../../hooks/useDisplayName';
@@ -31,7 +30,7 @@ function UserGrid() {
 	const {userId} = useParams();
 
 	const fetchBlueprintSummaries = async (page, titleFilter, selectedTags, userId) => {
-		const url = `${process.env.REACT_APP_REST_URL}/api/user/${userId}/blueprintSummaries/page/${page}`;
+		const url = `/api/user/${userId}/blueprintSummaries/page/${page}`;
 		const params = new URLSearchParams();
 		if (titleFilter) {
 			params.append('title', titleFilter);
@@ -39,7 +38,7 @@ function UserGrid() {
 		for (const tag of selectedTags) {
 			params.append('tag', `/${tag}/`);
 		}
-		const result = await axios.get(url, {params});
+		const result = await apiClient.get(url, {params});
 		return result.data;
 	};
 

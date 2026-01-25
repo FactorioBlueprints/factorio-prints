@@ -1,11 +1,9 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import axios from 'axios';
 import type {User} from 'firebase/auth';
-
 import {getDatabase, ref, update} from 'firebase/database';
-
 import {useContext} from 'react';
 import Button from 'react-bootstrap/Button';
+import apiClient from '../../api/apiClient';
 
 import {app} from '../../base';
 
@@ -15,7 +13,7 @@ import useIsFavorite from '../../hooks/useIsFavorite';
 import FavoriteIcon from './FavoriteIcon';
 
 async function postIsFavorite(blueprintKey: string, isFavorite: boolean, user: User) {
-	const url = `${process.env.REACT_APP_REST_URL}/api/my/favorite/${blueprintKey}`;
+	const url = `/api/my/favorite/${blueprintKey}`;
 	const body = null;
 	const idToken = user === undefined ? undefined : await user.getIdToken();
 	const config = {
@@ -27,7 +25,7 @@ async function postIsFavorite(blueprintKey: string, isFavorite: boolean, user: U
 			isFavorite,
 		},
 	};
-	const put = axios.put(url, body, config);
+	const put = apiClient.put(url, body, config);
 
 	const {uid} = user;
 

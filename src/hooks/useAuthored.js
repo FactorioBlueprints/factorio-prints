@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
-import axios from 'axios';
 import {useContext} from 'react';
+import apiClient from '../api/apiClient';
 import UserContext from '../context/userContext';
 
 import getHeaders from '../helpers/getHeaders';
@@ -23,7 +23,7 @@ async function getAuthored(user) {
 	const idToken = await user?.getIdToken();
 
 	const headers = getHeaders(idToken);
-	const response = await axios.get(`${process.env.REACT_APP_REST_URL}/api/my/blueprints/`, headers);
+	const response = await apiClient.get('/api/my/blueprints/', headers);
 	return response.data;
 }
 
