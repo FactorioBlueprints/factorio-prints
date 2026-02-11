@@ -34,7 +34,7 @@
 		"@sentry/react": "10.38.0",
 		"@tanstack/query-sync-storage-persister": "5.90.22",
 		"@tanstack/react-form": "1.28.0",
-		"@tanstack/react-query": "5.90.20",
+		"@tanstack/react-query": "5.90.21",
 		"@tanstack/react-query-persist-client": "5.90.22",
 		"@tanstack/react-router": "1.159.5",
 		"@tanstack/react-store": "0.8.0",
