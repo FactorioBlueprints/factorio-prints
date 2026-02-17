@@ -12,8 +12,10 @@ import {useBlueprintHistograms} from '../hooks/useBlueprintHistograms';
 import {useEnrichedBlueprint} from '../hooks/useEnrichedBlueprint';
 import {useEnrichedBlueprintSummary} from '../hooks/useEnrichedBlueprintSummary';
 import {useIsModerator} from '../hooks/useModerators';
+import useToggleCollectionMutation from '../hooks/useToggleCollectionMutation';
 import useReconcileFavoritesMutation from '../hooks/useReconcileFavorites';
 import useToggleFavoriteMutation from '../hooks/useToggleFavoriteMutation';
+import {useUserCollection} from '../hooks/useUser';
 import {BlueprintWrapper} from '../parsing/BlueprintWrapper';
 import {Route as ViewBlueprintIdRoute} from '../routes/view.$blueprintId';
 import BlueprintImage from './BlueprintImage';
@@ -61,6 +63,8 @@ function SingleBlueprint() {
 	const {data: isModerator = false} = useIsModerator(user?.uid);
 
 	const {data: isFavorite, isSuccess: favoriteIsSuccess} = useIsFavorite(user?.uid, blueprintId);
+	const {data: userCollection, isSuccess: collectionIsSuccess} = useUserCollection(user?.uid);
+	const isInCollection = collectionIsSuccess && userCollection[blueprintId] === true;
 
 	const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(
 		{isFavorite: isFavorite || false, count: blueprintData?.numberOfFavorites || 0},
@@ -81,6 +85,7 @@ function SingleBlueprint() {
 	}, [blueprintIsSuccess]);
 
 	const favoriteBlueprintMutation = useToggleFavoriteMutation();
+	const collectionMutation = useToggleCollectionMutation();
 	const reconcileFavoritesMutation = useReconcileFavoritesMutation();
 
 	const handleFavorite = useCallback(async () => {
@@ -112,6 +117,16 @@ function SingleBlueprint() {
 	const handleTransitionToEdit = useCallback(() => {
 		navigate({to: '/edit/$blueprintId', params: {blueprintId}});
 	}, [navigate, blueprintId]);
+
+	const handleCollection = useCallback(() => {
+		if (!user) return;
+
+		collectionMutation.mutate({
+			blueprintId,
+			userId: user.uid,
+			isInCollection,
+		});
+	}, [user, collectionMutation, blueprintId, isInCollection]);
 
 	const handleReconcileFavorites = useCallback(() => {
 		reconcileFavoritesMutation.mutate(blueprintId);
@@ -153,10 +168,13 @@ function SingleBlueprint() {
 					isModerator={isModerator}
 					user={user}
 					isFavorite={optimisticFavorite.isFavorite}
+					isInCollection={isInCollection}
 					onEdit={handleTransitionToEdit}
 					onFavorite={handleFavorite}
+					onCollection={handleCollection}
 					onReconcile={handleReconcileFavorites}
 					favoriteMutation={favoriteBlueprintMutation}
+					collectionMutation={collectionMutation}
 					reconcileMutation={reconcileFavoritesMutation}
 				/>
 			</Row>

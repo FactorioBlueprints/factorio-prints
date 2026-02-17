@@ -1,5 +1,5 @@
 import {useQuery} from '@tanstack/react-query';
-import {fetchUserBlueprints, fetchUserDisplayName, fetchUserFavorites} from '../api/firebase';
+import {fetchUserBlueprints, fetchUserCollection, fetchUserDisplayName, fetchUserFavorites} from '../api/firebase';
 
 export const useUserDisplayName = (userId: string | undefined) => {
 	return useQuery<string | null>({
@@ -28,6 +28,17 @@ export const useUserFavorites = (userId: string | undefined) => {
 	return useQuery<Record<string, boolean>>({
 		queryKey: ['users', 'userId', userId, 'favorites'],
 		queryFn: () => fetchUserFavorites(userId!),
+		enabled: !!userId,
+		placeholderData: {},
+		staleTime: 24 * 60 * 60 * 1000,
+		gcTime: 24 * 60 * 60 * 1000,
+	});
+};
+
+export const useUserCollection = (userId: string | undefined) => {
+	return useQuery<Record<string, boolean>>({
+		queryKey: ['users', 'userId', userId, 'collection'],
+		queryFn: () => fetchUserCollection(userId!),
 		enabled: !!userId,
 		placeholderData: {},
 		staleTime: 24 * 60 * 60 * 1000,

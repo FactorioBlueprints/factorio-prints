@@ -182,6 +182,7 @@ export const initializeUserProfile = functionsV1.auth.user().onCreate(async (use
 		displayName: user.displayName || 'Anonymous',
 		email: user.email || null,
 		favorites: {},
+		collection: {},
 		blueprints: {},
 	});
 

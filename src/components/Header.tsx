@@ -6,6 +6,7 @@ import {
 	faHeart,
 	faPlusSquare,
 	faSearch,
+	faSave,
 	faShieldAlt,
 	faSignInAlt,
 	faSignOutAlt,
@@ -80,6 +81,19 @@ const Header: React.FC = () => {
 								fixedWidth
 							/>
 							{' My Favorites'}
+						</Dropdown.Item>
+						<Dropdown.Item
+							as={Link}
+							to="/collection"
+							onClick={closeDropdown}
+							className="text-light text-left"
+						>
+							<FontAwesomeIcon
+								icon={faSave}
+								size="lg"
+								fixedWidth
+							/>
+							{' My Collection'}
 						</Dropdown.Item>
 						<Dropdown.Item
 							as="div"
@@ -233,6 +247,19 @@ const Header: React.FC = () => {
 								fixedWidth
 							/>
 							{' Most Favorited'}
+						</Link>
+					</Nav.Item>
+					<Nav.Item>
+						<Link
+							to="/collection"
+							className="nav-link text-light"
+						>
+							<FontAwesomeIcon
+								icon={faSave}
+								size="lg"
+								fixedWidth
+							/>
+							{' Your Collection'}
 						</Link>
 					</Nav.Item>
 					<NavDropdown

@@ -159,6 +159,7 @@ export interface UserData {
 	displayName?: string;
 	email?: string;
 	favorites?: Record<string, boolean>;
+	collection?: Record<string, boolean>;
 	blueprints?: Record<string, boolean>;
 	favoritesCount: number;
 	blueprintsCount: number;
@@ -391,6 +392,18 @@ export const fetchUserFavorites = async (userId: string): Promise<Record<string,
 	}
 };
 
+export const fetchUserCollection = async (userId: string): Promise<Record<string, boolean>> => {
+	try {
+		const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/collection`));
+		return snapshot.val() || {};
+	} catch (error) {
+		if (isNetworkError(error)) {
+			return {};
+		}
+		throw error;
+	}
+};
+
 export const fetchUser = async (userId: string): Promise<RawUser | null> => {
 	try {
 		const userRef = ref(getFirebaseDatabase(), `/users/${userId}`);
@@ -406,6 +419,7 @@ export const fetchUser = async (userId: string): Promise<RawUser | null> => {
 			displayName: userData.displayName || undefined,
 			email: userData.email || undefined,
 			favorites: userData.favorites || {},
+			collection: userData.collection || {},
 			blueprints: userData.blueprints || {},
 		};
 	} catch (error) {
@@ -537,6 +551,27 @@ export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: st
 
 		const updates = {
 			[`/users/${userId}/favorites/${blueprintId}`]: null,
+		};
+
+		await dbUpdate(ref(getFirebaseDatabase()), updates);
+
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+export const cleanupInvalidUserCollection = async (userId: string, blueprintId: string): Promise<boolean> => {
+	try {
+		const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
+		const summarySnapshot = await get(summaryRef);
+
+		if (summarySnapshot.exists()) {
+			return false;
+		}
+
+		const updates = {
+			[`/users/${userId}/collection/${blueprintId}`]: null,
 		};
 
 		await dbUpdate(ref(getFirebaseDatabase()), updates);

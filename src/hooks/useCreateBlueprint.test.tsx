@@ -92,6 +92,7 @@ describe('useCreateBlueprint', () => {
 
 		expect(dbUpdate).toHaveBeenCalledWith(mockRef, {
 			'/users/user123/blueprints/newBlueprint123': true,
+			'/users/user123/collection/newBlueprint123': true,
 			'/blueprintSummaries/newBlueprint123': {
 				imgurId: 'abc1234',
 				imgurType: 'image/png',
@@ -271,6 +272,43 @@ describe('useCreateBlueprint', () => {
 		expect(userBlueprints).toEqual({
 			existing1: true,
 			existing2: true,
+			newBlueprint123: true,
+		});
+	});
+
+	it('should update user collection cache', async () => {
+		const mockRef = {};
+		const mockNewBlueprintRef = {key: 'newBlueprint123'};
+		vi.mocked(ref).mockReturnValue(mockRef as any);
+		vi.mocked(push).mockReturnValue(mockNewBlueprintRef as any);
+		vi.mocked(dbUpdate).mockResolvedValue();
+
+		queryClient.setQueryData(['users', 'userId', 'user123', 'collection'], {
+			existing1: true,
+		});
+
+		const formData = {
+			title: 'Test Blueprint',
+			blueprintString: 'test blueprint string',
+			descriptionMarkdown: 'test description',
+			tags: [],
+			imageUrl: 'https://imgur.com/abc1234',
+		};
+
+		const user = {
+			uid: 'user123',
+		} as Partial<User> as User;
+
+		const {result} = renderHook(() => useCreateBlueprint(), {wrapper});
+
+		await result.current.mutateAsync({
+			formData,
+			user,
+		});
+
+		const userCollection = queryClient.getQueryData(['users', 'userId', 'user123', 'collection']);
+		expect(userCollection).toEqual({
+			existing1: true,
 			newBlueprint123: true,
 		});
 	});

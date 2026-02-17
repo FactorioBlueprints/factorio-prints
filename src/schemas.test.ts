@@ -18,6 +18,7 @@ import {
 	validateEnrichedTags,
 	validateEnrichedUser,
 	validateEnrichedUserBlueprints,
+	validateEnrichedUserCollection,
 	validateEnrichedUserFavorites,
 	validateRawBlueprintData,
 	validateRawBlueprintSummaryPage,
@@ -25,6 +26,7 @@ import {
 	validateRawTags,
 	validateRawUser,
 	validateRawUserBlueprints,
+	validateRawUserCollection,
 	validateRawUserFavorites,
 } from './schemas';
 
@@ -1128,6 +1130,7 @@ describe('Schema validation', () => {
 
 					const result = validateRawUser(userWithoutOptionals);
 					expect(result.favorites).toEqual({});
+					expect(result.collection).toEqual({});
 					expect(result.blueprints).toEqual({});
 				});
 
@@ -1405,6 +1408,62 @@ describe('Schema validation', () => {
 						};
 
 						expect(() => validateEnrichedUserFavorites(invalidCount)).toThrow();
+					});
+				});
+			});
+
+			describe('userCollection schemas', () => {
+				describe('rawUserCollectionSchema', () => {
+					it('should validate valid raw user collection data', () => {
+						const validUserCollection = {
+							'blueprint-1': true,
+							'blueprint-2': false,
+						};
+
+						expect(() => validateRawUserCollection(validUserCollection)).not.toThrow();
+					});
+
+					it('should validate empty collection object', () => {
+						const emptyCollection = {};
+						expect(() => validateRawUserCollection(emptyCollection)).not.toThrow();
+					});
+
+					it('should reject non-boolean values', () => {
+						const invalidCollection = {
+							'blueprint-1': true,
+							'blueprint-2': 'invalid',
+						};
+
+						expect(() => validateRawUserCollection(invalidCollection)).toThrow();
+					});
+				});
+
+				describe('enrichedUserCollectionSchema', () => {
+					it('should validate valid enriched user collection data', () => {
+						const validEnrichedCollection = {
+							collectionIds: {
+								'blueprint-1': true,
+								'blueprint-2': false,
+							},
+							count: 1,
+						};
+
+						expect(() => validateEnrichedUserCollection(validEnrichedCollection)).not.toThrow();
+					});
+
+					it('should reject missing fields', () => {
+						expect(() => validateEnrichedUserCollection({count: 1})).toThrow();
+						expect(() => validateEnrichedUserCollection({collectionIds: {}})).toThrow();
+					});
+
+					it('should reject extra fields due to strict mode', () => {
+						const extraFields = {
+							collectionIds: {},
+							count: 0,
+							extra: 'nope',
+						};
+
+						expect(() => validateEnrichedUserCollection(extraFields)).toThrow();
 					});
 				});
 			});

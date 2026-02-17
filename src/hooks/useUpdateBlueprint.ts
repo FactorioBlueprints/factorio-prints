@@ -3,7 +3,12 @@ import {useNavigate} from '@tanstack/react-router';
 import {update as dbUpdate, ref, serverTimestamp} from 'firebase/database';
 import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import type {ImgurImage, RawBlueprint} from '../schemas';
-import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserBlueprints} from '../schemas';
+import {
+	validateRawBlueprint,
+	validateRawBlueprintSummary,
+	validateRawUserBlueprints,
+	validateRawUserCollection,
+} from '../schemas';
 
 interface UpdateBlueprintFormData {
 	title: string;
@@ -208,6 +213,7 @@ export const useDeleteBlueprint = () => {
 			const updates: Record<string, null> = {
 				[`/blueprints/${id}`]: null,
 				[`/users/${authorId}/blueprints/${id}`]: null,
+				[`/users/${authorId}/collection/${id}`]: null,
 				[`/blueprintSummaries/${id}`]: null,
 			};
 
@@ -232,6 +238,15 @@ export const useDeleteBlueprint = () => {
 				// Create a new object without the deleted blueprint
 				const {[id]: _, ...updatedUserBlueprints} = userBlueprintsData;
 				queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
+			}
+
+			const userCollectionKey = ['users', 'userId', authorId, 'collection'];
+			const userCollectionDataRaw = queryClient.getQueryData(userCollectionKey);
+
+			if (userCollectionDataRaw) {
+				const userCollectionData = validateRawUserCollection(userCollectionDataRaw);
+				const {[id]: _, ...updatedUserCollection} = userCollectionData;
+				queryClient.setQueryData(userCollectionKey, updatedUserCollection);
 			}
 
 			// Invalidate user blueprint queries to ensure UI refreshes

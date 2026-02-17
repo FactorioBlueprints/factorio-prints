@@ -1,5 +1,5 @@
 import {faHeart as regularHeart} from '@fortawesome/free-regular-svg-icons';
-import {faEdit, faHeart, faSync} from '@fortawesome/free-solid-svg-icons';
+import {faCheck, faEdit, faHeart, faPlusSquare, faSync} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import type {UseMutationResult} from '@tanstack/react-query';
 import {useCallback} from 'react';
@@ -12,10 +12,13 @@ interface BlueprintActionsProps {
 	isModerator: boolean;
 	user: any;
 	isFavorite: boolean;
+	isInCollection: boolean;
 	onEdit: () => void;
 	onFavorite: () => void;
+	onCollection: () => void;
 	onReconcile: () => void;
 	favoriteMutation: any;
+	collectionMutation: any;
 	reconcileMutation: UseMutationResult<ReconcileResult, unknown, string, unknown>;
 }
 
@@ -24,10 +27,13 @@ export function BlueprintActions({
 	isModerator,
 	user,
 	isFavorite,
+	isInCollection,
 	onEdit,
 	onFavorite,
+	onCollection,
 	onReconcile,
 	favoriteMutation,
+	collectionMutation,
 	reconcileMutation,
 }: BlueprintActionsProps) {
 	const renderEditButton = useCallback(
@@ -65,6 +71,30 @@ export function BlueprintActions({
 			</Button>
 		);
 	}, [user, isFavorite, onFavorite, favoriteMutation.isPending]);
+
+	const renderCollectionButton = useCallback(() => {
+		if (!user) {
+			return <div />;
+		}
+
+		const icon = isInCollection ? faCheck : faPlusSquare;
+		const iconClass = isInCollection ? 'text-warning' : 'text-default';
+		const buttonText = isInCollection ? ' Collection' : ' Add to Collection';
+
+		return (
+			<Button
+				size="lg"
+				onClick={onCollection}
+				disabled={collectionMutation.isPending}
+			>
+				<FontAwesomeIcon
+					icon={icon}
+					className={iconClass}
+				/>
+				{buttonText}
+			</Button>
+		);
+	}, [user, isInCollection, onCollection, collectionMutation.isPending]);
 
 	const renderReconcileButton = useCallback(() => {
 		const {data: reconcileResult, isPending, isSuccess} = reconcileMutation;
@@ -109,6 +139,7 @@ export function BlueprintActions({
 		>
 			<div className="d-flex gap-2 flex-wrap">
 				{(isOwner || isModerator) && renderEditButton()}
+				{renderCollectionButton()}
 				{!isOwner && renderFavoriteButton()}
 				{isModerator && renderReconcileButton()}
 			</div>

@@ -8,6 +8,7 @@ import {
 	validateRawBlueprintSummary,
 	validateRawPaginatedBlueprintSummaries,
 	validateRawUserBlueprints,
+	validateRawUserCollection,
 } from '../schemas';
 
 interface CreateBlueprintFormData {
@@ -96,6 +97,7 @@ export const useCreateBlueprint = () => {
 			const updates: Record<string, unknown> = {};
 
 			updates[`/users/${user.uid}/blueprints/${newBlueprintKey}`] = true;
+			updates[`/users/${user.uid}/collection/${newBlueprintKey}`] = true;
 			updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
 			updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageUrl;
 
@@ -220,6 +222,15 @@ export const useCreateBlueprint = () => {
 
 			queryClient.setQueryData(userBlueprintsKey, {
 				...userBlueprintsData,
+				[blueprintId]: true,
+			});
+
+			const userCollectionKey = ['users', 'userId', authorId, 'collection'];
+			const userCollectionDataRaw = queryClient.getQueryData(userCollectionKey);
+			const userCollectionData = userCollectionDataRaw ? validateRawUserCollection(userCollectionDataRaw) : {};
+
+			queryClient.setQueryData(userCollectionKey, {
+				...userCollectionData,
 				[blueprintId]: true,
 			});
 
