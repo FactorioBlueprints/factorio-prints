@@ -18,6 +18,7 @@ describe('enrichUser', () => {
 				'blueprint-5': true,
 				'blueprint-6': false,
 			},
+			collection: {},
 		};
 
 		const result = enrichUser(rawUser);
@@ -36,6 +37,7 @@ describe('enrichUser', () => {
 				'blueprint-5': true,
 				'blueprint-6': false,
 			},
+			collection: {},
 			favoritesCount: 2, // Only true values
 			blueprintsCount: 2, // Only true values
 		});
@@ -49,6 +51,7 @@ describe('enrichUser', () => {
 		const rawUser: RawUser = {
 			id: 'user123',
 			favorites: {},
+			collection: {},
 			blueprints: {},
 		};
 
@@ -57,6 +60,7 @@ describe('enrichUser', () => {
 		expect(result).toEqual({
 			id: 'user123',
 			favorites: {},
+			collection: {},
 			blueprints: {},
 			favoritesCount: 0,
 			blueprintsCount: 0,
@@ -67,6 +71,7 @@ describe('enrichUser', () => {
 		const rawUser: RawUser = {
 			id: 'user123',
 			favorites: {},
+			collection: {},
 			blueprints: {},
 		};
 
@@ -75,6 +80,7 @@ describe('enrichUser', () => {
 		expect(result).toEqual({
 			id: 'user123',
 			favorites: {},
+			collection: {},
 			blueprints: {},
 			favoritesCount: 0,
 			blueprintsCount: 0,
@@ -96,6 +102,7 @@ describe('enrichUser', () => {
 				'blueprint-b': true,
 				'blueprint-c': false,
 			},
+			collection: {},
 		};
 
 		const result = enrichUser(rawUser);

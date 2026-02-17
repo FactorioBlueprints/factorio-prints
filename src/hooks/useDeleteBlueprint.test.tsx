@@ -73,6 +73,7 @@ describe('useDeleteBlueprint', () => {
 		expect(dbUpdate).toHaveBeenNthCalledWith(2, mockRef, {
 			'/blueprints/test-blueprint-id': null,
 			'/users/test-author-id/blueprints/test-blueprint-id': null,
+			'/users/test-author-id/collection/test-blueprint-id': null,
 			'/blueprintSummaries/test-blueprint-id': null,
 			'/byTag/tag1/test-blueprint-id': null,
 			'/byTag/tag2/test-blueprint-id': null,
@@ -109,6 +110,7 @@ describe('useDeleteBlueprint', () => {
 		expect(dbUpdate).toHaveBeenNthCalledWith(2, mockRef, {
 			'/blueprints/test-blueprint-id': null,
 			'/users/test-author-id/blueprints/test-blueprint-id': null,
+			'/users/test-author-id/collection/test-blueprint-id': null,
 			'/blueprintSummaries/test-blueprint-id': null,
 		});
 	});

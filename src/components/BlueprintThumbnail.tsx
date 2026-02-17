@@ -1,15 +1,17 @@
-import {faHeart} from '@fortawesome/free-solid-svg-icons';
+import {faCheck, faHeart, faPlusSquare, faXmark} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {Link} from '@tanstack/react-router';
 import {getAuth} from 'firebase/auth';
 import type React from 'react';
+import {useState} from 'react';
 import Card from 'react-bootstrap/Card';
 import Tooltip from 'react-bootstrap/Tooltip';
 import {useAuthState} from 'react-firebase-hooks/auth';
 import {app} from '../base';
 import buildImageUrl from '../helpers/buildImageUrl';
+import useToggleCollectionMutation from '../hooks/useToggleCollectionMutation';
 import useToggleFavoriteMutation from '../hooks/useToggleFavoriteMutation';
-import {useUserBlueprints, useUserFavorites} from '../hooks/useUser';
+import {useUserBlueprints, useUserCollection, useUserFavorites} from '../hooks/useUser';
 import {type EnrichedBlueprintSummary, validateEnrichedBlueprintSummary} from '../schemas';
 import {RichText} from './core/text/RichText';
 import SafeOverlayTrigger from './SafeOverlayTrigger';
@@ -20,9 +22,12 @@ interface BlueprintThumbnailProps {
 
 const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary}) => {
 	const [user] = useAuthState(getAuth(app));
+	const [isCollectionHovering, setIsCollectionHovering] = useState(false);
 	const {data: userFavoritesData, isSuccess: userFavoritesIsSuccess} = useUserFavorites(user?.uid);
+	const {data: userCollectionData, isSuccess: userCollectionIsSuccess} = useUserCollection(user?.uid);
 	const {data: userBlueprintsData, isSuccess: userBlueprintsIsSuccess} = useUserBlueprints(user?.uid);
 	const favoriteBlueprintMutation = useToggleFavoriteMutation();
+	const collectionMutation = useToggleCollectionMutation();
 
 	try {
 		validateEnrichedBlueprintSummary(blueprintSummary);
@@ -44,6 +49,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 	const {key, title, imgurId, imgurType, numberOfFavorites} = blueprintSummary;
 
 	const isFavorite = userFavoritesIsSuccess && userFavoritesData[key] === true;
+	const isInCollection = userCollectionIsSuccess && userCollectionData[key] === true;
 	const isMine = userBlueprintsIsSuccess && userBlueprintsData[key] === true;
 
 	const tooltip = (
@@ -68,6 +74,8 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 
 	const mineStyle = isMine ? 'text-warning' : 'text-default';
 	const favoriteStyle = isFavorite ? 'text-warning' : 'text-default';
+	const collectionStyle = isInCollection ? 'text-warning' : 'text-default';
+	const collectionIcon = isInCollection ? (isCollectionHovering ? faXmark : faCheck) : faPlusSquare;
 
 	return (
 		<Card
@@ -134,6 +142,47 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				>
 					<FontAwesomeIcon
 						icon={faHeart}
+						className="text-error"
+					/>
+				</span>
+				{'  '}
+				<span
+					className={`${collectionStyle} ${!user || collectionMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+					onMouseEnter={() => setIsCollectionHovering(true)}
+					onMouseLeave={() => setIsCollectionHovering(false)}
+					onClick={() => {
+						if (!user || collectionMutation.isPending) {
+							return;
+						}
+
+						collectionMutation.mutate({
+							blueprintId: key,
+							userId: user.uid,
+							isInCollection,
+						});
+					}}
+					role="button"
+					tabIndex={0}
+					onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
+						if (!user || collectionMutation.isPending) {
+							return;
+						}
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							collectionMutation.mutate({
+								blueprintId: key,
+								userId: user.uid,
+								isInCollection,
+							});
+						}
+					}}
+					onFocus={() => setIsCollectionHovering(true)}
+					onBlur={() => setIsCollectionHovering(false)}
+					aria-label={isInCollection ? 'Remove from collection' : 'Add to collection'}
+					aria-disabled={!user || collectionMutation.isPending}
+				>
+					<FontAwesomeIcon
+						icon={collectionIcon}
 						className="text-error"
 					/>
 				</span>

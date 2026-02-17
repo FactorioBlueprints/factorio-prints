@@ -349,6 +349,7 @@ export const rawUserSchema = z
 		displayName: z.string().optional(),
 		email: z.string().optional(),
 		favorites: z.record(z.string(), z.boolean()).optional().default({}),
+		collection: z.record(z.string(), z.boolean()).optional().default({}),
 		blueprints: z.record(z.string(), z.boolean()).optional().default({}),
 	})
 	.strict();
@@ -369,6 +370,7 @@ export const validateRawUser = (data: unknown): RawUser => {
 	return {
 		...parsed,
 		favorites: parsed.favorites ?? {},
+		collection: parsed.collection ?? {},
 		blueprints: parsed.blueprints ?? {},
 	};
 };
@@ -378,6 +380,7 @@ export const validateEnrichedUser = (data: unknown): EnrichedUser => {
 	return {
 		...parsed,
 		favorites: parsed.favorites ?? {},
+		collection: parsed.collection ?? {},
 		blueprints: parsed.blueprints ?? {},
 	};
 };
@@ -404,10 +407,23 @@ export const enrichedUserFavoritesSchema = z
 	})
 	.strict();
 
+// Raw user collection schema - matching Firebase data structure
+export const rawUserCollectionSchema = z.record(z.string(), z.boolean());
+
+// Enriched user collection schema - transformed for UI consumption
+export const enrichedUserCollectionSchema = z
+	.object({
+		collectionIds: z.record(z.string(), z.boolean()),
+		count: z.number(),
+	})
+	.strict();
+
 export type RawUserBlueprints = z.infer<typeof rawUserBlueprintsSchema>;
 export type EnrichedUserBlueprints = z.infer<typeof enrichedUserBlueprintsSchema>;
 export type RawUserFavorites = z.infer<typeof rawUserFavoritesSchema>;
 export type EnrichedUserFavorites = z.infer<typeof enrichedUserFavoritesSchema>;
+export type RawUserCollection = z.infer<typeof rawUserCollectionSchema>;
+export type EnrichedUserCollection = z.infer<typeof enrichedUserCollectionSchema>;
 
 export const validateRawUserBlueprints = (data: unknown): RawUserBlueprints => {
 	return validate(data, rawUserBlueprintsSchema, 'raw user blueprints');
@@ -423,6 +439,14 @@ export const validateRawUserFavorites = (data: unknown): RawUserFavorites => {
 
 export const validateEnrichedUserFavorites = (data: unknown): EnrichedUserFavorites => {
 	return validate(data, enrichedUserFavoritesSchema, 'enriched user favorites');
+};
+
+export const validateRawUserCollection = (data: unknown): RawUserCollection => {
+	return validate(data, rawUserCollectionSchema, 'raw user collection');
+};
+
+export const validateEnrichedUserCollection = (data: unknown): EnrichedUserCollection => {
+	return validate(data, enrichedUserCollectionSchema, 'enriched user collection');
 };
 
 // Raw blueprint parsing schemas - for parsed blueprint data from game files
