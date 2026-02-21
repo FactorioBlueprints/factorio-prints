@@ -32,6 +32,17 @@ export const updateFavoriteCount = onValueWritten(
 
 		const database = admin.database();
 
+		// Check if the blueprint still exists before making any updates.
+		// This prevents re-creating deleted blueprints when cleanupFavoritesOnBlueprintDelete
+		// removes user favorites and triggers this function.
+		const blueprintSnapshot = await database.ref(`/blueprints/${blueprintId}`).once('value');
+		if (!blueprintSnapshot.exists()) {
+			functions.logger.log(
+				`Blueprint ${blueprintId} no longer exists, skipping favorite update (user ${userId})`,
+			);
+			return null;
+		}
+
 		// Update the blueprint's favorites record to match
 		const blueprintFavoriteRef = database.ref(`/blueprints/${blueprintId}/favorites/${userId}`);
 		if (afterValue === true) {
