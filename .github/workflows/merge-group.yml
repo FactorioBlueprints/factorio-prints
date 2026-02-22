@@ -66,10 +66,15 @@ jobs:
 
   all-checks:
     name: All checks
-    if: ${{ !cancelled() }}
+    if: always()
     needs: [lint, typecheck, styles, build, test]
     runs-on: ubuntu-latest
     steps:
-      - uses: re-actors/alls-green@release/v1
-        with:
-          jobs: ${{ toJSON(needs) }}
+      - name: All checks passed
+        if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+        run: echo "All checks passed!"
+      - name: Some checks failed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo "One or more required checks failed or were cancelled"
+          exit 1
