@@ -6,7 +6,7 @@ import type {RestPaginatedResponse} from '../api/rest/types';
 import {advancedSearchStore} from '../store/advancedSearchStore';
 
 export const useAdvancedSearch = () => {
-	const searchState = useStore(advancedSearchStore);
+	const searchState = useStore(advancedSearchStore, (state) => state);
 
 	const {text, orderBy, tag, entity, recipe, gameVersionLong, blueprintType, mod, page, searchTrigger} = searchState;
 

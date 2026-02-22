@@ -35,7 +35,7 @@ const defaultState: AdvancedSearchState = {
 
 export const advancedSearchStore = new Store<AdvancedSearchState>(defaultState);
 
-advancedSearchStore.subscribe(({currentVal}) => {
+advancedSearchStore.subscribe((currentVal) => {
 	try {
 		advancedSearchSchema.parse(currentVal);
 	} catch (error: unknown) {

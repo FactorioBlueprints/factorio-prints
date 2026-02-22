@@ -17,7 +17,7 @@ export const searchParamsStore = new Store<SearchParamsState>({
 	titleFilter: '',
 });
 
-searchParamsStore.subscribe(({currentVal}) => {
+searchParamsStore.subscribe((currentVal) => {
 	try {
 		storeSchema.parse(currentVal);
 	} catch (error: unknown) {
