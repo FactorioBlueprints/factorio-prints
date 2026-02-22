@@ -86,8 +86,15 @@ jobs:
 
   all-checks:
     name: All checks
+    if: always()
     needs: [pre-commit, eslint, biome, prettier, typecheck, build, test, functions-build]
     runs-on: ubuntu-latest
     steps:
       - name: All checks passed
+        if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
         run: echo "All checks passed!"
+      - name: Some checks failed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo "One or more required checks failed or were cancelled"
+          exit 1
