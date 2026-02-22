@@ -64,7 +64,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.3",
-		"@eslint/js": "10.0.1",
+		"@eslint/js": "9.39.3",
 		"@sentry/vite-plugin": "4.9.1",
 		"@tanstack/react-query-devtools": "5.91.3",
 		"@tanstack/router-cli": "1.161.3",
@@ -82,8 +82,7 @@
 		"@typescript-eslint/eslint-plugin": "8.56.0",
 		"@typescript-eslint/parser": "8.56.0",
 		"@vitejs/plugin-react": "5.1.4",
-		"eslint": "10.0.0",
-		"eslint-plugin-react": "7.37.5",
+		"eslint": "9.39.3",
 		"eslint-plugin-react-hooks": "7.0.1",
 		"eslint-plugin-react-refresh": "0.5.0",
 		"fake-indexeddb": "6.2.5",
