@@ -21,8 +21,8 @@ import {searchParamsStore} from '../store/searchParamsStore';
 import {copyBlueprintStringToClipboard, createSyntheticBlueprintBook} from '../utils/collectionBlueprintBook';
 import BlueprintThumbnail from './BlueprintThumbnail';
 import DisplayName from './DisplayName';
-import EmptyResults from './grid/EmptyResults';
 import ErrorBoundary from './ErrorBoundary';
+import EmptyResults from './grid/EmptyResults';
 import ErrorDisplay from './grid/ErrorDisplay';
 import LoadingIndicator from './grid/LoadingIndicator';
 import PageHeader from './PageHeader';
@@ -140,7 +140,7 @@ const MyCollectionGrid: React.FC = () => {
 
 			const syntheticBook = createSyntheticBlueprintBook(decodedBlueprints, {
 				label: user?.displayName ? `${user.displayName}'s Collection` : 'Blueprint Collection',
-				description: 'Synthetic blueprint book exported from Factorio Prints',
+				description: 'Exported from https://factorioprints.com',
 			});
 
 			const syntheticBookString = serializeBlueprint(syntheticBook);
