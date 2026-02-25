@@ -1,5 +1,6 @@
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {renderHook, waitFor} from '@testing-library/react';
+import type {Database, DatabaseReference} from 'firebase/database';
 import {update as dbUpdate, ref} from 'firebase/database';
 import type React from 'react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -22,8 +23,8 @@ vi.mock('../base', () => ({
 describe('useToggleCollectionMutation', () => {
 	let queryClient: QueryClient;
 	let wrapper: ({children}: {children: React.ReactNode}) => React.JSX.Element;
-	let mockDatabase: any;
-	let mockRef: any;
+	let mockDatabase: Database;
+	let mockRef: DatabaseReference;
 
 	beforeEach(() => {
 		queryClient = new QueryClient({
@@ -37,8 +38,8 @@ describe('useToggleCollectionMutation', () => {
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
 
-		mockDatabase = {};
-		mockRef = {};
+		mockDatabase = {} as Database;
+		mockRef = {} as DatabaseReference;
 		vi.mocked(getFirebaseDatabase).mockReturnValue(mockDatabase);
 		vi.mocked(ref).mockReturnValue(mockRef);
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);

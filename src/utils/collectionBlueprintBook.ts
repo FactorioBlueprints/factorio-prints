@@ -37,6 +37,32 @@ const toBlueprintBookEntry = (blueprint: RawBlueprintData, index: number): Bluep
 	throw new Error(`Blueprint at position ${index} is not a supported blueprint type`);
 };
 
+const getMaxVersionFromEntry = (entry: BlueprintBookEntry): number => {
+	if (entry.blueprint?.version) return entry.blueprint.version;
+	if (entry.upgrade_planner?.version) return entry.upgrade_planner.version;
+	if (entry.deconstruction_planner?.version) return entry.deconstruction_planner.version;
+	if (entry.blueprint_book) {
+		const nested = entry.blueprint_book.blueprints?.map(getMaxVersionFromEntry) ?? [];
+		return Math.max(entry.blueprint_book.version ?? 0, ...nested);
+	}
+	return 0;
+};
+
+export const getMaxVersion = (blueprints: RawBlueprintData[]): number => {
+	let max = 0;
+	for (const bp of blueprints) {
+		if (bp.blueprint?.version) max = Math.max(max, bp.blueprint.version);
+		if (bp.upgrade_planner?.version) max = Math.max(max, bp.upgrade_planner.version);
+		if (bp.deconstruction_planner?.version) max = Math.max(max, bp.deconstruction_planner.version);
+		if (bp.blueprint_book) {
+			const bookVersion = bp.blueprint_book.version ?? 0;
+			const nested = bp.blueprint_book.blueprints?.map(getMaxVersionFromEntry) ?? [];
+			max = Math.max(max, bookVersion, ...nested);
+		}
+	}
+	return max;
+};
+
 export const createSyntheticBlueprintBook = (
 	blueprints: RawBlueprintData[],
 	options: SyntheticBlueprintBookOptions = {},
@@ -53,6 +79,7 @@ export const createSyntheticBlueprintBook = (
 			label: options.label || 'Blueprint Collection',
 			description: options.description,
 			active_index: 0,
+			version: getMaxVersion(blueprints) || undefined,
 			blueprints: entries,
 		},
 	};
