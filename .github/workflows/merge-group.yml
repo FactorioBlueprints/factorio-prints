@@ -1,95 +1,98 @@
 # Jobs that run on merge_group, meaning they must pass before changes land. They also run on pull_request.
 
 on:
-  pull_request:
-  merge_group:
+    pull_request:
+    merge_group:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: jdx/mise-action@v3
-      - run: npm ci
-      - run: uv tool run pre-commit run --all-files
-
-  eslint:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v6
-      - uses: jdx/mise-action@v3
-
-      - run: just eslint-ci
-        continue-on-error: true
-
-      - uses: ataylorme/eslint-annotate-action@2.2.0
-        if: always()
-
-  biome:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: jdx/mise-action@v3
-
-      - run: just biome-ci
-
-  prettier:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v6
-        - uses: jdx/mise-action@v3
-
-        - run: just prettier-ci
-
-  typecheck:
+    pre-commit:
         runs-on: ubuntu-latest
         steps:
-          - uses: actions/checkout@v6
-          - uses: jdx/mise-action@v3
-          - run: just typecheck-ci
+            - uses: actions/checkout@v6
+            - uses: actions/setup-python@v6
+              with:
+                python-version: "3.x"
+            - uses: jdx/mise-action@v3
+            - run: npm ci
+            - uses: pre-commit/action@v3.0.1
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: jdx/mise-action@v3
+    eslint:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            checks: write
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v6
+            - uses: jdx/mise-action@v3
 
-      - run: just build-ci
+            - run: just eslint-ci
+              continue-on-error: true
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: jdx/mise-action@v3
+            - uses: ataylorme/eslint-annotate-action@3.0.0
+              if: always()
 
-      - run: just test-ci
+    biome:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: jdx/mise-action@v3
 
-  functions-build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: jdx/mise-action@v3
+            - run: just biome-ci
 
-      - name: Build Cloud Functions
-        run: |
-          cd functions
-          npm ci
-          npm run build
+    prettier:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: jdx/mise-action@v3
 
-  all-checks:
-    name: All checks
-    if: ${{ !cancelled() }}
-    needs: [pre-commit, eslint, biome, prettier, typecheck, build, test, functions-build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: re-actors/alls-green@release/v1
-        with:
-          jobs: ${{ toJSON(needs) }}
+            - run: just prettier-ci
+
+    typecheck:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: jdx/mise-action@v3
+            - run: just typecheck-ci
+
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: jdx/mise-action@v3
+
+            - run: just build-ci
+
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: jdx/mise-action@v3
+
+            - run: just test-ci
+
+    functions-build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: jdx/mise-action@v3
+
+            - name: Build Cloud Functions
+              run: |
+                cd functions
+                npm ci
+                npm run build
+
+    all-checks:
+        name: All checks
+        if: ${{ !cancelled() }}
+        needs: [pre-commit, eslint, biome, prettier, typecheck, build, test, functions-build]
+        runs-on: ubuntu-latest
+        steps:
+            - uses: re-actors/alls-green@release/v1
+              with:
+                  jobs: ${{ toJSON(needs) }}

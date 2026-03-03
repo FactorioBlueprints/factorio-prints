@@ -8,6 +8,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Check if the new commits in a Pull Request contain a merge commit. If so, fail and print them out.
+  forbid-merge-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: motlin/forbid-merge-commits-action@main
+
   automerge-dependabot:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
@@ -21,3 +27,159 @@ jobs:
         run: gh pr merge --rebase --auto "${{ github.event.pull_request.number }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  eslint-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: jdx/mise-action@v3
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Run ESLint Fix
+        run: |
+          npm ci
+          npm run lint
+
+          if [[ -n $(git status --porcelain) ]]; then
+            FIX_BRANCH="fix-${{ github.event.pull_request.number }}-eslint"
+            git switch --create $FIX_BRANCH
+
+            git add --all
+            git commit --message "Apply ESLint fixes."
+            git push --force origin $FIX_BRANCH
+
+            echo "ESLint fixes have been pushed to the $FIX_BRANCH branch."
+            exit 1
+          else
+            echo "No changes needed by ESLint"
+          fi
+
+  biome-format-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: jdx/mise-action@v3
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Run Biome Format
+        run: |
+          npx @biomejs/biome format --write
+
+          if [[ -n $(git status --porcelain) ]]; then
+            FIX_BRANCH="fix-${{ github.event.pull_request.number }}-biome"
+            git switch --create $FIX_BRANCH
+
+            git add --all
+            git commit --message "Apply Biome formatting."
+            git push --force origin $FIX_BRANCH
+
+            echo "Biome formatting fixes have been pushed to the $FIX_BRANCH branch."
+            exit 1
+          else
+            echo "No changes needed by Biome"
+          fi
+
+  prettier-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: jdx/mise-action@v3
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Run Prettier Format
+        run: |
+          npm ci
+          npx prettier --write . '!.github/workflows/**'
+
+          if [[ -n $(git status --porcelain) ]]; then
+            FIX_BRANCH="fix-${{ github.event.pull_request.number }}-prettier"
+            git switch --create $FIX_BRANCH
+
+            git add --all
+            git commit --message "Apply Prettier formatting."
+            git push --force origin $FIX_BRANCH
+
+            echo "Prettier formatting fixes have been pushed to the $FIX_BRANCH branch."
+            exit 1
+          else
+            echo "No changes needed by Prettier"
+          fi
+
+  pre-commit-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - uses: jdx/mise-action@v3
+
+      - run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Run pre-commit
+        run: |
+          pre-commit run --all-files || true
+
+          if [[ -n $(git status --porcelain) ]]; then
+            FIX_BRANCH="fix-${{ github.event.pull_request.number }}-pre-commit"
+            git switch --create $FIX_BRANCH
+
+            git add --all
+            git commit --message "Apply pre-commit fixes."
+            git push --force origin $FIX_BRANCH
+
+            echo "pre-commit fixes have been pushed to the $FIX_BRANCH branch."
+            exit 1
+          else
+            echo "No changes needed by pre-commit"
+          fi
