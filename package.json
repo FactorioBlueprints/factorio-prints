@@ -86,7 +86,7 @@
 		"eslint-plugin-react-hooks": "7.0.1",
 		"eslint-plugin-react-refresh": "0.5.2",
 		"fake-indexeddb": "6.2.5",
-		"firebase-tools": "^15.9.0",
+		"firebase-tools": "^15.9.1",
 		"globals": "17.4.0",
 		"jiti": "2.6.1",
 		"jsdom": "28.1.0",
