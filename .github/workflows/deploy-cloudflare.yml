@@ -44,17 +44,11 @@ jobs:
           version: ${{ github.event.release.tag_name }}
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        env:
-          MISE_DISABLE: '1'
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: factorio-prints
-          directory: dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          wranglerVersion: '3'
+          command: pages deploy dist --project-name=factorio-prints --branch=main
 
       - name: Finalize Sentry release
         uses: getsentry/action-release@v3
