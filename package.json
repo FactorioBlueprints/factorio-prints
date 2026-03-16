@@ -89,7 +89,7 @@
 		"firebase-tools": "^15.10.0",
 		"globals": "17.4.0",
 		"jiti": "2.6.1",
-		"jsdom": "28.1.0",
+		"jsdom": "29.0.0",
 		"less": "4.6.3",
 		"prettier": "3.8.1",
 		"typescript": "5.9.3",
