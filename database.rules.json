@@ -34,6 +34,12 @@
 						".validate": "newData.isBoolean()"
 					}
 				},
+				"collection": {
+					".write": "root.child('moderators').child(auth.uid).val() === true",
+					"$blueprintId": {
+						".validate": "newData.isBoolean()"
+					}
+				},
 				"displayName": {
 					".read": "true"
 				}
