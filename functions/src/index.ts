@@ -111,6 +111,48 @@ export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 );
 
 /**
+ * Cloud Function to clean up user collections when a blueprint is deleted.
+ *
+ * Unlike favorites (which are denormalized onto each blueprint), collection
+ * membership is only stored at /users/{uid}/collection/{blueprintId}. The
+ * deleted blueprint snapshot doesn't tell us who collected it, so we scan
+ * /users. Acceptable at current scale; if blueprint deletes become hot,
+ * denormalize a `collectors` map onto the blueprint and read it directly.
+ */
+export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
+	'/blueprints/{blueprintId}',
+	async (event: DatabaseEvent<DataSnapshot>) => {
+		const blueprintId = event.params.blueprintId;
+		const database = admin.database();
+
+		const usersSnapshot = await database.ref('/users').once('value');
+		const users = usersSnapshot.val() || {};
+
+		const updates: Record<string, null> = {};
+		let collectorCount = 0;
+
+		for (const userId of Object.keys(users)) {
+			if (users[userId]?.collection?.[blueprintId] === true) {
+				updates[`/users/${userId}/collection/${blueprintId}`] = null;
+				collectorCount++;
+			}
+		}
+
+		if (collectorCount === 0) {
+			functions.logger.log(`Blueprint ${blueprintId} deleted with no collections to clean up`);
+			return null;
+		}
+
+		await database.ref().update(updates);
+		functions.logger.log(
+			`Cleaned up deleted blueprint ${blueprintId}: removed from ${collectorCount} users' collections`,
+		);
+
+		return null;
+	},
+);
+
+/**
  * Cloud Function to reconcile favorite counts (can be called manually if needed)
  * This is a failsafe to fix any discrepancies
  */
