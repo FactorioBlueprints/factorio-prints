@@ -88,7 +88,7 @@
 		"fake-indexeddb": "6.2.5",
 		"firebase-tools": "^15.16.0",
 		"globals": "17.6.0",
-		"jiti": "2.6.1",
+		"jiti": "2.7.0",
 		"jsdom": "29.1.1",
 		"less": "4.6.4",
 		"prettier": "3.8.3",
