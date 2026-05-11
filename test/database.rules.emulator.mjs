@@ -262,6 +262,26 @@ describe("blueprint creation rules", () => {
   });
 });
 
+describe("blueprint collector index rules", () => {
+  test("reject a user writing their own collector entry", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+
+    await assertFails(set(ref(database, `blueprintCollectors/${blueprintId}/${userId}`), true));
+  });
+
+  test("reject a user writing another user's collector entry", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+
+    await assertFails(set(ref(database, `blueprintCollectors/${blueprintId}/${ownerId}`), true));
+  });
+
+  test("reject a client read of collector membership", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+
+    await assertFails(get(ref(database, `blueprintCollectors/${blueprintId}`)));
+  });
+});
+
 describe("tags registry rules", () => {
   test("reject a write from an authenticated non-moderator", async () => {
     const database = testEnvironment.authenticatedContext(userId).database();

@@ -23,6 +23,10 @@
 				}
 			}
 		},
+		"blueprintCollectors": {
+			".read": "false",
+			".write": "false"
+		},
 		"users": {
 			".read": "root.child('moderators').child(auth.uid).val() === true",
 			"$uid": {
