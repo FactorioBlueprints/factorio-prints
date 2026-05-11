@@ -23,6 +23,15 @@
 				}
 			}
 		},
+		"blueprintCollectors": {
+			".read": "false",
+			"$blueprintId": {
+				"$uid": {
+					".write": "auth != null && auth.uid == $uid",
+					".validate": "newData.isBoolean() && root.child('blueprints').child($blueprintId).exists()"
+				}
+			}
+		},
 		"users": {
 			".read": "root.child('moderators').child(auth.uid).val() === true",
 			"$uid": {
