@@ -76,7 +76,7 @@
 		"@types/lodash": "4.17.24",
 		"@types/markdown-it": "14.1.2",
 		"@types/node": "25.9.1",
-		"@types/react": "19.2.16",
+		"@types/react": "19.2.17",
 		"@types/react-dom": "19.2.3",
 		"@types/serviceworker": "0.0.197",
 		"@typescript-eslint/eslint-plugin": "8.57.1",
