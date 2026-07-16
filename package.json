@@ -93,7 +93,7 @@
 		"less": "4.6.7",
 		"prettier": "3.9.5",
 		"typescript": "5.9.3",
-		"vite": "8.1.4",
+		"vite": "8.1.5",
 		"vitest": "4.1.10",
 		"wrangler": "^4.111.0"
 	}
