@@ -25,10 +25,10 @@
 		"deploy:all": "cd functions && npm install && cd .. && npx firebase deploy"
 	},
 	"dependencies": {
-		"@fortawesome/fontawesome-svg-core": "7.3.0",
-		"@fortawesome/free-brands-svg-icons": "7.3.0",
-		"@fortawesome/free-regular-svg-icons": "7.3.0",
-		"@fortawesome/free-solid-svg-icons": "7.3.0",
+		"@fortawesome/fontawesome-svg-core": "7.3.1",
+		"@fortawesome/free-brands-svg-icons": "7.3.1",
+		"@fortawesome/free-regular-svg-icons": "7.3.1",
+		"@fortawesome/free-solid-svg-icons": "7.3.1",
 		"@fortawesome/react-fontawesome": "3.5.0",
 		"@popperjs/core": "2.11.8",
 		"@sentry/react": "10.66.0",
