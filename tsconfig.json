@@ -23,7 +23,6 @@
 		"noPropertyAccessFromIndexSignature": false,
 		"verbatimModuleSyntax": false,
 		"useDefineForClassFields": true,
-		"baseUrl": ".",
 		"paths": {
 			"src/*": ["./src/*"]
 		},
