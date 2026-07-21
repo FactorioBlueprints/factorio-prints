@@ -10,6 +10,9 @@ updates:
       labels:
           - "dependencies"
       groups:
+          fontawesome:
+              patterns:
+                  - '@fortawesome/*'
           typescript-ecosystem:
               patterns:
                   - 'typescript'
