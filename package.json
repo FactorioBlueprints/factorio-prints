@@ -81,7 +81,7 @@
 		"@types/serviceworker": "0.0.200",
 		"@typescript-eslint/eslint-plugin": "8.59.2",
 		"@typescript-eslint/parser": "8.59.2",
-		"@vitejs/plugin-react": "6.0.3",
+		"@vitejs/plugin-react": "6.0.4",
 		"eslint": "10.7.0",
 		"eslint-plugin-react-hooks": "7.1.1",
 		"eslint-plugin-react-refresh": "0.5.3",
