@@ -1,5 +1,7 @@
 import {QueryCache, QueryClient} from '@tanstack/react-query';
 
+export const QUERY_CACHE_RETENTION_MILLISECONDS = 24 * 24 * 60 * 60 * 1000;
+
 const queryCache = new QueryCache({
 	onSuccess: (data: any, query) => {
 		if (query.queryKey[0] === 'rawPaginatedBlueprintSummaries' && data?.pages) {
@@ -30,7 +32,7 @@ export const queryClient = new QueryClient({
 			refetchOnWindowFocus: true,
 			refetchOnMount: true,
 			retry: 1,
-			gcTime: Infinity,
+			gcTime: QUERY_CACHE_RETENTION_MILLISECONDS,
 		},
 		mutations: {
 			retry: 1,
