@@ -44,10 +44,11 @@ const MostFavoritedGrid: React.FC = () => {
 				<TagForm />
 			</Row>
 			<Row className="blueprint-grid-row justify-content-center">
-				{blueprintSummaries.map((blueprintSummary) => (
+				{blueprintSummaries.map((blueprintSummary, index) => (
 					<BlueprintThumbnail
 						key={blueprintSummary.key}
 						blueprintSummary={blueprintSummary}
+						prioritizeImage={index === 0}
 					/>
 				))}
 			</Row>

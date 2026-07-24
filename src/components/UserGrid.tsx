@@ -77,10 +77,11 @@ const UserGrid: React.FC = () => {
 			</EmptyResults>
 
 			<Row className="blueprint-grid-row justify-content-center">
-				{sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary) => (
+				{sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary, index) => (
 					<BlueprintThumbnail
 						key={blueprintSummary.key}
 						blueprintSummary={blueprintSummary}
+						prioritizeImage={index === 0}
 					/>
 				))}
 			</Row>

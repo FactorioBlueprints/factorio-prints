@@ -15,9 +15,11 @@ import PageHeader from './PageHeader';
 import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
+const initialPageSize = 24;
+
 const BlueprintGrid: React.FC = () => {
 	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData} =
-		useEnrichedPaginatedSummaries(60, 'lastUpdatedDate');
+		useEnrichedPaginatedSummaries(initialPageSize, 'lastUpdatedDate');
 
 	const flattenedSummaries = useFlattenedEnrichedPaginatedSummaries(data);
 
@@ -47,7 +49,7 @@ const BlueprintGrid: React.FC = () => {
 				<TagForm />
 			</Row>
 			<Row className="blueprint-grid-row justify-content-center">
-				{blueprintSummaries.map((blueprintSummary) => (
+				{blueprintSummaries.map((blueprintSummary, index) => (
 					<ErrorBoundary
 						key={blueprintSummary.key}
 						fallback={
@@ -60,7 +62,10 @@ const BlueprintGrid: React.FC = () => {
 						}
 						showDetails={false}
 					>
-						<BlueprintThumbnail blueprintSummary={blueprintSummary} />
+						<BlueprintThumbnail
+							blueprintSummary={blueprintSummary}
+							prioritizeImage={index === 0}
+						/>
 					</ErrorBoundary>
 				))}
 			</Row>

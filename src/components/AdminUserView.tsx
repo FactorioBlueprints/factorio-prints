@@ -192,10 +192,11 @@ const AdminUserView: React.FC = () => {
 				>
 					<Row className="blueprint-grid-row justify-content-center">
 						{sortedBlueprints.length > 0 ? (
-							sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary) => (
+							sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary, index) => (
 								<BlueprintThumbnail
 									key={blueprintSummary.key || blueprintSummary.key}
 									blueprintSummary={blueprintSummary}
+									prioritizeImage={index === 0}
 								/>
 							))
 						) : (
@@ -217,10 +218,11 @@ const AdminUserView: React.FC = () => {
 				>
 					<Row className="blueprint-grid-row justify-content-center">
 						{sortedFavorites.length > 0 ? (
-							sortedFavorites.map((blueprintSummary: EnrichedBlueprintSummary) => (
+							sortedFavorites.map((blueprintSummary: EnrichedBlueprintSummary, index) => (
 								<BlueprintThumbnail
 									key={blueprintSummary.key || blueprintSummary.key}
 									blueprintSummary={blueprintSummary}
+									prioritizeImage={index === 0}
 								/>
 							))
 						) : (

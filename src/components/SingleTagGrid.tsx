@@ -84,10 +84,11 @@ const SingleTagGrid: React.FC = () => {
 			</EmptyResults>
 
 			<Row className="blueprint-grid-row justify-content-center">
-				{sortedBlueprints.map((blueprintSummary) => (
+				{sortedBlueprints.map((blueprintSummary, index) => (
 					<BlueprintThumbnail
 						key={blueprintSummary.key}
 						blueprintSummary={blueprintSummary}
+						prioritizeImage={index === 0}
 					/>
 				))}
 			</Row>
