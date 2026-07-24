@@ -1,4 +1,5 @@
 import {createStore, del, get, set, type UseStore} from 'idb-keyval';
+import {PersistenceStore} from './localStorage.persistence';
 
 interface StoreConfig {
 	dbName: string;
@@ -6,15 +7,15 @@ interface StoreConfig {
 }
 
 interface WorkerMessage {
-	type: 'set' | 'get' | 'delete' | 'init' | 'healthCheck';
+	type: 'persist' | 'restore' | 'set' | 'get' | 'delete' | 'init' | 'healthCheck';
 	key?: string;
 	data?: any;
 	id?: number;
 	storeConfig?: StoreConfig;
 }
 
-interface SuccessResult {
-	success: true;
+interface OperationResult {
+	success: boolean;
 	data?: any;
 }
 
@@ -30,13 +31,14 @@ interface ErrorResult {
 
 interface WorkerResponse {
 	id?: number;
-	result?: SuccessResult;
+	result?: OperationResult;
 	error?: ErrorResult;
 	success: boolean;
 	type?: 'error';
 }
 
 let store: UseStore | undefined;
+let persistenceStore: PersistenceStore | undefined;
 let storeConfig: StoreConfig | undefined;
 let isStoreInitialized = false;
 
@@ -44,6 +46,7 @@ declare const self: DedicatedWorkerGlobalScope;
 
 function resetStore() {
 	store = undefined;
+	persistenceStore = undefined;
 	isStoreInitialized = false;
 	console.log('[IndexedDB Worker] Store reset for reconnection');
 }
@@ -55,6 +58,7 @@ async function initializeStore(): Promise<void> {
 
 	try {
 		store = createStore(storeConfig.dbName, storeConfig.storeName);
+		persistenceStore = new PersistenceStore(store);
 		isStoreInitialized = true;
 		console.log('[IndexedDB Worker] Store initialized successfully');
 	} catch (error) {
@@ -130,10 +134,17 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 			return;
 		}
 
-		let result: SuccessResult;
+		let result: OperationResult;
 
 		// Ensure store is initialized for operations that need it
-		if (type === 'set' || type === 'get' || type === 'delete' || type === 'healthCheck') {
+		if (
+			type === 'persist' ||
+			type === 'restore' ||
+			type === 'set' ||
+			type === 'get' ||
+			type === 'delete' ||
+			type === 'healthCheck'
+		) {
 			await ensureStoreConnection();
 			if (!store) {
 				throw new Error(
@@ -143,6 +154,24 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 		}
 
 		switch (type) {
+			case 'persist':
+				if (key === undefined) {
+					throw new Error('Key is required for persist operation');
+				}
+				if (!persistenceStore) {
+					throw new Error('Persistence store not initialized');
+				}
+				result = await persistenceStore.persist(key, requestData);
+				break;
+			case 'restore':
+				if (key === undefined) {
+					throw new Error('Key is required for restore operation');
+				}
+				if (!persistenceStore) {
+					throw new Error('Persistence store not initialized');
+				}
+				result = await persistenceStore.restore(key);
+				break;
 			case 'set':
 				if (key === undefined) {
 					throw new Error('Key is required for set operation');
@@ -172,7 +201,11 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 				if (key === undefined) {
 					throw new Error('Key is required for delete operation');
 				}
-				await del(key, store);
+				if (persistenceStore) {
+					await persistenceStore.delete(key);
+				} else {
+					await del(key, store);
+				}
 				result = {success: true};
 				break;
 			case 'healthCheck':
