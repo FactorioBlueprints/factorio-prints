@@ -1,12 +1,13 @@
 import {type UseQueryOptions, type UseQueryResult, useQueries} from '@tanstack/react-query';
 import {fetchBlueprintTags} from '../api/firebase';
+import {QUERY_CACHE_RETENTION_MILLISECONDS} from '../providers/queryClient';
 
 export const getBlueprintTagsOptions = (blueprintId: string, enabled = true): UseQueryOptions<string[], Error> => ({
 	queryKey: ['blueprints', 'blueprintId', blueprintId, 'tags'],
 	queryFn: () => fetchBlueprintTags(blueprintId),
 	enabled: (enabled !== undefined ? enabled : true) && !!blueprintId,
-	staleTime: Infinity,
-	gcTime: Infinity,
+	staleTime: QUERY_CACHE_RETENTION_MILLISECONDS,
+	gcTime: QUERY_CACHE_RETENTION_MILLISECONDS,
 	placeholderData: [],
 });
 

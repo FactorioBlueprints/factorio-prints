@@ -1,4 +1,5 @@
 import {fetchBlueprint, fetchBlueprintSummary} from '../api/firebase';
+import {QUERY_CACHE_RETENTION_MILLISECONDS} from '../providers/queryClient';
 import type {EnrichedBlueprintSummary} from '../schemas';
 
 export const blueprintSummaryQuery = (blueprintId: string) => ({
@@ -10,6 +11,6 @@ export const blueprintSummaryQuery = (blueprintId: string) => ({
 export const blueprintQuery = (blueprintId: string, blueprintSummary: EnrichedBlueprintSummary) => ({
 	queryKey: ['blueprints', 'blueprintId', blueprintId],
 	queryFn: () => fetchBlueprint(blueprintId, blueprintSummary),
-	staleTime: Infinity,
-	gcTime: Infinity,
+	staleTime: QUERY_CACHE_RETENTION_MILLISECONDS,
+	gcTime: QUERY_CACHE_RETENTION_MILLISECONDS,
 });
