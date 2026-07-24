@@ -11,6 +11,7 @@ import {
 import React, {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 
+import 'bootswatch/dist/slate/bootstrap.min.css';
 import './css/style.css';
 import QueryProvider from './providers/QueryProvider';
 import {Router} from './router';

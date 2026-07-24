@@ -5,12 +5,24 @@ import {sentryVitePlugin} from '@sentry/vite-plugin';
 import {execSync} from 'child_process';
 import type {UserConfig} from 'vite';
 
+type SentryUploadEnvironment = {
+	SENTRY_AUTH_TOKEN?: string;
+	SENTRY_ENVIRONMENT?: string;
+	SENTRY_ORG?: string;
+	SENTRY_PROJECT?: string;
+};
+
 const version = execSync('git describe --always --tags', {encoding: 'utf8'}).trim();
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', {encoding: 'utf8'}).trim();
 const buildTime = new Date().toISOString();
 
-export default defineConfig(
-	({}): UserConfig => ({
+export const hasSentryUploadCredentials = (environment: SentryUploadEnvironment = process.env) =>
+	Boolean(environment.SENTRY_AUTH_TOKEN && environment.SENTRY_ORG && environment.SENTRY_PROJECT);
+
+export const createViteConfiguration = (environment: SentryUploadEnvironment = process.env): UserConfig => {
+	const sentryUploadEnabled = hasSentryUploadCredentials(environment);
+
+	return {
 		define: {
 			'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
 			'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),
@@ -25,21 +37,21 @@ export default defineConfig(
 				autoCodeSplitting: true,
 			}),
 			react(),
-			...(process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
+			...(sentryUploadEnabled
 				? [
 						sentryVitePlugin({
-							org: process.env.SENTRY_ORG,
-							project: process.env.SENTRY_PROJECT,
-							authToken: process.env.SENTRY_AUTH_TOKEN,
+							org: environment.SENTRY_ORG,
+							project: environment.SENTRY_PROJECT,
+							authToken: environment.SENTRY_AUTH_TOKEN,
 							release: {
 								name: version,
 								setCommits: {
 									auto: true,
 								},
-								...((process.env.SENTRY_ENVIRONMENT === 'production-firebase' ||
-									process.env.SENTRY_ENVIRONMENT === 'production-cloudflare') && {
+								...((environment.SENTRY_ENVIRONMENT === 'production-firebase' ||
+									environment.SENTRY_ENVIRONMENT === 'production-cloudflare') && {
 									deploy: {
-										env: process.env.SENTRY_ENVIRONMENT,
+										env: environment.SENTRY_ENVIRONMENT,
 									},
 								}),
 							},
@@ -52,7 +64,7 @@ export default defineConfig(
 				: []),
 		],
 		build: {
-			sourcemap: true,
+			sourcemap: sentryUploadEnabled,
 			rollupOptions: {
 				output: {
 					manualChunks: (id: string) => {
@@ -78,5 +90,7 @@ export default defineConfig(
 		optimizeDeps: {
 			include: ['@fortawesome/fontawesome-svg-core'],
 		},
-	}),
-);
+	};
+};
+
+export default defineConfig(() => createViteConfiguration());
