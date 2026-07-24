@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import {captureException} from '@sentry/react';
 import type React from 'react';
 import {Component, type ReactNode} from 'react';
 
@@ -68,7 +68,7 @@ class DisqusErrorBoundary extends Component<Props, State> {
 		}
 
 		// Log other errors to Sentry
-		Sentry.captureException(error, {
+		captureException(error, {
 			contexts: {
 				react: {
 					componentStack: errorInfo.componentStack,

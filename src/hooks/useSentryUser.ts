@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import {getCurrentScope, getIsolationScope} from '@sentry/react';
 import {User} from 'firebase/auth';
 import {useEffect} from 'react';
 
@@ -11,11 +11,11 @@ export const useSentryUser = (user: User | null | undefined) => {
 				username: user.displayName || undefined,
 			};
 
-			Sentry.getIsolationScope().setUser(sentryUser);
-			Sentry.getCurrentScope().setUser(sentryUser);
+			getIsolationScope().setUser(sentryUser);
+			getCurrentScope().setUser(sentryUser);
 		} else {
-			Sentry.getIsolationScope().setUser(null);
-			Sentry.getCurrentScope().setUser(null);
+			getIsolationScope().setUser(null);
+			getCurrentScope().setUser(null);
 		}
 	}, [user]);
 };

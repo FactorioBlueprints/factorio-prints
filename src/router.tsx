@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import {captureException} from '@sentry/react';
 import {createRouter, RouterProvider} from '@tanstack/react-router';
 import type React from 'react';
 import {routeTree} from './routeTree.gen';
@@ -13,7 +13,7 @@ const router = createRouter({
 		if (error instanceof TypeError && error.message === 'Failed to fetch') {
 			return;
 		}
-		Sentry.captureException(error);
+		captureException(error);
 	},
 } as any);
 

@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import {captureMessage} from '@sentry/react';
 import DOMPurify from 'dompurify';
 import MarkdownIt from 'markdown-it';
 import Blueprint from '../Blueprint';
@@ -30,7 +30,7 @@ export const enrichBlueprint = (
 	if (!rawBlueprint) return null;
 
 	const reportToSentry = (message: string, level: 'warning' | 'info', issues: any) => {
-		Sentry.captureMessage(message, {
+		captureMessage(message, {
 			level,
 			tags: {
 				component: 'enrichBlueprint',

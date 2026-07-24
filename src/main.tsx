@@ -1,4 +1,13 @@
-import * as Sentry from '@sentry/react';
+import {
+	addBreadcrumb,
+	breadcrumbsIntegration,
+	browserTracingIntegration,
+	captureConsoleIntegration,
+	contextLinesIntegration,
+	init,
+	setContext,
+	setTag,
+} from '@sentry/react';
 import React, {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 
@@ -190,48 +199,18 @@ function getSentryEnvironment(): string {
 	return 'staging';
 }
 
-Sentry.init({
+init({
 	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
 	sendDefaultPii: true,
 	release: releaseInfo.version,
 	environment: getSentryEnvironment(),
 	integrations: [
-		Sentry.browserTracingIntegration(),
-		Sentry.replayIntegration({
-			maskAllInputs: false,
-			blockAllMedia: false,
-			maskAllText: false,
-			ignore: [
-				'[id^="dsq-"]',
-				'.disqus-thread',
-				'#disqus_thread',
-				'iframe[src*="disqus.com"]',
-				'iframe[name*="dsq-"]',
-				'iframe[title*="Disqus"]',
-			],
-			beforeAddRecordingEvent: (event) => {
-				// Filter out cross-origin CSS error console logs from replay recordings
-				if (event.data?.tag === 'breadcrumb' && event.data?.payload?.category === 'console') {
-					const message = event.data?.payload?.message;
-					if (message && typeof message === 'string') {
-						if (
-							message.includes("Cannot get CSS styles from text's parentNode") ||
-							message.includes('CSSStyleSheet.cssRules getter') ||
-							message.includes('cross-origin stylesheet') ||
-							message.includes('SecurityError')
-						) {
-							return null;
-						}
-					}
-				}
-				return event;
-			},
-		}),
-		Sentry.captureConsoleIntegration({
+		browserTracingIntegration(),
+		captureConsoleIntegration({
 			levels: ['error', 'warn'],
 		}),
-		Sentry.contextLinesIntegration(),
-		Sentry.breadcrumbsIntegration({
+		contextLinesIntegration(),
+		breadcrumbsIntegration({
 			console: true,
 			dom: true,
 			fetch: true,
@@ -239,15 +218,9 @@ Sentry.init({
 			sentry: true,
 			xhr: true,
 		}),
-		Sentry.feedbackIntegration({
-			colorScheme: 'system',
-			enableScreenshot: true,
-		}),
 	],
-	tracesSampleRate: 1.0,
+	tracesSampleRate: 0.1,
 	tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
-	replaysSessionSampleRate: 0.1,
-	replaysOnErrorSampleRate: 1.0,
 	allowUrls: ['http://localhost', 'https://localhost', /localhost:\d{4}/, /https:\/\/.*factorio/],
 	denyUrls: [
 		// Third-party scripts that generate noise
@@ -365,7 +338,7 @@ Sentry.init({
 		const errorMessage = error instanceof Error ? error.message : eventMessage;
 		if (errorMessage && typeof errorMessage === 'string') {
 			if (isUnactionableError(errorMessage)) {
-				Sentry.addBreadcrumb({
+				addBreadcrumb({
 					message: 'Unactionable error filtered',
 					category: 'filter',
 					level: 'info',
@@ -379,7 +352,7 @@ Sentry.init({
 
 			// Filter IndexedDB errors with detailed breadcrumb
 			if (errorMessage.includes('[IndexedDB')) {
-				Sentry.addBreadcrumb({
+				addBreadcrumb({
 					message: 'IndexedDB issue filtered',
 					category: 'indexeddb',
 					level: 'info',
@@ -454,16 +427,16 @@ Sentry.init({
 	},
 });
 
-Sentry.setContext('release_metadata', getReleaseMetadata());
+setContext('release_metadata', getReleaseMetadata());
 
-Sentry.setTag('environment', getSentryEnvironment());
-Sentry.setContext('deployment', {
+setTag('environment', getSentryEnvironment());
+setContext('deployment', {
 	hostname: window.location.hostname,
 	environment: getSentryEnvironment(),
 });
 
-Sentry.setTag('git_commit', releaseInfo.gitCommit);
-Sentry.setTag('git_branch', releaseInfo.gitBranch);
+setTag('git_commit', releaseInfo.gitCommit);
+setTag('git_branch', releaseInfo.gitBranch);
 
 /**
  * Handle Vite preload errors (stale chunk hash mismatches after deployment).
@@ -496,7 +469,7 @@ window.addEventListener(
 		// 📦 Handle ChunkLoadError with automatic reload
 		if (e.error?.name === 'ChunkLoadError' || e.message?.includes('Loading chunk')) {
 			console.warn('Chunk load error detected, page may need reload:', e.message);
-			Sentry.addBreadcrumb({
+			addBreadcrumb({
 				message: 'ChunkLoadError detected - likely stale cache',
 				category: 'chunk',
 				level: 'warning',
