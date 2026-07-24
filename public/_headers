@@ -23,16 +23,16 @@
 /*.ico
   Cache-Control: public, max-age=2419200
 
-/sw.ts
-  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+/sw.js
+  Cache-Control: no-cache
   Service-Worker-Allowed: /
 
-/service-worker.ts
-  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+/service-worker.js
+  Cache-Control: no-cache
   Service-Worker-Allowed: /
 
-/serviceWorker.ts
-  Cache-Control: max-age=0, no-cache, no-store, must-revalidate
+/serviceWorker.js
+  Cache-Control: no-cache
   Service-Worker-Allowed: /
 
 /assets/*
