@@ -43,6 +43,7 @@
 		"atob": "2.1.2",
 		"axios": "1.18.1",
 		"bootstrap": "5.3.8",
+		"bootswatch": "5.3.8",
 		"classnames": "2.5.1",
 		"date-fns": "4.4.0",
 		"disqus-react": "1.1.7",
