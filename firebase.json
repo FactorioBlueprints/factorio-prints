@@ -46,11 +46,11 @@
 				]
 			},
 			{
-				"source": "/sw.ts",
+				"source": "/sw.js",
 				"headers": [
 					{
 						"key": "Cache-Control",
-						"value": "max-age=0, no-cache, no-store, must-revalidate"
+						"value": "no-cache"
 					},
 					{
 						"key": "Service-Worker-Allowed",
@@ -59,11 +59,11 @@
 				]
 			},
 			{
-				"source": "/service-worker.ts",
+				"source": "/service-worker.js",
 				"headers": [
 					{
 						"key": "Cache-Control",
-						"value": "max-age=0, no-cache, no-store, must-revalidate"
+						"value": "no-cache"
 					},
 					{
 						"key": "Service-Worker-Allowed",
@@ -72,11 +72,11 @@
 				]
 			},
 			{
-				"source": "/serviceWorker.ts",
+				"source": "/serviceWorker.js",
 				"headers": [
 					{
 						"key": "Cache-Control",
-						"value": "max-age=0, no-cache, no-store, must-revalidate"
+						"value": "no-cache"
 					},
 					{
 						"key": "Service-Worker-Allowed",

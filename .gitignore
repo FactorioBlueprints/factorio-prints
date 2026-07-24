@@ -33,6 +33,8 @@ factorio-blueprints-export.json
 src/**/*.js
 public/**/*.js
 !public/service-worker.js
+!public/serviceWorker.js
+!public/sw.js
 
 # TypeScript build info
 tsconfig.tsbuildinfo
