@@ -2,7 +2,7 @@ import {createSyncStoragePersister} from '@tanstack/query-sync-storage-persister
 import {QueryClientProvider} from '@tanstack/react-query';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {persistQueryClient} from '@tanstack/react-query-persist-client';
-import * as Sentry from '@sentry/react';
+import {captureException, captureMessage} from '@sentry/react';
 import type React from 'react';
 import {useEffect} from 'react';
 import useBlueprintCacheSync from '../hooks/useBlueprintCacheSync';
@@ -48,7 +48,7 @@ function QueryProvider({children}: QueryProviderProps) {
 						return; // Successfully initialized IndexedDB persistence
 					} else {
 						console.error('[QueryProvider] Invalid IDB persister - missing restoreClient method');
-						Sentry.captureMessage('Invalid IDB persister - missing restoreClient method', {
+						captureMessage('Invalid IDB persister - missing restoreClient method', {
 							level: 'error',
 							tags: {
 								component: 'QueryProvider',
@@ -88,7 +88,7 @@ function QueryProvider({children}: QueryProviderProps) {
 						});
 					} else {
 						console.error('[QueryProvider] Invalid localStorage persister - missing restoreClient method');
-						Sentry.captureMessage('Invalid localStorage persister - missing restoreClient method', {
+						captureMessage('Invalid localStorage persister - missing restoreClient method', {
 							level: 'error',
 							tags: {
 								component: 'QueryProvider',
@@ -98,7 +98,7 @@ function QueryProvider({children}: QueryProviderProps) {
 					}
 				} catch (error) {
 					console.error('[QueryProvider] Failed to initialize localStorage persistence:', error);
-					Sentry.captureException(error, {
+					captureException(error, {
 						tags: {
 							component: 'QueryProvider',
 							errorType: 'localStorage-access',
@@ -110,7 +110,7 @@ function QueryProvider({children}: QueryProviderProps) {
 
 		initializePersistence().catch((error) => {
 			console.error('[QueryProvider] Unexpected error during persistence initialization:', error);
-			Sentry.captureException(error, {
+			captureException(error, {
 				tags: {
 					component: 'QueryProvider',
 					errorType: 'persistence-init',

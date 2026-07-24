@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import {addBreadcrumb, captureException} from '@sentry/react';
 import {createStore, del, get, set} from 'idb-keyval';
 import {compressForStorage, decompressFromStorage, formatBytes, checkStorageQuota} from './utils/dataCompression';
 import LocalStorageWorker from './localStorage.worker.wrapper';
@@ -220,7 +220,7 @@ async function getWorker(): Promise<Worker | undefined> {
 						errorToCapture = new Error(errorMessage);
 						errorToCapture.name = 'WorkerError';
 
-						Sentry.captureException(errorToCapture, {
+						captureException(errorToCapture, {
 							tags: {
 								component: 'indexeddb-worker',
 								operation: 'worker-error',
@@ -254,7 +254,7 @@ async function getWorker(): Promise<Worker | undefined> {
 							errorToCapture.name = 'WorkerError';
 						}
 
-						Sentry.captureException(errorToCapture, {
+						captureException(errorToCapture, {
 							tags: {
 								component: 'indexeddb-worker',
 								operation: 'worker-error',
@@ -314,18 +314,16 @@ async function getWorker(): Promise<Worker | undefined> {
 
 						// Log Safari worker issues as info level since they're expected
 						if (isSafari && eventType === 'Event') {
-							if (typeof Sentry !== 'undefined') {
-								Sentry.addBreadcrumb({
-									message: 'Safari worker initialization issue',
-									category: 'indexeddb',
-									level: 'info',
-									data: {
-										eventType,
-										eventProperties,
-										userAgent: navigator.userAgent,
-									},
-								});
-							}
+							addBreadcrumb({
+								message: 'Safari worker initialization issue',
+								category: 'indexeddb',
+								level: 'info',
+								data: {
+									eventType,
+									eventProperties,
+									userAgent: navigator.userAgent,
+								},
+							});
 							// Don't capture Safari worker init issues as exceptions
 							errorToCapture = null;
 						} else {
@@ -340,7 +338,7 @@ async function getWorker(): Promise<Worker | undefined> {
 						}
 
 						if (errorToCapture) {
-							Sentry.captureException(errorToCapture, {
+							captureException(errorToCapture, {
 								tags: {
 									component: 'indexeddb-worker',
 									operation: 'worker-error',
@@ -380,7 +378,7 @@ async function getWorker(): Promise<Worker | undefined> {
 						const uncaughtError = new Error(error.message);
 						uncaughtError.name = 'WorkerUncaughtError';
 
-						Sentry.captureException(uncaughtError, {
+						captureException(uncaughtError, {
 							tags: {
 								component: 'indexeddb-worker',
 								operation: 'worker-runtime',
@@ -398,7 +396,7 @@ async function getWorker(): Promise<Worker | undefined> {
 						const rejectionError = new Error(error.message);
 						rejectionError.name = 'WorkerUnhandledRejection';
 
-						Sentry.captureException(rejectionError, {
+						captureException(rejectionError, {
 							tags: {
 								component: 'indexeddb-worker',
 								operation: 'worker-runtime',
@@ -426,7 +424,7 @@ async function getWorker(): Promise<Worker | undefined> {
 								);
 
 								// 📊 Log as breadcrumb for debugging (error is already handled gracefully)
-								Sentry.addBreadcrumb({
+								addBreadcrumb({
 									message: 'IndexedDB connection closing - handled gracefully',
 									category: 'indexeddb',
 									level: 'warning',
@@ -456,7 +454,7 @@ async function getWorker(): Promise<Worker | undefined> {
 										const blobError = new Error(`IndexedDB blob write failed: ${error.message}`);
 										blobError.name = 'IndexedDBBlobWriteError';
 
-										Sentry.captureException(blobError, {
+										captureException(blobError, {
 											level: 'warning',
 											tags: {
 												component: 'localStorage',
@@ -520,7 +518,7 @@ async function getWorker(): Promise<Worker | undefined> {
 				console.error('[IndexedDB Worker] Failed to create worker:', error);
 				terminateWorker();
 
-				Sentry.captureException(error, {
+				captureException(error, {
 					tags: {
 						component: 'indexeddb-worker',
 						operation: 'worker-creation',
@@ -630,7 +628,7 @@ async function workerOperation(
 							);
 							timeoutError.name = 'IndexedDBTimeoutError';
 
-							Sentry.captureException(timeoutError, {
+							captureException(timeoutError, {
 								level: duration > 60000 ? 'error' : 'warning',
 								tags: {
 									component: 'localStorage',
@@ -700,7 +698,7 @@ async function workerOperation(
 		}
 
 		console.error('[IndexedDB] Worker operation failed:', error);
-		Sentry.captureException(error, {
+		captureException(error, {
 			tags: {
 				component: 'localStorage',
 				errorType: 'worker-operation-error',
@@ -780,7 +778,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					);
 					quotaError.name = 'IndexedDBQuotaError';
 
-					Sentry.captureException(quotaError, {
+					captureException(quotaError, {
 						level: 'warning',
 						tags: {
 							component: 'localStorage',
@@ -808,14 +806,12 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				if (result && 'success' in result && !result.success) {
 					// Silent failure - app continues without persistence
 					// Add breadcrumb for debugging if needed
-					if (typeof Sentry !== 'undefined') {
-						Sentry.addBreadcrumb({
-							message: 'IndexedDB persistence failed gracefully',
-							category: 'indexeddb',
-							level: 'info',
-							data: {key: idbValidKey},
-						});
-					}
+					addBreadcrumb({
+						message: 'IndexedDB persistence failed gracefully',
+						category: 'indexeddb',
+						level: 'info',
+						data: {key: idbValidKey},
+					});
 				} else {
 					lastPersistedData = currentData;
 				}
@@ -823,7 +819,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				console.error('[IndexedDB] Error persisting to IndexedDB:', error);
 
 				try {
-					Sentry.captureException(error, {
+					captureException(error, {
 						level: 'warning',
 						tags: {
 							component: 'localStorage',
@@ -907,7 +903,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 							);
 							slowRestoreError.name = 'IndexedDBSlowRestoreError';
 
-							Sentry.captureException(slowRestoreError, {
+							captureException(slowRestoreError, {
 								level: 'info',
 								tags: {
 									component: 'localStorage',
@@ -938,7 +934,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				console.error('[IndexedDB] Error restoring from IndexedDB:', error);
 
 				try {
-					Sentry.captureException(error, {
+					captureException(error, {
 						tags: {
 							component: 'localStorage',
 							errorType: 'restore-error',

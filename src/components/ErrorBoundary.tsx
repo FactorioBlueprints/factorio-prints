@@ -1,6 +1,6 @@
 import {faExclamationTriangle, faRedo} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import * as Sentry from '@sentry/react';
+import {captureException, withScope} from '@sentry/react';
 import React, {type ErrorInfo, type ReactNode} from 'react';
 
 interface ErrorBoundaryProps {
@@ -67,12 +67,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 		this.setState({error, errorInfo});
 
-		Sentry.withScope((scope) => {
+		withScope((scope) => {
 			scope.setContext('errorBoundary', {
 				componentStack: errorInfo.componentStack,
 			});
 			scope.setLevel('error');
-			Sentry.captureException(error);
+			captureException(error);
 		});
 
 		if (import.meta.env.DEV) {
