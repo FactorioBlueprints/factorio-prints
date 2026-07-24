@@ -133,6 +133,12 @@ td.number {
 .blueprint-thumbnail.col-auto {
 	padding: 2px;
 }
+.blueprint-thumbnail-image {
+	aspect-ratio: 1;
+	height: auto;
+	object-fit: cover;
+	width: 100%;
+}
 .search-row,
 .search-form,
 .tag-form {

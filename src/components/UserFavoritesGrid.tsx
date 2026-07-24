@@ -221,7 +221,7 @@ const UserFavoritesGrid: React.FC = () => {
 			</EmptyResults>
 
 			<Row className="blueprint-grid-row justify-content-center">
-				{sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary) => (
+				{sortedBlueprints.map((blueprintSummary: EnrichedBlueprintSummary, index) => (
 					<ErrorBoundary
 						key={blueprintSummary.key}
 						fallback={
@@ -234,7 +234,10 @@ const UserFavoritesGrid: React.FC = () => {
 						}
 						showDetails={false}
 					>
-						<BlueprintThumbnail blueprintSummary={blueprintSummary} />
+						<BlueprintThumbnail
+							blueprintSummary={blueprintSummary}
+							prioritizeImage={index === 0}
+						/>
 					</ErrorBoundary>
 				))}
 			</Row>

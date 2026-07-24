@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {Link} from '@tanstack/react-router';
 import {getAuth} from 'firebase/auth';
 import type React from 'react';
-import {useState} from 'react';
+import {memo, useState} from 'react';
 import Card from 'react-bootstrap/Card';
 import Tooltip from 'react-bootstrap/Tooltip';
 import {useAuthState} from 'react-firebase-hooks/auth';
@@ -18,10 +18,14 @@ import SafeOverlayTrigger from './SafeOverlayTrigger';
 
 interface BlueprintThumbnailProps {
 	blueprintSummary: EnrichedBlueprintSummary;
+	prioritizeImage?: boolean;
 }
 
-const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary}) => {
-	const [user] = useAuthState(getAuth(app));
+const auth = getAuth(app);
+const thumbnailSize = 170;
+
+const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary, prioritizeImage = false}) => {
+	const [user] = useAuthState(auth);
 	const [isCollectionHovering, setIsCollectionHovering] = useState(false);
 	const {data: userFavoritesData, isSuccess: userFavoritesIsSuccess} = useUserFavorites(user?.uid);
 	const {data: userCollectionData, isSuccess: userCollectionIsSuccess} = useUserCollection(user?.uid);
@@ -40,6 +44,12 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				<Card.Img
 					variant="top"
 					src="/icons/entity-unknown.png"
+					className="blueprint-thumbnail-image"
+					width={thumbnailSize}
+					height={thumbnailSize}
+					loading={prioritizeImage ? 'eager' : 'lazy'}
+					fetchPriority={prioritizeImage ? 'high' : 'auto'}
+					decoding="async"
 				/>
 				<p className="truncate p-1 text-danger">Error: Invalid blueprint data</p>
 			</Card>
@@ -91,6 +101,12 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				<Card.Img
 					variant="top"
 					src={imageUrl}
+					className="blueprint-thumbnail-image"
+					width={thumbnailSize}
+					height={thumbnailSize}
+					loading={prioritizeImage ? 'eager' : 'lazy'}
+					fetchPriority={prioritizeImage ? 'high' : 'auto'}
+					decoding="async"
 					referrerPolicy="no-referrer"
 					onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 						const target = e.target as HTMLImageElement;
@@ -210,4 +226,4 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 	);
 };
 
-export default BlueprintThumbnail;
+export default memo(BlueprintThumbnail);
