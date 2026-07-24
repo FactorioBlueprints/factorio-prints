@@ -1,13 +1,37 @@
 import {gzipSync, gunzipSync} from 'fflate';
 
+export interface StoredData {
+	compressed: boolean;
+	data: string;
+}
+
+export interface DecompressedData {
+	data: unknown;
+	compressed: boolean;
+	originalSize: number;
+	storedSize: number;
+}
+
+export interface CompressedData {
+	storedData: StoredData;
+	originalSize: number;
+}
+
 /**
  * 🗜️ Compress data for storage, with automatic fallback for small data
  */
-export function compressForStorage(data: any): {compressed: boolean; data: string} {
+export function compressForStorage(data: unknown): StoredData {
+	return compressForStorageWithMetadata(data).storedData;
+}
+
+export function compressForStorageWithMetadata(data: unknown): CompressedData {
 	const jsonString = JSON.stringify(data);
 
 	if (jsonString.length < 10240) {
-		return {compressed: false, data: jsonString};
+		return {
+			storedData: {compressed: false, data: jsonString},
+			originalSize: jsonString.length,
+		};
 	}
 
 	try {
@@ -27,23 +51,65 @@ export function compressForStorage(data: any): {compressed: boolean; data: strin
 		const base64 = btoa(binaryString);
 
 		if (base64.length < jsonString.length * 0.9) {
-			return {compressed: true, data: base64};
+			return {
+				storedData: {compressed: true, data: base64},
+				originalSize: jsonString.length,
+			};
 		}
 	} catch (error) {
 		console.warn('[Compression] Failed to compress data:', error);
 	}
 
-	return {compressed: false, data: jsonString};
+	return {
+		storedData: {compressed: false, data: jsonString},
+		originalSize: jsonString.length,
+	};
 }
 
 /**
  * 🎈 Decompress data from storage
  */
 export function decompressFromStorage(storedData: any): any {
-	if (!storedData) return storedData;
+	return decompressFromStorageWithMetadata(storedData).data;
+}
 
-	if (typeof storedData !== 'object' || !storedData.compressed) {
-		return storedData;
+export function decompressFromStorageWithMetadata(storedData: unknown): DecompressedData {
+	if (
+		typeof storedData !== 'object' ||
+		storedData === null ||
+		!('compressed' in storedData) ||
+		!('data' in storedData) ||
+		typeof storedData.compressed !== 'boolean' ||
+		typeof storedData.data !== 'string'
+	) {
+		const serializedData = JSON.stringify(storedData);
+		return {
+			data: storedData,
+			compressed: false,
+			originalSize: serializedData?.length ?? 0,
+			storedSize: serializedData?.length ?? 0,
+		};
+	}
+
+	const storedSize = storedData.data.length;
+
+	if (!storedData.compressed) {
+		try {
+			const data = JSON.parse(storedData.data);
+			return {
+				data,
+				compressed: false,
+				originalSize: storedData.data.length,
+				storedSize,
+			};
+		} catch {
+			return {
+				data: storedData,
+				compressed: false,
+				originalSize: storedSize,
+				storedSize,
+			};
+		}
 	}
 
 	try {
@@ -62,17 +128,38 @@ export function decompressFromStorage(storedData: any): any {
 
 		const decompressed = gunzipSync(bytes);
 		const jsonString = new TextDecoder().decode(decompressed);
-		return JSON.parse(jsonString);
+		return {
+			data: JSON.parse(jsonString),
+			compressed: true,
+			originalSize: jsonString.length,
+			storedSize,
+		};
 	} catch (error) {
 		console.error('[Compression] Failed to decompress data:', error);
 		if (typeof storedData.data === 'string') {
 			try {
-				return JSON.parse(storedData.data);
+				const data = JSON.parse(storedData.data);
+				return {
+					data,
+					compressed: true,
+					originalSize: storedData.data.length,
+					storedSize,
+				};
 			} catch {
-				return storedData;
+				return {
+					data: storedData,
+					compressed: true,
+					originalSize: storedSize,
+					storedSize,
+				};
 			}
 		}
-		return storedData;
+		return {
+			data: storedData,
+			compressed: true,
+			originalSize: storedSize,
+			storedSize,
+		};
 	}
 }
 

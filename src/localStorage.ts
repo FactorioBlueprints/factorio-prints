@@ -1,6 +1,6 @@
 import {addBreadcrumb, captureException} from '@sentry/react';
-import {createStore, del, get, set} from 'idb-keyval';
-import {compressForStorage, decompressFromStorage, formatBytes, checkStorageQuota} from './utils/dataCompression';
+import {createStore, del} from 'idb-keyval';
+import type {PersistResult, RestoreResult} from './localStorage.persistence';
 import LocalStorageWorker from './localStorage.worker.wrapper';
 
 export const STORAGE_KEYS = {
@@ -151,13 +151,43 @@ function debounce<T extends (...args: any[]) => any>(
 
 let worker: Worker | undefined;
 let operationCounter = 0;
-const pendingOperations = new Map();
+interface PendingOperation {
+	resolve: (result: WorkerOperationResult) => void;
+	operationType: StorageOperation;
+	timeoutHandle: ReturnType<typeof setTimeout>;
+}
+
+const pendingOperations = new Map<number, PendingOperation>();
 let workerReconnectAttempts = 0;
 const maxWorkerReconnectAttempts = 5;
 let lastWorkerResetTime = 0;
 const workerResetCooldown = 30000;
 let isWorkerInitializing = false;
 let workerInitPromise: Promise<void> | undefined;
+
+function clearPendingOperation(id: number): PendingOperation | undefined {
+	const pendingOperation = pendingOperations.get(id);
+	if (pendingOperation) {
+		clearTimeout(pendingOperation.timeoutHandle);
+		pendingOperations.delete(id);
+	}
+	return pendingOperation;
+}
+
+function clearAllPendingOperations(): PendingOperation[] {
+	const operations = [...pendingOperations.values()];
+	for (const operation of operations) {
+		clearTimeout(operation.timeoutHandle);
+	}
+	pendingOperations.clear();
+	return operations;
+}
+
+function settlePendingOperationsAfterTermination(): void {
+	for (const operation of clearAllPendingOperations()) {
+		operation.resolve(operation.operationType === 'restore' ? {success: true} : {success: false});
+	}
+}
 
 function resetWorkerIfNeeded() {
 	const now = Date.now();
@@ -178,6 +208,7 @@ function terminateWorker() {
 	}
 	isWorkerInitializing = false;
 	workerInitPromise = undefined;
+	settlePendingOperationsAfterTermination();
 }
 
 async function getWorker(): Promise<Worker | undefined> {
@@ -202,6 +233,14 @@ async function getWorker(): Promise<Worker | undefined> {
 		isWorkerInitializing = true;
 
 		workerInitPromise = new Promise<void>((resolve, reject) => {
+			let initializationTimeout: ReturnType<typeof setTimeout> | undefined;
+			const clearInitializationTimeout = (): void => {
+				if (initializationTimeout !== undefined) {
+					clearTimeout(initializationTimeout);
+					initializationTimeout = undefined;
+				}
+			};
+
 			try {
 				workerReconnectAttempts++;
 				console.log(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
@@ -210,6 +249,7 @@ async function getWorker(): Promise<Worker | undefined> {
 				console.log('[IndexedDB Worker] Successfully created worker using Vite import');
 
 				worker.onerror = (event) => {
+					clearInitializationTimeout();
 					let errorToCapture: Error | null;
 					let errorMessage: string;
 
@@ -231,16 +271,8 @@ async function getWorker(): Promise<Worker | undefined> {
 							},
 						});
 
-						if (worker) {
-							worker.terminate();
-							worker = undefined;
-						}
-
-						pendingOperations.forEach((op) => {
-							op.reject(errorToCapture);
-						});
-						pendingOperations.clear();
-
+						terminateWorker();
+						reject(errorToCapture);
 						return;
 					}
 
@@ -359,16 +391,6 @@ async function getWorker(): Promise<Worker | undefined> {
 
 					terminateWorker();
 					reject(new Error(errorMessage));
-
-					pendingOperations.forEach((op) => {
-						// Resolve with appropriate fallback based on operation type
-						if (op.operationType === 'get') {
-							op.resolve({data: undefined});
-						} else {
-							op.resolve({success: false});
-						}
-					});
-					pendingOperations.clear();
 				};
 
 				worker.onmessage = (e) => {
@@ -410,7 +432,7 @@ async function getWorker(): Promise<Worker | undefined> {
 						return;
 					}
 
-					const pendingOp = pendingOperations.get(id);
+					const pendingOp = clearPendingOperation(id);
 
 					if (pendingOp) {
 						if (success) {
@@ -436,7 +458,7 @@ async function getWorker(): Promise<Worker | undefined> {
 								});
 								// Return a safe fallback result based on the operation type
 								pendingOp.resolve(
-									pendingOp.operationType === 'get' ? {data: undefined} : {success: false},
+									pendingOp.operationType === 'restore' ? {success: true} : {success: false},
 								);
 							} else {
 								// 🛡️ Handle blob write failures specifically
@@ -464,7 +486,6 @@ async function getWorker(): Promise<Worker | undefined> {
 											extra: {
 												errorMessage: error.message,
 												key: e.data.key,
-												dataSize: e.data.data ? JSON.stringify(e.data.data).length : 0,
 											},
 										});
 									} catch (sentryError) {
@@ -478,16 +499,16 @@ async function getWorker(): Promise<Worker | undefined> {
 								// Always resolve with fallback instead of rejecting to prevent cache persistence failure
 								// This allows the app to continue functioning even if caching fails
 								pendingOp.resolve(
-									pendingOp.operationType === 'get' ? {data: undefined} : {success: false},
+									pendingOp.operationType === 'restore' ? {success: true} : {success: false},
 								);
 							}
 						}
-						pendingOperations.delete(id);
 					}
 				};
 
 				// Wait for initialization confirmation
-				const initTimeout = setTimeout(() => {
+				initializationTimeout = setTimeout(() => {
+					initializationTimeout = undefined;
 					console.error('[IndexedDB Worker] Worker initialization timeout');
 					terminateWorker();
 					reject(new Error('Worker initialization timeout'));
@@ -496,7 +517,7 @@ async function getWorker(): Promise<Worker | undefined> {
 				const originalOnMessage = worker.onmessage;
 				worker.onmessage = (e) => {
 					if (!e.data.id && e.data.success) {
-						clearTimeout(initTimeout);
+						clearInitializationTimeout();
 						worker!.onmessage = originalOnMessage;
 						workerReconnectAttempts = 0;
 						isWorkerInitializing = false;
@@ -515,6 +536,7 @@ async function getWorker(): Promise<Worker | undefined> {
 					},
 				});
 			} catch (error) {
+				clearInitializationTimeout();
 				console.error('[IndexedDB Worker] Failed to create worker:', error);
 				terminateWorker();
 
@@ -541,16 +563,28 @@ async function getWorker(): Promise<Worker | undefined> {
 	return worker;
 }
 
-type WorkerOperationResult = {success: true; data?: any} | {success: false} | {data: any};
+type StorageOperation = 'persist' | 'restore' | 'delete';
+type WorkerOperationResult = {success: boolean; data?: any};
+
+let fallbackPersistenceStorePromise: Promise<import('./localStorage.persistence').PersistenceStore> | undefined;
+
+async function getFallbackPersistenceStore(): Promise<import('./localStorage.persistence').PersistenceStore> {
+	if (!fallbackPersistenceStorePromise) {
+		fallbackPersistenceStorePromise = import('./localStorage.persistence').then(
+			({PersistenceStore}) => new PersistenceStore(indexedDbStore),
+		);
+	}
+	return fallbackPersistenceStorePromise;
+}
 
 async function workerOperation(
-	type: string,
+	type: StorageOperation,
 	key: string,
 	data: any = null,
 	retryCount = 0,
 ): Promise<WorkerOperationResult> {
-	const maxRetries = type === 'set' ? 3 : 4;
-	const baseDelay = type === 'set' ? 1000 : 500;
+	const maxRetries = type === 'persist' ? 3 : 4;
+	const baseDelay = type === 'persist' ? 1000 : 500;
 
 	try {
 		const worker = await getWorker();
@@ -558,16 +592,17 @@ async function workerOperation(
 		if (!worker) {
 			try {
 				switch (type) {
-					case 'set':
-						await set(key, data, indexedDbStore);
-						return {success: true};
-					case 'get':
-						return {data: await get(key, indexedDbStore)};
+					case 'persist': {
+						const persistenceStore = await getFallbackPersistenceStore();
+						return await persistenceStore.persist(key, data);
+					}
+					case 'restore': {
+						const persistenceStore = await getFallbackPersistenceStore();
+						return await persistenceStore.restore(key);
+					}
 					case 'delete':
-						await del(key, indexedDbStore);
+						await (await getFallbackPersistenceStore()).delete(key);
 						return {success: true};
-					default:
-						throw new Error('Unknown operation type');
 				}
 			} catch (error) {
 				if (
@@ -588,7 +623,7 @@ async function workerOperation(
 					}
 
 					console.error('[IndexedDB] Connection lost after max retries, returning fallback');
-					return type === 'get' ? {data: undefined} : {success: false};
+					return type === 'restore' ? {success: true} : {success: false};
 				}
 				throw error;
 			}
@@ -596,12 +631,7 @@ async function workerOperation(
 
 		return new Promise((resolve, reject) => {
 			const id = operationCounter++;
-
-			pendingOperations.set(id, {resolve, reject, operationType: type});
-
-			worker.postMessage({type, key, data, id});
-
-			const baseTimeout = type === 'set' ? 30000 : type === 'delete' ? 5000 : 20000;
+			const baseTimeout = type === 'persist' ? 30000 : type === 'delete' ? 5000 : 20000;
 			const retryMultiplier = Math.min(retryCount + 1, 3);
 			const timeoutDuration = baseTimeout * retryMultiplier;
 			const startTime = Date.now();
@@ -612,7 +642,7 @@ async function workerOperation(
 				);
 			}
 
-			setTimeout(() => {
+			const timeoutHandle = setTimeout(() => {
 				if (pendingOperations.has(id)) {
 					pendingOperations.delete(id);
 					const duration = Date.now() - startTime;
@@ -666,15 +696,24 @@ async function workerOperation(
 						console.warn('[IndexedDB] Failed to log timeout to Sentry:', sentryError);
 					}
 
-					if (type === 'get' && key === STORAGE_KEYS.QUERY_CACHE) {
+					if (type === 'restore' && key === STORAGE_KEYS.QUERY_CACHE) {
 						del(key, indexedDbStore).catch((err) =>
 							console.error('[IndexedDB] Failed to clear cache after timeout:', err),
 						);
 					}
 
-					resolve(type === 'get' ? {data: undefined} : {success: false});
+					resolve(type === 'restore' ? {success: true} : {success: false});
 				}
 			}, timeoutDuration);
+
+			pendingOperations.set(id, {resolve, operationType: type, timeoutHandle});
+
+			try {
+				worker.postMessage({type, key, data, id});
+			} catch (error) {
+				clearPendingOperation(id);
+				reject(error);
+			}
 		});
 	} catch (error) {
 		if (
@@ -712,7 +751,7 @@ async function workerOperation(
 			},
 		});
 
-		return type === 'get' ? {data: undefined} : {success: false};
+		return type === 'restore' ? {success: true} : {success: false};
 	}
 }
 
@@ -722,59 +761,39 @@ interface Persister {
 	removeClient: () => Promise<void>;
 }
 
+function formatBytes(bytes: number): string {
+	if (bytes === 0) {
+		return '0 Bytes';
+	}
+	const kilobyte = 1024;
+	const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+	const sizeIndex = Math.floor(Math.log(bytes) / Math.log(kilobyte));
+	return `${parseFloat((bytes / Math.pow(kilobyte, sizeIndex)).toFixed(2))} ${sizes[sizeIndex]}`;
+}
+
 export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister {
-	let lastPersistedData: string | null = null;
-
-	const extractQueryData = (client: any): any => {
-		if (!client || !client.clientState) {
-			return client;
-		}
-
-		const dataOnly = {
-			queries: client.clientState.queries?.map((query: any) => ({
-				queryKey: query.queryKey,
-				queryHash: query.queryHash,
-				data: query.state?.data,
-				...(query.state?.error ? {error: query.state.error} : {}),
-			})),
-			mutations: client.clientState.mutations?.map((mutation: any) => ({
-				mutationKey: mutation.mutationKey,
-				state: mutation.state?.status,
-				data: mutation.state?.data,
-				error: mutation.state?.error,
-			})),
-		};
-
-		return dataOnly;
-	};
-
 	const debouncedPersist = debounce(
 		async (client: any) => {
 			try {
-				const dataOnly = extractQueryData(client);
-				const currentData = JSON.stringify(dataOnly);
+				const result = await workerOperation('persist', idbValidKey, client);
+				const persistenceData = result.data as PersistResult['data'] | undefined;
 
-				if (lastPersistedData === currentData) {
+				if (persistenceData?.status === 'unchanged') {
 					console.log('[IndexedDB] Cache state unchanged, skipping persistence');
 					return;
 				}
 
-				const compressedData = compressForStorage(client);
-				const originalSize = JSON.stringify(client).length;
-				const compressedSize = compressedData.data.length;
-
-				if (compressedData.compressed) {
+				if (result.success && persistenceData?.status === 'persisted' && persistenceData.compressed) {
 					console.log(
-						`[IndexedDB] Compressed cache: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)}`,
+						`[IndexedDB] Compressed cache: ${formatBytes(persistenceData.originalSize)} → ${formatBytes(persistenceData.storedSize)}`,
 					);
 				}
 
-				const quotaCheck = await checkStorageQuota(compressedSize);
-				if (!quotaCheck.hasSpace) {
+				if (!result.success && persistenceData?.status === 'insufficient-storage') {
 					console.warn('[IndexedDB] Insufficient storage space available');
 
 					const quotaError = new Error(
-						`IndexedDB quota exceeded: need ${formatBytes(compressedSize)}, available ${formatBytes(quotaCheck.available || 0)}`,
+						`IndexedDB quota exceeded: need ${formatBytes(persistenceData.requiredSize)}, available ${formatBytes(persistenceData.availableSize)}`,
 					);
 					quotaError.name = 'IndexedDBQuotaError';
 
@@ -785,35 +804,20 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 							errorType: 'quota-exceeded',
 						},
 						extra: {
-							requiredSize: compressedSize,
-							availableSpace: quotaCheck.available,
-							usedSpace: quotaCheck.used,
+							requiredSize: persistenceData.requiredSize,
+							availableSpace: persistenceData.availableSize,
+							usedSpace: persistenceData.usedSize,
 						},
 					});
-
-					console.log('[IndexedDB] Attempting to clear old cache data');
-					await workerOperation('delete', idbValidKey);
-
-					const quotaCheckAfterClear = await checkStorageQuota(compressedSize);
-					if (!quotaCheckAfterClear.hasSpace) {
-						console.error('[IndexedDB] Still insufficient space after clearing cache');
-						return;
-					}
 				}
 
-				const result = await workerOperation('set', idbValidKey, compressedData);
-
-				if (result && 'success' in result && !result.success) {
-					// Silent failure - app continues without persistence
-					// Add breadcrumb for debugging if needed
+				if (!result.success) {
 					addBreadcrumb({
 						message: 'IndexedDB persistence failed gracefully',
 						category: 'indexeddb',
 						level: 'info',
 						data: {key: idbValidKey},
 					});
-				} else {
-					lastPersistedData = currentData;
 				}
 			} catch (error) {
 				console.error('[IndexedDB] Error persisting to IndexedDB:', error);
@@ -859,22 +863,13 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					performance.mark('indexeddb-restore-start');
 				}
 
-				const result = (await workerOperation('get', idbValidKey)) as {data?: any} | undefined;
-				const fetchDuration = Date.now() - startTime;
+				const result = await workerOperation('restore', idbValidKey);
+				const restoreData = result.data as RestoreResult['data'] | undefined;
 
-				if (result?.data) {
-					const decompressionStart = Date.now();
-					const decompressedData = decompressFromStorage(result.data);
-					const decompressionDuration = Date.now() - decompressionStart;
+				if (restoreData) {
 					const totalDuration = Date.now() - startTime;
-
-					const compressedSize =
-						typeof result.data === 'object' && result.data.data
-							? result.data.data.length
-							: JSON.stringify(result.data).length;
-					const dataSize = JSON.stringify(decompressedData).length;
-					const formattedSize = formatBytes(dataSize);
-					const formattedCompressedSize = formatBytes(compressedSize);
+					const formattedSize = formatBytes(restoreData.originalSize);
+					const formattedCompressedSize = formatBytes(restoreData.storedSize);
 
 					if (typeof performance !== 'undefined' && performance.mark) {
 						performance.mark('indexeddb-restore-end');
@@ -889,10 +884,10 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 						}
 					}
 
-					if (totalDuration > 2000 || dataSize > 1048576) {
+					if (totalDuration > 2000 || restoreData.originalSize > 1048576) {
 						console.log(
-							`[IndexedDB] Restore performance: Total ${totalDuration}ms (Fetch: ${fetchDuration}ms, Decompress: ${decompressionDuration}ms), ` +
-								`Size: ${formattedCompressedSize} → ${formattedSize}`,
+							`[IndexedDB] Restore performance: Total ${totalDuration}ms, ` +
+								`Size: ${formattedCompressedSize} → ${formattedSize} (${restoreData.compressed ? 'compressed' : 'uncompressed'})`,
 						);
 					}
 
@@ -911,14 +906,14 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 								},
 								extra: {
 									totalDuration: totalDuration,
-									fetchDuration: fetchDuration,
-									decompressionDuration: decompressionDuration,
-									dataSize: dataSize,
-									compressedSize: compressedSize,
+									dataSize: restoreData.originalSize,
+									compressedSize: restoreData.storedSize,
 									formattedSize: formattedSize,
 									formattedCompressedSize: formattedCompressedSize,
 									compressionRatio:
-										compressedSize > 0 ? (dataSize / compressedSize).toFixed(2) : 'N/A',
+										restoreData.storedSize > 0
+											? (restoreData.originalSize / restoreData.storedSize).toFixed(2)
+											: 'N/A',
 								},
 							});
 						} catch (sentryError) {
@@ -927,7 +922,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 						}
 					}
 
-					return decompressedData;
+					return restoreData.client;
 				}
 				return undefined;
 			} catch (error) {
@@ -959,7 +954,6 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 		removeClient: async () => {
 			try {
 				await workerOperation('delete', idbValidKey);
-				lastPersistedData = null;
 			} catch (error) {
 				console.error('[IndexedDB] Error removing from IndexedDB:', error);
 			}
