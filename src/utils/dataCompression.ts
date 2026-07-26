@@ -36,7 +36,7 @@ export function compressForStorageWithMetadata(data: unknown): CompressedData {
 
 	try {
 		const bytes = new TextEncoder().encode(jsonString);
-		const compressed = gzipSync(bytes, {level: 6});
+		const compressed = gzipSync(bytes, {level: 6, mtime: 0});
 
 		// Convert Uint8Array to base64 without using spread operator to avoid stack overflow on large arrays
 		let binaryString = '';

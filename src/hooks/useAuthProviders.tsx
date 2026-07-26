@@ -1,3 +1,5 @@
+import {captureException} from '@sentry/react';
+import {FirebaseError} from 'firebase/app';
 import {
 	type AuthProvider,
 	GithubAuthProvider,
@@ -14,11 +16,30 @@ export interface UseAuthProvidersReturn {
 	githubProvider: GithubAuthProvider;
 	authenticateWithProvider: (provider: AuthProvider) => Promise<void>;
 	authenticateWithEmail: (email: string) => Promise<void>;
+	authenticationError?: string;
 	isEmailSending: boolean;
 }
 
+const ignoredProviderAuthenticationErrorCodes = new Set(['auth/cancelled-popup-request', 'auth/popup-closed-by-user']);
+
+const providerAuthenticationErrorMessages = new Map([
+	['auth/account-exists-with-different-credential', 'An account already exists with this email address.'],
+	['auth/network-request-failed', 'Unable to reach the authentication service. Check your connection and try again.'],
+	['auth/operation-not-allowed', 'This sign-in method is currently unavailable.'],
+	['auth/popup-blocked', 'The sign-in popup was blocked. Allow popups for this site and try again.'],
+	['auth/unauthorized-domain', 'Sign-in is not configured for this domain.'],
+]);
+
+export const getProviderAuthenticationErrorMessage = (error: unknown): string => {
+	if (error instanceof FirebaseError) {
+		return providerAuthenticationErrorMessages.get(error.code) ?? 'Unable to sign in. Please try again.';
+	}
+	return 'Unable to sign in. Please try again.';
+};
+
 export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersReturn => {
 	const [isEmailSending, setIsEmailSending] = useState(false);
+	const [authenticationError, setAuthenticationError] = useState<string>();
 
 	const googleProvider = useMemo(() => {
 		const provider = new GoogleAuthProvider();
@@ -34,12 +55,24 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 
 	const authenticateWithProvider = useCallback(
 		async (provider: AuthProvider) => {
+			setAuthenticationError(undefined);
 			try {
 				await signInWithPopup(getAuth(app), provider);
 				onAuthSuccess?.();
-			} catch (error: any) {
-				if (error.code !== 'auth/popup-closed-by-user') {
+			} catch (error: unknown) {
+				const authenticationErrorCode = error instanceof FirebaseError ? error.code : 'unknown';
+				if (ignoredProviderAuthenticationErrorCodes.has(authenticationErrorCode)) {
+					return;
 				}
+
+				setAuthenticationError(getProviderAuthenticationErrorMessage(error));
+				captureException(error, {
+					tags: {
+						component: 'authentication',
+						operation: 'provider-sign-in',
+					},
+					extra: {authenticationErrorCode},
+				});
 			}
 		},
 		[onAuthSuccess],
@@ -51,6 +84,7 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 				return;
 			}
 
+			setAuthenticationError(undefined);
 			setIsEmailSending(true);
 
 			const actionCodeSettings = {
@@ -77,6 +111,7 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 		githubProvider,
 		authenticateWithProvider,
 		authenticateWithEmail,
+		authenticationError,
 		isEmailSending,
 	};
 };
