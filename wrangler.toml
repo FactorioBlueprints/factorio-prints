@@ -2,7 +2,4 @@ name = "factorio-prints"
 compatibility_date = "2025-07-25"
 pages_build_output_dir = "dist"
 
-[build]
-command = "npm run build"
-
 # Cloudflare Pages response headers are configured in public/_headers.
