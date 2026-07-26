@@ -14,7 +14,7 @@ import {createRoot} from 'react-dom/client';
 import 'bootswatch/dist/slate/bootstrap.min.css';
 import './css/style.css';
 import QueryProvider from './providers/QueryProvider';
-import {Router} from './router';
+import {getRouterDiagnostics, Router} from './router';
 import {getReleaseInfo, getReleaseMetadata} from './utils/release';
 import {setupTooltipCleanup} from './utils/cleanupTooltips';
 import {suppressGoogleAuthDeprecationWarning} from './utils/suppressGoogleAuthWarning';
@@ -292,6 +292,17 @@ init({
 		};
 
 		const eventMessage = getEventMessage();
+
+		if (eventMessage.includes('_nonReactive')) {
+			event.contexts = {
+				...event.contexts,
+				router: getRouterDiagnostics(),
+			};
+			event.tags = {
+				...event.tags,
+				router_diagnostics: 'match-lifecycle',
+			};
+		}
 
 		// 🛡️ Filter React DOM manipulation errors caused by third-party scripts (ads, Disqus)
 		// These errors occur when third-party scripts modify DOM nodes that React is managing.

@@ -1,6 +1,7 @@
 import {createRouter} from '@tanstack/react-router';
-import {describe, expect, test} from 'vitest';
+import {afterEach, describe, expect, test, vi} from 'vitest';
 import {routeTree} from './routeTree.gen';
+import {getRouterDiagnostics, router as applicationRouter} from './router';
 
 const rootRouteChildren = {
 	IndexRoute: {id: '/'},
@@ -22,6 +23,10 @@ const rootRouteChildren = {
 };
 
 describe('Router Configuration', () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	test('Router can be created with route tree', () => {
 		const router = createRouter({
 			routeTree,
@@ -67,5 +72,36 @@ describe('Router Configuration', () => {
 		});
 
 		expect(router).toBeDefined();
+	});
+
+	test('records the destination and match lifecycle for route preloads', async () => {
+		const existingEntryCount = getRouterDiagnostics().entries.length;
+		vi.useFakeTimers({toFake: ['Date']});
+		vi.setSystemTime(new Date('2000-01-01T00:00:00.000Z'));
+
+		await applicationRouter.preloadRoute({to: '/account'});
+
+		expect(getRouterDiagnostics().entries.slice(existingEntryCount)).toStrictEqual([
+			{
+				phase: 'preload-start',
+				timestamp: '2000-01-01T00:00:00.000Z',
+				fromPath: '/',
+				toPath: '/account',
+				activeMatches: [],
+				preloadedMatches: undefined,
+			},
+			{
+				phase: 'preload-complete',
+				timestamp: '2000-01-01T00:00:00.000Z',
+				fromPath: '/',
+				toPath: '/account',
+				durationMilliseconds: 0,
+				activeMatches: [],
+				preloadedMatches: [
+					'__root__/ route=__root__ status=success fetching=false cause=enter preload=false invalid=false',
+					'/account/account route=/account status=success fetching=false cause=enter preload=false invalid=false',
+				],
+			},
+		]);
 	});
 });
