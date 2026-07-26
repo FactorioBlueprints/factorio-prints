@@ -1,6 +1,6 @@
 import {addBreadcrumb, captureException} from '@sentry/react';
 import {createStore, del} from 'idb-keyval';
-import type {PersistResult, RestoreResult} from './localStorage.persistence';
+import {PersistenceStore, type PersistResult, type RestoreResult} from './localStorage.persistence';
 import LocalStorageWorker from './localStorage.worker.wrapper';
 
 function logIndexedDbDebug(message: string): void {
@@ -577,15 +577,11 @@ async function getWorker(): Promise<Worker | undefined> {
 type StorageOperation = 'persist' | 'restore' | 'delete';
 type WorkerOperationResult = {success: boolean; data?: any};
 
-let fallbackPersistenceStorePromise: Promise<import('./localStorage.persistence').PersistenceStore> | undefined;
+let fallbackPersistenceStore: PersistenceStore | undefined;
 
-async function getFallbackPersistenceStore(): Promise<import('./localStorage.persistence').PersistenceStore> {
-	if (!fallbackPersistenceStorePromise) {
-		fallbackPersistenceStorePromise = import('./localStorage.persistence').then(
-			({PersistenceStore}) => new PersistenceStore(indexedDbStore),
-		);
-	}
-	return fallbackPersistenceStorePromise;
+function getFallbackPersistenceStore(): PersistenceStore {
+	fallbackPersistenceStore ??= new PersistenceStore(indexedDbStore);
+	return fallbackPersistenceStore;
 }
 
 async function workerOperation(
