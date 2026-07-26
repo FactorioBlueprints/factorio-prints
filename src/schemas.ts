@@ -9,6 +9,14 @@ const dateToTimestamp = z.preprocess((val) => {
 	return val;
 }, z.number());
 
+export const blueprintIdSchema = z
+	.string()
+	.length(20)
+	.regex(/^[-_0-9A-Za-z]+$/)
+	.brand<'BlueprintId'>();
+
+export type BlueprintId = z.infer<typeof blueprintIdSchema>;
+
 export const imgurImageSchema = z
 	.object({
 		id: z.string(),
