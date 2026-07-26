@@ -169,6 +169,7 @@ const maxWorkerReconnectAttempts = 5;
 let lastWorkerResetTime = 0;
 const workerResetCooldown = 30000;
 let isWorkerInitializing = false;
+let isWorkerDisabledForSession = false;
 let workerInitPromise: Promise<void> | undefined;
 
 function clearPendingOperation(id: number): PendingOperation | undefined {
@@ -217,14 +218,23 @@ function terminateWorker() {
 	settlePendingOperationsAfterTermination();
 }
 
+function disableWorkerForSession() {
+	isWorkerDisabledForSession = true;
+	terminateWorker();
+}
+
 async function getWorker(): Promise<Worker | undefined> {
+	if (isWorkerDisabledForSession) {
+		return undefined;
+	}
+
 	// If worker is being initialized, wait for it
 	if (isWorkerInitializing && workerInitPromise) {
 		try {
 			await workerInitPromise;
 			return worker;
 		} catch (error) {
-			console.error('[IndexedDB Worker] Failed to wait for worker initialization:', error);
+			logIndexedDbDebug(`[IndexedDB Worker] Failed to wait for worker initialization: ${String(error)}`);
 			return undefined;
 		}
 	}
@@ -262,7 +272,6 @@ async function getWorker(): Promise<Worker | undefined> {
 					// Handle null/undefined event (shouldn't happen but being defensive)
 					if (!event) {
 						errorMessage = 'Worker error: null or undefined event';
-						console.error('[IndexedDB Worker] Received null/undefined error event');
 						errorToCapture = new Error(errorMessage);
 						errorToCapture.name = 'WorkerError';
 
@@ -277,14 +286,13 @@ async function getWorker(): Promise<Worker | undefined> {
 							},
 						});
 
-						terminateWorker();
+						disableWorkerForSession();
 						reject(errorToCapture);
 						return;
 					}
 
 					if (event instanceof ErrorEvent) {
 						errorMessage = event.message || 'Unknown worker error';
-						console.error('[IndexedDB Worker] Worker error:', errorMessage);
 						if (event.error instanceof Error) {
 							errorToCapture = event.error;
 						} else {
@@ -365,12 +373,6 @@ async function getWorker(): Promise<Worker | undefined> {
 							// Don't capture Safari worker init issues as exceptions
 							errorToCapture = null;
 						} else {
-							console.error('[IndexedDB Worker] Worker error:', errorMessage, {
-								eventType,
-								eventProperties,
-								isSafari,
-								userAgent: navigator.userAgent,
-							});
 							errorToCapture = new Error(errorMessage);
 							errorToCapture.name = 'WorkerError';
 						}
@@ -395,7 +397,7 @@ async function getWorker(): Promise<Worker | undefined> {
 						}
 					}
 
-					terminateWorker();
+					disableWorkerForSession();
 					reject(new Error(errorMessage));
 				};
 
@@ -515,8 +517,12 @@ async function getWorker(): Promise<Worker | undefined> {
 				// Wait for initialization confirmation
 				initializationTimeout = setTimeout(() => {
 					initializationTimeout = undefined;
-					console.error('[IndexedDB Worker] Worker initialization timeout');
-					terminateWorker();
+					addBreadcrumb({
+						message: 'IndexedDB worker initialization timed out; using main-thread persistence',
+						category: 'indexeddb',
+						level: 'info',
+					});
+					disableWorkerForSession();
 					reject(new Error('Worker initialization timeout'));
 				}, 5000);
 
@@ -543,8 +549,7 @@ async function getWorker(): Promise<Worker | undefined> {
 				});
 			} catch (error) {
 				clearInitializationTimeout();
-				console.error('[IndexedDB Worker] Failed to create worker:', error);
-				terminateWorker();
+				disableWorkerForSession();
 
 				captureException(error, {
 					tags: {
@@ -561,7 +566,7 @@ async function getWorker(): Promise<Worker | undefined> {
 		try {
 			await workerInitPromise;
 		} catch (error) {
-			console.error('[IndexedDB Worker] Worker initialization failed:', error);
+			logIndexedDbDebug(`[IndexedDB Worker] Worker initialization failed: ${String(error)}`);
 			return undefined;
 		}
 	}
