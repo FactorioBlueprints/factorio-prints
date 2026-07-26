@@ -11,6 +11,7 @@ const workerState = vi.hoisted(() => ({
 		| 'null-initialization-error'
 		| 'connection-closing',
 	throwDuringConstruction: false,
+	constructionCount: 0,
 	restoreMessageCount: 0,
 }));
 
@@ -25,6 +26,7 @@ vi.mock('./localStorage.worker.wrapper', () => ({
 		onmessage: ((event: MessageEvent) => void) | null = null;
 
 		constructor() {
+			workerState.constructionCount++;
 			if (workerState.throwDuringConstruction) {
 				throw new Error('Test worker construction failure');
 			}
@@ -111,6 +113,7 @@ describe('IndexedDB worker orchestration', () => {
 		workerState.messages.length = 0;
 		workerState.response = 'success';
 		workerState.throwDuringConstruction = false;
+		workerState.constructionCount = 0;
 		workerState.restoreMessageCount = 0;
 		vi.resetModules();
 	});
@@ -178,11 +181,10 @@ describe('IndexedDB worker orchestration', () => {
 		const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
 		const {createIDBPersister} = await import('./localStorage');
 
-		const restoredClient = await createIDBPersister(
-			'FACTORIO_PRINTS_QUERY_CACHE_INITIALIZATION_ERROR_TEST',
-		).restoreClient();
+		const persister = createIDBPersister('FACTORIO_PRINTS_QUERY_CACHE_INITIALIZATION_ERROR_TEST');
+		const restoredClients = await Promise.all([persister.restoreClient(), persister.restoreClient()]);
 
-		expect(restoredClient).toBeUndefined();
+		expect(restoredClients).toStrictEqual([undefined, undefined]);
 		expect(workerState.messages).toStrictEqual([
 			{
 				type: 'init',
@@ -192,6 +194,7 @@ describe('IndexedDB worker orchestration', () => {
 				},
 			},
 		]);
+		expect(workerState.constructionCount).toBe(1);
 		expect(clearTimeoutSpy).toHaveBeenCalledTimes(1);
 
 		clearTimeoutSpy.mockRestore();
@@ -284,10 +287,12 @@ describe('IndexedDB worker orchestration', () => {
 			createStore('factorio-prints-db', 'query-cache-store'),
 		);
 		const {createIDBPersister} = await import('./localStorage');
+		const persister = createIDBPersister(cacheKey);
 
-		const restoredClient = await createIDBPersister(cacheKey).restoreClient();
+		const restoredClients = await Promise.all([persister.restoreClient(), persister.restoreClient()]);
 
-		expect(restoredClient).toStrictEqual(persistedClient);
+		expect(restoredClients).toStrictEqual([persistedClient, persistedClient]);
 		expect(workerState.messages).toStrictEqual([]);
+		expect(workerState.constructionCount).toBe(1);
 	});
 });
