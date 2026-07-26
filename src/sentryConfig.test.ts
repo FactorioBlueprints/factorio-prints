@@ -11,4 +11,9 @@ describe('Sentry startup configuration', () => {
 	it('samples a bounded share of performance traces', () => {
 		expect(mainSource).toContain('tracesSampleRate: 0.1');
 	});
+
+	it('attaches router lifecycle diagnostics to missing-match failures', () => {
+		expect(mainSource).toContain("eventMessage.includes('_nonReactive')");
+		expect(mainSource).toContain('router: getRouterDiagnostics()');
+	});
 });
