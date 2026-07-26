@@ -30,8 +30,7 @@ describe('Router Configuration', () => {
 	test('Router can be created with route tree', () => {
 		const router = createRouter({
 			routeTree,
-			defaultPreload: 'intent',
-			defaultPreloadStaleTime: 0,
+			defaultPreload: false,
 		});
 
 		expect(router).toBeDefined();
@@ -67,23 +66,44 @@ describe('Router Configuration', () => {
 
 		const router = createRouter({
 			routeTree,
-			defaultPreload: 'intent',
-			defaultPreloadStaleTime: 0,
+			defaultPreload: false,
 		});
 
 		expect(router).toBeDefined();
 	});
 
-	test('records the destination and match lifecycle for route preloads', async () => {
+	test('disables automatic route preloading', () => {
+		expect({
+			defaultPreload: applicationRouter.options.defaultPreload,
+			defaultPreloadStaleTime: applicationRouter.options.defaultPreloadStaleTime,
+		}).toStrictEqual({
+			defaultPreload: false,
+			defaultPreloadStaleTime: undefined,
+		});
+	});
+
+	test('deduplicates route preloads and records their match lifecycle', async () => {
 		const existingEntryCount = getRouterDiagnostics().entries.length;
 		vi.useFakeTimers({toFake: ['Date']});
 		vi.setSystemTime(new Date('2000-01-01T00:00:00.000Z'));
 
-		await applicationRouter.preloadRoute({to: '/account'});
+		const firstPreload = applicationRouter.preloadRoute({to: '/account'});
+		const duplicatePreload = applicationRouter.preloadRoute({to: '/account'});
+
+		expect(duplicatePreload).toBe(firstPreload);
+		await firstPreload;
 
 		expect(getRouterDiagnostics().entries.slice(existingEntryCount)).toStrictEqual([
 			{
 				phase: 'preload-start',
+				timestamp: '2000-01-01T00:00:00.000Z',
+				fromPath: '/',
+				toPath: '/account',
+				activeMatches: [],
+				preloadedMatches: undefined,
+			},
+			{
+				phase: 'preload-deduplicated',
 				timestamp: '2000-01-01T00:00:00.000Z',
 				fromPath: '/',
 				toPath: '/account',

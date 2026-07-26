@@ -27,8 +27,7 @@ const routerDiagnostics: RouterDiagnosticEntry[] = [];
 // TODO: Remove this assertion once strictNullChecks is enabled project-wide
 export const router = createRouter({
 	routeTree,
-	defaultPreload: 'intent',
-	defaultPreloadStaleTime: 0,
+	defaultPreload: false,
 	defaultOnError: (error: Error) => {
 		// Network errors should be handled at source, but check just in case
 		if (error instanceof TypeError && error.message === 'Failed to fetch') {
@@ -70,35 +69,55 @@ router.subscribe('onLoad', recordNavigationDiagnostic);
 router.subscribe('onResolved', recordNavigationDiagnostic);
 
 const preloadRoute = router.preloadRoute.bind(router);
-router.preloadRoute = (async (options) => {
+const pendingRoutePreloads = new Map<string, ReturnType<typeof preloadRoute>>();
+router.preloadRoute = ((options) => {
 	const startedAt = Date.now();
 	const builtLocation =
-		(options as {_builtLocation?: {pathname: string}})._builtLocation ?? router.buildLocation(options as any);
+		(options as {_builtLocation?: {href: string; pathname: string}})._builtLocation ??
+		router.buildLocation(options as any);
+	const existingPreload = pendingRoutePreloads.get(builtLocation.href);
+	if (existingPreload) {
+		recordRouterDiagnostic({
+			phase: 'preload-deduplicated',
+			fromPath: router.state.location.pathname,
+			toPath: builtLocation.pathname,
+		});
+		return existingPreload;
+	}
+
 	recordRouterDiagnostic({
 		phase: 'preload-start',
 		fromPath: router.state.location.pathname,
 		toPath: builtLocation.pathname,
 	});
 
-	try {
-		const matches = await preloadRoute(options);
-		recordRouterDiagnostic({
-			phase: 'preload-complete',
-			fromPath: router.state.location.pathname,
-			toPath: builtLocation.pathname,
-			durationMilliseconds: Date.now() - startedAt,
-			preloadedMatches: matches ? summarizeMatches(matches) : [],
+	const pendingPreload = preloadRoute(options)
+		.then(
+			(matches) => {
+				recordRouterDiagnostic({
+					phase: 'preload-complete',
+					fromPath: router.state.location.pathname,
+					toPath: builtLocation.pathname,
+					durationMilliseconds: Date.now() - startedAt,
+					preloadedMatches: matches ? summarizeMatches(matches) : [],
+				});
+				return matches;
+			},
+			(error: unknown) => {
+				recordRouterDiagnostic({
+					phase: 'preload-rejected',
+					fromPath: router.state.location.pathname,
+					toPath: builtLocation.pathname,
+					durationMilliseconds: Date.now() - startedAt,
+				});
+				throw error;
+			},
+		)
+		.finally(() => {
+			pendingRoutePreloads.delete(builtLocation.href);
 		});
-		return matches;
-	} catch (error) {
-		recordRouterDiagnostic({
-			phase: 'preload-rejected',
-			fromPath: router.state.location.pathname,
-			toPath: builtLocation.pathname,
-			durationMilliseconds: Date.now() - startedAt,
-		});
-		throw error;
-	}
+	pendingRoutePreloads.set(builtLocation.href, pendingPreload);
+	return pendingPreload;
 }) as typeof router.preloadRoute;
 
 export function getRouterDiagnostics(): {
