@@ -3,6 +3,7 @@ import {faEnvelope} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import type React from 'react';
 import {useState} from 'react';
+import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import {useAuthProviders} from '../../hooks/useAuthProviders';
@@ -19,8 +20,14 @@ export const AuthenticationForm: React.FC<AuthenticationFormProps> = ({
 	showDivider = true,
 }) => {
 	const [email, setEmail] = useState('');
-	const {googleProvider, githubProvider, authenticateWithProvider, authenticateWithEmail, isEmailSending} =
-		useAuthProviders(onAuthSuccess);
+	const {
+		googleProvider,
+		githubProvider,
+		authenticateWithProvider,
+		authenticateWithEmail,
+		authenticationError,
+		isEmailSending,
+	} = useAuthProviders(onAuthSuccess);
 
 	const handleEmailSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
@@ -31,6 +38,7 @@ export const AuthenticationForm: React.FC<AuthenticationFormProps> = ({
 
 	return (
 		<div className="d-flex flex-column">
+			{authenticationError && <Alert variant="danger">{authenticationError}</Alert>}
 			<Button
 				type="button"
 				className={`google w-100 mb-2 ${buttonClassName}`}

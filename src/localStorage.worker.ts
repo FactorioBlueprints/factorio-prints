@@ -1,6 +1,12 @@
 import {createStore, del, get, set, type UseStore} from 'idb-keyval';
 import {PersistenceStore} from './localStorage.persistence';
 
+function logIndexedDbDebug(message: string): void {
+	if (import.meta.env.DEV) {
+		console.debug(message);
+	}
+}
+
 interface StoreConfig {
 	dbName: string;
 	storeName: string;
@@ -48,7 +54,7 @@ function resetStore() {
 	store = undefined;
 	persistenceStore = undefined;
 	isStoreInitialized = false;
-	console.log('[IndexedDB Worker] Store reset for reconnection');
+	logIndexedDbDebug('[IndexedDB Worker] Store reset for reconnection');
 }
 
 async function initializeStore(): Promise<void> {
@@ -60,7 +66,7 @@ async function initializeStore(): Promise<void> {
 		store = createStore(storeConfig.dbName, storeConfig.storeName);
 		persistenceStore = new PersistenceStore(store);
 		isStoreInitialized = true;
-		console.log('[IndexedDB Worker] Store initialized successfully');
+		logIndexedDbDebug('[IndexedDB Worker] Store initialized successfully');
 	} catch (error) {
 		console.error('[IndexedDB Worker] Failed to initialize store:', error);
 		throw new Error(`Failed to create IndexedDB store: ${error instanceof Error ? error.message : String(error)}`);
@@ -190,7 +196,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 				if (getDuration > 1000 && data) {
 					const dataSize =
 						typeof data === 'object' && data.data ? data.data.length : JSON.stringify(data).length;
-					console.log(
+					logIndexedDbDebug(
 						`[IndexedDB Worker] Slow read detected: ${getDuration}ms for ${(dataSize / 1024).toFixed(2)}KB`,
 					);
 				}

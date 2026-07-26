@@ -3,6 +3,12 @@ import {createStore, del} from 'idb-keyval';
 import type {PersistResult, RestoreResult} from './localStorage.persistence';
 import LocalStorageWorker from './localStorage.worker.wrapper';
 
+function logIndexedDbDebug(message: string): void {
+	if (import.meta.env.DEV) {
+		console.debug(message);
+	}
+}
+
 export const STORAGE_KEYS = {
 	QUERY_CACHE: 'FACTORIO_PRINTS_QUERY_CACHE',
 	CREATE_FORM: 'factorio-blueprint-create-form',
@@ -243,10 +249,10 @@ async function getWorker(): Promise<Worker | undefined> {
 
 			try {
 				workerReconnectAttempts++;
-				console.log(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
+				logIndexedDbDebug(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
 
 				worker = new LocalStorageWorker();
-				console.log('[IndexedDB Worker] Successfully created worker using Vite import');
+				logIndexedDbDebug('[IndexedDB Worker] Successfully created worker using Vite import');
 
 				worker.onerror = (event) => {
 					clearInitializationTimeout();
@@ -521,7 +527,7 @@ async function getWorker(): Promise<Worker | undefined> {
 						worker!.onmessage = originalOnMessage;
 						workerReconnectAttempts = 0;
 						isWorkerInitializing = false;
-						console.log('[IndexedDB Worker] Worker initialized successfully');
+						logIndexedDbDebug('[IndexedDB Worker] Worker initialized successfully');
 						resolve();
 					} else if (originalOnMessage && worker) {
 						originalOnMessage.call(worker, e);
@@ -637,7 +643,7 @@ async function workerOperation(
 			const startTime = Date.now();
 
 			if (retryCount > 0) {
-				console.log(
+				logIndexedDbDebug(
 					`[IndexedDB] Operation ${type} with retry ${retryCount}, timeout increased to ${timeoutDuration}ms`,
 				);
 			}
@@ -779,12 +785,12 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 				const persistenceData = result.data as PersistResult['data'] | undefined;
 
 				if (persistenceData?.status === 'unchanged') {
-					console.log('[IndexedDB] Cache state unchanged, skipping persistence');
+					logIndexedDbDebug('[IndexedDB] Cache state unchanged, skipping persistence');
 					return;
 				}
 
 				if (result.success && persistenceData?.status === 'persisted' && persistenceData.compressed) {
-					console.log(
+					logIndexedDbDebug(
 						`[IndexedDB] Compressed cache: ${formatBytes(persistenceData.originalSize)} → ${formatBytes(persistenceData.storedSize)}`,
 					);
 				}
@@ -885,7 +891,7 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					}
 
 					if (totalDuration > 2000 || restoreData.originalSize > 1048576) {
-						console.log(
+						logIndexedDbDebug(
 							`[IndexedDB] Restore performance: Total ${totalDuration}ms, ` +
 								`Size: ${formattedCompressedSize} → ${formattedSize} (${restoreData.compressed ? 'compressed' : 'uncompressed'})`,
 						);
