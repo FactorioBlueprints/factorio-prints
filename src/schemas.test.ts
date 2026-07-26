@@ -1,6 +1,7 @@
 import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
 import {
+	blueprintIdSchema,
 	blueprintBookSchema,
 	enrichedBlueprintSummarySchema,
 	enrichedTagSchema,
@@ -31,6 +32,26 @@ import {
 } from './schemas';
 
 describe('Schema validation', () => {
+	describe('blueprintIdSchema', () => {
+		it('accepts a Firebase push ID', () => {
+			expect(blueprintIdSchema.parse('00000000000000000000')).toBe('00000000000000000000');
+		});
+
+		it.each([
+			'0000000000000000000',
+			'000000000000000000000',
+			'0000000000000000000.',
+			'0000000000000000000#',
+			'0000000000000000000$',
+			'0000000000000000000[',
+			'0000000000000000000]',
+			'0000000000000000000/',
+			'0000000000000000000\n',
+		])('rejects an invalid blueprint ID: %j', (blueprintId) => {
+			expect(blueprintIdSchema.safeParse(blueprintId).success).toBe(false);
+		});
+	});
+
 	describe('validate function', () => {
 		it('should validate valid data without errors', () => {
 			const mockSchema = {parse: vi.fn((data) => data)};

@@ -4,7 +4,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import SingleBlueprint from '../components/SingleBlueprint';
 import {queryClient} from '../providers/queryClient';
 import {blueprintQuery, blueprintSummaryQuery} from '../queries/blueprintQueries';
-import type {EnrichedBlueprint, EnrichedBlueprintSummary} from '../schemas';
+import {blueprintIdSchema, type EnrichedBlueprint, type EnrichedBlueprintSummary} from '../schemas';
 import enrichBlueprint from '../utils/enrichBlueprint';
 import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
 
@@ -16,7 +16,14 @@ export interface LoaderData {
 export const Route = createFileRoute('/view/$blueprintId')({
 	component: ViewBlueprintComponent,
 	loader: async ({params}): Promise<LoaderData> => {
-		const {blueprintId} = params;
+		const blueprintIdResult = blueprintIdSchema.safeParse(params.blueprintId);
+		if (!blueprintIdResult.success) {
+			return {
+				blueprintSummary: null,
+				blueprintData: null,
+			};
+		}
+		const blueprintId = blueprintIdResult.data;
 
 		try {
 			const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
