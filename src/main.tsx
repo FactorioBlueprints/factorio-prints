@@ -18,6 +18,7 @@ import {getRouterDiagnostics, Router} from './router';
 import {getReleaseInfo, getReleaseMetadata} from './utils/release';
 import {setupTooltipCleanup} from './utils/cleanupTooltips';
 import {suppressGoogleAuthDeprecationWarning} from './utils/suppressGoogleAuthWarning';
+import {createVitePreloadErrorHandler} from './utils/vitePreloadError';
 
 suppressGoogleAuthDeprecationWarning();
 
@@ -456,13 +457,12 @@ setTag('git_branch', releaseInfo.gitBranch);
  * The fix is to reload the page to get fresh HTML with current chunk references.
  * We don't log to Sentry since this is expected behavior during/after deployments.
  */
-window.addEventListener('vite:preloadError', (event) => {
-	if (import.meta.env.DEV) {
-		console.warn('Vite preload error detected, reloading page...', event.payload);
-	}
-	event.preventDefault();
-	window.location.reload();
-});
+window.addEventListener(
+	'vite:preloadError',
+	createVitePreloadErrorHandler(() => {
+		window.location.reload();
+	}),
+);
 
 window.addEventListener(
 	'error',
