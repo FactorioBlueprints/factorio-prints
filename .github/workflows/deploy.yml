@@ -1,8 +1,13 @@
 name: Deploy to Firebase Production
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - factorio-prints.com
+
+concurrency:
+  group: deploy-firebase-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -26,23 +31,13 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ENVIRONMENT: production-firebase
+          SENTRY_RELEASE: ${{ github.sha }}
 
       - name: Build Cloud Functions
         run: |
           cd functions
           npm ci
           npm run build
-
-      - name: Create Sentry release
-        uses: getsentry/action-release@v3
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: production-firebase
-          sourcemaps: "./dist"
-          version: ${{ github.event.release.tag_name }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -56,14 +51,3 @@ jobs:
           npm run deploy:all -- --project facorio-blueprints
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
-
-      - name: Finalize Sentry release
-        uses: getsentry/action-release@v3
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: production-firebase
-          version: ${{ github.event.release.tag_name }}
-          finalize: true

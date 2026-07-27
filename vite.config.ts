@@ -10,17 +10,22 @@ type SentryUploadEnvironment = {
 	SENTRY_ENVIRONMENT?: string;
 	SENTRY_ORG?: string;
 	SENTRY_PROJECT?: string;
+	SENTRY_RELEASE?: string;
 };
 
-const version = execSync('git describe --always --tags', {encoding: 'utf8'}).trim();
+const fallbackVersion = execSync('git describe --always --tags', {encoding: 'utf8'}).trim();
 const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', {encoding: 'utf8'}).trim();
 const buildTime = new Date().toISOString();
 
 export const hasSentryUploadCredentials = (environment: SentryUploadEnvironment = process.env) =>
 	Boolean(environment.SENTRY_AUTH_TOKEN && environment.SENTRY_ORG && environment.SENTRY_PROJECT);
 
+export const getReleaseVersion = (environment: SentryUploadEnvironment = process.env) =>
+	environment.SENTRY_RELEASE ?? fallbackVersion;
+
 export const createViteConfiguration = (environment: SentryUploadEnvironment = process.env): UserConfig => {
 	const sentryUploadEnabled = hasSentryUploadCredentials(environment);
+	const version = getReleaseVersion(environment);
 
 	return {
 		define: {

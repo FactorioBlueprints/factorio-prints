@@ -1,8 +1,13 @@
 name: Deploy to Cloudflare Production
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - factorio-prints.com
+
+concurrency:
+  group: deploy-cloudflare-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -31,32 +36,11 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ENVIRONMENT: production-cloudflare
-
-      - name: Create Sentry release
-        uses: getsentry/action-release@v3
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: production-cloudflare
-          sourcemaps: "./dist"
-          version: ${{ github.event.release.tag_name }}
+          SENTRY_RELEASE: ${{ github.sha }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=factorio-prints --branch=main
-
-      - name: Finalize Sentry release
-        uses: getsentry/action-release@v3
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        with:
-          environment: production-cloudflare
-          version: ${{ github.event.release.tag_name }}
-          finalize: true
+          command: pages deploy dist --project-name=factorio-prints --branch=factorio-prints.com

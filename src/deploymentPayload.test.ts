@@ -1,7 +1,7 @@
 import {readdirSync, readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {describe, expect, it} from 'vitest';
-import {createViteConfiguration, hasSentryUploadCredentials} from '../vite.config';
+import {createViteConfiguration, getReleaseVersion, hasSentryUploadCredentials} from '../vite.config';
 
 const readProjectFile = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
@@ -58,5 +58,13 @@ describe('deployment payload', () => {
 			},
 		});
 		expect(readProjectFile('vite.config.ts')).toContain("filesToDeleteAfterUpload: ['./dist/**/*.map']");
+	});
+
+	it('uses the deployment commit as the release version', () => {
+		expect(
+			getReleaseVersion({
+				SENTRY_RELEASE: '0000000000000000000000000000000000000000',
+			}),
+		).toBe('0000000000000000000000000000000000000000');
 	});
 });
