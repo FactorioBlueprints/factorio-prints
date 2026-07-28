@@ -93,7 +93,7 @@
 		"globals": "17.8.0",
 		"jiti": "2.7.0",
 		"jsdom": "30.0.0",
-		"less": "4.8.0",
+		"less": "4.8.1",
 		"prettier": "3.9.6",
 		"typescript": "6.0.3",
 		"vite": "8.1.5",
