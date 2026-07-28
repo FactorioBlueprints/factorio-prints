@@ -114,3 +114,20 @@ describe('BlueprintThumbnail image loading', () => {
 		});
 	});
 });
+
+describe('BlueprintThumbnail metadata', () => {
+	it('visually hides the favorites label without consuming title space', () => {
+		render(<BlueprintThumbnail blueprintSummary={blueprintSummary} />);
+
+		const favoritesLabel = screen.getByText('favorites');
+		expect({
+			favoritesLabelClassName: favoritesLabel.className,
+			favoritesWrapperClassName: favoritesLabel.parentElement?.className,
+			title: screen.getByText('Blueprint title').textContent,
+		}).toStrictEqual({
+			favoritesLabelClassName: 'visually-hidden',
+			favoritesWrapperClassName: 'me-1',
+			title: 'Blueprint title',
+		});
+	});
+});

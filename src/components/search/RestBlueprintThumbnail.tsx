@@ -63,8 +63,8 @@ const RestBlueprintThumbnail: React.FC<RestBlueprintThumbnailProps> = ({blueprin
 				/>
 			</Link>
 			<p className="truncate p-1">
-				<span className="mr-1">
-					{`${numberOfFavorites}`} <span className="sr-only">favorites</span>
+				<span className="me-1">
+					{`${numberOfFavorites}`} <span className="visually-hidden">favorites</span>
 				</span>
 				<span className="text-default">
 					<FontAwesomeIcon

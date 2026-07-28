@@ -118,8 +118,8 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				/>
 			</Link>
 			<p className="truncate p-1">
-				<span className="mr-1">
-					{`${numberOfFavorites}`} <span className="sr-only">favorites</span>
+				<span className="me-1">
+					{`${numberOfFavorites}`} <span className="visually-hidden">favorites</span>
 				</span>
 				{/* TODO 2025-04-10: Extract this as a component, the FavoriteIcon */}
 				<span
