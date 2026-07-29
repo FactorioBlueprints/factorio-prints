@@ -1,5 +1,6 @@
 [tools]
 just = "1.45.0"
 node = "24.11.1"
+"npm:vite-plus" = "0.2.5"
 python = "3.12.11"
 uv = "0.8.4"
