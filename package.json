@@ -9,7 +9,7 @@
 		"preview": "vp preview",
 		"build": "npm run route:generate && tsc && vp build && VERIFY_SERVICE_WORKER_BUILD=true vp test run src/serviceWorkerTombstones.test.ts",
 		"lint": "vp lint . --fix",
-		"format": "biome format --write . && prettier --write .",
+		"format": "vp fmt --no-error-on-unmatched-pattern",
 		"ci:eslint": "vp lint . --format json",
 		"ci:prettier": "prettier --check \"src/**/*.{js,ts,css,md,json}\"",
 		"ci:biome": "biome format .",
@@ -23,7 +23,7 @@
 		"deploy:cloudflare:production": "wrangler pages deploy dist --project-name=factorio-prints --branch=main",
 		"deploy:functions": "cd functions && npm install && cd .. && npx firebase deploy --only functions",
 		"deploy:all": "cd functions && npm install && cd .. && npx firebase deploy",
-		"prepare": "vp config"
+		"prepare": "VITE_GIT_HOOKS=0 vp config"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-svg-core": "7.3.1",
@@ -84,11 +84,13 @@
 		"@types/serviceworker": "0.0.200",
 		"@vitejs/plugin-react": "6.0.4",
 		"fake-indexeddb": "6.2.5",
+		"fallow": "3.7.0",
 		"firebase-tools": "^15.24.0",
 		"globals": "17.8.0",
 		"jiti": "2.7.0",
 		"jsdom": "30.0.1",
 		"less": "4.8.1",
+		"markdownlint-cli2": "0.23.1",
 		"prettier": "3.9.6",
 		"typescript": "6.0.3",
 		"vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",

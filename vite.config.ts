@@ -28,9 +28,6 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 	const version = getReleaseVersion(environment);
 
 	return {
-		staged: {
-			'*': 'vp check --fix',
-		},
 		define: {
 			'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
 			'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),
