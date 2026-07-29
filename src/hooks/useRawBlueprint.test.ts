@@ -1,147 +1,161 @@
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {renderHook, waitFor} from '@testing-library/react';
-import React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {fetchBlueprint} from '../api/firebase';
-import {useRawBlueprint} from './useRawBlueprint';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { fetchBlueprint } from "../api/firebase";
+import { useRawBlueprint } from "./useRawBlueprint";
 
 // Mock dependencies
-vi.mock('../api/firebase', () => ({
-	fetchBlueprint: vi.fn(),
+vi.mock("../api/firebase", () => ({
+  fetchBlueprint: vi.fn(),
 }));
 
 // Mock QueryProvider for testing
 const createTestQueryClient = () =>
-	new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
-			},
-		},
-	});
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
 
-describe('useRawBlueprint', () => {
-	const fakeBlueprintId = 'test-blueprint-123';
-	const fakeBlueprintSummary = {
-		title: 'Test Blueprint',
-		imgurId: 'image-123',
-		imgurType: 'image/png',
-		numberOfFavorites: 42,
-		lastUpdatedDate: 1630000000000,
-	};
-	const fakeRawBlueprint = {
-		title: 'Test Blueprint',
-		blueprintString: '0testBlueprintString',
-		createdDate: 1620000000000,
-		descriptionMarkdown: '# Test Description',
-		lastUpdatedDate: 1630000000000,
-		numberOfFavorites: 42,
-		tags: ['/category/subcategory/', '/feature/test/'],
-		author: {
-			userId: 'user-123',
-			displayName: 'Test User',
-		},
-		image: {
-			id: 'image-123',
-			type: 'image/png',
-		},
-		favorites: {'user-1': true, 'user-2': true},
-	};
+describe("useRawBlueprint", () => {
+  const fakeBlueprintId = "test-blueprint-123";
+  const fakeBlueprintSummary = {
+    title: "Test Blueprint",
+    imgurId: "image-123",
+    imgurType: "image/png",
+    numberOfFavorites: 42,
+    lastUpdatedDate: 1630000000000,
+  };
+  const fakeRawBlueprint = {
+    title: "Test Blueprint",
+    blueprintString: "0testBlueprintString",
+    createdDate: 1620000000000,
+    descriptionMarkdown: "# Test Description",
+    lastUpdatedDate: 1630000000000,
+    numberOfFavorites: 42,
+    tags: ["/category/subcategory/", "/feature/test/"],
+    author: {
+      userId: "user-123",
+      displayName: "Test User",
+    },
+    image: {
+      id: "image-123",
+      type: "image/png",
+    },
+    favorites: { "user-1": true, "user-2": true },
+  };
 
-	beforeEach(() => {
-		vi.clearAllMocks();
-		vi.mocked(fetchBlueprint).mockResolvedValue(fakeRawBlueprint);
-	});
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(fetchBlueprint).mockResolvedValue(fakeRawBlueprint);
+  });
 
-	it('should return empty result when blueprintId is not provided', async () => {
-		const queryClient = createTestQueryClient();
-		const wrapper = ({children}: {children: React.ReactNode}) =>
-			React.createElement(QueryClientProvider, {client: queryClient}, children);
+  it("should return empty result when blueprintId is not provided", async () => {
+    const queryClient = createTestQueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-		const {result} = renderHook(() => useRawBlueprint(null as any, fakeBlueprintSummary as any), {wrapper});
+    const { result } = renderHook(() => useRawBlueprint(null as any, fakeBlueprintSummary as any), {
+      wrapper,
+    });
 
-		expect(result.current.isLoading).toBe(false);
-		expect(result.current.data).toBeUndefined();
-		expect(fetchBlueprint).not.toHaveBeenCalled();
-	});
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.data).toBeUndefined();
+    expect(fetchBlueprint).not.toHaveBeenCalled();
+  });
 
-	it('should return empty result when blueprintSummary is not provided', async () => {
-		const queryClient = createTestQueryClient();
-		const wrapper = ({children}: {children: React.ReactNode}) =>
-			React.createElement(QueryClientProvider, {client: queryClient}, children);
+  it("should return empty result when blueprintSummary is not provided", async () => {
+    const queryClient = createTestQueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-		const {result} = renderHook(() => useRawBlueprint(fakeBlueprintId, null), {wrapper});
+    const { result } = renderHook(() => useRawBlueprint(fakeBlueprintId, null), { wrapper });
 
-		expect(result.current.isLoading).toBe(false);
-		expect(result.current.data).toBeUndefined();
-		expect(fetchBlueprint).not.toHaveBeenCalled();
-	});
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.data).toBeUndefined();
+    expect(fetchBlueprint).not.toHaveBeenCalled();
+  });
 
-	it('should fetch blueprint data when blueprintId is provided', async () => {
-		const queryClient = createTestQueryClient();
-		const wrapper = ({children}: {children: React.ReactNode}) =>
-			React.createElement(QueryClientProvider, {client: queryClient}, children);
+  it("should fetch blueprint data when blueprintId is provided", async () => {
+    const queryClient = createTestQueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-		const {result} = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), {wrapper});
+    const { result } = renderHook(
+      () => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any),
+      { wrapper },
+    );
 
-		// Initial state is loading
-		expect(result.current.isLoading).toBe(true);
+    // Initial state is loading
+    expect(result.current.isLoading).toBe(true);
 
-		// Wait for query to complete
-		await waitFor(() => expect(result.current.isLoading).toBe(false));
+    // Wait for query to complete
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-		expect(fetchBlueprint).toHaveBeenCalledWith(fakeBlueprintId, fakeBlueprintSummary);
-		expect(result.current.data).toEqual(fakeRawBlueprint);
-	});
+    expect(fetchBlueprint).toHaveBeenCalledWith(fakeBlueprintId, fakeBlueprintSummary);
+    expect(result.current.data).toEqual(fakeRawBlueprint);
+  });
 
-	it('should handle network error by returning null', async () => {
-		// Network errors now return null instead of throwing
-		vi.mocked(fetchBlueprint).mockResolvedValue(null);
+  it("should handle network error by returning null", async () => {
+    // Network errors now return null instead of throwing
+    vi.mocked(fetchBlueprint).mockResolvedValue(null);
 
-		const queryClient = createTestQueryClient();
-		const wrapper = ({children}: {children: React.ReactNode}) =>
-			React.createElement(QueryClientProvider, {client: queryClient}, children);
+    const queryClient = createTestQueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-		const {result} = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), {wrapper});
+    const { result } = renderHook(
+      () => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any),
+      { wrapper },
+    );
 
-		// Wait for query to complete
-		await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    // Wait for query to complete
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-		expect(result.current.error).toBeNull();
-		expect(result.current.data).toBeNull();
-	});
+    expect(result.current.error).toBeNull();
+    expect(result.current.data).toBeNull();
+  });
 
-	it('should handle non-network errors by throwing', async () => {
-		const nonNetworkError = new Error('Database error');
-		vi.mocked(fetchBlueprint).mockRejectedValue(nonNetworkError);
+  it("should handle non-network errors by throwing", async () => {
+    const nonNetworkError = new Error("Database error");
+    vi.mocked(fetchBlueprint).mockRejectedValue(nonNetworkError);
 
-		const queryClient = createTestQueryClient();
-		const wrapper = ({children}: {children: React.ReactNode}) =>
-			React.createElement(QueryClientProvider, {client: queryClient}, children);
+    const queryClient = createTestQueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-		const {result} = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), {wrapper});
+    const { result } = renderHook(
+      () => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any),
+      { wrapper },
+    );
 
-		// Wait for query to complete
-		await waitFor(() => expect(result.current.isError).toBe(true));
+    // Wait for query to complete
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-		expect(result.current.error).toEqual(nonNetworkError);
-		expect(result.current.data).toBeUndefined();
-	});
+    expect(result.current.error).toEqual(nonNetworkError);
+    expect(result.current.data).toBeUndefined();
+  });
 
-	it('should handle validation error', async () => {
-		const validationError = new Error('Invalid raw blueprint: Validation failed');
-		vi.mocked(fetchBlueprint).mockRejectedValue(validationError);
+  it("should handle validation error", async () => {
+    const validationError = new Error("Invalid raw blueprint: Validation failed");
+    vi.mocked(fetchBlueprint).mockRejectedValue(validationError);
 
-		const queryClient = createTestQueryClient();
-		const wrapper = ({children}: {children: React.ReactNode}) =>
-			React.createElement(QueryClientProvider, {client: queryClient}, children);
+    const queryClient = createTestQueryClient();
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-		const {result} = renderHook(() => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any), {wrapper});
+    const { result } = renderHook(
+      () => useRawBlueprint(fakeBlueprintId, fakeBlueprintSummary as any),
+      { wrapper },
+    );
 
-		// Wait for query to complete
-		await waitFor(() => expect(result.current.isError).toBe(true));
+    // Wait for query to complete
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
-		expect(result.current.error).toBeDefined();
-		expect(result.current.data).toBeUndefined();
-	});
+    expect(result.current.error).toBeDefined();
+    expect(result.current.data).toBeUndefined();
+  });
 });

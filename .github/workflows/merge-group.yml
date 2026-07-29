@@ -43,32 +43,6 @@ jobs:
       - uses: ataylorme/eslint-annotate-action@2.2.0
         if: always()
 
-  biome:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
-      - uses: actions/cache@v6
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-
-      - run: just biome-ci
-
-  prettier:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
-      - uses: actions/cache@v6
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-
-      - run: just prettier-ci
-
   typecheck:
     runs-on: ubuntu-latest
     steps:
@@ -127,7 +101,7 @@ jobs:
   all-checks:
     name: All checks
     if: ${{ !cancelled() }}
-    needs: [pre-commit, eslint, biome, prettier, typecheck, build, test, functions-build]
+    needs: [pre-commit, eslint, typecheck, build, test, functions-build]
     runs-on: ubuntu-latest
     steps:
       - uses: re-actors/alls-green@release/v1

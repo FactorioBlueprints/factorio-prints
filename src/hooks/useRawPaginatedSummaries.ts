@@ -1,12 +1,17 @@
-import {type InfiniteData, keepPreviousData, useInfiniteQuery, useQueryClient} from '@tanstack/react-query';
-import {useEffect} from 'react';
-import {fetchPaginatedSummaries} from '../api/firebase';
-import {updateHighWatermark} from '../localStorage';
-import type {RawBlueprintSummaryPage} from '../schemas';
+import {
+  type InfiniteData,
+  keepPreviousData,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useEffect } from "react";
+import { fetchPaginatedSummaries } from "../api/firebase";
+import { updateHighWatermark } from "../localStorage";
+import type { RawBlueprintSummaryPage } from "../schemas";
 
 type PageParam = {
-	lastKey: string | null;
-	lastValue: number | null;
+  lastKey: string | null;
+  lastValue: number | null;
 };
 
 /**
@@ -15,60 +20,67 @@ type PageParam = {
  * @param orderByField - Field to order results by (default: 'lastUpdatedDate')
  * @returns Infinite query result with raw paginated blueprint summaries
  */
-export const useRawPaginatedSummaries = (pageSize = 60, orderByField = 'lastUpdatedDate') => {
-	const queryClient = useQueryClient();
+export const useRawPaginatedSummaries = (pageSize = 60, orderByField = "lastUpdatedDate") => {
+  const queryClient = useQueryClient();
 
-	const result = useInfiniteQuery<
-		RawBlueprintSummaryPage,
-		Error,
-		InfiniteData<RawBlueprintSummaryPage>,
-		readonly unknown[],
-		PageParam
-	>({
-		queryKey: ['blueprintSummaries', 'orderByField', orderByField, 'pageSize', pageSize],
-		queryFn: async ({pageParam = {lastKey: null, lastValue: null}}) => {
-			return fetchPaginatedSummaries(pageSize, pageParam.lastKey, pageParam.lastValue, orderByField);
-		},
-		getNextPageParam: (lastPage) => {
-			if (!lastPage.hasMore) {
-				return undefined;
-			}
-			return {
-				lastKey: lastPage.lastKey,
-				lastValue: lastPage.lastValue,
-			};
-		},
-		initialPageParam: {lastKey: null, lastValue: null},
-		placeholderData: keepPreviousData,
-	});
+  const result = useInfiniteQuery<
+    RawBlueprintSummaryPage,
+    Error,
+    InfiniteData<RawBlueprintSummaryPage>,
+    readonly unknown[],
+    PageParam
+  >({
+    queryKey: ["blueprintSummaries", "orderByField", orderByField, "pageSize", pageSize],
+    queryFn: async ({ pageParam = { lastKey: null, lastValue: null } }) => {
+      return fetchPaginatedSummaries(
+        pageSize,
+        pageParam.lastKey,
+        pageParam.lastValue,
+        orderByField,
+      );
+    },
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.hasMore) {
+        return undefined;
+      }
+      return {
+        lastKey: lastPage.lastKey,
+        lastValue: lastPage.lastValue,
+      };
+    },
+    initialPageParam: { lastKey: null, lastValue: null },
+    placeholderData: keepPreviousData,
+  });
 
-	// Set individual blueprint summaries in cache for cross-query consistency
-	useEffect(() => {
-		if (result.data) {
-			result.data.pages.forEach((page) => {
-				Object.entries(page.data).forEach(([blueprintId, summary]) => {
-					queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], summary);
-				});
-			});
-		}
-	}, [result.data, queryClient]);
+  // Set individual blueprint summaries in cache for cross-query consistency
+  useEffect(() => {
+    if (result.data) {
+      result.data.pages.forEach((page) => {
+        Object.entries(page.data).forEach(([blueprintId, summary]) => {
+          queryClient.setQueryData(["blueprintSummaries", "blueprintId", blueprintId], summary);
+        });
+      });
+    }
+  }, [result.data, queryClient]);
 
-	// Track high watermark when fetching blueprints ordered by lastUpdatedDate
-	useEffect(() => {
-		if (orderByField === 'lastUpdatedDate' && result.data?.pages) {
-			const allSummaries = result.data.pages.flatMap((page: RawBlueprintSummaryPage) => Object.values(page.data));
-			const latestDates = allSummaries
-				.map((summary: any) => summary.lastUpdatedDate)
-				.filter((date: any): date is number => date !== undefined);
+  // Track high watermark when fetching blueprints ordered by lastUpdatedDate
+  useEffect(() => {
+    if (orderByField === "lastUpdatedDate" && result.data?.pages) {
+      const allSummaries = result.data.pages.flatMap((page: RawBlueprintSummaryPage) =>
+        Object.values(page.data),
+      );
+      const latestDates = allSummaries
+        .map((summary: any) => summary.lastUpdatedDate)
+        .filter((date: any): date is number => date !== undefined);
 
-			if (latestDates.length > 0) {
-				const maxDate = Math.max(...latestDates);
-				updateHighWatermark(maxDate);
-			}
-		}
-	}, [result.data, orderByField]);
+      if (latestDates.length > 0) {
+        const maxDate = Math.max(...latestDates);
+        updateHighWatermark(maxDate);
+      }
+    }
+  }, [result.data, orderByField]);
 
-	return result;
+  return result;
 };
 
 export default useRawPaginatedSummaries;

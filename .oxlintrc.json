@@ -58,7 +58,11 @@
 			}
 		},
 		{
-			"files": ["**/*.test.{js,jsx,ts,tsx}", "**/*.spec.{js,jsx,ts,tsx}", "**/setupTests.{js,ts}"],
+			"files": [
+				"**/*.test.{js,jsx,ts,tsx}",
+				"**/*.spec.{js,jsx,ts,tsx}",
+				"**/setupTests.{js,ts}"
+			],
 			"globals": {
 				"vi": "readonly"
 			},

@@ -1,23 +1,23 @@
-import {useMemo} from 'react';
-import type {RawBlueprintSummary, RawPaginatedBlueprintSummaries} from '../schemas';
+import { useMemo } from "react";
+import type { RawBlueprintSummary, RawPaginatedBlueprintSummaries } from "../schemas";
 
-type SummaryWithKey = RawBlueprintSummary & {key: string};
+type SummaryWithKey = RawBlueprintSummary & { key: string };
 
 export const useFlattenedPaginatedSummaries = (
-	paginatedData: RawPaginatedBlueprintSummaries | null | undefined,
+  paginatedData: RawPaginatedBlueprintSummaries | null | undefined,
 ): SummaryWithKey[] => {
-	return useMemo(() => {
-		if (!paginatedData?.pages) {
-			return [];
-		}
+  return useMemo(() => {
+    if (!paginatedData?.pages) {
+      return [];
+    }
 
-		return paginatedData.pages.flatMap((page) =>
-			Object.entries(page.data).map(([key, value]) => ({
-				key,
-				...value,
-			})),
-		);
-	}, [paginatedData]);
+    return paginatedData.pages.flatMap((page) =>
+      Object.entries(page.data).map(([key, value]) => ({
+        key,
+        ...value,
+      })),
+    );
+  }, [paginatedData]);
 };
 
 export default useFlattenedPaginatedSummaries;

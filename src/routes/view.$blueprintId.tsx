@@ -1,89 +1,97 @@
-import {createFileRoute} from '@tanstack/react-router';
-import React from 'react';
-import ErrorBoundary from '../components/ErrorBoundary';
-import SingleBlueprint from '../components/SingleBlueprint';
-import {queryClient} from '../providers/queryClient';
-import {blueprintQuery, blueprintSummaryQuery} from '../queries/blueprintQueries';
-import {blueprintIdSchema, type EnrichedBlueprint, type EnrichedBlueprintSummary} from '../schemas';
-import enrichBlueprint from '../utils/enrichBlueprint';
-import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
+import { createFileRoute } from "@tanstack/react-router";
+import React from "react";
+import ErrorBoundary from "../components/ErrorBoundary";
+import SingleBlueprint from "../components/SingleBlueprint";
+import { queryClient } from "../providers/queryClient";
+import { blueprintQuery, blueprintSummaryQuery } from "../queries/blueprintQueries";
+import {
+  blueprintIdSchema,
+  type EnrichedBlueprint,
+  type EnrichedBlueprintSummary,
+} from "../schemas";
+import enrichBlueprint from "../utils/enrichBlueprint";
+import { enrichBlueprintSummary } from "../utils/enrichBlueprintSummary";
 
 export interface LoaderData {
-	blueprintSummary: EnrichedBlueprintSummary | null;
-	blueprintData: EnrichedBlueprint | null;
+  blueprintSummary: EnrichedBlueprintSummary | null;
+  blueprintData: EnrichedBlueprint | null;
 }
 
-export const Route = createFileRoute('/view/$blueprintId')({
-	component: ViewBlueprintComponent,
-	loader: async ({params}): Promise<LoaderData> => {
-		const blueprintIdResult = blueprintIdSchema.safeParse(params.blueprintId);
-		if (!blueprintIdResult.success) {
-			return {
-				blueprintSummary: null,
-				blueprintData: null,
-			};
-		}
-		const blueprintId = blueprintIdResult.data;
+export const Route = createFileRoute("/view/$blueprintId")({
+  component: ViewBlueprintComponent,
+  loader: async ({ params }): Promise<LoaderData> => {
+    const blueprintIdResult = blueprintIdSchema.safeParse(params.blueprintId);
+    if (!blueprintIdResult.success) {
+      return {
+        blueprintSummary: null,
+        blueprintData: null,
+      };
+    }
+    const blueprintId = blueprintIdResult.data;
 
-		try {
-			const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
+    try {
+      const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
 
-			if (!summaryData) {
-				return {
-					blueprintSummary: null,
-					blueprintData: null,
-				};
-			}
+      if (!summaryData) {
+        return {
+          blueprintSummary: null,
+          blueprintData: null,
+        };
+      }
 
-			const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
+      const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
 
-			if (!enrichedSummary) {
-				return {
-					blueprintSummary: null,
-					blueprintData: null,
-				};
-			}
+      if (!enrichedSummary) {
+        return {
+          blueprintSummary: null,
+          blueprintData: null,
+        };
+      }
 
-			const blueprintRawData = await queryClient.fetchQuery(blueprintQuery(blueprintId, enrichedSummary));
+      const blueprintRawData = await queryClient.fetchQuery(
+        blueprintQuery(blueprintId, enrichedSummary),
+      );
 
-			const enrichedBlueprint = blueprintRawData ? enrichBlueprint(blueprintRawData, blueprintId) : null;
+      const enrichedBlueprint = blueprintRawData
+        ? enrichBlueprint(blueprintRawData, blueprintId)
+        : null;
 
-			return {
-				blueprintSummary: enrichedSummary,
-				blueprintData: enrichedBlueprint,
-			};
-		} catch (error) {
-			// Handle network errors gracefully - return null data instead of throwing
-			if (error instanceof TypeError && error.message === 'Failed to fetch') {
-				return {
-					blueprintSummary: null,
-					blueprintData: null,
-				};
-			}
-			if (error instanceof Error && error.message) {
-				const message = error.message.toLowerCase();
-				if (
-					message.includes('failed to fetch') ||
-					message.includes('network error') ||
-					message.includes('network request failed') ||
-					message.includes('fetch failed')
-				) {
-					return {
-						blueprintSummary: null,
-						blueprintData: null,
-					};
-				}
-			}
-			// Re-throw non-network errors
-			throw error;
-		}
-	},
+      return {
+        blueprintSummary: enrichedSummary,
+        blueprintData: enrichedBlueprint,
+      };
+    } catch (error) {
+      // Handle network errors gracefully - return null data instead of throwing
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        return {
+          blueprintSummary: null,
+          blueprintData: null,
+        };
+      }
+      if (error instanceof Error && error.message) {
+        const message = error.message.toLowerCase();
+        if (
+          message.includes("failed to fetch") ||
+          message.includes("network error") ||
+          message.includes("network request failed") ||
+          message.includes("fetch failed")
+        ) {
+          return {
+            blueprintSummary: null,
+            blueprintData: null,
+          };
+        }
+      }
+      // Re-throw non-network errors
+      throw error;
+    }
+  },
 });
 
 function ViewBlueprintComponent() {
-	return (
-		<ErrorBoundary>
-			<SingleBlueprint />
-		</ErrorBoundary>
-	);
+  return (
+    <ErrorBoundary>
+      <SingleBlueprint />
+    </ErrorBoundary>
+  );
 }

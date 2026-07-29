@@ -1,8 +1,8 @@
-import type {UseQueryResult} from '@tanstack/react-query';
-import {useMemo} from 'react';
-import type {EnrichedBlueprintSummary, RawBlueprintSummary} from '../schemas';
-import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
-import {useRawTagBlueprintSummaries} from './useRawTagBlueprintSummaries';
+import type { UseQueryResult } from "@tanstack/react-query";
+import { useMemo } from "react";
+import type { EnrichedBlueprintSummary, RawBlueprintSummary } from "../schemas";
+import { enrichBlueprintSummary } from "../utils/enrichBlueprintSummary";
+import { useRawTagBlueprintSummaries } from "./useRawTagBlueprintSummaries";
 
 /**
  * Hook to fetch tag data and then load all enriched blueprint summaries associated with that tag
@@ -10,28 +10,28 @@ import {useRawTagBlueprintSummaries} from './useRawTagBlueprintSummaries';
  * @returns The enriched blueprint summaries query results
  */
 export const useEnrichedTagBlueprintSummaries = (tagId: string) => {
-	const rawResult = useRawTagBlueprintSummaries(tagId);
+  const rawResult = useRawTagBlueprintSummaries(tagId);
 
-	// Enrich each blueprint query result
-	const enrichedBlueprintQueries = useMemo(() => {
-		const enrichedQueries: Record<string, UseQueryResult<EnrichedBlueprintSummary, Error>> = {};
+  // Enrich each blueprint query result
+  const enrichedBlueprintQueries = useMemo(() => {
+    const enrichedQueries: Record<string, UseQueryResult<EnrichedBlueprintSummary, Error>> = {};
 
-		for (const blueprintId of rawResult.blueprintIds) {
-			const rawQuery = rawResult.blueprintQueries[blueprintId];
+    for (const blueprintId of rawResult.blueprintIds) {
+      const rawQuery = rawResult.blueprintQueries[blueprintId];
 
-			enrichedQueries[blueprintId] = {
-				...rawQuery,
-				data: rawQuery.data ? enrichBlueprintSummary(rawQuery.data, blueprintId) : undefined,
-			} as UseQueryResult<EnrichedBlueprintSummary, Error>;
-		}
+      enrichedQueries[blueprintId] = {
+        ...rawQuery,
+        data: rawQuery.data ? enrichBlueprintSummary(rawQuery.data, blueprintId) : undefined,
+      } as UseQueryResult<EnrichedBlueprintSummary, Error>;
+    }
 
-		return enrichedQueries;
-	}, [rawResult.blueprintQueries, rawResult.blueprintIds]);
+    return enrichedQueries;
+  }, [rawResult.blueprintQueries, rawResult.blueprintIds]);
 
-	return {
-		...rawResult,
-		blueprintQueries: enrichedBlueprintQueries,
-	};
+  return {
+    ...rawResult,
+    blueprintQueries: enrichedBlueprintQueries,
+  };
 };
 
 export default useEnrichedTagBlueprintSummaries;

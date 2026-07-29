@@ -1,275 +1,275 @@
-import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {useNavigate} from '@tanstack/react-router';
-import {update as dbUpdate, ref, serverTimestamp} from 'firebase/database';
-import {getFirebaseDatabase} from '../utils/firebaseDatabase';
-import type {ImgurImage, RawBlueprint} from '../schemas';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { update as dbUpdate, ref, serverTimestamp } from "firebase/database";
+import { getFirebaseDatabase } from "../utils/firebaseDatabase";
+import type { ImgurImage, RawBlueprint } from "../schemas";
 import {
-	validateRawBlueprint,
-	validateRawBlueprintSummary,
-	validateRawUserBlueprints,
-	validateRawUserCollection,
-} from '../schemas';
+  validateRawBlueprint,
+  validateRawBlueprintSummary,
+  validateRawUserBlueprints,
+  validateRawUserCollection,
+} from "../schemas";
 
 interface UpdateBlueprintFormData {
-	title: string;
-	blueprintString: string;
-	descriptionMarkdown: string;
-	tags: string[];
-	imageUrl: string;
+  title: string;
+  blueprintString: string;
+  descriptionMarkdown: string;
+  tags: string[];
+  imageUrl: string;
 }
 
 interface UpdateBlueprintMutationParams {
-	id: string;
-	rawBlueprint: RawBlueprint;
-	formData: UpdateBlueprintFormData;
-	availableTags: string[];
+  id: string;
+  rawBlueprint: RawBlueprint;
+  formData: UpdateBlueprintFormData;
+  availableTags: string[];
 }
 
 interface DeleteBlueprintMutationParams {
-	id: string;
-	authorId: string;
-	tags: string[];
+  id: string;
+  authorId: string;
+  tags: string[];
 }
 
 interface ImgurRegexPatterns {
-	imgurUrl1: RegExp;
-	imgurUrl2: RegExp;
+  imgurUrl1: RegExp;
+  imgurUrl2: RegExp;
 }
 
 export const useUpdateBlueprint = () => {
-	const queryClient = useQueryClient();
-	const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-	return useMutation<string, Error, UpdateBlueprintMutationParams>({
-		mutationFn: async ({id, rawBlueprint, formData, availableTags}) => {
-			// Process image URL if provided
-			let image: ImgurImage | null = null;
-			if (formData.imageUrl) {
-				const regexPatterns: ImgurRegexPatterns = {
-					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-				};
+  return useMutation<string, Error, UpdateBlueprintMutationParams>({
+    mutationFn: async ({ id, rawBlueprint, formData, availableTags }) => {
+      // Process image URL if provided
+      let image: ImgurImage | null = null;
+      if (formData.imageUrl) {
+        const regexPatterns: ImgurRegexPatterns = {
+          imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+          imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+        };
 
-				const matches = Object.values(regexPatterns)
-					.map((pattern) => formData.imageUrl.match(pattern))
-					.filter(Boolean);
+        const matches = Object.values(regexPatterns)
+          .map((pattern) => formData.imageUrl.match(pattern))
+          .filter(Boolean);
 
-				if (matches.length <= 0) {
-					throw new Error('Invalid image URL format');
-				}
+        if (matches.length <= 0) {
+          throw new Error("Invalid image URL format");
+        }
 
-				const match = matches[0]!;
-				const imgurId = match[1]!;
-				image = {
-					id: imgurId,
-					type: 'image/png',
-				};
-			}
+        const match = matches[0]!;
+        const imgurId = match[1]!;
+        image = {
+          id: imgurId,
+          type: "image/png",
+        };
+      }
 
-			const currentImageId = rawBlueprint?.image?.id;
-			const shouldUpdateImage = image && image.id !== currentImageId;
+      const currentImageId = rawBlueprint?.image?.id;
+      const shouldUpdateImage = image && image.id !== currentImageId;
 
-			const updates: Record<string, unknown> = {
-				[`/blueprints/${id}/title`]: formData.title,
-				[`/blueprints/${id}/blueprintString`]: formData.blueprintString,
-				[`/blueprints/${id}/descriptionMarkdown`]: formData.descriptionMarkdown,
-				[`/blueprints/${id}/tags`]: formData.tags,
-				[`/blueprints/${id}/lastUpdatedDate`]: serverTimestamp(),
-				[`/blueprintSummaries/${id}/title/`]: formData.title,
-				[`/blueprintSummaries/${id}/lastUpdatedDate/`]: serverTimestamp(),
-			};
+      const updates: Record<string, unknown> = {
+        [`/blueprints/${id}/title`]: formData.title,
+        [`/blueprints/${id}/blueprintString`]: formData.blueprintString,
+        [`/blueprints/${id}/descriptionMarkdown`]: formData.descriptionMarkdown,
+        [`/blueprints/${id}/tags`]: formData.tags,
+        [`/blueprints/${id}/lastUpdatedDate`]: serverTimestamp(),
+        [`/blueprintSummaries/${id}/title/`]: formData.title,
+        [`/blueprintSummaries/${id}/lastUpdatedDate/`]: serverTimestamp(),
+      };
 
-			if (shouldUpdateImage && image) {
-				updates[`/blueprints/${id}/image`] = image;
-				updates[`/blueprintSummaries/${id}/imgurId/`] = image.id;
-				updates[`/blueprintSummaries/${id}/imgurType/`] = image.type;
-			}
+      if (shouldUpdateImage && image) {
+        updates[`/blueprints/${id}/image`] = image;
+        updates[`/blueprintSummaries/${id}/imgurId/`] = image.id;
+        updates[`/blueprintSummaries/${id}/imgurType/`] = image.type;
+      }
 
-			availableTags.forEach((tag) => {
-				updates[`/byTag/${tag}/${id}`] = null;
-			});
+      availableTags.forEach((tag) => {
+        updates[`/byTag/${tag}/${id}`] = null;
+      });
 
-			formData.tags.forEach((tag) => {
-				updates[`/byTag/${tag}/${id}`] = true;
-			});
+      formData.tags.forEach((tag) => {
+        updates[`/byTag/${tag}/${id}`] = true;
+      });
 
-			await dbUpdate(ref(getFirebaseDatabase()), updates);
+      await dbUpdate(ref(getFirebaseDatabase()), updates);
 
-			return id;
-		},
-		onSuccess: (blueprintId, variables) => {
-			const now = new Date();
-			const unixTimestamp = now.getTime();
+      return id;
+    },
+    onSuccess: (blueprintId, variables) => {
+      const now = new Date();
+      const unixTimestamp = now.getTime();
 
-			const blueprintKey = ['blueprints', 'blueprintId', blueprintId];
-			const existingBlueprintData = queryClient.getQueryData(blueprintKey);
-			const existingBlueprint = validateRawBlueprint(existingBlueprintData);
+      const blueprintKey = ["blueprints", "blueprintId", blueprintId];
+      const existingBlueprintData = queryClient.getQueryData(blueprintKey);
+      const existingBlueprint = validateRawBlueprint(existingBlueprintData);
 
-			// Build the updated raw blueprint
-			const updatedBlueprint: Record<string, unknown> = {
-				...existingBlueprint,
-				title: variables.formData.title,
-				blueprintString: variables.formData.blueprintString,
-				descriptionMarkdown: variables.formData.descriptionMarkdown,
-				tags: variables.formData.tags,
-				lastUpdatedDate: unixTimestamp,
-			};
+      // Build the updated raw blueprint
+      const updatedBlueprint: Record<string, unknown> = {
+        ...existingBlueprint,
+        title: variables.formData.title,
+        blueprintString: variables.formData.blueprintString,
+        descriptionMarkdown: variables.formData.descriptionMarkdown,
+        tags: variables.formData.tags,
+        lastUpdatedDate: unixTimestamp,
+      };
 
-			// Update image if a new one was provided
-			if (variables.formData.imageUrl) {
-				const regexPatterns: ImgurRegexPatterns = {
-					imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-					imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-				};
+      // Update image if a new one was provided
+      if (variables.formData.imageUrl) {
+        const regexPatterns: ImgurRegexPatterns = {
+          imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+          imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+        };
 
-				const matches = Object.values(regexPatterns)
-					.map((pattern) => variables.formData.imageUrl.match(pattern))
-					.filter(Boolean);
+        const matches = Object.values(regexPatterns)
+          .map((pattern) => variables.formData.imageUrl.match(pattern))
+          .filter(Boolean);
 
-				if (matches.length > 0) {
-					const match = matches[0]!;
-					const imgurId = match[1]!;
-					updatedBlueprint.image = {
-						id: imgurId,
-						type: 'image/png',
-					};
-				}
-			}
+        if (matches.length > 0) {
+          const match = matches[0]!;
+          const imgurId = match[1]!;
+          updatedBlueprint.image = {
+            id: imgurId,
+            type: "image/png",
+          };
+        }
+      }
 
-			const validatedBlueprint = validateRawBlueprint(updatedBlueprint);
-			queryClient.setQueryData(blueprintKey, validatedBlueprint);
+      const validatedBlueprint = validateRawBlueprint(updatedBlueprint);
+      queryClient.setQueryData(blueprintKey, validatedBlueprint);
 
-			const summaryKey = ['blueprintSummaries', 'blueprintId', blueprintId];
-			const existingSummaryData = queryClient.getQueryData(summaryKey);
-			const existingSummary = validateRawBlueprintSummary(existingSummaryData);
+      const summaryKey = ["blueprintSummaries", "blueprintId", blueprintId];
+      const existingSummaryData = queryClient.getQueryData(summaryKey);
+      const existingSummary = validateRawBlueprintSummary(existingSummaryData);
 
-			const updatedSummary: Record<string, unknown> = {
-				...existingSummary,
-				title: variables.formData.title,
-				lastUpdatedDate: unixTimestamp,
-			};
+      const updatedSummary: Record<string, unknown> = {
+        ...existingSummary,
+        title: variables.formData.title,
+        lastUpdatedDate: unixTimestamp,
+      };
 
-			const blueprintImage = updatedBlueprint.image as ImgurImage | undefined;
-			if (blueprintImage) {
-				updatedSummary.imgurId = blueprintImage.id;
-				updatedSummary.imgurType = blueprintImage.type;
-			}
+      const blueprintImage = updatedBlueprint.image as ImgurImage | undefined;
+      if (blueprintImage) {
+        updatedSummary.imgurId = blueprintImage.id;
+        updatedSummary.imgurType = blueprintImage.type;
+      }
 
-			const validatedSummary = validateRawBlueprintSummary(updatedSummary);
-			queryClient.setQueryData(summaryKey, validatedSummary);
+      const validatedSummary = validateRawBlueprintSummary(updatedSummary);
+      queryClient.setQueryData(summaryKey, validatedSummary);
 
-			// Invalidate queries that depend on lastUpdatedDate ordering
-			const lastUpdatedDateKey = ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'];
-			queryClient.invalidateQueries({queryKey: lastUpdatedDateKey});
+      // Invalidate queries that depend on lastUpdatedDate ordering
+      const lastUpdatedDateKey = ["blueprintSummaries", "orderByField", "lastUpdatedDate"];
+      queryClient.invalidateQueries({ queryKey: lastUpdatedDateKey });
 
-			// Update tag cache
-			variables.availableTags.forEach((tag) => {
-				const tagKey = ['byTag', tag];
-				const tagDataRaw = queryClient.getQueryData(tagKey);
+      // Update tag cache
+      variables.availableTags.forEach((tag) => {
+        const tagKey = ["byTag", tag];
+        const tagDataRaw = queryClient.getQueryData(tagKey);
 
-				if (tagDataRaw) {
-					const tagData = validateRawUserBlueprints(tagDataRaw);
-					if (tagData[blueprintId]) {
-						const {[blueprintId]: _, ...rest} = tagData;
-						queryClient.setQueryData(tagKey, rest);
-					}
-				}
-			});
+        if (tagDataRaw) {
+          const tagData = validateRawUserBlueprints(tagDataRaw);
+          if (tagData[blueprintId]) {
+            const { [blueprintId]: _, ...rest } = tagData;
+            queryClient.setQueryData(tagKey, rest);
+          }
+        }
+      });
 
-			variables.formData.tags.forEach((tag) => {
-				const tagKey = ['byTag', tag];
-				const tagDataRaw = queryClient.getQueryData(tagKey);
+      variables.formData.tags.forEach((tag) => {
+        const tagKey = ["byTag", tag];
+        const tagDataRaw = queryClient.getQueryData(tagKey);
 
-				if (tagDataRaw) {
-					const tagData = validateRawUserBlueprints(tagDataRaw);
-					queryClient.setQueryData(tagKey, {
-						...tagData,
-						[blueprintId]: true,
-					});
-				}
-			});
+        if (tagDataRaw) {
+          const tagData = validateRawUserBlueprints(tagDataRaw);
+          queryClient.setQueryData(tagKey, {
+            ...tagData,
+            [blueprintId]: true,
+          });
+        }
+      });
 
-			navigate({to: '/view/$blueprintId', params: {blueprintId}});
-		},
-	});
+      navigate({ to: "/view/$blueprintId", params: { blueprintId } });
+    },
+  });
 };
 
 export const useDeleteBlueprint = () => {
-	const queryClient = useQueryClient();
-	const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-	return useMutation<string, Error, DeleteBlueprintMutationParams>({
-		mutationFn: async ({id, authorId, tags}) => {
-			// Phase 1: Shrink the blueprint by removing the large blueprintString field.
-			// This prevents TRIGGER_PAYLOAD_TOO_LARGE errors when the Cloud Function
-			// receives the deleted blueprint data.
-			await dbUpdate(ref(getFirebaseDatabase()), {
-				[`/blueprints/${id}/blueprintString`]: null,
-			});
+  return useMutation<string, Error, DeleteBlueprintMutationParams>({
+    mutationFn: async ({ id, authorId, tags }) => {
+      // Phase 1: Shrink the blueprint by removing the large blueprintString field.
+      // This prevents TRIGGER_PAYLOAD_TOO_LARGE errors when the Cloud Function
+      // receives the deleted blueprint data.
+      await dbUpdate(ref(getFirebaseDatabase()), {
+        [`/blueprints/${id}/blueprintString`]: null,
+      });
 
-			// Phase 2: Delete the blueprint and all related data.
-			// The Cloud Function cleanupFavoritesOnBlueprintDelete will also run
-			// as a safety net for favorites cleanup.
-			const updates: Record<string, null> = {
-				[`/blueprints/${id}`]: null,
-				[`/users/${authorId}/blueprints/${id}`]: null,
-				[`/users/${authorId}/collection/${id}`]: null,
-				[`/blueprintSummaries/${id}`]: null,
-			};
+      // Phase 2: Delete the blueprint and all related data.
+      // The Cloud Function cleanupFavoritesOnBlueprintDelete will also run
+      // as a safety net for favorites cleanup.
+      const updates: Record<string, null> = {
+        [`/blueprints/${id}`]: null,
+        [`/users/${authorId}/blueprints/${id}`]: null,
+        [`/users/${authorId}/collection/${id}`]: null,
+        [`/blueprintSummaries/${id}`]: null,
+      };
 
-			tags.forEach((tag) => {
-				updates[`/byTag/${tag}/${id}`] = null;
-			});
+      tags.forEach((tag) => {
+        updates[`/byTag/${tag}/${id}`] = null;
+      });
 
-			await dbUpdate(ref(getFirebaseDatabase()), updates);
+      await dbUpdate(ref(getFirebaseDatabase()), updates);
 
-			return authorId;
-		},
-		onSuccess: (authorId, {id, tags}) => {
-			const lastUpdatedDateKey = ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'];
-			queryClient.invalidateQueries({queryKey: lastUpdatedDateKey});
+      return authorId;
+    },
+    onSuccess: (authorId, { id, tags }) => {
+      const lastUpdatedDateKey = ["blueprintSummaries", "orderByField", "lastUpdatedDate"];
+      queryClient.invalidateQueries({ queryKey: lastUpdatedDateKey });
 
-			const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
-			const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
+      const userBlueprintsKey = ["users", "userId", authorId, "blueprints"];
+      const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
 
-			if (userBlueprintsDataRaw) {
-				const userBlueprintsData = validateRawUserBlueprints(userBlueprintsDataRaw);
+      if (userBlueprintsDataRaw) {
+        const userBlueprintsData = validateRawUserBlueprints(userBlueprintsDataRaw);
 
-				// Create a new object without the deleted blueprint
-				const {[id]: _, ...updatedUserBlueprints} = userBlueprintsData;
-				queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
-			}
+        // Create a new object without the deleted blueprint
+        const { [id]: _, ...updatedUserBlueprints } = userBlueprintsData;
+        queryClient.setQueryData(userBlueprintsKey, updatedUserBlueprints);
+      }
 
-			const userCollectionKey = ['users', 'userId', authorId, 'collection'];
-			const userCollectionDataRaw = queryClient.getQueryData(userCollectionKey);
+      const userCollectionKey = ["users", "userId", authorId, "collection"];
+      const userCollectionDataRaw = queryClient.getQueryData(userCollectionKey);
 
-			if (userCollectionDataRaw) {
-				const userCollectionData = validateRawUserCollection(userCollectionDataRaw);
-				const {[id]: _, ...updatedUserCollection} = userCollectionData;
-				queryClient.setQueryData(userCollectionKey, updatedUserCollection);
-			}
+      if (userCollectionDataRaw) {
+        const userCollectionData = validateRawUserCollection(userCollectionDataRaw);
+        const { [id]: _, ...updatedUserCollection } = userCollectionData;
+        queryClient.setQueryData(userCollectionKey, updatedUserCollection);
+      }
 
-			// Invalidate user blueprint queries to ensure UI refreshes
-			queryClient.invalidateQueries({queryKey: userBlueprintsKey});
+      // Invalidate user blueprint queries to ensure UI refreshes
+      queryClient.invalidateQueries({ queryKey: userBlueprintsKey });
 
-			tags.forEach((tag) => {
-				const tagKey = ['byTag', tag];
-				const tagDataRaw = queryClient.getQueryData(tagKey);
+      tags.forEach((tag) => {
+        const tagKey = ["byTag", tag];
+        const tagDataRaw = queryClient.getQueryData(tagKey);
 
-				if (tagDataRaw) {
-					const tagData = validateRawUserBlueprints(tagDataRaw);
-					if (tagData[id]) {
-						const {[id]: _, ...rest} = tagData;
-						queryClient.setQueryData(tagKey, rest);
-					}
-				}
-			});
+        if (tagDataRaw) {
+          const tagData = validateRawUserBlueprints(tagDataRaw);
+          if (tagData[id]) {
+            const { [id]: _, ...rest } = tagData;
+            queryClient.setQueryData(tagKey, rest);
+          }
+        }
+      });
 
-			// Remove the deleted blueprint from cache to prevent errors
-			queryClient.removeQueries({queryKey: ['blueprints', 'blueprintId', id]});
-			queryClient.removeQueries({queryKey: ['blueprintSummaries', 'blueprintId', id]});
+      // Remove the deleted blueprint from cache to prevent errors
+      queryClient.removeQueries({ queryKey: ["blueprints", "blueprintId", id] });
+      queryClient.removeQueries({ queryKey: ["blueprintSummaries", "blueprintId", id] });
 
-			navigate({to: '/user/$userId', params: {userId: authorId}});
-		},
-	});
+      navigate({ to: "/user/$userId", params: { userId: authorId } });
+    },
+  });
 };

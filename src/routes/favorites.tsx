@@ -1,10 +1,10 @@
-import {createFileRoute, Outlet} from '@tanstack/react-router';
-import React from 'react';
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import React from "react";
 
-export const Route = createFileRoute('/favorites')({
-	component: FavoritesLayout,
+export const Route = createFileRoute("/favorites")({
+  component: FavoritesLayout,
 });
 
 function FavoritesLayout() {
-	return <Outlet />;
+  return <Outlet />;
 }

@@ -1,34 +1,27 @@
-import {faCog} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import React from 'react';
-import {RichText} from './core/text/RichText';
+import { faCog } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { RichText } from "./core/text/RichText";
 
 interface BlueprintTitleProps {
-	title?: string;
-	isLoading: boolean;
+  title?: string;
+  isLoading: boolean;
 }
 
-const BlueprintTitle: React.FC<BlueprintTitleProps> = ({title, isLoading}) => {
-	if (isLoading) {
-		return (
-			<h1>
-				<FontAwesomeIcon
-					icon={faCog}
-					spin
-				/>
-			</h1>
-		);
-	}
+const BlueprintTitle: React.FC<BlueprintTitleProps> = ({ title, isLoading }) => {
+  if (isLoading) {
+    return (
+      <h1>
+        <FontAwesomeIcon icon={faCog} spin />
+      </h1>
+    );
+  }
 
-	return (
-		<h1>
-			<RichText
-				text={title || ''}
-				inline
-				iconSize="large"
-			/>
-		</h1>
-	);
+  return (
+    <h1>
+      <RichText text={title || ""} inline iconSize="large" />
+    </h1>
+  );
 };
 
 export default React.memo(BlueprintTitle);

@@ -1,36 +1,36 @@
-import buildImageUrl from '../helpers/buildImageUrl';
+import buildImageUrl from "../helpers/buildImageUrl";
 import {
-	type EnrichedBlueprintSummary,
-	type RawBlueprintSummary,
-	validateEnrichedBlueprintSummary,
-	validateRawBlueprintSummary,
-} from '../schemas';
+  type EnrichedBlueprintSummary,
+  type RawBlueprintSummary,
+  validateEnrichedBlueprintSummary,
+  validateRawBlueprintSummary,
+} from "../schemas";
 
 /**
  * Enriches a raw blueprint summary with additional computed fields
  */
 export const enrichBlueprintSummary = (
-	rawBlueprintSummary: RawBlueprintSummary | null,
-	blueprintId: string,
+  rawBlueprintSummary: RawBlueprintSummary | null,
+  blueprintId: string,
 ): EnrichedBlueprintSummary | null => {
-	if (!rawBlueprintSummary) return null;
+  if (!rawBlueprintSummary) return null;
 
-	validateRawBlueprintSummary(rawBlueprintSummary);
+  validateRawBlueprintSummary(rawBlueprintSummary);
 
-	let thumbnail: string | null = null;
-	if (rawBlueprintSummary.imgurId) {
-		const imgurId = rawBlueprintSummary.imgurId;
-		const imgurType = rawBlueprintSummary.imgurType || 'image/png';
-		thumbnail = buildImageUrl(imgurId, imgurType, 'b');
-	}
+  let thumbnail: string | null = null;
+  if (rawBlueprintSummary.imgurId) {
+    const imgurId = rawBlueprintSummary.imgurId;
+    const imgurType = rawBlueprintSummary.imgurType || "image/png";
+    thumbnail = buildImageUrl(imgurId, imgurType, "b");
+  }
 
-	const enrichedBlueprintSummary = {
-		...rawBlueprintSummary,
-		key: blueprintId,
-		thumbnail,
-	};
+  const enrichedBlueprintSummary = {
+    ...rawBlueprintSummary,
+    key: blueprintId,
+    thumbnail,
+  };
 
-	return validateEnrichedBlueprintSummary(enrichedBlueprintSummary);
+  return validateEnrichedBlueprintSummary(enrichedBlueprintSummary);
 };
 
 export default enrichBlueprintSummary;

@@ -1,139 +1,139 @@
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {renderHook} from '@testing-library/react';
-import type React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {enrichPaginatedBlueprintSummaries} from '../utils/enrichPaginatedBlueprintSummaries';
-import {useEnrichedPaginatedBlueprintSummaries} from './useEnrichedPaginatedBlueprintSummaries';
-import {useRawPaginatedBlueprintSummaries} from './useRawPaginatedBlueprintSummaries';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook } from "@testing-library/react";
+import type React from "react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { enrichPaginatedBlueprintSummaries } from "../utils/enrichPaginatedBlueprintSummaries";
+import { useEnrichedPaginatedBlueprintSummaries } from "./useEnrichedPaginatedBlueprintSummaries";
+import { useRawPaginatedBlueprintSummaries } from "./useRawPaginatedBlueprintSummaries";
 
 // TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
-vi.mock('./useRawPaginatedBlueprintSummaries');
-vi.mock('../utils/enrichPaginatedBlueprintSummaries');
+vi.mock("./useRawPaginatedBlueprintSummaries");
+vi.mock("../utils/enrichPaginatedBlueprintSummaries");
 
 const fakeRawPaginatedData = {
-	pages: [
-		{
-			data: {
-				blueprint1: {
-					title: 'Test Blueprint 1',
-					imgurId: 'img1',
-					imgurType: 'image/png',
-					numberOfFavorites: 10,
-					lastUpdatedDate: 1000,
-				},
-				blueprint2: {
-					title: 'Test Blueprint 2',
-					imgurId: 'img2',
-					imgurType: 'image/jpeg',
-					numberOfFavorites: 20,
-					lastUpdatedDate: 2000,
-				},
-			},
-			hasMore: true,
-			lastKey: 'blueprint1',
-			lastValue: 1000,
-		},
-	],
-	pageParams: [null],
+  pages: [
+    {
+      data: {
+        blueprint1: {
+          title: "Test Blueprint 1",
+          imgurId: "img1",
+          imgurType: "image/png",
+          numberOfFavorites: 10,
+          lastUpdatedDate: 1000,
+        },
+        blueprint2: {
+          title: "Test Blueprint 2",
+          imgurId: "img2",
+          imgurType: "image/jpeg",
+          numberOfFavorites: 20,
+          lastUpdatedDate: 2000,
+        },
+      },
+      hasMore: true,
+      lastKey: "blueprint1",
+      lastValue: 1000,
+    },
+  ],
+  pageParams: [null],
 };
 
 const fakeEnrichedPaginatedData = {
-	pages: [
-		{
-			data: [
-				{
-					title: 'Test Blueprint 1',
-					imgurId: 'img1',
-					imgurType: 'image/png',
-					numberOfFavorites: 10,
-					lastUpdatedDate: 1000,
-					key: 'blueprint1',
-					thumbnail: 'thumbnail1',
-				},
-				{
-					title: 'Test Blueprint 2',
-					imgurId: 'img2',
-					imgurType: 'image/jpeg',
-					numberOfFavorites: 20,
-					lastUpdatedDate: 2000,
-					key: 'blueprint2',
-					thumbnail: 'thumbnail2',
-				},
-			],
-			hasMore: true,
-			lastKey: 'blueprint1',
-			lastValue: 1000,
-		},
-	],
-	pageParams: [null],
+  pages: [
+    {
+      data: [
+        {
+          title: "Test Blueprint 1",
+          imgurId: "img1",
+          imgurType: "image/png",
+          numberOfFavorites: 10,
+          lastUpdatedDate: 1000,
+          key: "blueprint1",
+          thumbnail: "thumbnail1",
+        },
+        {
+          title: "Test Blueprint 2",
+          imgurId: "img2",
+          imgurType: "image/jpeg",
+          numberOfFavorites: 20,
+          lastUpdatedDate: 2000,
+          key: "blueprint2",
+          thumbnail: "thumbnail2",
+        },
+      ],
+      hasMore: true,
+      lastKey: "blueprint1",
+      lastValue: 1000,
+    },
+  ],
+  pageParams: [null],
 };
 
-describe('useEnrichedPaginatedBlueprintSummaries', () => {
-	let queryClient: QueryClient;
+describe("useEnrichedPaginatedBlueprintSummaries", () => {
+  let queryClient: QueryClient;
 
-	beforeEach(() => {
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: {
-					retry: false,
-				},
-			},
-		});
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
 
-		vi.clearAllMocks();
+    vi.clearAllMocks();
 
-		// TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
-		vi.mocked(useRawPaginatedBlueprintSummaries).mockReturnValue({
-			data: fakeRawPaginatedData,
-			isLoading: false,
-			isFetchingNextPage: false,
-			hasNextPage: true,
-			fetchNextPage: vi.fn(),
-		} as any);
+    // TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
+    vi.mocked(useRawPaginatedBlueprintSummaries).mockReturnValue({
+      data: fakeRawPaginatedData,
+      isLoading: false,
+      isFetchingNextPage: false,
+      hasNextPage: true,
+      fetchNextPage: vi.fn(),
+    } as any);
 
-		// TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
-		vi.mocked(enrichPaginatedBlueprintSummaries).mockReturnValue(fakeEnrichedPaginatedData);
-	});
+    // TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
+    vi.mocked(enrichPaginatedBlueprintSummaries).mockReturnValue(fakeEnrichedPaginatedData);
+  });
 
-	const wrapper = ({children}: {children: React.ReactNode}) => (
-		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-	);
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 
-	it('should return enriched paginated blueprint summaries', async () => {
-		const {result} = renderHook(() => useEnrichedPaginatedBlueprintSummaries(), {wrapper});
+  it("should return enriched paginated blueprint summaries", async () => {
+    const { result } = renderHook(() => useEnrichedPaginatedBlueprintSummaries(), { wrapper });
 
-		expect(useRawPaginatedBlueprintSummaries).toHaveBeenCalledWith(60, 'lastUpdatedDate');
+    expect(useRawPaginatedBlueprintSummaries).toHaveBeenCalledWith(60, "lastUpdatedDate");
 
-		expect(enrichPaginatedBlueprintSummaries).toHaveBeenCalledWith(fakeRawPaginatedData);
+    expect(enrichPaginatedBlueprintSummaries).toHaveBeenCalledWith(fakeRawPaginatedData);
 
-		expect(result.current.data).toEqual(fakeEnrichedPaginatedData);
+    expect(result.current.data).toEqual(fakeEnrichedPaginatedData);
 
-		expect(result.current.isLoading).toBe(false);
-		expect(result.current.isFetchingNextPage).toBe(false);
-		expect(result.current.hasNextPage).toBe(true);
-		expect(result.current.fetchNextPage).toBeDefined();
-	});
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isFetchingNextPage).toBe(false);
+    expect(result.current.hasNextPage).toBe(true);
+    expect(result.current.fetchNextPage).toBeDefined();
+  });
 
-	it('should pass custom parameters to the raw hook', async () => {
-		renderHook(() => useEnrichedPaginatedBlueprintSummaries(30, 'numberOfFavorites'), {wrapper});
+  it("should pass custom parameters to the raw hook", async () => {
+    renderHook(() => useEnrichedPaginatedBlueprintSummaries(30, "numberOfFavorites"), { wrapper });
 
-		expect(useRawPaginatedBlueprintSummaries).toHaveBeenCalledWith(30, 'numberOfFavorites');
-	});
+    expect(useRawPaginatedBlueprintSummaries).toHaveBeenCalledWith(30, "numberOfFavorites");
+  });
 
-	it('should handle null raw data', async () => {
-		// TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
-		vi.mocked(useRawPaginatedBlueprintSummaries).mockReturnValue({
-			data: null,
-			isLoading: true,
-			isFetchingNextPage: false,
-			hasNextPage: false,
-			fetchNextPage: vi.fn(),
-		} as any);
+  it("should handle null raw data", async () => {
+    // TODO 2025-05-21 we should not mock ./useRawPaginatedBlueprintSummaries or other higher level methods. We shoudl only mock the smallest scopes that perform network traffic, specifically the methods in firebase.ts.
+    vi.mocked(useRawPaginatedBlueprintSummaries).mockReturnValue({
+      data: null,
+      isLoading: true,
+      isFetchingNextPage: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+    } as any);
 
-		const {result} = renderHook(() => useEnrichedPaginatedBlueprintSummaries(), {wrapper});
+    const { result } = renderHook(() => useEnrichedPaginatedBlueprintSummaries(), { wrapper });
 
-		expect(result.current.data).toBeNull();
+    expect(result.current.data).toBeNull();
 
-		expect(enrichPaginatedBlueprintSummaries).not.toHaveBeenCalled();
-	});
+    expect(enrichPaginatedBlueprintSummaries).not.toHaveBeenCalled();
+  });
 });

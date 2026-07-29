@@ -1,15 +1,15 @@
-import type {EnrichedBlueprintSummary} from '../schemas';
-import {useFilterByTags} from './useFilterByTags';
-import {useFilterByTitle} from './useFilterByTitle';
+import type { EnrichedBlueprintSummary } from "../schemas";
+import { useFilterByTags } from "./useFilterByTags";
+import { useFilterByTitle } from "./useFilterByTitle";
 
-export const useFilteredBlueprintSummaries = (
-	blueprintSummaries: EnrichedBlueprintSummary[] = [],
+const useFilteredBlueprintSummaries = (
+  blueprintSummaries: EnrichedBlueprintSummary[] = [],
 ): EnrichedBlueprintSummary[] => {
-	// Filter by title first (usually faster)
-	const titleFiltered = useFilterByTitle(blueprintSummaries);
+  // Filter by title first (usually faster)
+  const titleFiltered = useFilterByTitle(blueprintSummaries);
 
-	// Then filter by tags
-	return useFilterByTags(titleFiltered);
+  // Then filter by tags
+  return useFilterByTags(titleFiltered);
 };
 
 export default useFilteredBlueprintSummaries;

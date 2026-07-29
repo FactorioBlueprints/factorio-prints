@@ -1,23 +1,27 @@
-import {type EnrichedUser, type RawUser, validateEnrichedUser, validateRawUser} from '../schemas';
+import { type EnrichedUser, type RawUser, validateEnrichedUser, validateRawUser } from "../schemas";
 
 export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null => {
-	if (!rawUser) return null;
+  if (!rawUser) return null;
 
-	validateRawUser(rawUser);
+  validateRawUser(rawUser);
 
-	// Count favorites (only true values)
-	const favoritesCount = rawUser.favorites ? Object.values(rawUser.favorites).filter(Boolean).length : 0;
+  // Count favorites (only true values)
+  const favoritesCount = rawUser.favorites
+    ? Object.values(rawUser.favorites).filter(Boolean).length
+    : 0;
 
-	// Count blueprints (only true values)
-	const blueprintsCount = rawUser.blueprints ? Object.values(rawUser.blueprints).filter(Boolean).length : 0;
+  // Count blueprints (only true values)
+  const blueprintsCount = rawUser.blueprints
+    ? Object.values(rawUser.blueprints).filter(Boolean).length
+    : 0;
 
-	const enrichedUser: EnrichedUser = {
-		...rawUser,
-		favoritesCount,
-		blueprintsCount,
-	};
+  const enrichedUser: EnrichedUser = {
+    ...rawUser,
+    favoritesCount,
+    blueprintsCount,
+  };
 
-	return validateEnrichedUser(enrichedUser);
+  return validateEnrichedUser(enrichedUser);
 };
 
 export default enrichUser;

@@ -1,17 +1,17 @@
-import {useMemo} from 'react';
-import type {EnrichedBlueprintSummary, EnrichedPaginatedBlueprintSummaries} from '../schemas';
+import { useMemo } from "react";
+import type { EnrichedBlueprintSummary, EnrichedPaginatedBlueprintSummaries } from "../schemas";
 
-export const useFlattenedEnrichedPaginatedSummaries = (
-	paginatedData: EnrichedPaginatedBlueprintSummaries | null | undefined,
+const useFlattenedEnrichedPaginatedSummaries = (
+  paginatedData: EnrichedPaginatedBlueprintSummaries | null | undefined,
 ): EnrichedBlueprintSummary[] => {
-	return useMemo(() => {
-		if (!paginatedData?.pages) {
-			return [];
-		}
+  return useMemo(() => {
+    if (!paginatedData?.pages) {
+      return [];
+    }
 
-		// Enriched pages have data as arrays, not objects
-		return paginatedData.pages.flatMap((page) => page.data);
-	}, [paginatedData]);
+    // Enriched pages have data as arrays, not objects
+    return paginatedData.pages.flatMap((page) => page.data);
+  }, [paginatedData]);
 };
 
 export default useFlattenedEnrichedPaginatedSummaries;

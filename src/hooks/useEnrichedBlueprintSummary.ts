@@ -1,6 +1,6 @@
-import {useMemo} from 'react';
-import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
-import {useRawBlueprintSummary} from './useRawBlueprintSummary';
+import { useMemo } from "react";
+import { enrichBlueprintSummary } from "../utils/enrichBlueprintSummary";
+import { useRawBlueprintSummary } from "./useRawBlueprintSummary";
 
 /**
  * Hook to fetch and enrich a blueprint summary by ID
@@ -8,17 +8,17 @@ import {useRawBlueprintSummary} from './useRawBlueprintSummary';
  * @returns React Query result with enriched blueprint summary data
  */
 export const useEnrichedBlueprintSummary = (blueprintId: string) => {
-	const rawBlueprintSummaryQuery = useRawBlueprintSummary(blueprintId);
+  const rawBlueprintSummaryQuery = useRawBlueprintSummary(blueprintId);
 
-	return {
-		...rawBlueprintSummaryQuery,
-		data: useMemo(() => {
-			if (!rawBlueprintSummaryQuery.data) return null;
+  return {
+    ...rawBlueprintSummaryQuery,
+    data: useMemo(() => {
+      if (!rawBlueprintSummaryQuery.data) return null;
 
-			// Enrich the raw data
-			return enrichBlueprintSummary(rawBlueprintSummaryQuery.data, blueprintId);
-		}, [rawBlueprintSummaryQuery.data, blueprintId]),
-	};
+      // Enrich the raw data
+      return enrichBlueprintSummary(rawBlueprintSummaryQuery.data, blueprintId);
+    }, [rawBlueprintSummaryQuery.data, blueprintId]),
+  };
 };
 
 export default useEnrichedBlueprintSummary;

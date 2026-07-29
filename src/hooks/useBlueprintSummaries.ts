@@ -1,7 +1,7 @@
 /**
  * @deprecated Use useEnrichedBlueprintSummaries instead
  */
-import useEnrichedBlueprintSummaries from './useEnrichedBlueprintSummaries';
+import useEnrichedBlueprintSummaries from "./useEnrichedBlueprintSummaries";
 
 /**
  * Hook to fetch and enrich multiple blueprint summaries by their IDs
@@ -11,11 +11,11 @@ import useEnrichedBlueprintSummaries from './useEnrichedBlueprintSummaries';
  * @returns Object containing queriesByKey and an array of enriched summaries
  */
 const useBlueprintSummaries = (
-	blueprintsData: Record<string, boolean> | null | undefined,
-	blueprintsSuccess: boolean,
+  blueprintsData: Record<string, boolean> | null | undefined,
+  blueprintsSuccess: boolean,
 ) => {
-	// Simply pass through to the new implementation
-	return useEnrichedBlueprintSummaries(blueprintsData, blueprintsSuccess);
+  // Simply pass through to the new implementation
+  return useEnrichedBlueprintSummaries(blueprintsData, blueprintsSuccess);
 };
 
 export default useBlueprintSummaries;

@@ -1,55 +1,57 @@
 import {
-	type EnrichedBlueprintSummaryPage,
-	type EnrichedPaginatedBlueprintSummaries,
-	type RawBlueprintSummaryPage,
-	type RawPaginatedBlueprintSummaries,
-	validateEnrichedBlueprintSummaryPage,
-	validateEnrichedPaginatedBlueprintSummaries,
-	validateRawBlueprintSummaryPage,
-	validateRawPaginatedBlueprintSummaries,
-} from '../schemas';
-import {enrichBlueprintSummary} from './enrichBlueprintSummary';
+  type EnrichedBlueprintSummaryPage,
+  type EnrichedPaginatedBlueprintSummaries,
+  type RawBlueprintSummaryPage,
+  type RawPaginatedBlueprintSummaries,
+  validateEnrichedBlueprintSummaryPage,
+  validateEnrichedPaginatedBlueprintSummaries,
+  validateRawBlueprintSummaryPage,
+  validateRawPaginatedBlueprintSummaries,
+} from "../schemas";
+import { enrichBlueprintSummary } from "./enrichBlueprintSummary";
 
 export const enrichBlueprintSummaryPage = (
-	rawBlueprintSummaryPage: RawBlueprintSummaryPage | null,
+  rawBlueprintSummaryPage: RawBlueprintSummaryPage | null,
 ): EnrichedBlueprintSummaryPage | null => {
-	if (!rawBlueprintSummaryPage) return null;
+  if (!rawBlueprintSummaryPage) return null;
 
-	validateRawBlueprintSummaryPage(rawBlueprintSummaryPage);
+  validateRawBlueprintSummaryPage(rawBlueprintSummaryPage);
 
-	const {data, hasMore, lastKey, lastValue} = rawBlueprintSummaryPage;
+  const { data, hasMore, lastKey, lastValue } = rawBlueprintSummaryPage;
 
-	const enrichedData = Object.entries(data).map(([key, value]) => {
-		return enrichBlueprintSummary(value, key);
-	});
+  const enrichedData = Object.entries(data).map(([key, value]) => {
+    return enrichBlueprintSummary(value, key);
+  });
 
-	const enrichedPage = {
-		data: enrichedData,
-		hasMore,
-		lastKey,
-		lastValue,
-	};
+  const enrichedPage = {
+    data: enrichedData,
+    hasMore,
+    lastKey,
+    lastValue,
+  };
 
-	return validateEnrichedBlueprintSummaryPage(enrichedPage);
+  return validateEnrichedBlueprintSummaryPage(enrichedPage);
 };
 
 export const enrichPaginatedBlueprintSummaries = (
-	rawPaginatedBlueprintSummaries: any,
+  rawPaginatedBlueprintSummaries: any,
 ): EnrichedPaginatedBlueprintSummaries | null => {
-	if (!rawPaginatedBlueprintSummaries) return null;
+  if (!rawPaginatedBlueprintSummaries) return null;
 
-	validateRawPaginatedBlueprintSummaries(rawPaginatedBlueprintSummaries);
+  validateRawPaginatedBlueprintSummaries(rawPaginatedBlueprintSummaries);
 
-	const {pages, pageParams} = rawPaginatedBlueprintSummaries;
+  const { pages, pageParams } = rawPaginatedBlueprintSummaries;
 
-	const enrichedPages = pages.map((page: RawBlueprintSummaryPage | null) => enrichBlueprintSummaryPage(page));
+  const enrichedPages = pages.map((page: RawBlueprintSummaryPage | null) =>
+    enrichBlueprintSummaryPage(page),
+  );
 
-	const enrichedPaginated = {
-		pages: enrichedPages,
-		pageParams,
-	};
+  const enrichedPaginated = {
+    pages: enrichedPages,
+    pageParams,
+  };
 
-	return validateEnrichedPaginatedBlueprintSummaries(enrichedPaginated);
+  return validateEnrichedPaginatedBlueprintSummaries(enrichedPaginated);
 };
 
 export default enrichPaginatedBlueprintSummaries;

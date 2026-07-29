@@ -1,3 +1,3 @@
-import LocalStorageWorker from './localStorage.worker?worker';
+import LocalStorageWorker from "./localStorage.worker?worker";
 
 export default LocalStorageWorker;

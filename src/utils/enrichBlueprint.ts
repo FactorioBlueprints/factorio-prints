@@ -1,139 +1,147 @@
-import {captureMessage} from '@sentry/react';
-import DOMPurify from 'dompurify';
-import MarkdownIt from 'markdown-it';
-import Blueprint from '../Blueprint';
-import buildImageUrl from '../helpers/buildImageUrl';
-import {type EnrichedBlueprint, type RawBlueprint, validateEnrichedBlueprint, validateRawBlueprint} from '../schemas';
+import { captureMessage } from "@sentry/react";
+import DOMPurify from "dompurify";
+import MarkdownIt from "markdown-it";
+import Blueprint from "../Blueprint";
+import buildImageUrl from "../helpers/buildImageUrl";
+import {
+  type EnrichedBlueprint,
+  type RawBlueprint,
+  validateEnrichedBlueprint,
+  validateRawBlueprint,
+} from "../schemas";
 
 const md = new MarkdownIt({
-	html: true,
-	linkify: true,
-	typographer: true,
-	breaks: false,
+  html: true,
+  linkify: true,
+  typographer: true,
+  breaks: false,
 });
 
 const defaultTableRenderer =
-	md.renderer.rules.table_open || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
+  md.renderer.rules.table_open ||
+  ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
 
 md.renderer.rules.table_open = (tokens, idx, options, env, self) => {
-	tokens[idx].attrSet('class', 'table table-striped table-bordered');
-	return defaultTableRenderer(tokens, idx, options, env, self);
+  tokens[idx].attrSet("class", "table table-striped table-bordered");
+  return defaultTableRenderer(tokens, idx, options, env, self);
 };
 
-import type {EnrichedBlueprintSummary} from '../schemas';
+import type { EnrichedBlueprintSummary } from "../schemas";
 
-export const enrichBlueprint = (
-	rawBlueprint: RawBlueprint | null,
-	blueprintId: string,
-	blueprintSummary?: EnrichedBlueprintSummary | null,
+const enrichBlueprint = (
+  rawBlueprint: RawBlueprint | null,
+  blueprintId: string,
+  blueprintSummary?: EnrichedBlueprintSummary | null,
 ): EnrichedBlueprint | null => {
-	if (!rawBlueprint) return null;
+  if (!rawBlueprint) return null;
 
-	const reportToSentry = (message: string, level: 'warning' | 'info', issues: any) => {
-		captureMessage(message, {
-			level,
-			tags: {
-				component: 'enrichBlueprint',
-				blueprintId,
-				issueTypes: Array.isArray(issues) ? [...new Set(issues.map((i: any) => i.type))].join(',') : issues,
-			},
-			extra: {
-				blueprintId,
-				blueprintTitle: blueprintSummary?.title || rawBlueprint.title || 'Untitled',
-				blueprintUrl: `https://factorioprints.com/view/${blueprintId}`,
-				authorId: rawBlueprint.author?.userId,
-				authorName: rawBlueprint.author?.displayName,
-				issues,
-			},
-		});
-	};
+  const reportToSentry = (message: string, level: "warning" | "info", issues: any) => {
+    captureMessage(message, {
+      level,
+      tags: {
+        component: "enrichBlueprint",
+        blueprintId,
+        issueTypes: Array.isArray(issues)
+          ? [...new Set(issues.map((i: any) => i.type))].join(",")
+          : issues,
+      },
+      extra: {
+        blueprintId,
+        blueprintTitle: blueprintSummary?.title || rawBlueprint.title || "Untitled",
+        blueprintUrl: `https://factorioprints.com/view/${blueprintId}`,
+        authorId: rawBlueprint.author?.userId,
+        authorName: rawBlueprint.author?.displayName,
+        issues,
+      },
+    });
+  };
 
-	if (rawBlueprint.tags && !Array.isArray(rawBlueprint.tags)) {
-		reportToSentry('Blueprint data corruption detected', 'warning', {
-			type: 'non-array-tags',
-			actualType: typeof rawBlueprint.tags,
-			sampleData: JSON.stringify(rawBlueprint.tags).substring(0, 200),
-		});
-		rawBlueprint.tags = [];
-	} else if (Array.isArray(rawBlueprint.tags)) {
-		const nonStringTags = rawBlueprint.tags.filter((tag) => typeof tag !== 'string');
-		if (nonStringTags.length > 0) {
-			reportToSentry('Blueprint data corruption detected', 'warning', {
-				type: 'non-string-tags',
-				count: nonStringTags.length,
-				types: nonStringTags.map((t) => (t === null ? 'null' : typeof t)),
-			});
-			rawBlueprint.tags = rawBlueprint.tags.filter((tag) => typeof tag === 'string');
-		}
-	}
+  if (rawBlueprint.tags && !Array.isArray(rawBlueprint.tags)) {
+    reportToSentry("Blueprint data corruption detected", "warning", {
+      type: "non-array-tags",
+      actualType: typeof rawBlueprint.tags,
+      sampleData: JSON.stringify(rawBlueprint.tags).substring(0, 200),
+    });
+    rawBlueprint.tags = [];
+  } else if (Array.isArray(rawBlueprint.tags)) {
+    const nonStringTags = rawBlueprint.tags.filter((tag) => typeof tag !== "string");
+    if (nonStringTags.length > 0) {
+      reportToSentry("Blueprint data corruption detected", "warning", {
+        type: "non-string-tags",
+        count: nonStringTags.length,
+        types: nonStringTags.map((t) => (t === null ? "null" : typeof t)),
+      });
+      rawBlueprint.tags = rawBlueprint.tags.filter((tag) => typeof tag === "string");
+    }
+  }
 
-	validateRawBlueprint(rawBlueprint);
+  validateRawBlueprint(rawBlueprint);
 
-	let thumbnail: string | null = null;
-	let imgurId: string | undefined;
-	let imgurType: string | undefined;
+  let thumbnail: string | null = null;
+  let imgurId: string | undefined;
+  let imgurType: string | undefined;
 
-	if (blueprintSummary) {
-		imgurId = blueprintSummary.imgurId;
-		imgurType = blueprintSummary.imgurType;
-	} else if (rawBlueprint.image?.id) {
-		imgurId = rawBlueprint.image.id;
-		imgurType = rawBlueprint.image.type || 'image/png';
-	}
+  if (blueprintSummary) {
+    imgurId = blueprintSummary.imgurId;
+    imgurType = blueprintSummary.imgurType;
+  } else if (rawBlueprint.image?.id) {
+    imgurId = rawBlueprint.image.id;
+    imgurType = rawBlueprint.image.type || "image/png";
+  }
 
-	if (imgurId && imgurType) {
-		thumbnail = buildImageUrl(imgurId, imgurType, 'l');
-	}
+  if (imgurId && imgurType) {
+    thumbnail = buildImageUrl(imgurId, imgurType, "l");
+  }
 
-	const processedTags: Record<string, boolean> = {};
-	const rawTags = rawBlueprint.tags || [];
-	const tagFormatIssues: Array<{type: string; tag: string}> = [];
+  const processedTags: Record<string, boolean> = {};
+  const rawTags = rawBlueprint.tags || [];
+  const tagFormatIssues: Array<{ type: string; tag: string }> = [];
 
-	if (Array.isArray(rawTags)) {
-		rawTags.forEach((tag: string) => {
-			if (!tag.startsWith('/') || !tag.endsWith('/')) {
-				tagFormatIssues.push({type: 'invalid-format', tag});
-			} else if (decodeURIComponent(tag) !== tag) {
-				tagFormatIssues.push({type: 'url-encoded', tag});
-			} else {
-				processedTags[tag] = true;
-			}
-		});
-	}
+  if (Array.isArray(rawTags)) {
+    rawTags.forEach((tag: string) => {
+      if (!tag.startsWith("/") || !tag.endsWith("/")) {
+        tagFormatIssues.push({ type: "invalid-format", tag });
+      } else if (decodeURIComponent(tag) !== tag) {
+        tagFormatIssues.push({ type: "url-encoded", tag });
+      } else {
+        processedTags[tag] = true;
+      }
+    });
+  }
 
-	if (tagFormatIssues.length > 0) {
-		reportToSentry('Blueprint tag format issues detected', 'info', tagFormatIssues);
-	}
+  if (tagFormatIssues.length > 0) {
+    reportToSentry("Blueprint tag format issues detected", "info", tagFormatIssues);
+  }
 
-	let parsedData: any = null;
-	if (rawBlueprint.blueprintString) {
-		try {
-			const blueprint = new Blueprint(rawBlueprint.blueprintString, {blueprintId});
-			parsedData = blueprint.getV15Decoded();
-		} catch {}
-	}
+  let parsedData: any = null;
+  if (rawBlueprint.blueprintString) {
+    try {
+      const blueprint = new Blueprint(rawBlueprint.blueprintString, { blueprintId });
+      parsedData = blueprint.getV15Decoded();
+    } catch {}
+  }
 
-	const renderedDescription = rawBlueprint.descriptionMarkdown
-		? DOMPurify.sanitize(md.render(rawBlueprint.descriptionMarkdown))
-		: '';
+  const renderedDescription = rawBlueprint.descriptionMarkdown
+    ? DOMPurify.sanitize(md.render(rawBlueprint.descriptionMarkdown))
+    : "";
 
-	const enrichedBlueprint = {
-		...rawBlueprint,
-		key: blueprintId,
-		thumbnail,
-		parsedData,
-		renderedDescription,
-		tags: processedTags,
-		// Override with summary data if available
-		...(blueprintSummary && {
-			title: blueprintSummary.title,
-			numberOfFavorites: blueprintSummary.numberOfFavorites,
-			lastUpdatedDate: blueprintSummary.lastUpdatedDate,
-			image: imgurId && imgurType ? {id: imgurId, type: imgurType} : rawBlueprint.image,
-		}),
-	};
+  const enrichedBlueprint = {
+    ...rawBlueprint,
+    key: blueprintId,
+    thumbnail,
+    parsedData,
+    renderedDescription,
+    tags: processedTags,
+    // Override with summary data if available
+    ...(blueprintSummary && {
+      title: blueprintSummary.title,
+      numberOfFavorites: blueprintSummary.numberOfFavorites,
+      lastUpdatedDate: blueprintSummary.lastUpdatedDate,
+      image: imgurId && imgurType ? { id: imgurId, type: imgurType } : rawBlueprint.image,
+    }),
+  };
 
-	return validateEnrichedBlueprint(enrichedBlueprint);
+  return validateEnrichedBlueprint(enrichedBlueprint);
 };
 
 export default enrichBlueprint;

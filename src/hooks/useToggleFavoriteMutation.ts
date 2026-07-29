@@ -1,130 +1,142 @@
-import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {update as dbUpdate, ref} from 'firebase/database';
-import {getFirebaseDatabase} from '../utils/firebaseDatabase';
-import {validateRawBlueprint, validateRawBlueprintSummary, validateRawUserFavorites} from '../schemas';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { update as dbUpdate, ref } from "firebase/database";
+import { getFirebaseDatabase } from "../utils/firebaseDatabase";
+import {
+  validateRawBlueprint,
+  validateRawBlueprintSummary,
+  validateRawUserFavorites,
+} from "../schemas";
 
 interface ToggleFavoriteMutationParams {
-	blueprintId: string;
-	userId: string;
-	isFavorite: boolean;
-	numberOfFavorites?: number | null;
+  blueprintId: string;
+  userId: string;
+  isFavorite: boolean;
+  numberOfFavorites?: number | null;
 }
 
 interface ToggleFavoriteMutationResult {
-	blueprintId: string;
-	userId: string;
-	newIsFavorite: boolean;
-	newFavoriteCount: number;
+  blueprintId: string;
+  userId: string;
+  newIsFavorite: boolean;
+  newFavoriteCount: number;
 }
 
 export const useToggleFavoriteMutation = () => {
-	const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-	return useMutation<ToggleFavoriteMutationResult, Error, ToggleFavoriteMutationParams>({
-		mutationFn: async ({
-			blueprintId,
-			userId,
-			isFavorite,
-			numberOfFavorites,
-		}): Promise<ToggleFavoriteMutationResult> => {
-			// Use the provided numberOfFavorites from raw data
-			const currentFavoriteCount = numberOfFavorites || 0;
+  return useMutation<ToggleFavoriteMutationResult, Error, ToggleFavoriteMutationParams>({
+    mutationFn: async ({
+      blueprintId,
+      userId,
+      isFavorite,
+      numberOfFavorites,
+    }): Promise<ToggleFavoriteMutationResult> => {
+      // Use the provided numberOfFavorites from raw data
+      const currentFavoriteCount = numberOfFavorites || 0;
 
-			const newIsFavorite = !isFavorite;
-			const newFavoriteCount = Math.max(0, currentFavoriteCount + (newIsFavorite ? 1 : -1));
+      const newIsFavorite = !isFavorite;
+      const newFavoriteCount = Math.max(0, currentFavoriteCount + (newIsFavorite ? 1 : -1));
 
-			const updates: Record<string, boolean | null> = {
-				[`/blueprints/${blueprintId}/favorites/${userId}`]: newIsFavorite ? true : null,
-				[`/users/${userId}/favorites/${blueprintId}`]: newIsFavorite ? true : null,
-			};
+      const updates: Record<string, boolean | null> = {
+        [`/blueprints/${blueprintId}/favorites/${userId}`]: newIsFavorite ? true : null,
+        [`/users/${userId}/favorites/${blueprintId}`]: newIsFavorite ? true : null,
+      };
 
-			await dbUpdate(ref(getFirebaseDatabase()), updates);
+      await dbUpdate(ref(getFirebaseDatabase()), updates);
 
-			return {
-				blueprintId,
-				userId,
-				newIsFavorite,
-				newFavoriteCount,
-			};
-		},
-		onSuccess: ({blueprintId, userId, newIsFavorite, newFavoriteCount}: ToggleFavoriteMutationResult) => {
-			queryClient.setQueryData(['blueprints', 'blueprintId', blueprintId], (oldData: unknown) => {
-				if (!oldData) return oldData;
+      return {
+        blueprintId,
+        userId,
+        newIsFavorite,
+        newFavoriteCount,
+      };
+    },
+    onSuccess: ({
+      blueprintId,
+      userId,
+      newIsFavorite,
+      newFavoriteCount,
+    }: ToggleFavoriteMutationResult) => {
+      queryClient.setQueryData(["blueprints", "blueprintId", blueprintId], (oldData: unknown) => {
+        if (!oldData) return oldData;
 
-				const blueprint = validateRawBlueprint(oldData);
-				const existingFavorites = blueprint.favorites || {};
+        const blueprint = validateRawBlueprint(oldData);
+        const existingFavorites = blueprint.favorites || {};
 
-				// Clean the existing favorites to ensure it only contains boolean values
-				const cleanedFavorites = Object.fromEntries(
-					Object.entries(existingFavorites).filter(([, value]) => typeof value === 'boolean'),
-				);
+        // Clean the existing favorites to ensure it only contains boolean values
+        const cleanedFavorites = Object.fromEntries(
+          Object.entries(existingFavorites).filter(([, value]) => typeof value === "boolean"),
+        );
 
-				const updatedFavorites = {...cleanedFavorites};
-				if (newIsFavorite) {
-					updatedFavorites[userId] = true;
-				} else {
-					delete updatedFavorites[userId];
-				}
+        const updatedFavorites = { ...cleanedFavorites };
+        if (newIsFavorite) {
+          updatedFavorites[userId] = true;
+        } else {
+          delete updatedFavorites[userId];
+        }
 
-				return {
-					...blueprint,
-					numberOfFavorites: newFavoriteCount,
-					favorites: updatedFavorites,
-				};
-			});
+        return {
+          ...blueprint,
+          numberOfFavorites: newFavoriteCount,
+          favorites: updatedFavorites,
+        };
+      });
 
-			queryClient.setQueryData(['blueprintSummaries', 'blueprintId', blueprintId], (oldData: unknown) => {
-				if (!oldData) return oldData;
+      queryClient.setQueryData(
+        ["blueprintSummaries", "blueprintId", blueprintId],
+        (oldData: unknown) => {
+          if (!oldData) return oldData;
 
-				const summary = validateRawBlueprintSummary(oldData);
+          const summary = validateRawBlueprintSummary(oldData);
 
-				return {
-					...summary,
-					numberOfFavorites: newFavoriteCount,
-				};
-			});
+          return {
+            ...summary,
+            numberOfFavorites: newFavoriteCount,
+          };
+        },
+      );
 
-			queryClient.setQueryData(['users', 'userId', userId, 'favorites'], (oldData: unknown) => {
-				if (!oldData) return oldData;
+      queryClient.setQueryData(["users", "userId", userId, "favorites"], (oldData: unknown) => {
+        if (!oldData) return oldData;
 
-				// Clean the existing data to ensure it only contains boolean values
-				const cleanedData =
-					typeof oldData === 'object' && oldData !== null
-						? Object.fromEntries(
-								Object.entries(oldData as Record<string, unknown>).filter(
-									([, value]) => typeof value === 'boolean',
-								),
-							)
-						: {};
+        // Clean the existing data to ensure it only contains boolean values
+        const cleanedData =
+          typeof oldData === "object" && oldData !== null
+            ? Object.fromEntries(
+                Object.entries(oldData as Record<string, unknown>).filter(
+                  ([, value]) => typeof value === "boolean",
+                ),
+              )
+            : {};
 
-				const favorites = validateRawUserFavorites(cleanedData);
+        const favorites = validateRawUserFavorites(cleanedData);
 
-				const updatedUserFavorites = {...favorites};
-				if (newIsFavorite) {
-					updatedUserFavorites[blueprintId] = true;
-				} else {
-					delete updatedUserFavorites[blueprintId];
-				}
+        const updatedUserFavorites = { ...favorites };
+        if (newIsFavorite) {
+          updatedUserFavorites[blueprintId] = true;
+        } else {
+          delete updatedUserFavorites[blueprintId];
+        }
 
-				return updatedUserFavorites;
-			});
+        return updatedUserFavorites;
+      });
 
-			queryClient.setQueryData(
-				['users', 'userId', userId, 'favorites', 'blueprintId', blueprintId],
-				newIsFavorite,
-			);
+      queryClient.setQueryData(
+        ["users", "userId", userId, "favorites", "blueprintId", blueprintId],
+        newIsFavorite,
+      );
 
-			queryClient.setQueryData(
-				['blueprints', 'blueprintId', blueprintId, 'favorites', 'userId', userId],
-				newIsFavorite,
-			);
+      queryClient.setQueryData(
+        ["blueprints", "blueprintId", blueprintId, "favorites", "userId", userId],
+        newIsFavorite,
+      );
 
-			// TODO 2025-07-25 Make this more efficient by actually changing the number of favorites inside the cached paginated data
-			queryClient.invalidateQueries({
-				queryKey: ['blueprintSummaries', 'orderByField'],
-			});
-		},
-	});
+      // TODO 2025-07-25 Make this more efficient by actually changing the number of favorites inside the cached paginated data
+      queryClient.invalidateQueries({
+        queryKey: ["blueprintSummaries", "orderByField"],
+      });
+    },
+  });
 };
 
 export default useToggleFavoriteMutation;

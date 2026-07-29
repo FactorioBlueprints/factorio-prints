@@ -1,11 +1,11 @@
-import type React from 'react';
-import {useEffect} from 'react';
-import DOMIsolation from './DOMIsolation';
+import type React from "react";
+import { useEffect } from "react";
+import DOMIsolation from "./DOMIsolation";
 
 declare global {
-	interface Window {
-		adsbygoogle: unknown[];
-	}
+  interface Window {
+    adsbygoogle: unknown[];
+  }
 }
 
 /**
@@ -16,20 +16,20 @@ declare global {
  * trying to reconcile these externally-modified DOM nodes.
  */
 const GoogleAd: React.FC = () => {
-	useEffect(() => {
-		(window.adsbygoogle = window.adsbygoogle || []).push({});
-	}, []);
+  useEffect(() => {
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  }, []);
 
-	return (
-		<DOMIsolation className="googleAd">
-			<ins
-				className="adsbygoogle"
-				style={{display: 'block'}}
-				data-ad-client="ca-pub-3146575260211386"
-				data-ad-format="auto"
-			/>
-		</DOMIsolation>
-	);
+  return (
+    <DOMIsolation className="googleAd">
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-3146575260211386"
+        data-ad-format="auto"
+      />
+    </DOMIsolation>
+  );
 };
 
 export default GoogleAd;

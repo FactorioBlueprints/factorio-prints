@@ -1,35 +1,44 @@
-import {update as dbUpdate, endAt, get, limitToLast, orderByChild, query, ref, startAt} from 'firebase/database';
-import {format, formatDistance} from 'date-fns';
-import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import {
-	type EnrichedBlueprintSummary,
-	type RawBlueprint,
-	type RawBlueprintSummary,
-	type RawBlueprintSummaryPage,
-	type RawUser,
-	validateRawBlueprint,
-	validateRawBlueprintSummary,
-	validateRawBlueprintSummaryPage,
-} from '../schemas';
+  update as dbUpdate,
+  endAt,
+  get,
+  limitToLast,
+  orderByChild,
+  query,
+  ref,
+  startAt,
+} from "firebase/database";
+import { format, formatDistance } from "date-fns";
+import { getFirebaseDatabase } from "../utils/firebaseDatabase";
+import {
+  type EnrichedBlueprintSummary,
+  type RawBlueprint,
+  type RawBlueprintSummary,
+  type RawBlueprintSummaryPage,
+  type RawUser,
+  validateRawBlueprint,
+  validateRawBlueprintSummary,
+  validateRawBlueprintSummaryPage,
+} from "../schemas";
 
 /**
  * Checks if an error is a network-related error that should not be sent to Sentry.
  * These are expected errors that occur when users have connectivity issues.
  */
 const isNetworkError = (error: unknown): boolean => {
-	if (error instanceof TypeError && error.message === 'Failed to fetch') {
-		return true;
-	}
-	if (error instanceof Error) {
-		const message = error.message.toLowerCase();
-		return (
-			message.includes('failed to fetch') ||
-			message.includes('network error') ||
-			message.includes('network request failed') ||
-			message.includes('fetch failed')
-		);
-	}
-	return false;
+  if (error instanceof TypeError && error.message === "Failed to fetch") {
+    return true;
+  }
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes("failed to fetch") ||
+      message.includes("network error") ||
+      message.includes("network request failed") ||
+      message.includes("fetch failed")
+    );
+  }
+  return false;
 };
 
 /**
@@ -39,9 +48,9 @@ const isNetworkError = (error: unknown): boolean => {
  * @returns The CDN URL (e.g., "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json")
  */
 export const getBlueprintCdnUrl = (blueprintKey: string): string => {
-	const prefix = blueprintKey.slice(0, 3);
-	const suffix = blueprintKey.slice(3);
-	return `https://factorio-blueprint-firebase-cdn.pages.dev/${prefix}/${suffix}.json`;
+  const prefix = blueprintKey.slice(0, 3);
+  const suffix = blueprintKey.slice(3);
+  return `https://factorio-blueprint-firebase-cdn.pages.dev/${prefix}/${suffix}.json`;
 };
 
 /**
@@ -50,19 +59,19 @@ export const getBlueprintCdnUrl = (blueprintKey: string): string => {
  * @returns The CDN watermark URL
  */
 export const getCdnWatermarkUrl = (): string => {
-	return 'https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt';
+  return "https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt";
 };
 
 let cachedWatermark: {
-	date: Date | null;
-	fetchedAt: number;
+  date: Date | null;
+  fetchedAt: number;
 } | null = null;
 
 const WATERMARK_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Export for testing purposes
 export const clearWatermarkCache = () => {
-	cachedWatermark = null;
+  cachedWatermark = null;
 };
 
 /**
@@ -71,45 +80,45 @@ export const clearWatermarkCache = () => {
  * @returns The watermark date or null if fetch fails
  */
 export const fetchCdnWatermark = async (): Promise<Date | null> => {
-	// Check cache
-	if (cachedWatermark && Date.now() - cachedWatermark.fetchedAt < WATERMARK_CACHE_TTL) {
-		return cachedWatermark.date;
-	}
+  // Check cache
+  if (cachedWatermark && Date.now() - cachedWatermark.fetchedAt < WATERMARK_CACHE_TTL) {
+    return cachedWatermark.date;
+  }
 
-	try {
-		const watermarkUrl = getCdnWatermarkUrl();
-		let response: Response;
+  try {
+    const watermarkUrl = getCdnWatermarkUrl();
+    let response: Response;
 
-		try {
-			response = await fetch(watermarkUrl);
-		} catch {
-			// Network errors are expected - don't let them bubble to Sentry
-			cachedWatermark = {date: null, fetchedAt: Date.now()};
-			return null;
-		}
+    try {
+      response = await fetch(watermarkUrl);
+    } catch {
+      // Network errors are expected - don't let them bubble to Sentry
+      cachedWatermark = { date: null, fetchedAt: Date.now() };
+      return null;
+    }
 
-		if (!response.ok) {
-			console.warn(`CDN watermark fetch failed: ${response.status} ${response.statusText}`);
-			cachedWatermark = {date: null, fetchedAt: Date.now()};
-			return null;
-		}
+    if (!response.ok) {
+      console.warn(`CDN watermark fetch failed: ${response.status} ${response.statusText}`);
+      cachedWatermark = { date: null, fetchedAt: Date.now() };
+      return null;
+    }
 
-		const dateString = await response.text();
-		const watermarkDate = new Date(dateString.trim());
+    const dateString = await response.text();
+    const watermarkDate = new Date(dateString.trim());
 
-		if (isNaN(watermarkDate.getTime())) {
-			console.warn('Invalid watermark date format:', dateString);
-			cachedWatermark = {date: null, fetchedAt: Date.now()};
-			return null;
-		}
+    if (isNaN(watermarkDate.getTime())) {
+      console.warn("Invalid watermark date format:", dateString);
+      cachedWatermark = { date: null, fetchedAt: Date.now() };
+      return null;
+    }
 
-		cachedWatermark = {date: watermarkDate, fetchedAt: Date.now()};
-		return watermarkDate;
-	} catch (error) {
-		console.warn('Error fetching CDN watermark:', error);
-		cachedWatermark = {date: null, fetchedAt: Date.now()};
-		return null;
-	}
+    cachedWatermark = { date: watermarkDate, fetchedAt: Date.now() };
+    return watermarkDate;
+  } catch (error) {
+    console.warn("Error fetching CDN watermark:", error);
+    cachedWatermark = { date: null, fetchedAt: Date.now() };
+    return null;
+  }
 };
 
 /**
@@ -119,598 +128,612 @@ export const fetchCdnWatermark = async (): Promise<Date | null> => {
  * @returns The blueprint data from CDN or null if fetch fails
  */
 export const fetchBlueprintFromCdn = async (
-	blueprintSummary: EnrichedBlueprintSummary,
+  blueprintSummary: EnrichedBlueprintSummary,
 ): Promise<RawBlueprint | null> => {
-	try {
-		const blueprintKey = blueprintSummary.key;
-		if (!blueprintKey) {
-			return null;
-		}
+  try {
+    const blueprintKey = blueprintSummary.key;
+    if (!blueprintKey) {
+      return null;
+    }
 
-		const cdnUrl = getBlueprintCdnUrl(blueprintKey);
-		let response: Response;
+    const cdnUrl = getBlueprintCdnUrl(blueprintKey);
+    let response: Response;
 
-		try {
-			response = await fetch(cdnUrl);
-		} catch {
-			// Network errors are expected for CDN - don't let them bubble to Sentry
-			return null;
-		}
+    try {
+      response = await fetch(cdnUrl);
+    } catch {
+      // Network errors are expected for CDN - don't let them bubble to Sentry
+      return null;
+    }
 
-		if (!response.ok) {
-			return null;
-		}
+    if (!response.ok) {
+      return null;
+    }
 
-		let data;
-		try {
-			data = await response.json();
-		} catch {
-			return null;
-		}
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      return null;
+    }
 
-		return validateRawBlueprint(data);
-	} catch {
-		return null;
-	}
+    return validateRawBlueprint(data);
+  } catch {
+    return null;
+  }
 };
 
 export interface UserData {
-	id: string;
-	displayName?: string;
-	email?: string;
-	favorites?: Record<string, boolean>;
-	collection?: Record<string, boolean>;
-	blueprints?: Record<string, boolean>;
-	favoritesCount: number;
-	blueprintsCount: number;
+  id: string;
+  displayName?: string;
+  email?: string;
+  favorites?: Record<string, boolean>;
+  collection?: Record<string, boolean>;
+  blueprints?: Record<string, boolean>;
+  favoritesCount: number;
+  blueprintsCount: number;
 }
 
 export interface ReconcileResult {
-	blueprintId: string;
-	actualCount: number;
-	previousBlueprintCount: number;
-	previousSummaryCount: number;
-	hasDiscrepancy: boolean;
-	reconciled: boolean;
+  blueprintId: string;
+  actualCount: number;
+  previousBlueprintCount: number;
+  previousSummaryCount: number;
+  hasDiscrepancy: boolean;
+  reconciled: boolean;
 }
 
 interface UserReconcileResult {
-	userId: string;
-	discrepancies: Array<{
-		blueprintId: string;
-		issue: string;
-		fixed: boolean;
-	}>;
-	totalFixed: number;
-	reconciled: boolean;
+  userId: string;
+  discrepancies: Array<{
+    blueprintId: string;
+    issue: string;
+    fixed: boolean;
+  }>;
+  totalFixed: number;
+  reconciled: boolean;
 }
 
 export const fetchBlueprint = async (
-	blueprintId: string,
-	blueprintSummary: EnrichedBlueprintSummary,
+  blueprintId: string,
+  blueprintSummary: EnrichedBlueprintSummary,
 ): Promise<RawBlueprint | null> => {
-	try {
-		// Extract lastUpdatedDate from blueprintSummary
-		const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
+  try {
+    // Extract lastUpdatedDate from blueprintSummary
+    const summaryLastUpdated = blueprintSummary.lastUpdatedDate;
 
-		// First check the CDN watermark
-		const watermarkDate = await fetchCdnWatermark();
+    // First check the CDN watermark
+    const watermarkDate = await fetchCdnWatermark();
 
-		// If we have both watermark and summary dates, check if CDN could have the data
-		if (watermarkDate && summaryLastUpdated) {
-			const summaryDate = new Date(summaryLastUpdated);
+    // If we have both watermark and summary dates, check if CDN could have the data
+    if (watermarkDate && summaryLastUpdated) {
+      const summaryDate = new Date(summaryLastUpdated);
 
-			// If the blueprint is newer than the watermark, skip CDN entirely
-			if (summaryDate > watermarkDate) {
-				const timeDiff = formatDistance(watermarkDate, summaryDate);
-				console.log(
-					`Blueprint ${blueprintId} is newer than CDN watermark by ${timeDiff}, skipping CDN (Blueprint: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Watermark: ${format(watermarkDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
-				);
-			} else {
-				// Blueprint might be in CDN, attempt to fetch
-				const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
+      // If the blueprint is newer than the watermark, skip CDN entirely
+      if (summaryDate > watermarkDate) {
+        const timeDiff = formatDistance(watermarkDate, summaryDate);
+        console.log(
+          `Blueprint ${blueprintId} is newer than CDN watermark by ${timeDiff}, skipping CDN (Blueprint: ${format(summaryDate, "yyyy-MM-dd HH:mm:ss.SSS")}, Watermark: ${format(watermarkDate, "yyyy-MM-dd HH:mm:ss.SSS")})`,
+        );
+      } else {
+        // Blueprint might be in CDN, attempt to fetch
+        const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
 
-				if (cdnBlueprint) {
-					// CDN fetch succeeded - compare lastUpdatedDate values
-					const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
+        if (cdnBlueprint) {
+          // CDN fetch succeeded - compare lastUpdatedDate values
+          const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-					if (cdnLastUpdated === summaryLastUpdated) {
-						// Dates match - use CDN data
-						console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
-						return cdnBlueprint;
-					} else if (cdnLastUpdated && summaryLastUpdated) {
-						// Dates don't match - CDN data is stale
-						const cdnDate = new Date(cdnLastUpdated);
-						const timeDiff = formatDistance(cdnDate, summaryDate);
-						console.log(
-							`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
-						);
-					} else {
-						// One or both dates are missing
-						console.log(
-							`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`,
-						);
-					}
-				}
-			}
-		} else {
-			// No watermark or no summary date - try CDN anyway
-			const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
+          if (cdnLastUpdated === summaryLastUpdated) {
+            // Dates match - use CDN data
+            console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
+            return cdnBlueprint;
+          } else if (cdnLastUpdated && summaryLastUpdated) {
+            // Dates don't match - CDN data is stale
+            const cdnDate = new Date(cdnLastUpdated);
+            const timeDiff = formatDistance(cdnDate, summaryDate);
+            console.log(
+              `Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, "yyyy-MM-dd HH:mm:ss.SSS")}, Summary: ${format(summaryDate, "yyyy-MM-dd HH:mm:ss.SSS")})`,
+            );
+          } else {
+            // One or both dates are missing
+            console.log(
+              `Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"})`,
+            );
+          }
+        }
+      }
+    } else {
+      // No watermark or no summary date - try CDN anyway
+      const cdnBlueprint = await fetchBlueprintFromCdn(blueprintSummary);
 
-			if (cdnBlueprint) {
-				// CDN fetch succeeded - compare lastUpdatedDate values
-				const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
+      if (cdnBlueprint) {
+        // CDN fetch succeeded - compare lastUpdatedDate values
+        const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-				if (cdnLastUpdated === summaryLastUpdated) {
-					// Dates match - use CDN data
-					console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
-					return cdnBlueprint;
-				} else if (cdnLastUpdated && summaryLastUpdated) {
-					// Dates don't match - check if CDN data is stale
-					const cdnDate = new Date(cdnLastUpdated);
-					const summaryDate = new Date(summaryLastUpdated);
-					const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
-					const timeDiff = formatDistance(cdnDate, summaryDate);
+        if (cdnLastUpdated === summaryLastUpdated) {
+          // Dates match - use CDN data
+          console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
+          return cdnBlueprint;
+        } else if (cdnLastUpdated && summaryLastUpdated) {
+          // Dates don't match - check if CDN data is stale
+          const cdnDate = new Date(cdnLastUpdated);
+          const summaryDate = new Date(summaryLastUpdated);
+          const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
+          const timeDiff = formatDistance(cdnDate, summaryDate);
 
-					if (timeDifferenceMs < 1000) {
-						// CDN data is stale by less than 1 second - use it anyway
-						return cdnBlueprint;
-					}
-					// CDN data is stale by more than 1 second
-					console.log(
-						`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, 'yyyy-MM-dd HH:mm:ss.SSS')}, Summary: ${format(summaryDate, 'yyyy-MM-dd HH:mm:ss.SSS')})`,
-					);
-				} else {
-					// One or both dates are missing
-					console.log(
-						`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), 'yyyy-MM-dd HH:mm:ss.SSS') : 'missing'})`,
-					);
-				}
-			}
-		}
+          if (timeDifferenceMs < 1000) {
+            // CDN data is stale by less than 1 second - use it anyway
+            return cdnBlueprint;
+          }
+          // CDN data is stale by more than 1 second
+          console.log(
+            `Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, "yyyy-MM-dd HH:mm:ss.SSS")}, Summary: ${format(summaryDate, "yyyy-MM-dd HH:mm:ss.SSS")})`,
+          );
+        } else {
+          // One or both dates are missing
+          console.log(
+            `Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"})`,
+          );
+        }
+      }
+    }
 
-		// Fall back to Firebase if CDN was skipped, failed, or data was stale
-		const blueprintRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/`);
-		const snapshot = await get(blueprintRef);
+    // Fall back to Firebase if CDN was skipped, failed, or data was stale
+    const blueprintRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/`);
+    const snapshot = await get(blueprintRef);
 
-		if (!snapshot.exists()) {
-			return null;
-		}
+    if (!snapshot.exists()) {
+      return null;
+    }
 
-		console.log(`Blueprint ${blueprintId} fetched from Firebase`);
-		return validateRawBlueprint(snapshot.val());
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return null;
-		}
-		throw error;
-	}
+    console.log(`Blueprint ${blueprintId} fetched from Firebase`);
+    return validateRawBlueprint(snapshot.val());
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return null;
+    }
+    throw error;
+  }
 };
 
 export const fetchBlueprintTags = async (blueprintId: string): Promise<string[]> => {
-	try {
-		const tagsRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/tags/`);
-		const snapshot = await get(tagsRef);
-		return snapshot.exists() ? snapshot.val() : [];
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return [];
-		}
-		throw error;
-	}
+  try {
+    const tagsRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/tags/`);
+    const snapshot = await get(tagsRef);
+    return snapshot.exists() ? snapshot.val() : [];
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return [];
+    }
+    throw error;
+  }
 };
 
 export const fetchTags = async (): Promise<Record<string, string[]>> => {
-	try {
-		const tagsRef = ref(getFirebaseDatabase(), '/tags/');
-		const snapshot = await get(tagsRef);
+  try {
+    const tagsRef = ref(getFirebaseDatabase(), "/tags/");
+    const snapshot = await get(tagsRef);
 
-		if (!snapshot.exists()) {
-			return {};
-		}
+    if (!snapshot.exists()) {
+      return {};
+    }
 
-		return snapshot.val();
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return {};
-		}
-		throw error;
-	}
+    return snapshot.val();
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return {};
+    }
+    throw error;
+  }
 };
 
 export const fetchByTagData = async (tagId: string): Promise<Record<string, boolean>> => {
-	if (!tagId) {
-		return {};
-	}
+  if (!tagId) {
+    return {};
+  }
 
-	if (tagId.startsWith('/') || tagId.endsWith('/')) {
-		throw new Error(
-			`fetchByTagData: tagId "${tagId}" should not start or end with a slash. The normalized tag id should be used for database queries.`,
-		);
-	}
+  if (tagId.startsWith("/") || tagId.endsWith("/")) {
+    throw new Error(
+      `fetchByTagData: tagId "${tagId}" should not start or end with a slash. The normalized tag id should be used for database queries.`,
+    );
+  }
 
-	try {
-		const snapshot = await get(ref(getFirebaseDatabase(), `/byTag/${tagId}`));
-		return snapshot.val() || {};
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return {};
-		}
-		throw error;
-	}
+  try {
+    const snapshot = await get(ref(getFirebaseDatabase(), `/byTag/${tagId}`));
+    return snapshot.val() || {};
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return {};
+    }
+    throw error;
+  }
 };
 
 export const fetchModerator = async (userId: string): Promise<boolean> => {
-	try {
-		const moderatorRef = ref(getFirebaseDatabase(), `/moderators/${userId}`);
-		const snapshot = await get(moderatorRef);
+  try {
+    const moderatorRef = ref(getFirebaseDatabase(), `/moderators/${userId}`);
+    const snapshot = await get(moderatorRef);
 
-		return Boolean(snapshot.val());
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return false;
-		}
-		throw error;
-	}
+    return Boolean(snapshot.val());
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return false;
+    }
+    throw error;
+  }
 };
 
 export const fetchUserDisplayName = async (userId: string): Promise<string | null> => {
-	try {
-		const userRef = ref(getFirebaseDatabase(), `/users/${userId}/displayName`);
-		const snapshot = await get(userRef);
+  try {
+    const userRef = ref(getFirebaseDatabase(), `/users/${userId}/displayName`);
+    const snapshot = await get(userRef);
 
-		return snapshot.val();
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return null;
-		}
-		throw error;
-	}
+    return snapshot.val();
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return null;
+    }
+    throw error;
+  }
 };
 
 export const fetchUserBlueprints = async (userId: string): Promise<Record<string, boolean>> => {
-	try {
-		const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/blueprints`));
-		return snapshot.val() || {};
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return {};
-		}
-		throw error;
-	}
+  try {
+    const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/blueprints`));
+    return snapshot.val() || {};
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return {};
+    }
+    throw error;
+  }
 };
 
 export const fetchUserFavorites = async (userId: string): Promise<Record<string, boolean>> => {
-	try {
-		const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/favorites`));
-		return snapshot.val() || {};
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return {};
-		}
-		throw error;
-	}
+  try {
+    const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/favorites`));
+    return snapshot.val() || {};
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return {};
+    }
+    throw error;
+  }
 };
 
 export const fetchUserCollection = async (userId: string): Promise<Record<string, boolean>> => {
-	try {
-		const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/collection`));
-		return snapshot.val() || {};
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return {};
-		}
-		throw error;
-	}
+  try {
+    const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/collection`));
+    return snapshot.val() || {};
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return {};
+    }
+    throw error;
+  }
 };
 
 export const fetchUser = async (userId: string): Promise<RawUser | null> => {
-	try {
-		const userRef = ref(getFirebaseDatabase(), `/users/${userId}`);
-		const snapshot = await get(userRef);
+  try {
+    const userRef = ref(getFirebaseDatabase(), `/users/${userId}`);
+    const snapshot = await get(userRef);
 
-		if (!snapshot.exists()) {
-			return null;
-		}
+    if (!snapshot.exists()) {
+      return null;
+    }
 
-		const userData = snapshot.val();
-		return {
-			id: userId,
-			displayName: userData.displayName || undefined,
-			email: userData.email || undefined,
-			favorites: userData.favorites || {},
-			collection: userData.collection || {},
-			blueprints: userData.blueprints || {},
-		};
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return null;
-		}
-		throw error;
-	}
+    const userData = snapshot.val();
+    return {
+      id: userId,
+      displayName: userData.displayName || undefined,
+      email: userData.email || undefined,
+      favorites: userData.favorites || {},
+      collection: userData.collection || {},
+      blueprints: userData.blueprints || {},
+    };
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return null;
+    }
+    throw error;
+  }
 };
 
 export const fetchAllUsers = async (): Promise<UserData[]> => {
-	try {
-		const usersRef = ref(getFirebaseDatabase(), '/users/');
-		const snapshot = await get(usersRef);
+  try {
+    const usersRef = ref(getFirebaseDatabase(), "/users/");
+    const snapshot = await get(usersRef);
 
-		if (!snapshot.exists()) {
-			return [];
-		}
+    if (!snapshot.exists()) {
+      return [];
+    }
 
-		const usersData: UserData[] = [];
-		snapshot.forEach((childSnapshot) => {
-			const userData = childSnapshot.val();
-			usersData.push({
-				id: childSnapshot.key,
-				...userData,
-				email: userData.email || undefined,
-				favoritesCount: userData.favorites ? Object.keys(userData.favorites).length : 0,
-				blueprintsCount: userData.blueprints ? Object.keys(userData.blueprints).length : 0,
-			});
-		});
+    const usersData: UserData[] = [];
+    snapshot.forEach((childSnapshot) => {
+      const userData = childSnapshot.val();
+      usersData.push({
+        id: childSnapshot.key,
+        ...userData,
+        email: userData.email || undefined,
+        favoritesCount: userData.favorites ? Object.keys(userData.favorites).length : 0,
+        blueprintsCount: userData.blueprints ? Object.keys(userData.blueprints).length : 0,
+      });
+    });
 
-		return usersData.sort((a, b) => b.favoritesCount - a.favoritesCount);
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return [];
-		}
-		throw error;
-	}
+    return usersData.sort((a, b) => b.favoritesCount - a.favoritesCount);
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return [];
+    }
+    throw error;
+  }
 };
 
 export const reconcileFavoritesCount = async (blueprintId: string): Promise<ReconcileResult> => {
-	const favoritesRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/favorites`);
-	const favoritesSnapshot = await get(favoritesRef);
-	const favorites = favoritesSnapshot.exists() ? favoritesSnapshot.val() : {};
+  const favoritesRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/favorites`);
+  const favoritesSnapshot = await get(favoritesRef);
+  const favorites = favoritesSnapshot.exists() ? favoritesSnapshot.val() : {};
 
-	const actualCount = Object.values(favorites).filter(Boolean).length;
+  const actualCount = Object.values(favorites).filter(Boolean).length;
 
-	const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}/numberOfFavorites`);
-	const summarySnapshot = await get(summaryRef);
-	const currentSummaryCount = summarySnapshot.exists() ? summarySnapshot.val() : 0;
+  const summaryRef = ref(
+    getFirebaseDatabase(),
+    `/blueprintSummaries/${blueprintId}/numberOfFavorites`,
+  );
+  const summarySnapshot = await get(summaryRef);
+  const currentSummaryCount = summarySnapshot.exists() ? summarySnapshot.val() : 0;
 
-	const hasDiscrepancy = actualCount !== currentSummaryCount;
+  const hasDiscrepancy = actualCount !== currentSummaryCount;
 
-	if (hasDiscrepancy) {
-		const updates = {
-			[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
-		};
+  if (hasDiscrepancy) {
+    const updates = {
+      [`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
+    };
 
-		await dbUpdate(ref(getFirebaseDatabase()), updates);
-	}
+    await dbUpdate(ref(getFirebaseDatabase()), updates);
+  }
 
-	return {
-		blueprintId,
-		actualCount,
-		previousBlueprintCount: 0,
-		previousSummaryCount: currentSummaryCount,
-		hasDiscrepancy,
-		reconciled: hasDiscrepancy,
-	};
+  return {
+    blueprintId,
+    actualCount,
+    previousBlueprintCount: 0,
+    previousSummaryCount: currentSummaryCount,
+    hasDiscrepancy,
+    reconciled: hasDiscrepancy,
+  };
 };
 
 // TODO 2025-04-12: Move this out of firebase.js, and refactor it to use react query hooks from the hooks/ dir. The problem with the current implementation is that it performs many queries but doesn't cache anything. /users/${userId}/favorites already has a hook useUserFavorites in useUser. But `/blueprints/${blueprintId}/favorites/${userId}` doesn't have a hook or a mutation yet, so we need to add them.
 export const reconcileUserFavorites = async (userId: string): Promise<UserReconcileResult> => {
-	const userFavoritesRef = ref(getFirebaseDatabase(), `/users/${userId}/favorites`);
-	const userFavoritesSnapshot = await get(userFavoritesRef);
-	const userFavorites = userFavoritesSnapshot.exists() ? userFavoritesSnapshot.val() : {};
+  const userFavoritesRef = ref(getFirebaseDatabase(), `/users/${userId}/favorites`);
+  const userFavoritesSnapshot = await get(userFavoritesRef);
+  const userFavorites = userFavoritesSnapshot.exists() ? userFavoritesSnapshot.val() : {};
 
-	const discrepancies: Array<{
-		blueprintId: string;
-		issue: string;
-		fixed: boolean;
-	}> = [];
-	const updates: Record<string, boolean> = {};
+  const discrepancies: Array<{
+    blueprintId: string;
+    issue: string;
+    fixed: boolean;
+  }> = [];
+  const updates: Record<string, boolean> = {};
 
-	for (const blueprintId of Object.keys(userFavorites)) {
-		if (!userFavorites[blueprintId]) {
-			continue;
-		}
+  for (const blueprintId of Object.keys(userFavorites)) {
+    if (!userFavorites[blueprintId]) {
+      continue;
+    }
 
-		const blueprintFavoritesRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/favorites/${userId}`);
-		const blueprintFavoriteSnapshot = await get(blueprintFavoritesRef);
+    const blueprintFavoritesRef = ref(
+      getFirebaseDatabase(),
+      `/blueprints/${blueprintId}/favorites/${userId}`,
+    );
+    const blueprintFavoriteSnapshot = await get(blueprintFavoritesRef);
 
-		if (!blueprintFavoriteSnapshot.exists() || !blueprintFavoriteSnapshot.val()) {
-			discrepancies.push({
-				blueprintId,
-				issue: 'User favorite not found in blueprint favorites',
-				fixed: true,
-			});
+    if (!blueprintFavoriteSnapshot.exists() || !blueprintFavoriteSnapshot.val()) {
+      discrepancies.push({
+        blueprintId,
+        issue: "User favorite not found in blueprint favorites",
+        fixed: true,
+      });
 
-			updates[`/blueprints/${blueprintId}/favorites/${userId}`] = true;
+      updates[`/blueprints/${blueprintId}/favorites/${userId}`] = true;
 
-			// TODO 2025-04-11: react query cache invalidation will be needed for each of these blueprints
+      // TODO 2025-04-11: react query cache invalidation will be needed for each of these blueprints
 
-			// TODO 2025-04-11: Don't reconcile counts, we'll handle that separately when reconciling from the blueprints rather than from the users
-			await reconcileFavoritesCount(blueprintId);
-		}
-	}
+      // TODO 2025-04-11: Don't reconcile counts, we'll handle that separately when reconciling from the blueprints rather than from the users
+      await reconcileFavoritesCount(blueprintId);
+    }
+  }
 
-	if (Object.keys(updates).length > 0) {
-		await dbUpdate(ref(getFirebaseDatabase()), updates);
-	}
+  if (Object.keys(updates).length > 0) {
+    await dbUpdate(ref(getFirebaseDatabase()), updates);
+  }
 
-	return {
-		userId,
-		discrepancies,
-		totalFixed: discrepancies.length,
-		reconciled: discrepancies.length > 0,
-	};
+  return {
+    userId,
+    discrepancies,
+    totalFixed: discrepancies.length,
+    reconciled: discrepancies.length > 0,
+  };
 };
 
-export const cleanupInvalidUserFavorite = async (userId: string, blueprintId: string): Promise<boolean> => {
-	try {
-		const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
-		const summarySnapshot = await get(summaryRef);
+export const cleanupInvalidUserFavorite = async (
+  userId: string,
+  blueprintId: string,
+): Promise<boolean> => {
+  try {
+    const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
+    const summarySnapshot = await get(summaryRef);
 
-		if (summarySnapshot.exists()) {
-			return false;
-		}
+    if (summarySnapshot.exists()) {
+      return false;
+    }
 
-		const updates = {
-			[`/users/${userId}/favorites/${blueprintId}`]: null,
-		};
+    const updates = {
+      [`/users/${userId}/favorites/${blueprintId}`]: null,
+    };
 
-		await dbUpdate(ref(getFirebaseDatabase()), updates);
+    await dbUpdate(ref(getFirebaseDatabase()), updates);
 
-		return true;
-	} catch {
-		return false;
-	}
+    return true;
+  } catch {
+    return false;
+  }
 };
 
-export const cleanupInvalidUserCollection = async (userId: string, blueprintId: string): Promise<boolean> => {
-	try {
-		const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
-		const summarySnapshot = await get(summaryRef);
+export const cleanupInvalidUserCollection = async (
+  userId: string,
+  blueprintId: string,
+): Promise<boolean> => {
+  try {
+    const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
+    const summarySnapshot = await get(summaryRef);
 
-		if (summarySnapshot.exists()) {
-			return false;
-		}
+    if (summarySnapshot.exists()) {
+      return false;
+    }
 
-		const updates = {
-			[`/users/${userId}/collection/${blueprintId}`]: null,
-		};
+    const updates = {
+      [`/users/${userId}/collection/${blueprintId}`]: null,
+    };
 
-		await dbUpdate(ref(getFirebaseDatabase()), updates);
+    await dbUpdate(ref(getFirebaseDatabase()), updates);
 
-		return true;
-	} catch {
-		return false;
-	}
+    return true;
+  } catch {
+    return false;
+  }
 };
 
-export const fetchBlueprintSummary = async (blueprintId: string): Promise<RawBlueprintSummary | null> => {
-	try {
-		const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
-		const snapshot = await get(summaryRef);
+export const fetchBlueprintSummary = async (
+  blueprintId: string,
+): Promise<RawBlueprintSummary | null> => {
+  try {
+    const summaryRef = ref(getFirebaseDatabase(), `/blueprintSummaries/${blueprintId}`);
+    const snapshot = await get(summaryRef);
 
-		if (!snapshot.exists()) {
-			return null;
-		}
+    if (!snapshot.exists()) {
+      return null;
+    }
 
-		return validateRawBlueprintSummary(snapshot.val());
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return null;
-		}
-		throw error;
-	}
+    return validateRawBlueprintSummary(snapshot.val());
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return null;
+    }
+    throw error;
+  }
 };
 
 export const fetchPaginatedSummaries = async (
-	pageSize = 60,
-	lastKey: string | null = null,
-	lastValue: any = null,
-	orderByField = 'lastUpdatedDate',
+  pageSize = 60,
+  lastKey: string | null = null,
+  lastValue: any = null,
+  orderByField = "lastUpdatedDate",
 ): Promise<RawBlueprintSummaryPage> => {
-	let summariesQuery;
-	let nextLastKey: string | null = null;
-	let nextLastValue: number | null = null;
+  let summariesQuery;
+  let nextLastKey: string | null = null;
+  let nextLastValue: number | null = null;
 
-	try {
-		if (lastKey && lastValue) {
-			summariesQuery = query(
-				ref(getFirebaseDatabase(), '/blueprintSummaries/'),
-				orderByChild(orderByField),
-				endAt(lastValue, lastKey),
-				limitToLast(pageSize + 1),
-			);
-		} else {
-			summariesQuery = query(
-				ref(getFirebaseDatabase(), '/blueprintSummaries/'),
-				orderByChild(orderByField),
-				limitToLast(pageSize + 1),
-			);
-		}
+  try {
+    if (lastKey && lastValue) {
+      summariesQuery = query(
+        ref(getFirebaseDatabase(), "/blueprintSummaries/"),
+        orderByChild(orderByField),
+        endAt(lastValue, lastKey),
+        limitToLast(pageSize + 1),
+      );
+    } else {
+      summariesQuery = query(
+        ref(getFirebaseDatabase(), "/blueprintSummaries/"),
+        orderByChild(orderByField),
+        limitToLast(pageSize + 1),
+      );
+    }
 
-		const snapshot = await get(summariesQuery);
+    const snapshot = await get(summariesQuery);
 
-		if (!snapshot.exists()) {
-			return validateRawBlueprintSummaryPage({
-				data: {},
-				hasMore: false,
-				lastKey: null,
-				lastValue: null,
-			});
-		}
+    if (!snapshot.exists()) {
+      return validateRawBlueprintSummaryPage({
+        data: {},
+        hasMore: false,
+        lastKey: null,
+        lastValue: null,
+      });
+    }
 
-		const entries: Array<[string, any]> = [];
-		snapshot.forEach((childSnapshot) => {
-			entries.push([childSnapshot.key, childSnapshot.val()]);
-		});
+    const entries: Array<[string, any]> = [];
+    snapshot.forEach((childSnapshot) => {
+      entries.push([childSnapshot.key, childSnapshot.val()]);
+    });
 
-		// limitToLast returns items in ascending order, but we want descending order
-		// (newest dates first, most favorites first, etc.)
-		entries.reverse();
+    // limitToLast returns items in ascending order, but we want descending order
+    // (newest dates first, most favorites first, etc.)
+    entries.reverse();
 
-		const hasMore = entries.length > pageSize;
+    const hasMore = entries.length > pageSize;
 
-		if (hasMore) {
-			// Remove the extra item used for pagination detection
-			const removedEntry = entries.pop();
-			if (removedEntry) {
-				nextLastKey = removedEntry[0];
-				nextLastValue = removedEntry[1][orderByField];
-			}
-		}
+    if (hasMore) {
+      // Remove the extra item used for pagination detection
+      const removedEntry = entries.pop();
+      if (removedEntry) {
+        nextLastKey = removedEntry[0];
+        nextLastValue = removedEntry[1][orderByField];
+      }
+    }
 
-		// Build the data object from the reversed entries
-		const data: Record<string, RawBlueprintSummary> = {};
-		entries.forEach(([key, value]) => {
-			data[key] = value;
-		});
+    // Build the data object from the reversed entries
+    const data: Record<string, RawBlueprintSummary> = {};
+    entries.forEach(([key, value]) => {
+      data[key] = value;
+    });
 
-		return validateRawBlueprintSummaryPage({
-			data,
-			hasMore,
-			lastKey: nextLastKey,
-			lastValue: nextLastValue,
-		});
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return validateRawBlueprintSummaryPage({
-				data: {},
-				hasMore: false,
-				lastKey: null,
-				lastValue: null,
-			});
-		}
-		throw error;
-	}
+    return validateRawBlueprintSummaryPage({
+      data,
+      hasMore,
+      lastKey: nextLastKey,
+      lastValue: nextLastValue,
+    });
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return validateRawBlueprintSummaryPage({
+        data: {},
+        hasMore: false,
+        lastKey: null,
+        lastValue: null,
+      });
+    }
+    throw error;
+  }
 };
 
 export const fetchSummariesNewerThan = async (
-	highWatermark: number,
-	pageSize = 100,
+  highWatermark: number,
+  pageSize = 100,
 ): Promise<RawBlueprintSummary[]> => {
-	try {
-		const summariesQuery = query(
-			ref(getFirebaseDatabase(), '/blueprintSummaries/'),
-			orderByChild('lastUpdatedDate'),
-			startAt(highWatermark + 1),
-			limitToLast(pageSize),
-		);
+  try {
+    const summariesQuery = query(
+      ref(getFirebaseDatabase(), "/blueprintSummaries/"),
+      orderByChild("lastUpdatedDate"),
+      startAt(highWatermark + 1),
+      limitToLast(pageSize),
+    );
 
-		const snapshot = await get(summariesQuery);
+    const snapshot = await get(summariesQuery);
 
-		if (!snapshot.exists()) {
-			return [];
-		}
+    if (!snapshot.exists()) {
+      return [];
+    }
 
-		const summaries: RawBlueprintSummary[] = [];
-		snapshot.forEach((childSnapshot) => {
-			const summary = validateRawBlueprintSummary(childSnapshot.val());
-			summaries.push(summary);
-		});
+    const summaries: RawBlueprintSummary[] = [];
+    snapshot.forEach((childSnapshot) => {
+      const summary = validateRawBlueprintSummary(childSnapshot.val());
+      summaries.push(summary);
+    });
 
-		return summaries.reverse();
-	} catch (error) {
-		if (isNetworkError(error)) {
-			return [];
-		}
-		throw error;
-	}
+    return summaries.reverse();
+  } catch (error) {
+    if (isNetworkError(error)) {
+      return [];
+    }
+    throw error;
+  }
 };

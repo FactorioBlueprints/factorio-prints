@@ -11,14 +11,14 @@
 // - https://github.com/firebase/firebase-js-sdk/issues/7012 (Firestore gapi usage - closed)
 // - https://github.com/firebase/firebase-js-sdk/issues/7407 (iOS gapi.iframes errors - open)
 export function suppressGoogleAuthDeprecationWarning(): void {
-	const originalWarn = console.warn;
-	console.warn = (...args) => {
-		const warningMessage = args[0]?.toString() || '';
-		// Suppress the specific Google auth deprecation warning
-		if (warningMessage.includes('Your client application uses libraries for user authentication')) {
-			return;
-		}
-		// Pass through all other warnings
-		originalWarn.apply(console, args);
-	};
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const warningMessage = args[0]?.toString() || "";
+    // Suppress the specific Google auth deprecation warning
+    if (warningMessage.includes("Your client application uses libraries for user authentication")) {
+      return;
+    }
+    // Pass through all other warnings
+    originalWarn.apply(console, args);
+  };
 }

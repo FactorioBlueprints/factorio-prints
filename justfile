@@ -46,16 +46,6 @@ eslint-ci: install-ci
 format: install
     vp run format
 
-# `vp run ci:biome`
-[group('lint')]
-biome-ci: install-ci
-    vp run ci:biome
-
-# `vp run ci:prettier`
-[group('lint')]
-prettier-ci: install-ci
-    vp run ci:prettier
-
 # `vp run test:run`
 [group('test')]
 test: install route-generate

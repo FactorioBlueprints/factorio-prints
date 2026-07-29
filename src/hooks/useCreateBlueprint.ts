@@ -1,265 +1,273 @@
-import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {useNavigate} from '@tanstack/react-router';
-import type {User} from 'firebase/auth';
-import {update as dbUpdate, push, ref, serverTimestamp} from 'firebase/database';
-import flatMap from 'lodash/flatMap';
-import {getFirebaseDatabase} from '../utils/firebaseDatabase';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import type { User } from "firebase/auth";
+import { update as dbUpdate, push, ref, serverTimestamp } from "firebase/database";
+import flatMap from "lodash/flatMap";
+import { getFirebaseDatabase } from "../utils/firebaseDatabase";
 import {
-	validateRawBlueprintSummary,
-	validateRawPaginatedBlueprintSummaries,
-	validateRawUserBlueprints,
-	validateRawUserCollection,
-} from '../schemas';
+  validateRawBlueprintSummary,
+  validateRawPaginatedBlueprintSummaries,
+  validateRawUserBlueprints,
+  validateRawUserCollection,
+} from "../schemas";
 
 interface CreateBlueprintFormData {
-	title: string;
-	blueprintString: string;
-	descriptionMarkdown: string;
-	tags?: string[];
-	imageUrl: string;
+  title: string;
+  blueprintString: string;
+  descriptionMarkdown: string;
+  tags?: string[];
+  imageUrl: string;
 }
 
 interface CreateBlueprintMutationParams {
-	formData: CreateBlueprintFormData;
-	user: User;
+  formData: CreateBlueprintFormData;
+  user: User;
 }
 
 interface CreateBlueprintResult {
-	blueprintId: string;
-	authorId: string;
+  blueprintId: string;
+  authorId: string;
 }
 
 interface ImgurRegexPatterns {
-	imgurUrl1: RegExp;
-	imgurUrl2: RegExp;
+  imgurUrl1: RegExp;
+  imgurUrl2: RegExp;
 }
 
 export const useCreateBlueprint = () => {
-	const queryClient = useQueryClient();
-	const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-	return useMutation<CreateBlueprintResult, Error, CreateBlueprintMutationParams>({
-		mutationFn: async ({formData, user}) => {
-			const imageUrl = formData.imageUrl;
+  return useMutation<CreateBlueprintResult, Error, CreateBlueprintMutationParams>({
+    mutationFn: async ({ formData, user }) => {
+      const imageUrl = formData.imageUrl;
 
-			const regexPatterns: ImgurRegexPatterns = {
-				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-			};
+      const regexPatterns: ImgurRegexPatterns = {
+        imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+        imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+      };
 
-			const matches = Object.values(regexPatterns)
-				.map((pattern) => imageUrl.match(pattern))
-				.filter(Boolean);
+      const matches = Object.values(regexPatterns)
+        .map((pattern) => imageUrl.match(pattern))
+        .filter(Boolean);
 
-			if (matches.length <= 0) {
-				throw new Error('Invalid image URL format');
-			}
+      if (matches.length <= 0) {
+        throw new Error("Invalid image URL format");
+      }
 
-			const match = matches[0]!;
-			const imgurId = match[1]!;
-			const image = {
-				id: imgurId,
-				type: 'image/png',
-			};
+      const match = matches[0]!;
+      const imgurId = match[1]!;
+      const image = {
+        id: imgurId,
+        type: "image/png",
+      };
 
-			const blueprintData = {
-				title: formData.title,
-				blueprintString: formData.blueprintString,
-				descriptionMarkdown: formData.descriptionMarkdown,
-				tags: formData.tags || [],
-				author: {
-					userId: user.uid,
-					displayName: user.displayName || null,
-				},
-				createdDate: serverTimestamp(),
-				lastUpdatedDate: serverTimestamp(),
-				favorites: {},
-				numberOfFavorites: 0,
-				image,
-			};
+      const blueprintData = {
+        title: formData.title,
+        blueprintString: formData.blueprintString,
+        descriptionMarkdown: formData.descriptionMarkdown,
+        tags: formData.tags || [],
+        author: {
+          userId: user.uid,
+          displayName: user.displayName || null,
+        },
+        createdDate: serverTimestamp(),
+        lastUpdatedDate: serverTimestamp(),
+        favorites: {},
+        numberOfFavorites: 0,
+        image,
+      };
 
-			const blueprintSummary = {
-				imgurId: image.id,
-				imgurType: image.type,
-				title: formData.title,
-				numberOfFavorites: 0,
-				lastUpdatedDate: serverTimestamp(),
-			};
+      const blueprintSummary = {
+        imgurId: image.id,
+        imgurType: image.type,
+        title: formData.title,
+        numberOfFavorites: 0,
+        lastUpdatedDate: serverTimestamp(),
+      };
 
-			const blueprintsRef = ref(getFirebaseDatabase(), '/blueprints');
-			const newBlueprintRef = push(blueprintsRef, blueprintData);
-			const newBlueprintKey = newBlueprintRef.key;
+      const blueprintsRef = ref(getFirebaseDatabase(), "/blueprints");
+      const newBlueprintRef = push(blueprintsRef, blueprintData);
+      const newBlueprintKey = newBlueprintRef.key;
 
-			if (!newBlueprintKey) {
-				throw new Error('Failed to generate blueprint key');
-			}
+      if (!newBlueprintKey) {
+        throw new Error("Failed to generate blueprint key");
+      }
 
-			const updates: Record<string, unknown> = {};
+      const updates: Record<string, unknown> = {};
 
-			updates[`/users/${user.uid}/blueprints/${newBlueprintKey}`] = true;
-			updates[`/users/${user.uid}/collection/${newBlueprintKey}`] = true;
-			updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
-			updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageUrl;
+      updates[`/users/${user.uid}/blueprints/${newBlueprintKey}`] = true;
+      updates[`/users/${user.uid}/collection/${newBlueprintKey}`] = true;
+      updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
+      updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageUrl;
 
-			(formData.tags || []).forEach((tag) => {
-				updates[`/byTag/${tag}/${newBlueprintKey}`] = true;
-			});
+      (formData.tags || []).forEach((tag) => {
+        updates[`/byTag/${tag}/${newBlueprintKey}`] = true;
+      });
 
-			await dbUpdate(ref(getFirebaseDatabase()), updates);
+      await dbUpdate(ref(getFirebaseDatabase()), updates);
 
-			return {
-				blueprintId: newBlueprintKey,
-				authorId: user.uid,
-			};
-		},
-		onSuccess: ({blueprintId, authorId}, {formData}) => {
-			const now = new Date();
-			const unixTimestamp = now.getTime();
+      return {
+        blueprintId: newBlueprintKey,
+        authorId: user.uid,
+      };
+    },
+    onSuccess: ({ blueprintId, authorId }, { formData }) => {
+      const now = new Date();
+      const unixTimestamp = now.getTime();
 
-			const regexPatterns: ImgurRegexPatterns = {
-				imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-				imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-			};
+      const regexPatterns: ImgurRegexPatterns = {
+        imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
+        imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
+      };
 
-			const matches = Object.values(regexPatterns)
-				.map((pattern) => formData.imageUrl.match(pattern))
-				.filter(Boolean);
+      const matches = Object.values(regexPatterns)
+        .map((pattern) => formData.imageUrl.match(pattern))
+        .filter(Boolean);
 
-			const imgurId = matches.length > 0 ? matches[0]![1]! : '';
+      const imgurId = matches.length > 0 ? matches[0]![1]! : "";
 
-			const lastUpdatedDateKey = ['blueprintSummaries', 'orderByField', 'lastUpdatedDate'];
-			const lastUpdatedDateData = queryClient.getQueryData(lastUpdatedDateKey);
+      const lastUpdatedDateKey = ["blueprintSummaries", "orderByField", "lastUpdatedDate"];
+      const lastUpdatedDateData = queryClient.getQueryData(lastUpdatedDateKey);
 
-			if (
-				lastUpdatedDateData &&
-				typeof lastUpdatedDateData === 'object' &&
-				'pages' in lastUpdatedDateData &&
-				Array.isArray(lastUpdatedDateData.pages)
-			) {
-				try {
-					const summaryData = {
-						title: formData.title,
-						imgurId: imgurId,
-						imgurType: 'image/png',
-						numberOfFavorites: 0,
-						lastUpdatedDate: unixTimestamp,
-					};
+      if (
+        lastUpdatedDateData &&
+        typeof lastUpdatedDateData === "object" &&
+        "pages" in lastUpdatedDateData &&
+        Array.isArray(lastUpdatedDateData.pages)
+      ) {
+        try {
+          const summaryData = {
+            title: formData.title,
+            imgurId: imgurId,
+            imgurType: "image/png",
+            numberOfFavorites: 0,
+            lastUpdatedDate: unixTimestamp,
+          };
 
-					const newSummary = validateRawBlueprintSummary(summaryData);
-					const allBlueprints = flatMap(lastUpdatedDateData.pages, (page) =>
-						page?.data
-							? Object.entries(page.data).map(([key, summary]) => ({
-									...(summary as Record<string, unknown>),
-									key,
-								}))
-							: [],
-					);
+          const newSummary = validateRawBlueprintSummary(summaryData);
+          const allBlueprints = flatMap(lastUpdatedDateData.pages, (page) =>
+            page?.data
+              ? Object.entries(page.data).map(([key, summary]) => ({
+                  ...(summary as Record<string, unknown>),
+                  key,
+                }))
+              : [],
+          );
 
-					type BlueprintWithKey = Record<string, unknown> & {key: string};
-					const newSummaryWithKey = {
-						...newSummary,
-						key: blueprintId,
-					} as BlueprintWithKey;
-					const updatedBlueprints = [
-						newSummaryWithKey,
-						...allBlueprints.filter(
-							(item): item is BlueprintWithKey =>
-								typeof item === 'object' && item !== null && 'key' in item && item.key !== blueprintId,
-						),
-					];
+          type BlueprintWithKey = Record<string, unknown> & { key: string };
+          const newSummaryWithKey = {
+            ...newSummary,
+            key: blueprintId,
+          } as BlueprintWithKey;
+          const updatedBlueprints = [
+            newSummaryWithKey,
+            ...allBlueprints.filter(
+              (item): item is BlueprintWithKey =>
+                typeof item === "object" &&
+                item !== null &&
+                "key" in item &&
+                item.key !== blueprintId,
+            ),
+          ];
 
-					const updatedPages = lastUpdatedDateData.pages.map((page, index) => {
-						if (index === 0 && page?.data && Object.keys(page.data).length > 0) {
-							const pageSize = Object.keys(page.data).length;
-							const pageData = updatedBlueprints.slice(0, pageSize);
-							const lastItem = pageData[pageData.length - 1];
+          const updatedPages = lastUpdatedDateData.pages.map((page, index) => {
+            if (index === 0 && page?.data && Object.keys(page.data).length > 0) {
+              const pageSize = Object.keys(page.data).length;
+              const pageData = updatedBlueprints.slice(0, pageSize);
+              const lastItem = pageData[pageData.length - 1];
 
-							const pageDataRecord: Record<string, unknown> = {};
-							for (const item of pageData) {
-								const {key, ...summaryData} = item;
-								pageDataRecord[key] = summaryData;
-							}
+              const pageDataRecord: Record<string, unknown> = {};
+              for (const item of pageData) {
+                const { key, ...summaryData } = item;
+                pageDataRecord[key] = summaryData;
+              }
 
-							return {
-								...page,
-								data: pageDataRecord,
-								lastKey: lastItem?.key || page.lastKey,
-								lastValue:
-									lastItem && 'lastUpdatedDate' in lastItem
-										? lastItem.lastUpdatedDate
-										: page.lastValue,
-							};
-						}
-						return page;
-					});
+              return {
+                ...page,
+                data: pageDataRecord,
+                lastKey: lastItem?.key || page.lastKey,
+                lastValue:
+                  lastItem && "lastUpdatedDate" in lastItem
+                    ? lastItem.lastUpdatedDate
+                    : page.lastValue,
+              };
+            }
+            return page;
+          });
 
-					const updatedPaginatedData = {
-						...lastUpdatedDateData,
-						pages: updatedPages,
-					};
+          const updatedPaginatedData = {
+            ...lastUpdatedDateData,
+            pages: updatedPages,
+          };
 
-					const validatedPaginatedData = validateRawPaginatedBlueprintSummaries(updatedPaginatedData);
-					queryClient.setQueryData(lastUpdatedDateKey, validatedPaginatedData);
-				} catch {}
-			}
+          const validatedPaginatedData =
+            validateRawPaginatedBlueprintSummaries(updatedPaginatedData);
+          queryClient.setQueryData(lastUpdatedDateKey, validatedPaginatedData);
+        } catch {}
+      }
 
-			const summaryKey = ['blueprintSummaries', 'blueprintId', blueprintId];
+      const summaryKey = ["blueprintSummaries", "blueprintId", blueprintId];
 
-			const summaryData = {
-				title: formData.title,
-				imgurId: imgurId,
-				imgurType: 'image/png',
-				numberOfFavorites: 0,
-				lastUpdatedDate: unixTimestamp,
-			};
+      const summaryData = {
+        title: formData.title,
+        imgurId: imgurId,
+        imgurType: "image/png",
+        numberOfFavorites: 0,
+        lastUpdatedDate: unixTimestamp,
+      };
 
-			const blueprintSummary = validateRawBlueprintSummary(summaryData);
-			queryClient.setQueryData(summaryKey, blueprintSummary);
+      const blueprintSummary = validateRawBlueprintSummary(summaryData);
+      queryClient.setQueryData(summaryKey, blueprintSummary);
 
-			const userBlueprintsKey = ['users', 'userId', authorId, 'blueprints'];
-			const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
-			const userBlueprintsData = userBlueprintsDataRaw ? validateRawUserBlueprints(userBlueprintsDataRaw) : {};
+      const userBlueprintsKey = ["users", "userId", authorId, "blueprints"];
+      const userBlueprintsDataRaw = queryClient.getQueryData(userBlueprintsKey);
+      const userBlueprintsData = userBlueprintsDataRaw
+        ? validateRawUserBlueprints(userBlueprintsDataRaw)
+        : {};
 
-			queryClient.setQueryData(userBlueprintsKey, {
-				...userBlueprintsData,
-				[blueprintId]: true,
-			});
+      queryClient.setQueryData(userBlueprintsKey, {
+        ...userBlueprintsData,
+        [blueprintId]: true,
+      });
 
-			const userCollectionKey = ['users', 'userId', authorId, 'collection'];
-			const userCollectionDataRaw = queryClient.getQueryData(userCollectionKey);
-			const userCollectionData = userCollectionDataRaw ? validateRawUserCollection(userCollectionDataRaw) : {};
+      const userCollectionKey = ["users", "userId", authorId, "collection"];
+      const userCollectionDataRaw = queryClient.getQueryData(userCollectionKey);
+      const userCollectionData = userCollectionDataRaw
+        ? validateRawUserCollection(userCollectionDataRaw)
+        : {};
 
-			queryClient.setQueryData(userCollectionKey, {
-				...userCollectionData,
-				[blueprintId]: true,
-			});
+      queryClient.setQueryData(userCollectionKey, {
+        ...userCollectionData,
+        [blueprintId]: true,
+      });
 
-			const availableTagsKey = ['tags'];
-			const availableTags = queryClient.getQueryData(availableTagsKey) || [];
+      const availableTagsKey = ["tags"];
+      const availableTags = queryClient.getQueryData(availableTagsKey) || [];
 
-			if (Array.isArray(availableTags)) {
-				availableTags.forEach((tag) => {
-					const tagKey = ['byTag', tag];
-					const tagDataRaw = queryClient.getQueryData(tagKey);
+      if (Array.isArray(availableTags)) {
+        availableTags.forEach((tag) => {
+          const tagKey = ["byTag", tag];
+          const tagDataRaw = queryClient.getQueryData(tagKey);
 
-					if (tagDataRaw && typeof tagDataRaw === 'object') {
-						const tagData = validateRawUserBlueprints(tagDataRaw);
-						const hasTag = (formData.tags || []).includes(tag);
+          if (tagDataRaw && typeof tagDataRaw === "object") {
+            const tagData = validateRawUserBlueprints(tagDataRaw);
+            const hasTag = (formData.tags || []).includes(tag);
 
-						if (hasTag) {
-							queryClient.setQueryData(tagKey, {
-								...tagData,
-								[blueprintId]: true,
-							});
-						} else if (blueprintId in tagData) {
-							const {[blueprintId]: _, ...rest} = tagData;
-							queryClient.setQueryData(tagKey, rest);
-						}
-					}
-				});
-			}
+            if (hasTag) {
+              queryClient.setQueryData(tagKey, {
+                ...tagData,
+                [blueprintId]: true,
+              });
+            } else if (blueprintId in tagData) {
+              const { [blueprintId]: _, ...rest } = tagData;
+              queryClient.setQueryData(tagKey, rest);
+            }
+          }
+        });
+      }
 
-			navigate({to: '/user/$userId', params: {userId: authorId}, from: '/create'});
-		},
-	});
+      navigate({ to: "/user/$userId", params: { userId: authorId }, from: "/create" });
+    },
+  });
 };

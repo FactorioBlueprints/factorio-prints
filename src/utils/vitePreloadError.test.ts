@@ -1,21 +1,21 @@
-import {describe, expect, it, vi} from 'vite-plus/test';
-import {createVitePreloadErrorHandler} from './vitePreloadError';
+import { describe, expect, it, vi } from "vite-plus/test";
+import { createVitePreloadErrorHandler } from "./vitePreloadError";
 
-describe('Vite preload error recovery', () => {
-	it('reloads without suppressing the rejected dynamic import', () => {
-		const reloadPage = vi.fn();
-		const event = Object.assign(new Event('vite:preloadError', {cancelable: true}), {
-			payload: new TypeError('Failed to fetch dynamically imported module'),
-		});
+describe("Vite preload error recovery", () => {
+  it("reloads without suppressing the rejected dynamic import", () => {
+    const reloadPage = vi.fn();
+    const event = Object.assign(new Event("vite:preloadError", { cancelable: true }), {
+      payload: new TypeError("Failed to fetch dynamically imported module"),
+    });
 
-		createVitePreloadErrorHandler(reloadPage)(event);
+    createVitePreloadErrorHandler(reloadPage)(event);
 
-		expect({
-			defaultPrevented: event.defaultPrevented,
-			reloadCalls: reloadPage.mock.calls,
-		}).toStrictEqual({
-			defaultPrevented: false,
-			reloadCalls: [[]],
-		});
-	});
+    expect({
+      defaultPrevented: event.defaultPrevented,
+      reloadCalls: reloadPage.mock.calls,
+    }).toStrictEqual({
+      defaultPrevented: false,
+      reloadCalls: [[]],
+    });
+  });
 });

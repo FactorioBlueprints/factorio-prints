@@ -5,7 +5,7 @@
 @gray-dark: rgb(58, 63, 68);
 @gray: rgb(82, 87, 92);
 @gray-light: rgb(122, 130, 136);
-@gray-lighter: #CACACA;
+@gray-lighter: #cacaca;
 @brand-primary: @gray-light;
 @brand-success: rgb(98, 196, 98);
 @brand-info: rgb(91, 192, 222);
@@ -63,7 +63,7 @@
 @table-bg-active: @table-bg-hover;
 @table-border-color: darken(@gray-darker, 5%);
 @btn-font-weight: bold;
-@btn-default-color: #412F1E;
+@btn-default-color: #412f1e;
 @btn-default-bg: @navbar-default-bg;
 @btn-default-border: @btn-default-bg;
 @btn-primary-color: @btn-default-color;
@@ -95,8 +95,12 @@
 @input-border-focus: rgb(102, 175, 233);
 @input-color-placeholder: @gray-light;
 @input-height-base: (@line-height-computed + (@padding-base-vertical * 2) + 2);
-@input-height-large: (ceil(@font-size-large * @line-height-large) + (@padding-large-vertical * 2) + 2);
-@input-height-small: (floor(@font-size-small * @line-height-small) + (@padding-small-vertical * 2) + 2);
+@input-height-large: (
+  ceil(@font-size-large * @line-height-large) + (@padding-large-vertical * 2) + 2
+);
+@input-height-small: (
+  floor(@font-size-small * @line-height-small) + (@padding-small-vertical * 2) + 2
+);
 @form-group-margin-bottom: 15px;
 @legend-color: @text-color;
 @legend-border-color: darken(@gray-darker, 5%);
@@ -153,8 +157,8 @@
 @navbar-padding-horizontal: floor((@grid-gutter-width / 2));
 @navbar-padding-vertical: ((@navbar-height - @line-height-computed) / 2);
 @navbar-collapse-max-height: 340px;
-@navbar-default-color: #412F1E;
-@navbar-default-bg: #FF7E00;
+@navbar-default-color: #412f1e;
+@navbar-default-bg: #ff7e00;
 @navbar-default-border: darken(@navbar-default-bg, 6.5%);
 @navbar-default-link-color: @gray-darker;
 @navbar-default-link-hover-color: @gray-darker;
@@ -239,7 +243,7 @@
 @tooltip-max-width: 200px;
 @tooltip-color: rgb(255, 255, 255);
 @tooltip-bg: rgba(0, 0, 0, 0.9);
-@tooltip-opacity: .9;
+@tooltip-opacity: 0.9;
 @tooltip-arrow-width: 5px;
 @tooltip-arrow-color: @tooltip-bg;
 @popover-bg: lighten(@body-bg, 3%);
@@ -267,7 +271,7 @@
 @modal-content-border-color: rgba(0, 0, 0, 0.2);
 @modal-content-fallback-border-color: rgb(153, 153, 153);
 @modal-backdrop-bg: rgb(0, 0, 0);
-@modal-backdrop-opacity: .5;
+@modal-backdrop-opacity: 0.5;
 @modal-header-border-color: darken(@gray-darker, 5%);
 @modal-footer-border-color: @modal-header-border-color;
 @modal-lg: 900px;
@@ -354,13 +358,13 @@
 @breadcrumb-padding-vertical: 8px;
 @breadcrumb-padding-horizontal: 15px;
 @breadcrumb-bg: transparent;
-@breadcrumb-color: #412F1E;
-@breadcrumb-active-color: #412F1E;
+@breadcrumb-color: #412f1e;
+@breadcrumb-active-color: #412f1e;
 @breadcrumb-separator: "/";
-@carousel-text-shadow: 0 1px 2px rgba(0,0,0,.6);
+@carousel-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 @carousel-control-color: rgb(255, 255, 255);
 @carousel-control-width: 15%;
-@carousel-control-opacity: .5;
+@carousel-control-opacity: 0.5;
 @carousel-control-font-size: 20px;
 @carousel-indicator-active-bg: rgb(255, 255, 255);
 @carousel-indicator-border-color: rgb(255, 255, 255);

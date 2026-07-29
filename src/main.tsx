@@ -1,25 +1,25 @@
 import {
-	addBreadcrumb,
-	breadcrumbsIntegration,
-	browserTracingIntegration,
-	captureConsoleIntegration,
-	contextLinesIntegration,
-	init,
-	setContext,
-	setTag,
-} from '@sentry/react';
-import React, {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
+  addBreadcrumb,
+  breadcrumbsIntegration,
+  browserTracingIntegration,
+  captureConsoleIntegration,
+  contextLinesIntegration,
+  init,
+  setContext,
+  setTag,
+} from "@sentry/react";
+import React, { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-import 'bootswatch/dist/slate/bootstrap.min.css';
-import './css/style.css';
-import QueryProvider from './providers/QueryProvider';
-import {getRouterDiagnostics, Router} from './router';
-import {getReleaseInfo, getReleaseMetadata} from './utils/release';
-import {isUnactionableError} from './utils/sentryFiltering';
-import {setupTooltipCleanup} from './utils/cleanupTooltips';
-import {suppressGoogleAuthDeprecationWarning} from './utils/suppressGoogleAuthWarning';
-import {createVitePreloadErrorHandler} from './utils/vitePreloadError';
+import "bootswatch/dist/slate/bootstrap.min.css";
+import "./css/style.css";
+import QueryProvider from "./providers/QueryProvider";
+import { getRouterDiagnostics, Router } from "./router";
+import { getReleaseInfo, getReleaseMetadata } from "./utils/release";
+import { isUnactionableError } from "./utils/sentryFiltering";
+import { setupTooltipCleanup } from "./utils/cleanupTooltips";
+import { suppressGoogleAuthDeprecationWarning } from "./utils/suppressGoogleAuthWarning";
+import { createVitePreloadErrorHandler } from "./utils/vitePreloadError";
 
 suppressGoogleAuthDeprecationWarning();
 
@@ -29,24 +29,24 @@ suppressGoogleAuthDeprecationWarning();
  * DOM nodes that React is trying to manage.
  */
 function isDOMManipulationError(error: unknown): boolean {
-	if (!error) return false;
+  if (!error) return false;
 
-	// Check DOMException by name or code
-	if (error instanceof DOMException) {
-		if (error.code === 8 || error.name === 'NotFoundError') {
-			return true;
-		}
-	}
+  // Check DOMException by name or code
+  if (error instanceof DOMException) {
+    if (error.code === 8 || error.name === "NotFoundError") {
+      return true;
+    }
+  }
 
-	// Check error message patterns
-	const message = error instanceof Error ? error.message : String(error);
-	return (
-		message.includes("Failed to execute 'insertBefore'") ||
-		message.includes("Failed to execute 'removeChild'") ||
-		message.includes("Failed to execute 'appendChild'") ||
-		message.includes('not a child of this node') ||
-		message.includes('NotFoundError')
-	);
+  // Check error message patterns
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes("Failed to execute 'insertBefore'") ||
+    message.includes("Failed to execute 'removeChild'") ||
+    message.includes("Failed to execute 'appendChild'") ||
+    message.includes("not a child of this node") ||
+    message.includes("NotFoundError")
+  );
 }
 
 /**
@@ -55,17 +55,17 @@ function isDOMManipulationError(error: unknown): boolean {
  * This catches errors from React's commit phase when third-party scripts interfere.
  */
 window.addEventListener(
-	'error',
-	(event: ErrorEvent) => {
-		if (isDOMManipulationError(event.error)) {
-			if (import.meta.env.DEV) {
-				console.warn('DOM manipulation error suppressed (pre-Sentry):', event.error?.message);
-			}
-			event.preventDefault();
-			event.stopImmediatePropagation();
-		}
-	},
-	true, // Capture phase - runs before Sentry's handler
+  "error",
+  (event: ErrorEvent) => {
+    if (isDOMManipulationError(event.error)) {
+      if (import.meta.env.DEV) {
+        console.warn("DOM manipulation error suppressed (pre-Sentry):", event.error?.message);
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  },
+  true, // Capture phase - runs before Sentry's handler
 );
 
 /**
@@ -74,18 +74,18 @@ window.addEventListener(
  * third-party code and provide no useful debugging information.
  * Must be registered BEFORE Sentry.init() to intercept events first.
  */
-window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-	const reason = event.reason;
+window.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
+  const reason = event.reason;
 
-	// Filter out undefined/null rejections - these are unactionable
-	// Common causes: third-party scripts, browser extensions, Safari quirks
-	if (reason === undefined || reason === null) {
-		if (import.meta.env.DEV) {
-			console.warn('Filtered unhandled rejection with undefined/null value');
-		}
-		event.preventDefault();
-		return;
-	}
+  // Filter out undefined/null rejections - these are unactionable
+  // Common causes: third-party scripts, browser extensions, Safari quirks
+  if (reason === undefined || reason === null) {
+    if (import.meta.env.DEV) {
+      console.warn("Filtered unhandled rejection with undefined/null value");
+    }
+    event.preventDefault();
+    return;
+  }
 });
 
 const releaseInfo = getReleaseInfo();
@@ -95,301 +95,304 @@ const releaseInfo = getReleaseInfo();
  * This ensures Sentry captures useful error information instead of '<unknown>'.
  */
 function normalizeException(exception: unknown): Error {
-	if (exception instanceof Error) {
-		return exception;
-	}
-	if (typeof exception === 'string') {
-		return new Error(exception);
-	}
-	if (exception === null) {
-		return new Error('Null exception thrown');
-	}
-	if (exception === undefined) {
-		return new Error('Undefined exception thrown');
-	}
-	if (typeof exception === 'object') {
-		const message = (exception as {message?: string}).message;
-		if (typeof message === 'string') {
-			const error = new Error(message);
-			Object.assign(error, exception);
-			return error;
-		}
-		try {
-			return new Error(`Non-Error object thrown: ${JSON.stringify(exception)}`);
-		} catch {
-			return new Error(`Non-Error object thrown: ${Object.prototype.toString.call(exception)}`);
-		}
-	}
-	return new Error(`Unknown exception type: ${typeof exception}`);
+  if (exception instanceof Error) {
+    return exception;
+  }
+  if (typeof exception === "string") {
+    return new Error(exception);
+  }
+  if (exception === null) {
+    return new Error("Null exception thrown");
+  }
+  if (exception === undefined) {
+    return new Error("Undefined exception thrown");
+  }
+  if (typeof exception === "object") {
+    const message = (exception as { message?: string }).message;
+    if (typeof message === "string") {
+      const error = new Error(message);
+      Object.assign(error, exception);
+      return error;
+    }
+    try {
+      return new Error(`Non-Error object thrown: ${JSON.stringify(exception)}`);
+    } catch {
+      return new Error(`Non-Error object thrown: ${Object.prototype.toString.call(exception)}`);
+    }
+  }
+  return new Error(`Unknown exception type: ${typeof exception}`);
 }
 
 function getSentryEnvironment(): string {
-	const hostname = window.location.hostname;
+  const hostname = window.location.hostname;
 
-	if (hostname === 'localhost' || hostname === '127.0.0.1') {
-		return 'development';
-	}
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "development";
+  }
 
-	if (hostname === 'factorioprints.com' || hostname === 'www.factorioprints.com') {
-		return 'production';
-	}
+  if (hostname === "factorioprints.com" || hostname === "www.factorioprints.com") {
+    return "production";
+  }
 
-	if (hostname.includes('.pages.dev') || hostname.includes('cloudflare')) {
-		return 'staging';
-	}
+  if (hostname.includes(".pages.dev") || hostname.includes("cloudflare")) {
+    return "staging";
+  }
 
-	return 'staging';
+  return "staging";
 }
 
 init({
-	dsn: 'https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704',
-	sendDefaultPii: true,
-	release: releaseInfo.version,
-	environment: getSentryEnvironment(),
-	integrations: [
-		browserTracingIntegration(),
-		captureConsoleIntegration({
-			levels: ['error', 'warn'],
-		}),
-		contextLinesIntegration(),
-		breadcrumbsIntegration({
-			console: true,
-			dom: true,
-			fetch: true,
-			history: true,
-			sentry: true,
-			xhr: true,
-		}),
-	],
-	tracesSampleRate: 0.1,
-	tracePropagationTargets: ['localhost', /^https:\/\/yourserver\.io\/api/],
-	allowUrls: ['http://localhost', 'https://localhost', /localhost:\d{4}/, /https:\/\/.*factorio/],
-	denyUrls: [
-		// Third-party scripts that generate noise
-		/googlesyndication\.com/,
-		/googletagmanager\.com/,
-		/pagead2\.googlesyndication\.com/,
-		/disqus\.com/,
-		/embed\.js/,
-		// Browser extensions
-		/chrome-extension:\/\//,
-		/moz-extension:\/\//,
-		/safari-extension:\/\//,
-		/edge:\/\//,
-	],
-	ignoreErrors: [
-		// Safari IndexedDB bug (iOS 17.4+) - connections spontaneously close
-		// https://dexie.org/docs/IndexedDB-on-Safari
-		/Connection to Indexed Database server lost/,
-		/IndexedDB connection closing/,
-		/IndexedDBConnectionError/,
-		/IndexedDBSlowRestoreError/,
-		/IndexedDBQuotaError/,
-		/IndexedDBTimeoutError/,
-		/IndexedDBBlobWriteError/,
-		// DOM manipulation errors from third-party scripts (ads, Disqus, browser extensions)
-		// These occur when external code modifies DOM nodes that React is managing
-		/Failed to execute 'removeChild' on 'Node'/,
-		/Failed to execute 'insertBefore' on 'Node'/,
-		/Failed to execute 'appendChild' on 'Node'/,
-		/The node to be removed is not a child of this node/,
-		/The node before which the new node is to be inserted is not a child/,
-		'NotFoundError',
-	],
-	enabled: !(window.location.hostname === 'localhost' && window.location.port === '3000'),
-	maxBreadcrumbs: 100,
-	attachStacktrace: true,
-	beforeSend: (event, hint) => {
-		let error = hint.originalException;
+  dsn: "https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704",
+  sendDefaultPii: true,
+  release: releaseInfo.version,
+  environment: getSentryEnvironment(),
+  integrations: [
+    browserTracingIntegration(),
+    captureConsoleIntegration({
+      levels: ["error", "warn"],
+    }),
+    contextLinesIntegration(),
+    breadcrumbsIntegration({
+      console: true,
+      dom: true,
+      fetch: true,
+      history: true,
+      sentry: true,
+      xhr: true,
+    }),
+  ],
+  tracesSampleRate: 0.1,
+  tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
+  allowUrls: ["http://localhost", "https://localhost", /localhost:\d{4}/, /https:\/\/.*factorio/],
+  denyUrls: [
+    // Third-party scripts that generate noise
+    /googlesyndication\.com/,
+    /googletagmanager\.com/,
+    /pagead2\.googlesyndication\.com/,
+    /disqus\.com/,
+    /embed\.js/,
+    // Browser extensions
+    /chrome-extension:\/\//,
+    /moz-extension:\/\//,
+    /safari-extension:\/\//,
+    /edge:\/\//,
+  ],
+  ignoreErrors: [
+    // Safari IndexedDB bug (iOS 17.4+) - connections spontaneously close
+    // https://dexie.org/docs/IndexedDB-on-Safari
+    /Connection to Indexed Database server lost/,
+    /IndexedDB connection closing/,
+    /IndexedDBConnectionError/,
+    /IndexedDBSlowRestoreError/,
+    /IndexedDBQuotaError/,
+    /IndexedDBTimeoutError/,
+    /IndexedDBBlobWriteError/,
+    // DOM manipulation errors from third-party scripts (ads, Disqus, browser extensions)
+    // These occur when external code modifies DOM nodes that React is managing
+    /Failed to execute 'removeChild' on 'Node'/,
+    /Failed to execute 'insertBefore' on 'Node'/,
+    /Failed to execute 'appendChild' on 'Node'/,
+    /The node to be removed is not a child of this node/,
+    /The node before which the new node is to be inserted is not a child/,
+    "NotFoundError",
+  ],
+  enabled: !(window.location.hostname === "localhost" && window.location.port === "3000"),
+  maxBreadcrumbs: 100,
+  attachStacktrace: true,
+  beforeSend: (event, hint) => {
+    let error = hint.originalException;
 
-		// 🔄 Normalize non-Error exceptions to proper Error objects
-		if (error !== undefined && error !== null && !(error instanceof Error)) {
-			const normalizedError = normalizeException(error);
-			hint.originalException = normalizedError;
-			error = normalizedError;
+    // 🔄 Normalize non-Error exceptions to proper Error objects
+    if (error !== undefined && error !== null && !(error instanceof Error)) {
+      const normalizedError = normalizeException(error);
+      hint.originalException = normalizedError;
+      error = normalizedError;
 
-			// Update the event with the normalized message
-			if (!event.message) {
-				event.message = normalizedError.message;
-			}
-		}
+      // Update the event with the normalized message
+      if (!event.message) {
+        event.message = normalizedError.message;
+      }
+    }
 
-		// 🔍 Extract the actual message from various locations for console-captured events
-		// The captureConsoleIntegration stores messages in exception.values[0].value
-		// and in extra.arguments, but not always in event.message
-		const getEventMessage = (): string => {
-			if (event.message && typeof event.message === 'string') {
-				return event.message;
-			}
-			const exceptionValue = event.exception?.values?.[0]?.value;
-			if (exceptionValue && typeof exceptionValue === 'string') {
-				return exceptionValue;
-			}
-			const extraArgs = event.extra?.arguments;
-			if (Array.isArray(extraArgs) && extraArgs.length > 0) {
-				return extraArgs.join(' ');
-			}
-			return '';
-		};
+    // 🔍 Extract the actual message from various locations for console-captured events
+    // The captureConsoleIntegration stores messages in exception.values[0].value
+    // and in extra.arguments, but not always in event.message
+    const getEventMessage = (): string => {
+      if (event.message && typeof event.message === "string") {
+        return event.message;
+      }
+      const exceptionValue = event.exception?.values?.[0]?.value;
+      if (exceptionValue && typeof exceptionValue === "string") {
+        return exceptionValue;
+      }
+      const extraArgs = event.extra?.arguments;
+      if (Array.isArray(extraArgs) && extraArgs.length > 0) {
+        return extraArgs.join(" ");
+      }
+      return "";
+    };
 
-		const eventMessage = getEventMessage();
+    const eventMessage = getEventMessage();
 
-		if (eventMessage.includes('_nonReactive')) {
-			event.contexts = {
-				...event.contexts,
-				router: getRouterDiagnostics(),
-			};
-			event.tags = {
-				...event.tags,
-				router_diagnostics: 'match-lifecycle',
-			};
-		}
+    if (eventMessage.includes("_nonReactive")) {
+      event.contexts = {
+        ...event.contexts,
+        router: getRouterDiagnostics(),
+      };
+      event.tags = {
+        ...event.tags,
+        router_diagnostics: "match-lifecycle",
+      };
+    }
 
-		// 🛡️ Filter React DOM manipulation errors caused by third-party scripts (ads, Disqus)
-		// These errors occur when third-party scripts modify DOM nodes that React is managing.
-		// DOMException with code 8 (NOT_FOUND_ERR) or name 'NotFoundError' indicates this issue.
-		if (error instanceof DOMException) {
-			if (
-				error.code === 8 ||
-				error.name === 'NotFoundError' ||
-				error.message.includes('removeChild') ||
-				error.message.includes('insertBefore') ||
-				error.message.includes('appendChild')
-			) {
-				return null;
-			}
-		}
+    // 🛡️ Filter React DOM manipulation errors caused by third-party scripts (ads, Disqus)
+    // These errors occur when third-party scripts modify DOM nodes that React is managing.
+    // DOMException with code 8 (NOT_FOUND_ERR) or name 'NotFoundError' indicates this issue.
+    if (error instanceof DOMException) {
+      if (
+        error.code === 8 ||
+        error.name === "NotFoundError" ||
+        error.message.includes("removeChild") ||
+        error.message.includes("insertBefore") ||
+        error.message.includes("appendChild")
+      ) {
+        return null;
+      }
+    }
 
-		// 🛡️ Also check event exception values for DOMException patterns
-		const exceptionValue = event.exception?.values?.[0];
-		if (exceptionValue) {
-			const exceptionType = exceptionValue.type;
-			const exceptionMessage = exceptionValue.value || '';
+    // 🛡️ Also check event exception values for DOMException patterns
+    const exceptionValue = event.exception?.values?.[0];
+    if (exceptionValue) {
+      const exceptionType = exceptionValue.type;
+      const exceptionMessage = exceptionValue.value || "";
 
-			if (
-				// React DOM manipulation errors (browser extensions like Google Translate)
-				exceptionType === 'NotFoundError' ||
-				exceptionType === 'DOMException' ||
-				exceptionMessage.includes('removeChild') ||
-				exceptionMessage.includes('insertBefore') ||
-				exceptionMessage.includes('appendChild') ||
-				exceptionMessage.includes('not a child of this node') ||
-				// Safari IndexedDB bug (iOS 17.4+) - all custom error types
-				exceptionType === 'IndexedDBConnectionError' ||
-				exceptionType === 'IndexedDBSlowRestoreError' ||
-				exceptionType === 'IndexedDBQuotaError' ||
-				exceptionType === 'IndexedDBTimeoutError' ||
-				exceptionType === 'IndexedDBBlobWriteError' ||
-				exceptionMessage.includes('Connection to Indexed Database server lost')
-			) {
-				return null;
-			}
-		}
+      if (
+        // React DOM manipulation errors (browser extensions like Google Translate)
+        exceptionType === "NotFoundError" ||
+        exceptionType === "DOMException" ||
+        exceptionMessage.includes("removeChild") ||
+        exceptionMessage.includes("insertBefore") ||
+        exceptionMessage.includes("appendChild") ||
+        exceptionMessage.includes("not a child of this node") ||
+        // Safari IndexedDB bug (iOS 17.4+) - all custom error types
+        exceptionType === "IndexedDBConnectionError" ||
+        exceptionType === "IndexedDBSlowRestoreError" ||
+        exceptionType === "IndexedDBQuotaError" ||
+        exceptionType === "IndexedDBTimeoutError" ||
+        exceptionType === "IndexedDBBlobWriteError" ||
+        exceptionMessage.includes("Connection to Indexed Database server lost")
+      ) {
+        return null;
+      }
+    }
 
-		// 🔇 Filter unactionable errors using centralized pattern matching
-		// This also handles "withScope" errors from captureConsoleIntegration
-		const errorMessage = error instanceof Error ? error.message : eventMessage;
-		if (errorMessage && typeof errorMessage === 'string') {
-			if (isUnactionableError(errorMessage)) {
-				addBreadcrumb({
-					message: 'Unactionable error filtered',
-					category: 'filter',
-					level: 'info',
-					data: {
-						errorMessage: errorMessage.slice(0, 200),
-						environment: getSentryEnvironment(),
-					},
-				});
-				return null;
-			}
+    // 🔇 Filter unactionable errors using centralized pattern matching
+    // This also handles "withScope" errors from captureConsoleIntegration
+    const errorMessage = error instanceof Error ? error.message : eventMessage;
+    if (errorMessage && typeof errorMessage === "string") {
+      if (isUnactionableError(errorMessage)) {
+        addBreadcrumb({
+          message: "Unactionable error filtered",
+          category: "filter",
+          level: "info",
+          data: {
+            errorMessage: errorMessage.slice(0, 200),
+            environment: getSentryEnvironment(),
+          },
+        });
+        return null;
+      }
 
-			// Filter IndexedDB errors with detailed breadcrumb
-			if (errorMessage.includes('[IndexedDB')) {
-				addBreadcrumb({
-					message: 'IndexedDB issue filtered',
-					category: 'indexeddb',
-					level: 'info',
-					data: {
-						type: errorMessage.includes('Worker') ? 'worker' : 'persistence',
-						browser:
-							/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
-								? 'safari'
-								: 'other',
-						environment: getSentryEnvironment(),
-					},
-				});
-				return null;
-			}
-		}
+      // Filter IndexedDB errors with detailed breadcrumb
+      if (errorMessage.includes("[IndexedDB")) {
+        addBreadcrumb({
+          message: "IndexedDB issue filtered",
+          category: "indexeddb",
+          level: "info",
+          data: {
+            type: errorMessage.includes("Worker") ? "worker" : "persistence",
+            browser:
+              /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)
+                ? "safari"
+                : "other",
+            environment: getSentryEnvironment(),
+          },
+        });
+        return null;
+      }
+    }
 
-		// 🔇 Filter errors from third-party scripts
-		if (error instanceof Error && error.stack) {
-			if (error.stack.includes('embed.js') || error.stack.includes('disqus')) {
-				return null;
-			}
-		}
+    // 🔇 Filter errors from third-party scripts
+    if (error instanceof Error && error.stack) {
+      if (error.stack.includes("embed.js") || error.stack.includes("disqus")) {
+        return null;
+      }
+    }
 
-		// 🔇 Filter transient network errors
-		if (error instanceof TypeError && error.message === 'Failed to fetch') {
-			return null;
-		}
-		if (event.exception?.values?.[0]?.stacktrace?.frames) {
-			const frames = event.exception.values[0].stacktrace.frames;
-			const hasExtensionFrame = frames.some(
-				(frame) =>
-					frame.filename &&
-					(frame.filename.includes('chrome-extension://') ||
-						frame.filename.includes('moz-extension://') ||
-						frame.filename.includes('extension://') ||
-						frame.filename.includes('safari-extension://') ||
-						frame.filename.includes('edge://') ||
-						frame.filename.includes('chrome://')),
-			);
-			const hasPasswordManagerFrame = frames.some(
-				(frame) =>
-					frame.function &&
-					(frame.function.includes('scanForForms') ||
-						frame.function.includes('fillForm') ||
-						frame.function.includes('autofill')),
-			);
-			if (hasExtensionFrame || hasPasswordManagerFrame) {
-				return null;
-			}
-		}
+    // 🔇 Filter transient network errors
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      return null;
+    }
+    if (event.exception?.values?.[0]?.stacktrace?.frames) {
+      const frames = event.exception.values[0].stacktrace.frames;
+      const hasExtensionFrame = frames.some(
+        (frame) =>
+          frame.filename &&
+          (frame.filename.includes("chrome-extension://") ||
+            frame.filename.includes("moz-extension://") ||
+            frame.filename.includes("extension://") ||
+            frame.filename.includes("safari-extension://") ||
+            frame.filename.includes("edge://") ||
+            frame.filename.includes("chrome://")),
+      );
+      const hasPasswordManagerFrame = frames.some(
+        (frame) =>
+          frame.function &&
+          (frame.function.includes("scanForForms") ||
+            frame.function.includes("fillForm") ||
+            frame.function.includes("autofill")),
+      );
+      if (hasExtensionFrame || hasPasswordManagerFrame) {
+        return null;
+      }
+    }
 
-		if (import.meta.env.DEV) {
-			console.log('Sentry Error:', hint.originalException || hint.syntheticException);
-		}
-		return event;
-	},
-	beforeBreadcrumb: (breadcrumb) => {
-		if (breadcrumb.category === 'console' && breadcrumb.message) {
-			const message = breadcrumb.message;
+    if (import.meta.env.DEV) {
+      console.log("Sentry Error:", hint.originalException || hint.syntheticException);
+    }
+    return event;
+  },
+  beforeBreadcrumb: (breadcrumb) => {
+    if (breadcrumb.category === "console" && breadcrumb.message) {
+      const message = breadcrumb.message;
 
-			// 🔇 Filter noisy console messages using centralized pattern matching
-			if (message.includes('[IndexedDB') || isUnactionableError(message)) {
-				return null;
-			}
+      // 🔇 Filter noisy console messages using centralized pattern matching
+      if (message.includes("[IndexedDB") || isUnactionableError(message)) {
+        return null;
+      }
 
-			// Additional console-specific patterns
-			if (message.includes('CSSStyleSheet.cssRules getter') || message.includes('cross-origin stylesheet')) {
-				return null;
-			}
-		}
-		return breadcrumb;
-	},
+      // Additional console-specific patterns
+      if (
+        message.includes("CSSStyleSheet.cssRules getter") ||
+        message.includes("cross-origin stylesheet")
+      ) {
+        return null;
+      }
+    }
+    return breadcrumb;
+  },
 });
 
-setContext('release_metadata', getReleaseMetadata());
+setContext("release_metadata", getReleaseMetadata());
 
-setTag('environment', getSentryEnvironment());
-setContext('deployment', {
-	hostname: window.location.hostname,
-	environment: getSentryEnvironment(),
+setTag("environment", getSentryEnvironment());
+setContext("deployment", {
+  hostname: window.location.hostname,
+  environment: getSentryEnvironment(),
 });
 
-setTag('git_commit', releaseInfo.gitCommit);
-setTag('git_branch', releaseInfo.gitBranch);
+setTag("git_commit", releaseInfo.gitCommit);
+setTag("git_branch", releaseInfo.gitBranch);
 
 /**
  * Handle Vite preload errors (stale chunk hash mismatches after deployment).
@@ -398,102 +401,102 @@ setTag('git_branch', releaseInfo.gitBranch);
  * We don't log to Sentry since this is expected behavior during/after deployments.
  */
 window.addEventListener(
-	'vite:preloadError',
-	createVitePreloadErrorHandler(() => {
-		window.location.reload();
-	}),
+  "vite:preloadError",
+  createVitePreloadErrorHandler(() => {
+    window.location.reload();
+  }),
 );
 
 window.addEventListener(
-	'error',
-	(e: ErrorEvent) => {
-		const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
+  "error",
+  (e: ErrorEvent) => {
+    const target = e.target as HTMLImageElement | HTMLIFrameElement | null;
 
-		// 🖼️ Suppress image/iframe load errors
-		if (target && (target.tagName === 'IMG' || target.tagName === 'IFRAME')) {
-			if (import.meta.env.DEV) {
-				console.log('Image/iframe load error:', target.src);
-			}
-			e.preventDefault();
-			return true;
-		}
+    // 🖼️ Suppress image/iframe load errors
+    if (target && (target.tagName === "IMG" || target.tagName === "IFRAME")) {
+      if (import.meta.env.DEV) {
+        console.log("Image/iframe load error:", target.src);
+      }
+      e.preventDefault();
+      return true;
+    }
 
-		// 📦 Handle ChunkLoadError with automatic reload
-		if (e.error?.name === 'ChunkLoadError' || e.message?.includes('Loading chunk')) {
-			console.warn('Chunk load error detected, page may need reload:', e.message);
-			addBreadcrumb({
-				message: 'ChunkLoadError detected - likely stale cache',
-				category: 'chunk',
-				level: 'warning',
-				data: {
-					errorMessage: e.message,
-					filename: e.filename,
-				},
-			});
-			e.preventDefault();
-			return true;
-		}
+    // 📦 Handle ChunkLoadError with automatic reload
+    if (e.error?.name === "ChunkLoadError" || e.message?.includes("Loading chunk")) {
+      console.warn("Chunk load error detected, page may need reload:", e.message);
+      addBreadcrumb({
+        message: "ChunkLoadError detected - likely stale cache",
+        category: "chunk",
+        level: "warning",
+        data: {
+          errorMessage: e.message,
+          filename: e.filename,
+        },
+      });
+      e.preventDefault();
+      return true;
+    }
 
-		// 🔇 Filter unactionable errors using centralized pattern matching
-		if (e.error instanceof Error && e.error.message && isUnactionableError(e.error.message)) {
-			if (import.meta.env.DEV) {
-				console.warn('Unactionable error suppressed:', e.error.message);
-			}
-			e.preventDefault();
-			return true;
-		}
+    // 🔇 Filter unactionable errors using centralized pattern matching
+    if (e.error instanceof Error && e.error.message && isUnactionableError(e.error.message)) {
+      if (import.meta.env.DEV) {
+        console.warn("Unactionable error suppressed:", e.error.message);
+      }
+      e.preventDefault();
+      return true;
+    }
 
-		// 🔇 Filter third-party script errors
-		if (
-			e.filename &&
-			(e.filename.includes('embed.js') ||
-				e.filename.includes('disqus') ||
-				e.filename.includes('googlesyndication') ||
-				e.filename.includes('googletagmanager') ||
-				e.filename.includes('adsbygoogle'))
-		) {
-			if (import.meta.env.DEV) {
-				console.warn('Third-party script error suppressed:', e.error?.message, 'from', e.filename);
-			}
-			e.preventDefault();
-			return true;
-		}
+    // 🔇 Filter third-party script errors
+    if (
+      e.filename &&
+      (e.filename.includes("embed.js") ||
+        e.filename.includes("disqus") ||
+        e.filename.includes("googlesyndication") ||
+        e.filename.includes("googletagmanager") ||
+        e.filename.includes("adsbygoogle"))
+    ) {
+      if (import.meta.env.DEV) {
+        console.warn("Third-party script error suppressed:", e.error?.message, "from", e.filename);
+      }
+      e.preventDefault();
+      return true;
+    }
 
-		// 🔇 Filter browser extension errors
-		if (
-			e.filename &&
-			(e.filename.includes('chrome-extension://') ||
-				e.filename.includes('moz-extension://') ||
-				e.filename.includes('extension://') ||
-				e.filename.includes('safari-extension://') ||
-				e.filename.includes('edge://') ||
-				e.filename.includes('chrome://'))
-		) {
-			if (import.meta.env.DEV) {
-				console.warn('Browser extension error suppressed:', e.error?.message, 'from', e.filename);
-			}
-			e.preventDefault();
-			return true;
-		}
+    // 🔇 Filter browser extension errors
+    if (
+      e.filename &&
+      (e.filename.includes("chrome-extension://") ||
+        e.filename.includes("moz-extension://") ||
+        e.filename.includes("extension://") ||
+        e.filename.includes("safari-extension://") ||
+        e.filename.includes("edge://") ||
+        e.filename.includes("chrome://"))
+    ) {
+      if (import.meta.env.DEV) {
+        console.warn("Browser extension error suppressed:", e.error?.message, "from", e.filename);
+      }
+      e.preventDefault();
+      return true;
+    }
 
-		return false;
-	},
-	true,
+    return false;
+  },
+  true,
 );
 
 setupTooltipCleanup();
 
-const container = document.getElementById('root');
+const container = document.getElementById("root");
 if (!container) {
-	throw new Error('Root element not found');
+  throw new Error("Root element not found");
 }
 
 const root = createRoot(container);
 
 root.render(
-	<StrictMode>
-		<QueryProvider>
-			<Router />
-		</QueryProvider>
-	</StrictMode>,
+  <StrictMode>
+    <QueryProvider>
+      <Router />
+    </QueryProvider>
+  </StrictMode>,
 );
