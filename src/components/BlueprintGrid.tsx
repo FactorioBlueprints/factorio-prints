@@ -15,11 +15,11 @@ import PageHeader from './PageHeader';
 import SearchForm from './SearchForm';
 import TagForm from './TagForm';
 
-const initialPageSize = 24;
+const pageSize = 60;
 
 const BlueprintGrid: React.FC = () => {
 	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData} =
-		useEnrichedPaginatedSummaries(initialPageSize, 'lastUpdatedDate');
+		useEnrichedPaginatedSummaries(pageSize, 'lastUpdatedDate');
 
 	const flattenedSummaries = useFlattenedEnrichedPaginatedSummaries(data);
 

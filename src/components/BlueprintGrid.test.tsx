@@ -41,9 +41,9 @@ describe('BlueprintGrid', () => {
 		} as unknown as ReturnType<typeof useEnrichedPaginatedSummaries>);
 	});
 
-	it('requests a compact initial page of recent blueprints', () => {
+	it('requests 60 recent blueprints per page', () => {
 		render(<BlueprintGrid />);
 
-		expect(vi.mocked(useEnrichedPaginatedSummaries).mock.calls).toStrictEqual([[24, 'lastUpdatedDate']]);
+		expect(vi.mocked(useEnrichedPaginatedSummaries).mock.calls).toStrictEqual([[60, 'lastUpdatedDate']]);
 	});
 });
