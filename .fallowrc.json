@@ -1,0 +1,4 @@
+{
+	"$schema": "./node_modules/fallow/schema.json",
+	"ignoreDependencies": ["less"]
+}

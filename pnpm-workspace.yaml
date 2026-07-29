@@ -1,0 +1,29 @@
+onlyBuiltDependencies:
+  - esbuild
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.5
+  vitest: npm:@voidzero-dev/vite-plus-test@0.1.24
+  vite-plus: 0.2.5
+overrides:
+  vite: "catalog:"
+  vitest: "catalog:"
+  # vite-plus-test hard-pins an older core; force one core version graph-wide,
+  # otherwise vitest startup fails with InvalidArg (mixed core JS/native).
+  "@voidzero-dev/vite-plus-core": "0.2.5"
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest
+  allowedVersions:
+    vite: "*"
+    vitest: "*"
+allowBuilds:
+  "@firebase/util": false
+  "@sentry/cli": true
+  "@swc/core": true
+  esbuild: true
+  fallow: true
+  protobufjs: false
+  re2: false
+  unrs-resolver: true
+  workerd: false

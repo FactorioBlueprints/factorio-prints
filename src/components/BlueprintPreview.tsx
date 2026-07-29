@@ -14,7 +14,7 @@ interface BlueprintPreviewProps {
 	blueprintKey?: string;
 }
 
-export const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
+const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
 	blueprintWrapper,
 	decodedBlueprint,
 	blueprintKey = 'preview',
