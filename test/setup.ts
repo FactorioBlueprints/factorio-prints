@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import {cleanup} from '@testing-library/react';
-import {afterEach, vi} from 'vitest';
+import {afterEach, vi} from 'vite-plus/test';
 import 'fake-indexeddb/auto';
 import React from 'react';
 

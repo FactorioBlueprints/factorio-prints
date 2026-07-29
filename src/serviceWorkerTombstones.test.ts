@@ -3,7 +3,7 @@
 import {readFileSync, readdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {runInNewContext} from 'node:vm';
-import {describe, expect, it, vi} from 'vitest';
+import {describe, expect, it, vi} from 'vite-plus/test';
 
 const serviceWorkerFileNames = ['service-worker.js', 'serviceWorker.js', 'sw.js'];
 const serviceWorkerFilePattern = /^(service-worker|serviceWorker|sw)\./;

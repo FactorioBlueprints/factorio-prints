@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import {User} from 'firebase/auth';
 import {renderHook} from '@testing-library/react';
-import {vi, describe, it, expect, beforeEach} from 'vitest';
+import {vi, describe, it, expect, beforeEach} from 'vite-plus/test';
 import {useSentryUser} from './useSentryUser';
 
 const mockIsolationScope = {

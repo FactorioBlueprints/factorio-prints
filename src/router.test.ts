@@ -1,5 +1,5 @@
 import {createRouter} from '@tanstack/react-router';
-import {afterEach, describe, expect, test, vi} from 'vitest';
+import {afterEach, describe, expect, test, vi} from 'vite-plus/test';
 import {routeTree} from './routeTree.gen';
 import {getRouterDiagnostics, router as applicationRouter} from './router';
 

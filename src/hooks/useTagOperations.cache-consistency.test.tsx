@@ -3,7 +3,7 @@ import {useNavigate} from '@tanstack/react-router';
 import {renderHook, waitFor} from '@testing-library/react';
 import {update as dbUpdate, push} from 'firebase/database';
 import type React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {useCreateBlueprint} from './useCreateBlueprint';
 import {useDeleteBlueprint, useUpdateBlueprint} from './useUpdateBlueprint';
 

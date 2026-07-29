@@ -3,7 +3,7 @@ import {renderHook, waitFor} from '@testing-library/react';
 import type {Database, DatabaseReference} from 'firebase/database';
 import {update as dbUpdate, ref} from 'firebase/database';
 import type React from 'react';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {getFirebaseDatabase} from '../utils/firebaseDatabase';
 import {useToggleCollectionMutation} from './useToggleCollectionMutation';
 

@@ -1,7 +1,7 @@
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {renderHook} from '@testing-library/react';
 import React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import enrichBlueprint from '../utils/enrichBlueprint';
 import {useEnrichedBlueprint} from './useEnrichedBlueprint';
 import useRawBlueprint from './useRawBlueprint';

@@ -1,4 +1,4 @@
-import {describe, it, expect, vi, beforeEach, afterEach} from 'vitest';
+import {describe, it, expect, vi, beforeEach, afterEach} from 'vite-plus/test';
 import {fetchEntities, fetchRecipes, fetchRestTags, fetchDuplicates} from './client';
 
 describe('REST API client', () => {

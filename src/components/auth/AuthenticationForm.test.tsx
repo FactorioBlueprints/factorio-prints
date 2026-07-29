@@ -1,6 +1,6 @@
 import {act, fireEvent, render, renderHook, screen} from '@testing-library/react';
 import {FirebaseError} from 'firebase/app';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {getProviderAuthenticationErrorMessage, useAuthProviders} from '../../hooks/useAuthProviders';
 import {AuthenticationForm} from './AuthenticationForm';
 

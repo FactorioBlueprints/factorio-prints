@@ -1,5 +1,5 @@
 import {createStore, get, set} from 'idb-keyval';
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {compressForStorage, decompressFromStorage} from './utils/dataCompression';
 
 interface WorkerResponse {

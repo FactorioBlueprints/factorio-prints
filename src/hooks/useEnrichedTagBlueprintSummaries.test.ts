@@ -2,7 +2,7 @@ import type {UseQueryResult} from '@tanstack/react-query';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {renderHook} from '@testing-library/react';
 import React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {EnrichedBlueprintSummary, RawBlueprintSummary} from '../schemas';
 import {enrichBlueprintSummary} from '../utils/enrichBlueprintSummary';
 import {useEnrichedTagBlueprintSummaries} from './useEnrichedTagBlueprintSummaries';

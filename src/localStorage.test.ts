@@ -1,5 +1,5 @@
 import {createStore, set} from 'idb-keyval';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {compressForStorage} from './utils/dataCompression';
 
 const workerState = vi.hoisted(() => ({

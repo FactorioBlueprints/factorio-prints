@@ -1,9 +1,9 @@
-import {defineConfig} from 'vite';
+import {defineConfig} from 'vite-plus';
 import react from '@vitejs/plugin-react';
 import {TanStackRouterVite} from '@tanstack/router-vite-plugin';
 import {sentryVitePlugin} from '@sentry/vite-plugin';
 import {execSync} from 'child_process';
-import type {UserConfig} from 'vite';
+import type {UserConfig} from 'vite-plus';
 
 type SentryUploadEnvironment = {
 	SENTRY_AUTH_TOKEN?: string;
@@ -28,6 +28,9 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 	const version = getReleaseVersion(environment);
 
 	return {
+		staged: {
+			'*': 'vp check --fix',
+		},
 		define: {
 			'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
 			'import.meta.env.VITE_GIT_BRANCH': JSON.stringify(gitBranch),

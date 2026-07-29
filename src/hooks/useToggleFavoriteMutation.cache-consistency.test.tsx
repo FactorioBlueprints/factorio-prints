@@ -2,7 +2,7 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {renderHook, waitFor} from '@testing-library/react';
 import {update as dbUpdate, getDatabase, ref} from 'firebase/database';
 import type React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {useToggleFavoriteMutation} from './useToggleFavoriteMutation';
 
 // Mock Firebase

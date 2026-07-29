@@ -5,24 +5,25 @@
 	"homepage": "https://factorioprints.com/",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
-		"preview": "vite preview",
-		"build": "npm run route:generate && tsc && vite build && VERIFY_SERVICE_WORKER_BUILD=true vitest run src/serviceWorkerTombstones.test.ts",
-		"lint": "eslint . --fix",
+		"dev": "vp dev",
+		"preview": "vp preview",
+		"build": "npm run route:generate && tsc && vp build && VERIFY_SERVICE_WORKER_BUILD=true vp test run src/serviceWorkerTombstones.test.ts",
+		"lint": "vp lint . --fix",
 		"format": "biome format --write . && prettier --write .",
-		"ci:eslint": "eslint . --format json --output-file eslint_report.json",
+		"ci:eslint": "vp lint . --format json",
 		"ci:prettier": "prettier --check \"src/**/*.{js,ts,css,md,json}\"",
 		"ci:biome": "biome format .",
 		"ci:typecheck": "tsc --noEmit",
-		"test": "vitest",
-		"test:run": "vitest run",
+		"test": "vp test",
+		"test:run": "vp test run",
 		"route:generate": "tsr generate",
 		"typecheck": "tsc --noEmit",
 		"deploy:cloudflare": "wrangler pages deploy dist --project-name=factorio-prints",
 		"deploy:cloudflare:preview": "wrangler pages deploy dist --project-name=factorio-prints --branch=preview",
 		"deploy:cloudflare:production": "wrangler pages deploy dist --project-name=factorio-prints --branch=main",
 		"deploy:functions": "cd functions && npm install && cd .. && npx firebase deploy --only functions",
-		"deploy:all": "cd functions && npm install && cd .. && npx firebase deploy"
+		"deploy:all": "cd functions && npm install && cd .. && npx firebase deploy",
+		"prepare": "vp config"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-svg-core": "7.3.1",
@@ -67,7 +68,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.6",
-		"@eslint/js": "10.0.1",
 		"@sentry/vite-plugin": "5.4.0",
 		"@tanstack/react-query-devtools": "5.101.4",
 		"@tanstack/router-cli": "1.167.21",
@@ -82,12 +82,7 @@
 		"@types/react": "19.2.17",
 		"@types/react-dom": "19.2.3",
 		"@types/serviceworker": "0.0.200",
-		"@typescript-eslint/eslint-plugin": "8.59.2",
-		"@typescript-eslint/parser": "8.59.2",
 		"@vitejs/plugin-react": "6.0.4",
-		"eslint": "10.8.0",
-		"eslint-plugin-react-hooks": "7.1.1",
-		"eslint-plugin-react-refresh": "0.5.3",
 		"fake-indexeddb": "6.2.5",
 		"firebase-tools": "^15.24.0",
 		"globals": "17.8.0",
@@ -96,8 +91,20 @@
 		"less": "4.8.1",
 		"prettier": "3.9.6",
 		"typescript": "6.0.3",
-		"vite": "8.1.5",
+		"vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
 		"vitest": "4.1.10",
-		"wrangler": "^4.115.0"
+		"wrangler": "^4.115.0",
+		"vite-plus": "0.2.5"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "npm",
+			"version": ">=11.6.2 <13",
+			"onFail": "download"
+		}
+	},
+	"overrides": {
+		"vite": "npm:@voidzero-dev/vite-plus-core@0.2.5",
+		"vitest": "4.1.10"
 	}
 }

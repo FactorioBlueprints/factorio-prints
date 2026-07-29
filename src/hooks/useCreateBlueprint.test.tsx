@@ -5,7 +5,7 @@ import {renderHook} from '@testing-library/react';
 import type {User} from 'firebase/auth';
 import {update as dbUpdate, push, ref} from 'firebase/database';
 import type React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {useCreateBlueprint} from './useCreateBlueprint';
 
 vi.mock('firebase/database', () => ({

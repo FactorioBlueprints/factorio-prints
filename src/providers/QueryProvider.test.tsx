@@ -2,7 +2,7 @@ import {render, screen, waitFor} from '@testing-library/react';
 import {useQuery} from '@tanstack/react-query';
 import type {PersistedClient, Persister} from '@tanstack/react-query-persist-client';
 import type React from 'react';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {getBlueprintTagsOptions} from '../hooks/useBlueprintTags';
 import {blueprintQuery} from '../queries/blueprintQueries';
 import type {EnrichedBlueprintSummary} from '../schemas';

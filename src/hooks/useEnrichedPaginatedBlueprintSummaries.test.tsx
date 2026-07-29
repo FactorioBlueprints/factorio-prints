@@ -1,7 +1,7 @@
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {renderHook} from '@testing-library/react';
 import type React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {enrichPaginatedBlueprintSummaries} from '../utils/enrichPaginatedBlueprintSummaries';
 import {useEnrichedPaginatedBlueprintSummaries} from './useEnrichedPaginatedBlueprintSummaries';
 import {useRawPaginatedBlueprintSummaries} from './useRawPaginatedBlueprintSummaries';
