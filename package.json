@@ -79,7 +79,7 @@
 		"firebase-tools": "^15.24.0",
 		"jsdom": "30.0.1",
 		"less": "4.8.1",
-		"markdownlint-cli2": "0.23.1",
+		"markdownlint-cli2": "0.23.2",
 		"typescript": "6.0.3",
 		"vite": "catalog:",
 		"vite-plus": "catalog:",
