@@ -24,6 +24,8 @@ jobs:
 
       - uses: jdx/mise-action@v4
 
+      - uses: pnpm/action-setup@v6
+
       - name: Run tests and lint
         run: |
           just test-ci typecheck-ci eslint-ci
