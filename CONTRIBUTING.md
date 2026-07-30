@@ -84,8 +84,6 @@ info, which means you might not have access to other users' favorites. If you
 need the whole database to read and understand, @FactorioBlueprints can share a
 copy. Here's some sample data.
 
-<!-- markdownlint-disable MD013 -->
-
 ```json
 {
   "blueprintSummaries": {
@@ -149,5 +147,3 @@ copy. Here's some sample data.
   }
 }
 ```
-
-<!-- markdownlint-enable MD013 -->
