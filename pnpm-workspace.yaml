@@ -7,6 +7,7 @@ catalog:
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
+  "gaxios@6>uuid": "11.1.1"
   # vite-plus-test hard-pins an older core; force one core version graph-wide,
   # otherwise vitest startup fails with InvalidArg (mixed core JS/native).
   "@voidzero-dev/vite-plus-core": "0.2.5"
