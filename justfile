@@ -46,6 +46,11 @@ eslint-ci: install-ci
 format: install
     vp run format
 
+# `vp run ci:format`
+[group('lint')]
+format-ci: install-ci
+    vp run ci:format
+
 # `vp run test:run`
 [group('test')]
 test: install route-generate
