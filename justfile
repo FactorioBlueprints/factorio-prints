@@ -38,11 +38,6 @@ dev: install
 lint: install
     vp run lint
 
-# `vp run ci:eslint`
-[group('lint')]
-eslint-ci: install-ci
-    vp run ci:eslint
-
 # Run formatter
 [group('lint')]
 format: install
@@ -66,11 +61,6 @@ test-ci: install-ci route-generate-ci
 # `vp run typecheck`
 [group('test')]
 typecheck: install route-generate
-    vp run typecheck
-
-# `vp run typecheck`
-[group('test')]
-typecheck-ci: install-ci route-generate-ci
     vp run typecheck
 
 # `uv tool run pre-commit run`

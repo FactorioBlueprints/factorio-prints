@@ -12,8 +12,6 @@
 		"lint": "vp lint . --fix",
 		"fmt": "vp fmt",
 		"fmt:ci": "vp fmt --check",
-		"ci:eslint": "vp lint . --format json",
-		"ci:typecheck": "tsc --noEmit",
 		"test": "node node_modules/vitest/dist/cli.js",
 		"test:run": "node node_modules/vitest/dist/cli.js run",
 		"route:generate": "tsr generate",
