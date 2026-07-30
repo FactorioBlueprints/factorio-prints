@@ -1,36 +1,34 @@
 # Contributing
 
-## Development Build
+## Development build
 
-### Install node.js
+### Install the toolchain
 
-<https://nodejs.org/en/>
-
-### Install global packages
+The preferred setup uses [mise](https://mise.jdx.dev/) to install the versions
+of Node.js, Just, and Vite+ declared in `.mise/config.toml`:
 
 ```bash
-just install-global
+mise install
+vp install
+```
+
+Vite+ uses pnpm and the repository's `pnpm-lock.yaml` when it installs the root
+dependencies. Do not run `npm install` in the repository root.
+
+If you do not use mise, install [Node.js](https://nodejs.org/en/), Just, and the
+Vite+ CLI globally, then run `vp install`.
+
+### Run the development server
+
+```bash
+just dev
 ```
 
 Or manually:
 
 ```bash
-npm install -g \
- firebase-tools@latest \
- antlr4@latest \
- eslint@latest
-```
-
-Run the dev build:
-
-```bash
-just start
-```
-
-Or manually:
-
-```bash
-npm run dev
+vp install
+vp run dev
 ```
 
 This will start the Vite dev server and run the app on localhost:5173. The app
@@ -38,7 +36,7 @@ will be connecting to the production database.
 
 ## Production build
 
-Run the commands:
+Build and deploy with the Just recipes:
 
 ```bash
 just build
@@ -48,35 +46,46 @@ just deploy
 Or manually:
 
 ```bash
-npm run build
-firebase deploy
+vp install
+vp run build
+vp run deploy:all
 ```
 
-## To see the firebase data
+The Cloud Functions project under `functions/` intentionally retains its own npm
+package and lockfile. The root deployment scripts install those dependencies
+with npm before deploying.
 
-Install the [Firebase CLI](https://firebase.google.com/docs/cli/).
+## Validate changes
+
+Run the same formatting, linting, type-checking, build, and test checks used
+before committing:
 
 ```bash
-just install-global
+just precommit
+```
+
+## View Firebase data
+
+The Firebase CLI is installed with the root development dependencies and can be
+run through Vite+:
+
+```bash
 just firebase-login
-```
-
-Or manually:
-
-```bash
-npm install -g firebase-tools
-firebase login
-```
-
-```bash
 just database-export
 ```
 
 Or manually:
 
 ```bash
-firebase database:get / > factorio-blueprints-export.json
+vp install
+vp exec firebase login
+vp exec firebase database:get / > factorio-blueprints-export.json
 ```
+
+Alternatively, install the
+[Firebase CLI](https://firebase.google.com/docs/cli/) globally with
+`npm install --global firebase-tools` and run the corresponding `firebase`
+commands directly.
 
 The firebase database is essentially one big JSON document, and asking to
 download "/" is asking to download the whole thing. It will only download public
