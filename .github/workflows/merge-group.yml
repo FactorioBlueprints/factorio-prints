@@ -16,51 +16,21 @@ jobs:
       - uses: jdx/mise-action@v4
       - uses: actions/cache@v6
         with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-      - run: npm ci
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: just install
       - run: uv tool run pre-commit run --all-files
 
-  eslint:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
-      - uses: actions/cache@v6
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-
-      - run: just eslint-ci
-        continue-on-error: true
-
-      - uses: ataylorme/eslint-annotate-action@2.2.0
-        if: always()
-
-  format:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
-      - run: just format-ci
-
-  typecheck:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4
       - uses: actions/cache@v6
         with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
-      - run: just typecheck-ci
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: just check
 
   build:
     runs-on: ubuntu-latest
@@ -69,9 +39,8 @@ jobs:
       - uses: jdx/mise-action@v4
       - uses: actions/cache@v6
         with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - run: just build-ci
 
@@ -82,9 +51,8 @@ jobs:
       - uses: jdx/mise-action@v4
       - uses: actions/cache@v6
         with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: npm-
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - run: just test-ci
 
@@ -108,7 +76,7 @@ jobs:
   all-checks:
     name: All checks
     if: ${{ !cancelled() }}
-    needs: [pre-commit, eslint, format, typecheck, build, test, functions-build]
+    needs: [pre-commit, check, build, test, functions-build]
     runs-on: ubuntu-latest
     steps:
       - uses: re-actors/alls-green@release/v1

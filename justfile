@@ -6,6 +6,8 @@ import '.just/analysis.just'
 default:
     @just --list --unsorted
 
+ci := env("CI", "")
+
 # `vp install`
 [group('setup')]
 install:
@@ -41,15 +43,15 @@ lint: install
 eslint-ci: install-ci
     vp run ci:eslint
 
-# `vp run format`
+# Run formatter
 [group('lint')]
 format: install
-    vp run format
+    vp fmt {{ if ci != "" { "--check" } else { "" } }}
 
-# `vp run ci:format`
-[group('lint')]
-format-ci: install-ci
-    vp run ci:format
+# Run formatter, linter, and type checker
+[group('test')]
+check: install route-generate
+    vp check {{ if ci != "" { "" } else { "--fix" } }}
 
 # `vp run test:run`
 [group('test')]
@@ -93,7 +95,7 @@ build-ci: route-generate-ci install-ci
 
 # Run all pre-commit checks
 [group('build')]
-precommit: format lint typecheck build-no-secrets test
+precommit: check build-no-secrets test
     @echo "✅ All pre-commit checks passed!"
 
 # `vp run deploy:all`

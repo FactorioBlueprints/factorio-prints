@@ -26,9 +26,9 @@ jobs:
 
       - uses: pnpm/action-setup@v6
 
-      - name: Run tests and lint
+      - name: Run tests and checks
         run: |
-          just test-ci format-ci typecheck-ci eslint-ci
+          just test-ci check
 
       - name: Build for production
         run: just build-ci
