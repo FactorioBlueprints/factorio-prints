@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions";
 import * as functionsV1 from "firebase-functions/v1";
-import * as admin from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
+import { getDatabase } from "firebase-admin/database";
 import {
   onValueWritten,
   onValueDeleted,
@@ -10,7 +11,7 @@ import {
 import { Change } from "firebase-functions/v2";
 import { onRequest } from "firebase-functions/v2/https";
 
-admin.initializeApp();
+initializeApp();
 
 /**
  * Cloud Function to maintain numberOfFavorites count
@@ -35,7 +36,7 @@ export const updateFavoriteCount = onValueWritten(
       return null;
     }
 
-    const database = admin.database();
+    const database = getDatabase();
 
     // Check if the blueprint still exists before making any updates.
     // This prevents re-creating deleted blueprints when cleanupFavoritesOnBlueprintDelete
@@ -101,7 +102,7 @@ export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
       return null;
     }
 
-    const database = admin.database();
+    const database = getDatabase();
     const updates: Record<string, null> = {};
 
     for (const userId of userIds) {
@@ -130,7 +131,7 @@ export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
   "/blueprints/{blueprintId}",
   async (event: DatabaseEvent<DataSnapshot>) => {
     const blueprintId = event.params.blueprintId;
-    const database = admin.database();
+    const database = getDatabase();
 
     const usersSnapshot = await database.ref("/users").once("value");
     const users = usersSnapshot.val() || {};
@@ -172,7 +173,7 @@ export const reconcileFavoriteCounts = onRequest(async (req, res) => {
     return;
   }
 
-  const database = admin.database();
+  const database = getDatabase();
 
   const blueprintsSnapshot = await database.ref("/blueprints").once("value");
   const blueprints = blueprintsSnapshot.val() || {};
@@ -217,7 +218,7 @@ export const reconcileFavoriteCounts = onRequest(async (req, res) => {
  * This ensures all users have a profile in the database for consistent data access.
  */
 export const initializeUserProfile = functionsV1.auth.user().onCreate(async (user) => {
-  const database = admin.database();
+  const database = getDatabase();
   const userRef = database.ref(`/users/${user.uid}`);
 
   // Check if user profile already exists (safety check)
@@ -245,7 +246,7 @@ export const initializeUserProfile = functionsV1.auth.user().onCreate(async (use
  * User's authored blueprints remain in the database (orphaned).
  */
 export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user) => {
-  const database = admin.database();
+  const database = getDatabase();
   const userId = user.uid;
 
   try {
