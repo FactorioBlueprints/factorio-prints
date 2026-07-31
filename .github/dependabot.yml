@@ -18,7 +18,6 @@ updates:
       typescript-ecosystem:
         patterns:
           - "typescript"
-          - "@typescript-eslint/*"
       vite-ecosystem:
         patterns:
           - "vite"
@@ -61,7 +60,6 @@ updates:
       typescript-ecosystem:
         patterns:
           - "typescript"
-          - "@typescript-eslint/*"
       firebase:
         patterns:
           - "firebase"
@@ -82,8 +80,6 @@ updates:
       default-days: 7
     labels:
       - "dependencies"
-    ignore:
-      - dependency-name: "ataylorme/eslint-annotate-action"
     commit-message:
       prefix: "dependabot"
       include: "scope"
