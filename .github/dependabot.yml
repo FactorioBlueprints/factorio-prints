@@ -7,6 +7,8 @@ updates:
       time: "07:00"
       timezone: "America/New_York"
     open-pull-requests-limit: 25
+    cooldown:
+      default-days: 7
     labels:
       - "dependencies"
     groups:
@@ -44,6 +46,31 @@ updates:
       prefix: "dependabot"
       include: "scope"
 
+  - package-ecosystem: "npm"
+    directory: "/functions"
+    schedule:
+      interval: "daily"
+      time: "07:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 25
+    cooldown:
+      default-days: 7
+    labels:
+      - "dependencies"
+    groups:
+      typescript-ecosystem:
+        patterns:
+          - "typescript"
+          - "@typescript-eslint/*"
+      firebase:
+        patterns:
+          - "firebase"
+          - "firebase-*"
+          - "react-firebase-*"
+    commit-message:
+      prefix: "dependabot"
+      include: "scope"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -51,6 +78,8 @@ updates:
       time: "07:00"
       timezone: "America/New_York"
     open-pull-requests-limit: 25
+    cooldown:
+      default-days: 7
     labels:
       - "dependencies"
     ignore:
