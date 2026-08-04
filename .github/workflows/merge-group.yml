@@ -67,11 +67,8 @@ jobs:
           key: npm-${{ hashFiles('package-lock.json', 'functions/package-lock.json') }}
           restore-keys: npm-
 
-      - name: Build Cloud Functions
-        run: |
-          cd functions
-          npm ci
-          npm run build
+      - name: Verify Cloud Functions
+        run: npm run verify:functions
 
   all-checks:
     name: All checks

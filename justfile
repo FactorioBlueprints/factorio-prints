@@ -90,13 +90,18 @@ precommit: check build-no-secrets test
 
 # `vp run deploy:all`
 [group('deploy')]
-deploy: install
+deploy: install verify-functions
     vp run deploy:all
 
 # `vp run deploy:functions`
 [group('deploy')]
-deploy-functions: install
+deploy-functions: install verify-functions
     vp run deploy:functions
+
+# `vp run verify:functions`
+[group('test')]
+verify-functions:
+    vp run verify:functions
 
 # `vp exec firebase login`
 [group('firebase')]
