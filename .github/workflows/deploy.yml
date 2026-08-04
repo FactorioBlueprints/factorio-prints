@@ -33,11 +33,8 @@ jobs:
           SENTRY_ENVIRONMENT: production-firebase
           SENTRY_RELEASE: ${{ github.sha }}
 
-      - name: Build Cloud Functions
-        run: |
-          cd functions
-          npm ci
-          npm run build
+      - name: Verify Cloud Functions
+        run: npm run verify:functions
 
       - name: Authenticate to Google Cloud
         id: auth

@@ -5,6 +5,7 @@
 	"main": "lib/index.js",
 	"scripts": {
 		"build": "tsc",
+		"verify": "npm run build && node scripts/verify-runtime.cjs",
 		"build:watch": "tsc --watch",
 		"lint": "eslint .",
 		"serve": "npm run build && firebase emulators:start --only functions",
@@ -14,6 +15,7 @@
 		"logs": "firebase functions:log"
 	},
 	"dependencies": {
+		"@firebase/app": "0.15.1",
 		"firebase-admin": "^14.2.0",
 		"firebase-functions": "^7.3.2"
 	},

@@ -16,11 +16,12 @@
 		"test:run": "node node_modules/vitest/dist/cli.js run",
 		"route:generate": "tsr generate",
 		"typecheck": "tsc --noEmit",
+		"verify:functions": "npm --prefix functions ci && npm --prefix functions run verify",
 		"deploy:cloudflare": "wrangler pages deploy dist --project-name=factorio-prints",
 		"deploy:cloudflare:preview": "wrangler pages deploy dist --project-name=factorio-prints --branch=preview",
 		"deploy:cloudflare:production": "wrangler pages deploy dist --project-name=factorio-prints --branch=main",
-		"deploy:functions": "cd functions && npm install && cd .. && npx firebase deploy --only functions",
-		"deploy:all": "cd functions && npm install && cd .. && npx firebase deploy",
+		"deploy:functions": "firebase deploy --only functions",
+		"deploy:all": "firebase deploy",
 		"prepare": "VITE_GIT_HOOKS=0 vp config"
 	},
 	"dependencies": {
