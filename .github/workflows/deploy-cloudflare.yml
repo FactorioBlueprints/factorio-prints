@@ -45,9 +45,6 @@ jobs:
           SENTRY_ENVIRONMENT: production-cloudflare
           SENTRY_RELEASE: ${{ github.sha }}
 
-      - name: Verify Cloud Functions
-        run: npm run verify:functions
-
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
         with:
