@@ -9,7 +9,7 @@ import {
   DataSnapshot,
 } from "firebase-functions/v2/database";
 import { Change } from "firebase-functions/v2";
-import { onRequest } from "firebase-functions/v2/https";
+import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
 
 initializeApp();
 
@@ -49,7 +49,7 @@ export const updateFavoriteCount = onValueWritten(
       return null;
     }
 
-    // Update the blueprint's favorites record to match
+    // Update the blueprint's favorites record to match.
     const blueprintFavoriteRef = database.ref(`/blueprints/${blueprintId}/favorites/${userId}`);
     if (afterValue === true) {
       await blueprintFavoriteRef.set(true);
@@ -210,6 +210,66 @@ export const reconcileFavoriteCounts = onRequest(async (req, res) => {
       reconciled: 0,
     });
   }
+});
+
+/**
+ * Reconcile one blueprint's favorite count from the moderator UI.
+ */
+export const reconcileFavoriteCount = onCall(async (request) => {
+  const userId = request.auth?.uid;
+  if (!userId) {
+    throw new HttpsError("unauthenticated", "Authentication is required.");
+  }
+
+  const blueprintId = request.data?.blueprintId;
+  if (
+    typeof blueprintId !== "string" ||
+    blueprintId.length === 0 ||
+    /[.#$[\]/]/.test(blueprintId)
+  ) {
+    throw new HttpsError("invalid-argument", "A valid blueprintId is required.");
+  }
+
+  const database = getDatabase();
+  const moderatorSnapshot = await database.ref(`/moderators/${userId}`).once("value");
+  if (moderatorSnapshot.val() !== true) {
+    throw new HttpsError("permission-denied", "Moderator access is required.");
+  }
+
+  const blueprintSnapshot = await database.ref(`/blueprints/${blueprintId}`).once("value");
+  if (!blueprintSnapshot.exists()) {
+    throw new HttpsError("not-found", "Blueprint not found.");
+  }
+
+  const blueprint = blueprintSnapshot.val();
+  const favorites = blueprint.favorites ?? {};
+  const actualCount = Object.values(favorites).filter((value) => value === true).length;
+  const previousBlueprintCount =
+    typeof blueprint.numberOfFavorites === "number" ? blueprint.numberOfFavorites : 0;
+
+  const summaryCountSnapshot = await database
+    .ref(`/blueprintSummaries/${blueprintId}/numberOfFavorites`)
+    .once("value");
+  const summaryCount = summaryCountSnapshot.val();
+  const previousSummaryCount = typeof summaryCount === "number" ? summaryCount : 0;
+  const hasDiscrepancy =
+    previousBlueprintCount !== actualCount || previousSummaryCount !== actualCount;
+
+  if (hasDiscrepancy) {
+    await database.ref().update({
+      [`/blueprints/${blueprintId}/numberOfFavorites`]: actualCount,
+      [`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
+    });
+  }
+
+  return {
+    blueprintId,
+    actualCount,
+    previousBlueprintCount,
+    previousSummaryCount,
+    hasDiscrepancy,
+    reconciled: hasDiscrepancy,
+  };
 });
 
 /**

@@ -52,11 +52,13 @@ check: install route-generate
 [group('test')]
 test: install route-generate
     vp run test:run
+    vp run test:database-rules
 
 # `vp run test:run`
 [group('test')]
 test-ci: install-ci route-generate-ci
     vp run test:run
+    vp run test:database-rules
 
 # `vp run typecheck`
 [group('test')]

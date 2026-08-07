@@ -7,8 +7,10 @@ import {
   fetchCdnWatermark,
   fetchBlueprint,
   clearWatermarkCache,
+  reconcileFavoritesCount,
 } from "./firebase";
 import { get } from "firebase/database";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import type { EnrichedBlueprintSummary, RawBlueprint } from "../schemas";
 
 vi.mock("firebase/database", () => ({
@@ -21,11 +23,42 @@ vi.mock("firebase/database", () => ({
   endAt: vi.fn(),
 }));
 
+vi.mock("firebase/functions", () => ({
+  getFunctions: vi.fn(),
+  httpsCallable: vi.fn(),
+}));
+
 vi.mock("../base", () => ({
   app: {},
 }));
 
 describe("firebase API", () => {
+  describe("reconcileFavoritesCount", () => {
+    it("uses the authenticated Cloud Function result", async () => {
+      const expectedResult = {
+        blueprintId: "blueprint-100",
+        actualCount: 3,
+        previousBlueprintCount: 2,
+        previousSummaryCount: 1,
+        hasDiscrepancy: true,
+        reconciled: true,
+      };
+      const callable = vi.fn().mockResolvedValue({ data: expectedResult });
+      const functions = {} as ReturnType<typeof getFunctions>;
+      vi.mocked(getFunctions).mockReturnValue(functions);
+      vi.mocked(httpsCallable).mockReturnValue(
+        callable as unknown as ReturnType<typeof httpsCallable>,
+      );
+
+      const result = await reconcileFavoritesCount("blueprint-100");
+
+      expect(getFunctions).toHaveBeenCalledWith({});
+      expect(httpsCallable).toHaveBeenCalledWith(functions, "reconcileFavoriteCount");
+      expect(callable).toHaveBeenCalledWith({ blueprintId: "blueprint-100" });
+      expect(result).toStrictEqual(expectedResult);
+    });
+  });
+
   describe("getBlueprintCdnUrl", () => {
     it("should transform blueprint key to CDN URL format", () => {
       const blueprintKey = "-KnQ865j-qQ21WoUPbd3";

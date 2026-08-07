@@ -18,7 +18,8 @@
 					}
 				},
 				"numberOfFavorites": {
-					".write": "auth != null"
+					".write": "false",
+					".validate": "(!data.exists() && newData.val() === 0) || (data.exists() && newData.val() === data.val())"
 				}
 			}
 		},
@@ -60,7 +61,8 @@
 			"$blueprint": {
 				".write": "root.child('blueprints').child($blueprint).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true",
 				"numberOfFavorites": {
-					".write": "auth != null"
+					".write": "false",
+					".validate": "(!data.exists() && newData.val() === 0) || (data.exists() && newData.val() === data.val())"
 				}
 			}
 		},

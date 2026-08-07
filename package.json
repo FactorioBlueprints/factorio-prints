@@ -14,6 +14,7 @@
 		"fmt:ci": "vp fmt --check",
 		"test": "node node_modules/vitest/dist/cli.js",
 		"test:run": "node node_modules/vitest/dist/cli.js run",
+		"test:database-rules": "firebase emulators:exec --only database \"node --test test/database.rules.emulator.mjs\"",
 		"route:generate": "tsr generate",
 		"typecheck": "tsc --noEmit",
 		"verify:functions": "npm --prefix functions ci && npm --prefix functions run verify",
@@ -58,6 +59,7 @@
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
+		"@firebase/rules-unit-testing": "5.0.1",
 		"@sentry/vite-plugin": "5.4.0",
 		"@tanstack/react-query-devtools": "5.101.4",
 		"@tanstack/router-cli": "1.167.21",
