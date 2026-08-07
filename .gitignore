@@ -28,6 +28,7 @@ eslint_report.json
 
 # Firebase export data
 factorio-blueprints-export.json
+/database-debug.log
 
 # Ignore compiled JS files in src and public (TypeScript project)
 src/**/*.js

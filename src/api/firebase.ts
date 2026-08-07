@@ -8,7 +8,9 @@ import {
   ref,
   startAt,
 } from "firebase/database";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { format, formatDistance } from "date-fns";
+import { app } from "../base";
 import { getFirebaseDatabase } from "../utils/firebaseDatabase";
 import {
   type EnrichedBlueprintSummary,
@@ -470,37 +472,12 @@ export const fetchAllUsers = async (): Promise<UserData[]> => {
 };
 
 export const reconcileFavoritesCount = async (blueprintId: string): Promise<ReconcileResult> => {
-  const favoritesRef = ref(getFirebaseDatabase(), `/blueprints/${blueprintId}/favorites`);
-  const favoritesSnapshot = await get(favoritesRef);
-  const favorites = favoritesSnapshot.exists() ? favoritesSnapshot.val() : {};
-
-  const actualCount = Object.values(favorites).filter(Boolean).length;
-
-  const summaryRef = ref(
-    getFirebaseDatabase(),
-    `/blueprintSummaries/${blueprintId}/numberOfFavorites`,
+  const reconcileFavoriteCount = httpsCallable<{ blueprintId: string }, ReconcileResult>(
+    getFunctions(app),
+    "reconcileFavoriteCount",
   );
-  const summarySnapshot = await get(summaryRef);
-  const currentSummaryCount = summarySnapshot.exists() ? summarySnapshot.val() : 0;
-
-  const hasDiscrepancy = actualCount !== currentSummaryCount;
-
-  if (hasDiscrepancy) {
-    const updates = {
-      [`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
-    };
-
-    await dbUpdate(ref(getFirebaseDatabase()), updates);
-  }
-
-  return {
-    blueprintId,
-    actualCount,
-    previousBlueprintCount: 0,
-    previousSummaryCount: currentSummaryCount,
-    hasDiscrepancy,
-    reconciled: hasDiscrepancy,
-  };
+  const result = await reconcileFavoriteCount({ blueprintId });
+  return result.data;
 };
 
 // TODO 2025-04-12: Move this out of firebase.js, and refactor it to use react query hooks from the hooks/ dir. The problem with the current implementation is that it performs many queries but doesn't cache anything. /users/${userId}/favorites already has a hook useUserFavorites in useUser. But `/blueprints/${blueprintId}/favorites/${userId}` doesn't have a hook or a mutation yet, so we need to add them.
@@ -537,14 +514,12 @@ export const reconcileUserFavorites = async (userId: string): Promise<UserReconc
       updates[`/blueprints/${blueprintId}/favorites/${userId}`] = true;
 
       // TODO 2025-04-11: react query cache invalidation will be needed for each of these blueprints
-
-      // TODO 2025-04-11: Don't reconcile counts, we'll handle that separately when reconciling from the blueprints rather than from the users
-      await reconcileFavoritesCount(blueprintId);
     }
   }
 
   if (Object.keys(updates).length > 0) {
     await dbUpdate(ref(getFirebaseDatabase()), updates);
+    await Promise.all(discrepancies.map(({ blueprintId }) => reconcileFavoritesCount(blueprintId)));
   }
 
   return {
