@@ -1,6 +1,6 @@
 [tools]
 just = "1.56.0"
-node = "26.5.0"
+node = "26.5.1"
 pnpm = "11.15.0"
 "npm:vite-plus" = "0.2.7"
 pre-commit = "4.6.0"
