@@ -120,8 +120,8 @@ export function BlueprintActions({
   }, [onReconcile, reconcileMutation]);
 
   return (
-    <Col xs={12} className="d-flex justify-content-end mt-3">
-      <div className="d-flex justify-content-end gap-2 flex-wrap">
+    <Col xs={12} md={{ span: 8, offset: 4 }} className="mt-3">
+      <div className="d-flex gap-2 flex-wrap">
         {renderPlaygroundButton()}
         {(isOwner || isModerator) && renderEditButton()}
         {renderCollectionButton()}
