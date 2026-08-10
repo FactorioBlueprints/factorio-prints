@@ -6,3 +6,6 @@ pnpm = "11.15.0"
 pre-commit = "4.6.0"
 python = "3.12.11"
 uv = "0.8.4"
+
+[env]
+TERM = 'xterm-256color'
