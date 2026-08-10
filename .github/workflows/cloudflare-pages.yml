@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: jdx/mise-action@v4.2.3
+      - uses: jdx/mise-action@v4.2.4
 
       - uses: pnpm/action-setup@v6.0.10
 
