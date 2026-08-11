@@ -64,6 +64,13 @@ beforeEach(async () => {
       moderators: {
         [moderatorId]: true,
       },
+      byTag: {
+        category1: {
+          tag1: {
+            [blueprintId]: true,
+          },
+        },
+      },
       tags: {
         "tag-100": "/category1/tag1/",
       },
@@ -266,5 +273,54 @@ describe("tags registry rules", () => {
     const database = testEnvironment.authenticatedContext(moderatorId).database();
 
     await assertFails(set(ref(database, "tags/tag-200"), "/category1/tag2/"));
+  });
+});
+
+describe("byTag index rules", () => {
+  test("reject a write from an unauthenticated visitor", async () => {
+    const database = testEnvironment.unauthenticatedContext().database();
+
+    await assertFails(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
+  });
+
+  test("reject a write from a user who does not own the blueprint", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+
+    await assertFails(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
+  });
+
+  test("reject a write at the two-segment depth a single-key tag id would produce", async () => {
+    const database = testEnvironment.authenticatedContext(ownerId).database();
+
+    await assertFails(set(ref(database, `byTag/category1/${blueprintId}`), true));
+  });
+
+  test("allow the blueprint owner to add a tag entry", async () => {
+    const database = testEnvironment.authenticatedContext(ownerId).database();
+
+    await assertSucceeds(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
+  });
+
+  test("allow the blueprint owner to remove a tag entry", async () => {
+    const database = testEnvironment.authenticatedContext(ownerId).database();
+
+    await assertSucceeds(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
+  });
+
+  test("allow a moderator to remove a tag entry", async () => {
+    const database = testEnvironment.authenticatedContext(moderatorId).database();
+
+    await assertSucceeds(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
+  });
+
+  test("allow the owner to retag through the multi-path update the edit flow issues", async () => {
+    const database = testEnvironment.authenticatedContext(ownerId).database();
+
+    await assertSucceeds(
+      update(ref(database), {
+        [`/byTag/category1/tag1/${blueprintId}`]: null,
+        [`/byTag/category2/tag3/${blueprintId}`]: true,
+      }),
+    );
   });
 });
