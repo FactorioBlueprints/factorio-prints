@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { z } from "zod";
 import {
   blueprintIdSchema,
@@ -31,7 +31,19 @@ import {
   validateRawUserFavorites,
 } from "./schemas";
 
+const sentryMocks = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+}));
+
+vi.mock("@sentry/react", () => ({
+  captureMessage: sentryMocks.captureMessage,
+}));
+
 describe("Schema validation", () => {
+  beforeEach(() => {
+    sentryMocks.captureMessage.mockReset();
+  });
+
   describe("blueprintIdSchema", () => {
     it("accepts a Firebase push ID", () => {
       expect(blueprintIdSchema.parse("00000000000000000000")).toBe("00000000000000000000");
@@ -53,246 +65,129 @@ describe("Schema validation", () => {
   });
 
   describe("validate function", () => {
-    it("should validate valid data without errors", () => {
+    it("validates data without reporting an event", () => {
       const mockSchema = { parse: vi.fn((data) => data) };
       const mockData = { test: "data" };
 
       const result = validate(mockData, mockSchema as any, "test data");
 
-      expect(mockSchema.parse).toHaveBeenCalledWith(mockData);
-      expect(result).toEqual(mockData);
+      expect({
+        result,
+        schemaParseCalls: mockSchema.parse.mock.calls,
+        captureMessageCalls: sentryMocks.captureMessage.mock.calls,
+      }).toStrictEqual({
+        result: mockData,
+        schemaParseCalls: [[mockData]],
+        captureMessageCalls: [],
+      });
     });
 
-    it("should throw error with description for invalid data", () => {
-      const mockError = new Error("Validation error") as any;
-      mockError.errors = ["error details"];
-
+    it("reports one bounded event when schema parsing throws an unexpected error", () => {
+      const validationError = new Error("Test validation failure");
       const mockSchema = {
         parse: vi.fn(() => {
-          throw mockError;
+          throw validationError;
         }),
       };
+      const testData = { field: "test value" };
 
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-      expect(() => validate({ test: "invalid" }, mockSchema as any, "test data")).toThrow(
-        "Invalid test data: Validation error",
+      expect(() => validate(testData, mockSchema as any, "test data")).toThrowError(
+        new Error("Invalid test data: Test validation failure"),
       );
-
-      expect(consoleSpy.mock.calls.length).toBeGreaterThanOrEqual(1);
-
-      consoleSpy.mockRestore();
+      expect({
+        schemaParseCalls: mockSchema.parse.mock.calls,
+        captureMessageCalls: sentryMocks.captureMessage.mock.calls,
+      }).toStrictEqual({
+        schemaParseCalls: [[testData]],
+        captureMessageCalls: [
+          [
+            "Schema validation failed with unexpected error",
+            {
+              level: "error",
+              fingerprint: ["schema-validation", "test data", "unexpected-error"],
+              tags: { component: "schema-validation" },
+              extra: {
+                description: "test data",
+                error: "Error: Test validation failure",
+                payloadExcerpt: '{"field":"test value"}',
+              },
+            },
+          ],
+        ],
+      });
     });
 
-    it("should include actual values and types in error messages for complex objects", () => {
-      const testSchema = z.object({
-        array: z.array(z.string()),
-        nested: z.object({
-          value: z.number(),
+    it("reports FACTORIO-PRINTS-1JY, FACTORIO-PRINTS-1JZ, FACTORIO-PRINTS-1K0, and FACTORIO-PRINTS-1K1 as one bounded event", () => {
+      const nestedBlueprintSchema = z.object({
+        blueprint_book: z.object({
+          blueprints: z.array(
+            z.object({
+              blueprint: z.object({
+                entities: z.array(z.object({ name: z.string() })),
+                label: z.string(),
+              }),
+            }),
+          ),
         }),
-        simpleField: z.string(),
       });
-
-      const testData = {
-        array: [1, 2, 3], // Should be strings
-        nested: {
-          value: "not a number", // Should be number
-        },
-        simpleField: 123, // Should be string
+      const blueprintContext = {
+        entities: [{ name: 100 }],
+        label: "x".repeat(6_000),
       };
-
-      const consoleCalls: any[][] = [];
-      const originalConsoleError = console.error;
-      console.error = (...args) => consoleCalls.push(args);
-
-      expect(() => validate(testData, testSchema, "complex test data")).toThrow();
-
-      console.error = originalConsoleError;
-
-      expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
-      const [message, jsonString] = consoleCalls[0];
-      expect(message).toBe("Schema validation failed");
-
-      const parsedError = JSON.parse(jsonString);
-      expect(parsedError.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            path: "array.0",
-            actualValue: "1",
-            actualType: "number",
-          }),
-          expect.objectContaining({
-            path: "nested.value",
-            actualValue: '"not a number"',
-            actualType: "string",
-          }),
-          expect.objectContaining({
-            path: "simpleField",
-            actualValue: "123",
-            actualType: "number",
-          }),
-        ]),
-      );
-    });
-
-    it("should handle large objects by truncating values in error messages", () => {
-      const testSchema = z.object({
-        largeArray: z.array(z.string()),
-        largeObject: z.object({
-          prop1: z.string(),
-          prop2: z.string(),
-          prop3: z.string(),
-          prop4: z.string(),
-          prop5: z.string(),
-        }),
-      });
-
       const testData = {
-        largeArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // Should be strings
-        largeObject: {
-          prop1: 1,
-          prop2: 2,
-          prop3: 3,
-          prop4: 4,
-          prop5: 5,
+        blueprint_book: {
+          blueprints: [{ blueprint: blueprintContext }],
         },
       };
+      const payload = JSON.stringify(testData);
+      const serializedBlueprintContext = JSON.stringify(blueprintContext);
 
-      const consoleCalls: any[][] = [];
-      const originalConsoleError = console.error;
-      console.error = (...args) => consoleCalls.push(args);
-
-      expect(() => validate(testData, testSchema, "large object test")).toThrow();
-
-      console.error = originalConsoleError;
-
-      expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
-      const [, jsonString] = consoleCalls[0];
-      const parsedError = JSON.parse(jsonString);
-
-      // Check that large array is truncated
-      const arrayError = parsedError.errors.find((e: any) => e.path === "largeArray.0");
-      expect(arrayError.actualValue).toBe("1");
-
-      // Check that the large object would be truncated in actual display if it was the failing value
-      expect(parsedError.errors.length).toBeGreaterThan(0);
-    });
-
-    it("should log the full object that failed validation for small objects", () => {
-      const testSchema = z.object({
-        field: z.string(),
-      });
-
-      const testData = {
-        field: 123, // Should be string
-      };
-
-      const consoleCalls: any[][] = [];
-      const originalConsoleError = console.error;
-      console.error = (...args) => consoleCalls.push(args);
-
-      expect(() => validate(testData, testSchema, "small object test")).toThrow();
-
-      console.error = originalConsoleError;
-
-      // Should have at least 2 console calls: error info + full object
-      expect(consoleCalls.length).toBeGreaterThanOrEqual(2);
-
-      // Check that one of the calls contains the full object
-      const fullObjectCall = consoleCalls.find(
-        (call) => call[0] === "Full object that failed validation:",
-      );
-      expect(fullObjectCall).toBeDefined();
-      expect(fullObjectCall![1]).toEqual(JSON.stringify(testData));
-    });
-
-    it("should truncate very large objects in console logs", () => {
-      const testSchema = z.object({
-        field: z.string(),
-      });
-
-      // Create a large object that will exceed the 5KB limit
-      const largeString = "x".repeat(6000);
-      const testData = {
-        field: 123, // Wrong type
-        largeField: largeString,
-      };
-
-      const consoleCalls: any[][] = [];
-      const originalConsoleError = console.error;
-      console.error = (...args) => consoleCalls.push(args);
-
-      expect(() => validate(testData, testSchema, "large object test")).toThrow();
-
-      console.error = originalConsoleError;
-
-      // Should have console calls for large object
-      const largeObjectCall = consoleCalls.find(
-        (call) =>
-          typeof call[0] === "string" &&
-          call[0].includes("Full object that failed validation (truncated):"),
-      );
-      expect(largeObjectCall).toBeDefined();
-    });
-
-    it("should handle ZodError with detailed error information", () => {
-      // Create a real ZodError for testing
-      const testSchema = z.object({
-        field1: z.object({
-          nested: z.string(),
+      expect(() =>
+        validate(testData, nestedBlueprintSchema, "raw blueprint data", {
+          blueprintId: "00000000000000000000",
         }),
-        field2: z.string(),
-      });
+      ).toThrowError(
+        new Error(
+          "Invalid raw blueprint data: blueprint_book.blueprints.0.blueprint.entities.0.name: Invalid input: expected string, received number",
+        ),
+      );
 
-      let zodError: z.ZodError;
-      try {
-        testSchema.parse({ field1: { nested: 123 }, field2: undefined });
-      } catch (error) {
-        zodError = error as z.ZodError;
-      }
-
-      const mockSchema = {
-        parse: vi.fn(() => {
-          throw zodError!;
-        }),
-      };
-
-      const consoleCalls: any[][] = [];
-      const originalConsoleError = console.error;
-      console.error = (...args) => consoleCalls.push(args);
-
-      const testData = { field1: { nested: 123 }, field2: undefined };
-      expect(() => validate(testData, mockSchema as any, "test data")).toThrow(/Invalid test data/);
-
-      console.error = originalConsoleError;
-
-      expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
-      const [message, jsonString] = consoleCalls[0];
-      expect(message).toBe("Schema validation failed");
-
-      const parsedError = JSON.parse(jsonString);
-      expect(parsedError).toEqual({
-        description: "test data",
-        errorCount: 2,
-        errors: [
+      expect(sentryMocks.captureMessage.mock.calls).toStrictEqual([
+        [
+          "Schema validation failed",
           {
-            path: "field1.nested",
-            message: "Invalid input: expected string, received number",
-            code: "invalid_type",
-            actualValue: "123",
-            actualType: "number",
-          },
-          {
-            path: "field2",
-            message: "Invalid input: expected string, received undefined",
-            code: "invalid_type",
-            actualValue: "undefined",
-            actualType: "undefined",
+            level: "error",
+            fingerprint: ["schema-validation", "raw blueprint data"],
+            tags: {
+              component: "schema-validation",
+              blueprintId: "00000000000000000000",
+            },
+            extra: {
+              description: "raw blueprint data",
+              errorCount: 1,
+              reportedErrorCount: 1,
+              errors: [
+                {
+                  path: "blueprint_book.blueprints.0.blueprint.entities.0.name",
+                  message: "Invalid input: expected string, received number",
+                  code: "invalid_type",
+                  actualValue: "100",
+                  actualType: "number",
+                },
+              ],
+              dataType: "object",
+              dataKeys: ["blueprint_book"],
+              blueprintContexts: [
+                {
+                  path: "blueprint_book.blueprints.0.blueprint",
+                  excerpt: `${serializedBlueprintContext.slice(0, 1_000)}... (truncated)`,
+                },
+              ],
+              payloadExcerpt: `${payload.slice(0, 5_000)}... (truncated)`,
+            },
           },
         ],
-        dataType: "object",
-        dataKeys: ["field1", "field2"],
-      });
+      ]);
     });
   });
 
@@ -1017,45 +912,43 @@ describe("Schema validation", () => {
 
       describe("tag validation functions", () => {
         it("validateRawTags should provide clear error messages", () => {
-          const consoleCalls: any[][] = [];
-          const originalConsoleError = console.error;
-          console.error = (...args) => consoleCalls.push(args);
-
           const invalidData = {
             belt: "not an array",
           };
 
           expect(() => validateRawTags(invalidData)).toThrow(/Invalid raw tags/);
 
-          console.error = originalConsoleError;
-
-          expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
-          const [message, jsonString] = consoleCalls[0];
-          expect(message).toBe("Schema validation failed");
-
-          const parsedError = JSON.parse(jsonString);
-          expect(parsedError).toEqual({
-            description: "raw tags",
-            errorCount: 1,
-            errors: [
+          expect(sentryMocks.captureMessage.mock.calls).toStrictEqual([
+            [
+              "Schema validation failed",
               {
-                path: "belt",
-                message: "Invalid input: expected array, received string",
-                code: "invalid_type",
-                actualValue: '"not an array"',
-                actualType: "string",
+                level: "error",
+                fingerprint: ["schema-validation", "raw tags"],
+                tags: { component: "schema-validation" },
+                extra: {
+                  description: "raw tags",
+                  errorCount: 1,
+                  reportedErrorCount: 1,
+                  errors: [
+                    {
+                      path: "belt",
+                      message: "Invalid input: expected array, received string",
+                      code: "invalid_type",
+                      actualValue: '"not an array"',
+                      actualType: "string",
+                    },
+                  ],
+                  dataType: "object",
+                  dataKeys: ["belt"],
+                  blueprintContexts: [],
+                  payloadExcerpt: '{"belt":"not an array"}',
+                },
               },
             ],
-            dataType: "object",
-            dataKeys: ["belt"],
-          });
+          ]);
         });
 
         it("validateEnrichedTags should provide clear error messages", () => {
-          const consoleCalls: any[][] = [];
-          const originalConsoleError = console.error;
-          console.error = (...args) => consoleCalls.push(args);
-
           const invalidData = [
             {
               path: "/belt/balancer/",
@@ -1065,42 +958,48 @@ describe("Schema validation", () => {
 
           expect(() => validateEnrichedTags(invalidData)).toThrow(/Invalid enriched tags/);
 
-          console.error = originalConsoleError;
-
-          expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
-          const [message, jsonString] = consoleCalls[0];
-          expect(message).toBe("Schema validation failed");
-
-          const parsedError = JSON.parse(jsonString);
-          expect(parsedError).toEqual({
-            description: "enriched tags",
-            errorCount: 3,
-            errors: [
+          expect(sentryMocks.captureMessage.mock.calls).toStrictEqual([
+            [
+              "Schema validation failed",
               {
-                path: "0.category",
-                message: "Invalid input: expected string, received undefined",
-                code: "invalid_type",
-                actualValue: "undefined",
-                actualType: "undefined",
-              },
-              {
-                path: "0.name",
-                message: "Invalid input: expected string, received undefined",
-                code: "invalid_type",
-                actualValue: "undefined",
-                actualType: "undefined",
-              },
-              {
-                path: "0.label",
-                message: "Invalid input: expected string, received undefined",
-                code: "invalid_type",
-                actualValue: "undefined",
-                actualType: "undefined",
+                level: "error",
+                fingerprint: ["schema-validation", "enriched tags"],
+                tags: { component: "schema-validation" },
+                extra: {
+                  description: "enriched tags",
+                  errorCount: 3,
+                  reportedErrorCount: 3,
+                  errors: [
+                    {
+                      path: "0.category",
+                      message: "Invalid input: expected string, received undefined",
+                      code: "invalid_type",
+                      actualValue: "undefined",
+                      actualType: "undefined",
+                    },
+                    {
+                      path: "0.name",
+                      message: "Invalid input: expected string, received undefined",
+                      code: "invalid_type",
+                      actualValue: "undefined",
+                      actualType: "undefined",
+                    },
+                    {
+                      path: "0.label",
+                      message: "Invalid input: expected string, received undefined",
+                      code: "invalid_type",
+                      actualValue: "undefined",
+                      actualType: "undefined",
+                    },
+                  ],
+                  dataType: "object",
+                  dataKeys: ["0"],
+                  blueprintContexts: [],
+                  payloadExcerpt: '[{"path":"/belt/balancer/"}]',
+                },
               },
             ],
-            dataType: "object",
-            dataKeys: ["0"],
-          });
+          ]);
         });
 
         it("should handle null and undefined inputs", () => {
@@ -1501,10 +1400,6 @@ describe("Schema validation", () => {
 
       describe("user data validation functions", () => {
         it("validateRawUserBlueprints should provide clear error messages", () => {
-          const consoleCalls: any[][] = [];
-          const originalConsoleError = console.error;
-          console.error = (...args) => consoleCalls.push(args);
-
           const invalidData = {
             "blueprint-1": "not a boolean",
           };
@@ -1513,35 +1408,37 @@ describe("Schema validation", () => {
             /Invalid raw user blueprints/,
           );
 
-          console.error = originalConsoleError;
-
-          expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
-          const [message, jsonString] = consoleCalls[0];
-          expect(message).toBe("Schema validation failed");
-
-          const parsedError = JSON.parse(jsonString);
-          expect(parsedError).toEqual({
-            description: "raw user blueprints",
-            errorCount: 1,
-            errors: [
+          expect(sentryMocks.captureMessage.mock.calls).toStrictEqual([
+            [
+              "Schema validation failed",
               {
-                path: "blueprint-1",
-                message: "Invalid input: expected boolean, received string",
-                code: "invalid_type",
-                actualValue: '"not a boolean"',
-                actualType: "string",
+                level: "error",
+                fingerprint: ["schema-validation", "raw user blueprints"],
+                tags: { component: "schema-validation" },
+                extra: {
+                  description: "raw user blueprints",
+                  errorCount: 1,
+                  reportedErrorCount: 1,
+                  errors: [
+                    {
+                      path: "blueprint-1",
+                      message: "Invalid input: expected boolean, received string",
+                      code: "invalid_type",
+                      actualValue: '"not a boolean"',
+                      actualType: "string",
+                    },
+                  ],
+                  dataType: "object",
+                  dataKeys: ["blueprint-1"],
+                  blueprintContexts: [],
+                  payloadExcerpt: '{"blueprint-1":"not a boolean"}',
+                },
               },
             ],
-            dataType: "object",
-            dataKeys: ["blueprint-1"],
-          });
+          ]);
         });
 
         it("validateEnrichedUserFavorites should provide clear error messages", () => {
-          const consoleCalls: any[][] = [];
-          const originalConsoleError = console.error;
-          console.error = (...args) => consoleCalls.push(args);
-
           const invalidData = {
             count: 5,
             // Missing favoriteIds
@@ -1551,28 +1448,34 @@ describe("Schema validation", () => {
             /Invalid enriched user favorites/,
           );
 
-          console.error = originalConsoleError;
-
-          expect(consoleCalls.length).toBeGreaterThanOrEqual(1);
-          const [message, jsonString] = consoleCalls[0];
-          expect(message).toBe("Schema validation failed");
-
-          const parsedError = JSON.parse(jsonString);
-          expect(parsedError).toEqual({
-            description: "enriched user favorites",
-            errorCount: 1,
-            errors: [
+          expect(sentryMocks.captureMessage.mock.calls).toStrictEqual([
+            [
+              "Schema validation failed",
               {
-                path: "favoriteIds",
-                message: "Invalid input: expected record, received undefined",
-                code: "invalid_type",
-                actualValue: "undefined",
-                actualType: "undefined",
+                level: "error",
+                fingerprint: ["schema-validation", "enriched user favorites"],
+                tags: { component: "schema-validation" },
+                extra: {
+                  description: "enriched user favorites",
+                  errorCount: 1,
+                  reportedErrorCount: 1,
+                  errors: [
+                    {
+                      path: "favoriteIds",
+                      message: "Invalid input: expected record, received undefined",
+                      code: "invalid_type",
+                      actualValue: "undefined",
+                      actualType: "undefined",
+                    },
+                  ],
+                  dataType: "object",
+                  dataKeys: ["count"],
+                  blueprintContexts: [],
+                  payloadExcerpt: '{"count":5}',
+                },
               },
             ],
-            dataType: "object",
-            dataKeys: ["count"],
-          });
+          ]);
         });
       });
     });

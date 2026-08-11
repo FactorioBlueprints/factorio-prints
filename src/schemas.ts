@@ -1,4 +1,12 @@
+import { captureMessage } from "@sentry/react";
 import { z } from "zod";
+
+const MAX_REPORTED_SCHEMA_ISSUES = 20;
+const MAX_REPORTED_DATA_KEYS = 20;
+const MAX_REPORTED_BLUEPRINT_CONTEXTS = 5;
+const MAX_ACTUAL_VALUE_LENGTH = 200;
+const MAX_BLUEPRINT_CONTEXT_LENGTH = 1_000;
+const MAX_PAYLOAD_EXCERPT_LENGTH = 5_000;
 
 const dateToTimestamp = z.preprocess((val) => {
   if (typeof val === "number") return val;
@@ -215,6 +223,46 @@ const serializeValue = (value: unknown): string => {
   return String(value);
 };
 
+const truncate = (value: string, maximumLength: number): string => {
+  if (value.length <= maximumLength) return value;
+  return `${value.slice(0, maximumLength)}... (truncated)`;
+};
+
+const serializeJsonExcerpt = (value: unknown, maximumLength: number): string => {
+  try {
+    const serialized = JSON.stringify(value);
+    return truncate(serialized ?? String(value), maximumLength);
+  } catch (error) {
+    return truncate(`[unable to serialize: ${String(error)}]`, maximumLength);
+  }
+};
+
+const getBlueprintContexts = (
+  data: unknown,
+  issues: z.core.$ZodIssue[],
+): Array<{ path: string; excerpt: string }> => {
+  const blueprintContexts = new Map<string, unknown>();
+
+  for (const issue of issues) {
+    const blueprintContext = extractBlueprintContext(data, issue.path.map(String));
+    if (blueprintContext === undefined || blueprintContext === null) continue;
+
+    const contextPath = issue.path.join(".");
+    const blueprintPath =
+      contextPath.match(/^(.*?\.blueprint(?:_book)?)(?:\.|$)/)?.[1] ?? contextPath;
+    if (!blueprintContexts.has(blueprintPath)) {
+      blueprintContexts.set(blueprintPath, blueprintContext);
+    }
+  }
+
+  return Array.from(blueprintContexts.entries())
+    .slice(0, MAX_REPORTED_BLUEPRINT_CONTEXTS)
+    .map(([path, blueprintContext]) => ({
+      path,
+      excerpt: serializeJsonExcerpt(blueprintContext, MAX_BLUEPRINT_CONTEXT_LENGTH),
+    }));
+};
+
 export const validate = <T>(
   data: unknown,
   schema: z.ZodSchema<T>,
@@ -225,76 +273,55 @@ export const validate = <T>(
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorDetails = error.issues.map((e) => {
-        const actualValue = getValueAtPath(data, e.path.map(String));
+      const reportedIssues = error.issues.slice(0, MAX_REPORTED_SCHEMA_ISSUES);
+      const errorDetails = reportedIssues.map((issue) => {
+        const actualValue = getValueAtPath(data, issue.path.map(String));
         return {
-          path: e.path.join("."),
-          message: e.message,
-          code: e.code,
-          actualValue: serializeValue(actualValue),
+          path: issue.path.join("."),
+          message: issue.message,
+          code: issue.code,
+          actualValue: truncate(serializeValue(actualValue), MAX_ACTUAL_VALUE_LENGTH),
           actualType: typeof actualValue,
         };
       });
-      const errorInfo = {
-        description,
-        errorCount: error.issues.length,
-        errors: errorDetails,
-        dataType: typeof data,
-        dataKeys: data && typeof data === "object" ? Object.keys(data) : undefined,
-        ...(context?.blueprintId && { blueprintId: context.blueprintId }),
-      };
-      console.error("Schema validation failed", JSON.stringify(errorInfo, null, 2));
-
-      // Log blueprint context for nested blueprint errors
-      const blueprintContexts = new Map<string, unknown>();
-      for (const issue of error.issues) {
-        const context = extractBlueprintContext(data, issue.path.map(String));
-        if (context !== undefined && context !== null) {
-          const contextPath = issue.path.join(".");
-          const blueprintPath =
-            contextPath.match(/^(.*?\.blueprint(?:_book)?)(?:\.|$)/)?.[1] || contextPath;
-          if (!blueprintContexts.has(blueprintPath)) {
-            blueprintContexts.set(blueprintPath, context);
-          }
-        }
-      }
-
-      if (blueprintContexts.size > 0) {
-        console.error("Blueprint context for errors:");
-        blueprintContexts.forEach((context, path) => {
-          console.error(`  At path "${path}": ${serializeValue(context)}`);
-        });
-      }
-
-      // Log the full object for debugging
-      try {
-        const serialized = JSON.stringify(data);
-        const maxLength = 5000; // 5KB limit for Sentry
-        if (serialized && serialized.length <= maxLength) {
-          console.error("Full object that failed validation:", serialized);
-        } else if (serialized) {
-          // For large objects, log a truncated version
-          const truncated = serialized.substring(0, maxLength) + "... (truncated)";
-          console.error("Full object that failed validation (truncated):", truncated);
-        }
-      } catch (error) {
-        // Handle circular references or other stringify errors
-        console.error("Unable to serialize full object due to:", error);
-        console.error("Object keys:", data && typeof data === "object" ? Object.keys(data) : "N/A");
-      }
+      captureMessage("Schema validation failed", {
+        level: "error",
+        fingerprint: ["schema-validation", description],
+        tags: {
+          component: "schema-validation",
+          ...(context?.blueprintId && { blueprintId: context.blueprintId }),
+        },
+        extra: {
+          description,
+          errorCount: error.issues.length,
+          reportedErrorCount: reportedIssues.length,
+          errors: errorDetails,
+          dataType: typeof data,
+          dataKeys:
+            data && typeof data === "object"
+              ? Object.keys(data).slice(0, MAX_REPORTED_DATA_KEYS)
+              : [],
+          blueprintContexts: getBlueprintContexts(data, reportedIssues),
+          payloadExcerpt: serializeJsonExcerpt(data, MAX_PAYLOAD_EXCERPT_LENGTH),
+        },
+      });
 
       const errorMessage = error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join(", ");
       throw new Error(`Invalid ${description}: ${errorMessage}`);
     }
-    const unexpectedErrorInfo = {
-      description,
-      error: String(error),
-      ...(context?.blueprintId && { blueprintId: context.blueprintId }),
-    };
-    console.error(
-      "Schema validation failed with unexpected error",
-      JSON.stringify(unexpectedErrorInfo, null, 2),
-    );
+    captureMessage("Schema validation failed with unexpected error", {
+      level: "error",
+      fingerprint: ["schema-validation", description, "unexpected-error"],
+      tags: {
+        component: "schema-validation",
+        ...(context?.blueprintId && { blueprintId: context.blueprintId }),
+      },
+      extra: {
+        description,
+        error: truncate(String(error), MAX_ACTUAL_VALUE_LENGTH),
+        payloadExcerpt: serializeJsonExcerpt(data, MAX_PAYLOAD_EXCERPT_LENGTH),
+      },
+    });
     throw new Error(
       `Invalid ${description}: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
