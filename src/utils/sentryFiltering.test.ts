@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { isUnactionableError } from "./sentryFiltering";
+import { isFirebaseAuthDatabaseClosingError, isUnactionableError } from "./sentryFiltering";
 
 describe("Sentry error filtering", () => {
   it("filters expected Firebase user transaction disconnect warnings", () => {
@@ -41,5 +41,30 @@ describe("Sentry error filtering", () => {
       false,
       false,
     ]);
+  });
+
+  it("filters only the Firebase Auth hidden-page database closure", () => {
+    const reasons = [
+      new Error("Database is closing/hidden"),
+      "Database is closing/hidden",
+      new Error("Database is closing"),
+      new Error("IndexedDB database is closing/hidden"),
+      new Error("Database is closing/hidden after transaction failure"),
+      new Error("IndexedDB transaction failed"),
+    ];
+
+    expect(reasons.map(isFirebaseAuthDatabaseClosingError)).toStrictEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+    ]);
+    expect(
+      reasons.map((reason) =>
+        isUnactionableError(reason instanceof Error ? reason.message : reason),
+      ),
+    ).toStrictEqual([true, true, false, false, false, false]);
   });
 });
