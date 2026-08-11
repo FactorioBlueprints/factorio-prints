@@ -1,4 +1,15 @@
+const firebaseAuthDatabaseClosingMessage = "Database is closing/hidden";
+
+export function isFirebaseAuthDatabaseClosingError(reason: unknown): boolean {
+  const message = reason instanceof Error ? reason.message : reason;
+  return message === firebaseAuthDatabaseClosingMessage;
+}
+
 export function isUnactionableError(message: string): boolean {
+  if (isFirebaseAuthDatabaseClosingError(message)) {
+    return true;
+  }
+
   const firebasePendingPopupPromiseAssertion =
     "INTERNAL ASSERTION FAILED: Pending promise was never set";
   const isFirebasePendingPopupPromiseAssertion =

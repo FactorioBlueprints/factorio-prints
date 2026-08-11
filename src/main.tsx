@@ -16,7 +16,7 @@ import "./css/style.css";
 import QueryProvider from "./providers/QueryProvider";
 import { getRouterDiagnostics, Router } from "./router";
 import { getReleaseInfo, getReleaseMetadata } from "./utils/release";
-import { isUnactionableError } from "./utils/sentryFiltering";
+import { isFirebaseAuthDatabaseClosingError, isUnactionableError } from "./utils/sentryFiltering";
 import { setupTooltipCleanup } from "./utils/cleanupTooltips";
 import { suppressGoogleAuthDeprecationWarning } from "./utils/suppressGoogleAuthWarning";
 import { createVitePreloadErrorHandler } from "./utils/vitePreloadError";
@@ -76,6 +76,13 @@ window.addEventListener(
  */
 window.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
   const reason = event.reason;
+
+  // Firebase Auth closes its IndexedDB connection on pagehide, so a concurrent SDK-owned write
+  // can reject while the page is no longer able to act on the result.
+  if (isFirebaseAuthDatabaseClosingError(reason)) {
+    event.preventDefault();
+    return;
+  }
 
   // Filter out undefined/null rejections - these are unactionable
   // Common causes: third-party scripts, browser extensions, Safari quirks
