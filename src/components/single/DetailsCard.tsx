@@ -1,9 +1,10 @@
 import { faCheck, faClipboard, faToggleOff, faToggleOn } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useState } from "react";
+import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
-import { useCopyToClipboard } from "usehooks-ts";
+import { useCopyToClipboard } from "../../hooks/useCopyToClipboard";
 import type { RawBlueprintData } from "../../schemas";
 import { safeJsonStringify } from "../../utils/safeJsonStringify";
 import BlueprintMarkdownDescription from "../BlueprintMarkdownDescription";
@@ -23,7 +24,7 @@ export function DetailsCard({
 }: DetailsCardProps) {
   const [showBlueprint, setShowBlueprint] = useState(false);
   const [showJson, setShowJson] = useState(false);
-  const [copiedText, copyToClipboard] = useCopyToClipboard();
+  const { copiedText, copyError, copyToClipboard } = useCopyToClipboard();
 
   const hideButton = useCallback(
     (text: string) => (
@@ -74,6 +75,7 @@ export function DetailsCard({
           <Button type="button" onClick={handleShowHideJson}>
             {showJson ? hideButton("Hide Json") : showButton("Show Json")}
           </Button>
+          {copyError && <Alert variant="danger">{copyError}</Alert>}
         </Card.Body>
       </Card>
       {showBlueprint && (

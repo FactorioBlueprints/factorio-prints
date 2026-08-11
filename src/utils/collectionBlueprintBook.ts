@@ -5,6 +5,18 @@ interface SyntheticBlueprintBookOptions {
   description?: string;
 }
 
+export enum ClipboardCopyStatus {
+  Copied = "copied",
+  PermissionDenied = "permission-denied",
+  Unavailable = "unavailable",
+  Failed = "failed",
+}
+
+export interface ClipboardCopyResult {
+  status: ClipboardCopyStatus;
+  errorMessage: string;
+}
+
 const toBlueprintBookEntry = (blueprint: RawBlueprintData, index: number): BlueprintBookEntry => {
   if (blueprint.blueprint) {
     return {
@@ -85,14 +97,49 @@ export const createSyntheticBlueprintBook = (
   };
 };
 
-export const copyBlueprintStringToClipboard = async (blueprintString: string): Promise<void> => {
+const hasClipboardPermissionDenialDetails = (name: string, message: string): boolean =>
+  name === "NotAllowedError" || message.toLowerCase().includes("permission denied");
+
+const isClipboardPermissionDenied = (clipboardError: unknown): boolean => {
+  if (clipboardError instanceof DOMException) {
+    return hasClipboardPermissionDenialDetails(clipboardError.name, clipboardError.message);
+  }
+
+  if (clipboardError instanceof Error) {
+    return hasClipboardPermissionDenialDetails(clipboardError.name, clipboardError.message);
+  }
+
+  return false;
+};
+
+export const copyBlueprintStringToClipboard = async (
+  blueprintString: string,
+): Promise<ClipboardCopyResult> => {
   if (!blueprintString) {
     throw new Error("Cannot copy an empty blueprint string");
   }
 
   if (!navigator.clipboard?.writeText) {
-    throw new Error("Clipboard access is unavailable in this browser/session");
+    return {
+      status: ClipboardCopyStatus.Unavailable,
+      errorMessage: "Clipboard access is unavailable in this browser or session.",
+    };
   }
 
-  await navigator.clipboard.writeText(blueprintString);
+  try {
+    await navigator.clipboard.writeText(blueprintString);
+    return { status: ClipboardCopyStatus.Copied, errorMessage: "" };
+  } catch (clipboardError) {
+    if (isClipboardPermissionDenied(clipboardError)) {
+      return {
+        status: ClipboardCopyStatus.PermissionDenied,
+        errorMessage: "Clipboard permission was denied. Allow clipboard access and try again.",
+      };
+    }
+
+    return {
+      status: ClipboardCopyStatus.Failed,
+      errorMessage: "Failed to copy to the clipboard. Please try again.",
+    };
+  }
 };

@@ -19,6 +19,7 @@ import { blueprintQuery } from "../queries/blueprintQueries";
 import type { EnrichedBlueprintSummary, RawBlueprintData } from "../schemas";
 import { searchParamsStore } from "../store/searchParamsStore";
 import {
+  ClipboardCopyStatus,
   copyBlueprintStringToClipboard,
   createSyntheticBlueprintBook,
 } from "../utils/collectionBlueprintBook";
@@ -150,7 +151,10 @@ const MyCollectionGrid: React.FC = () => {
       });
 
       const syntheticBookString = serializeBlueprint(syntheticBook);
-      await copyBlueprintStringToClipboard(syntheticBookString);
+      const clipboardResult = await copyBlueprintStringToClipboard(syntheticBookString);
+      if (clipboardResult.status !== ClipboardCopyStatus.Copied) {
+        throw new Error(clipboardResult.errorMessage);
+      }
 
       if (skippedCount > 0) {
         setStatus({
