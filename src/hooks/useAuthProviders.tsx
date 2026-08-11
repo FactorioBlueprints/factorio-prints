@@ -25,6 +25,11 @@ const ignoredProviderAuthenticationErrorCodes = new Set([
   "auth/popup-closed-by-user",
 ]);
 
+const expectedProviderAuthenticationErrorCodes = new Set([
+  "auth/network-request-failed",
+  "auth/popup-blocked",
+]);
+
 const providerAuthenticationErrorMessages = new Map([
   [
     "auth/account-exists-with-different-credential",
@@ -80,6 +85,10 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
         }
 
         setAuthenticationError(getProviderAuthenticationErrorMessage(error));
+        if (expectedProviderAuthenticationErrorCodes.has(authenticationErrorCode)) {
+          return;
+        }
+
         captureException(error, {
           tags: {
             component: "authentication",

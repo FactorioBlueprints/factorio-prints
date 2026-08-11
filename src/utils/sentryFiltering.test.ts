@@ -22,4 +22,24 @@ describe("Sentry error filtering", () => {
 
     expect(messages.map(isUnactionableError)).toStrictEqual([true, true, true, false]);
   });
+
+  it("filters only the Firebase pending popup promise assertion variants", () => {
+    const messages = [
+      "INTERNAL ASSERTION FAILED: Pending promise was never set",
+      "[2000-01-01T00:00:00.000Z]  @firebase/auth: Auth (12.17.0): INTERNAL ASSERTION FAILED: Pending promise was never set",
+      "Pending promise was never set",
+      "Application assertion failed: Pending promise was never set",
+      "[2000-01-01T00:00:00.000Z]  @firebase/database: INTERNAL ASSERTION FAILED: Pending promise was never set",
+      "[2000-01-01T00:00:00.000Z]  @firebase/auth: Auth (12.17.0): INTERNAL ASSERTION FAILED: Another invariant",
+    ];
+
+    expect(messages.map(isUnactionableError)).toStrictEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+    ]);
+  });
 });

@@ -1,4 +1,15 @@
 export function isUnactionableError(message: string): boolean {
+  const firebasePendingPopupPromiseAssertion =
+    "INTERNAL ASSERTION FAILED: Pending promise was never set";
+  const isFirebasePendingPopupPromiseAssertion =
+    message === firebasePendingPopupPromiseAssertion ||
+    (/^\[\d{4}-\d{2}-\d{2}T[^\]]+\]\s+@firebase\/auth: Auth \([^)]+\): /.test(message) &&
+      message.endsWith(firebasePendingPopupPromiseAssertion));
+
+  if (isFirebasePendingPopupPromiseAssertion) {
+    return true;
+  }
+
   const isExpectedFirebaseDisconnectWarning =
     message.includes("@firebase/database:") &&
     message.includes("FIREBASE WARNING: transaction at /users/") &&
