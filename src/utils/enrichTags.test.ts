@@ -2,6 +2,14 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import type { RawTags } from "../schemas";
 import enrichTags from "./enrichTags";
 
+const sentryMocks = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+}));
+
+vi.mock("@sentry/react", () => ({
+  captureMessage: sentryMocks.captureMessage,
+}));
+
 describe("enrichTags", () => {
   describe("tagNameToLabel conversion", () => {
     it("should convert simple tag names to labels", () => {
@@ -273,16 +281,41 @@ describe("enrichTags", () => {
     });
 
     it("should validate raw tags input", () => {
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
       const invalidTags = {
         belt: "not an array", // Invalid: should be array
       } as any;
+      sentryMocks.captureMessage.mockReset();
 
       expect(() => enrichTags(invalidTags)).toThrow(/Invalid raw tags/);
 
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(sentryMocks.captureMessage.mock.calls).toStrictEqual([
+        [
+          "Schema validation failed",
+          {
+            level: "error",
+            fingerprint: ["schema-validation", "raw tags"],
+            tags: { component: "schema-validation" },
+            extra: {
+              description: "raw tags",
+              errorCount: 1,
+              reportedErrorCount: 1,
+              errors: [
+                {
+                  path: "belt",
+                  message: "Invalid input: expected array, received string",
+                  code: "invalid_type",
+                  actualValue: '"not an array"',
+                  actualType: "string",
+                },
+              ],
+              dataType: "object",
+              dataKeys: ["belt"],
+              blueprintContexts: [],
+              payloadExcerpt: '{"belt":"not an array"}',
+            },
+          },
+        ],
+      ]);
     });
 
     it("should validate enriched tags output", () => {
