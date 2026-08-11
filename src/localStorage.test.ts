@@ -1,5 +1,5 @@
 import { createStore, set } from "idb-keyval";
-import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { compressForStorage } from "./utils/dataCompression";
 
 const workerState = vi.hoisted(() => ({
@@ -15,9 +15,14 @@ const workerState = vi.hoisted(() => ({
   restoreMessageCount: 0,
 }));
 
-vi.mock("@sentry/react", () => ({
+const sentryState = vi.hoisted(() => ({
   addBreadcrumb: vi.fn(),
   captureException: vi.fn(),
+}));
+
+vi.mock("@sentry/react", () => ({
+  addBreadcrumb: sentryState.addBreadcrumb,
+  captureException: sentryState.captureException,
 }));
 
 vi.mock("./localStorage.worker.wrapper", () => ({
@@ -107,6 +112,115 @@ vi.mock("./localStorage.worker.wrapper", () => ({
     terminate(): void {}
   },
 }));
+
+const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(window, "localStorage");
+
+function createTestStorage(): Storage {
+  const values = new Map<string, string>();
+
+  return {
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => [...values.keys()][index] ?? null,
+    get length() {
+      return values.size;
+    },
+    removeItem: (key) => {
+      values.delete(key);
+    },
+    setItem: (key, value) => values.set(key, value),
+  };
+}
+
+describe("safe local-storage capability", () => {
+  beforeEach(() => {
+    sentryState.addBreadcrumb.mockReset();
+    sentryState.captureException.mockReset();
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    if (originalLocalStorageDescriptor) {
+      Object.defineProperty(window, "localStorage", originalLocalStorageDescriptor);
+    }
+    vi.restoreAllMocks();
+  });
+
+  it.each([
+    [
+      "a throwing getter",
+      () => {
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          get: () => {
+            throw new DOMException("Test storage access denied", "SecurityError");
+          },
+        });
+      },
+    ],
+    [
+      "a null object",
+      () => {
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          value: null,
+        });
+      },
+    ],
+    [
+      "a nonconforming object",
+      () => {
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          value: { getItem: () => null },
+        });
+      },
+    ],
+    [
+      "denied operations",
+      () => {
+        const storage = createTestStorage();
+        const securityError = new DOMException("Test storage operation denied", "SecurityError");
+        storage.getItem = () => {
+          throw securityError;
+        };
+        storage.removeItem = () => {
+          throw securityError;
+        };
+        storage.setItem = () => {
+          throw securityError;
+        };
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          value: storage,
+        });
+      },
+    ],
+  ])("returns defaults without diagnostics for %s", async (_description, configureStorage) => {
+    configureStorage();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const { getSafeLocalStorage, loadFromStorage, removeFromStorage, saveToStorage } =
+      await import("./localStorage");
+
+    const result = {
+      storage: getSafeLocalStorage(),
+      saved: saveToStorage("test-storage-key", { value: "test-value" }),
+      loaded: loadFromStorage("test-storage-key", { value: "default-value" }),
+      removed: removeFromStorage("test-storage-key"),
+      captureExceptionCalls: sentryState.captureException.mock.calls,
+      consoleErrorCalls: consoleError.mock.calls,
+    };
+
+    expect(result).toStrictEqual({
+      storage: undefined,
+      saved: false,
+      loaded: { value: "default-value" },
+      removed: undefined,
+      captureExceptionCalls: [],
+      consoleErrorCalls: [],
+    });
+  });
+});
 
 describe("IndexedDB worker orchestration", () => {
   beforeEach(() => {

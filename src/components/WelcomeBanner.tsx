@@ -5,19 +5,17 @@ import type React from "react";
 import { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { app } from "../base.js";
-import { CACHE_BUSTER } from "../localStorage.js";
+import { CACHE_BUSTER, loadFromStorage, saveToStorage } from "../localStorage.js";
 
 function getInitialDismissalState(): boolean {
-  try {
-    const dismissalData = localStorage.getItem("welcomeBannerDismissal");
-    if (dismissalData) {
-      const { dismissed, cacheBuster } = JSON.parse(dismissalData);
-      if (dismissed && cacheBuster === CACHE_BUSTER) {
-        return true;
-      }
+  const dismissalData = loadFromStorage<{ cacheBuster: string; dismissed: boolean }>(
+    "welcomeBannerDismissal",
+  );
+  if (dismissalData) {
+    const { dismissed, cacheBuster } = dismissalData;
+    if (dismissed && cacheBuster === CACHE_BUSTER) {
+      return true;
     }
-  } catch {
-    // Silently ignore parsing errors
   }
   return false;
 }
@@ -31,7 +29,7 @@ const WelcomeBanner: React.FC = () => {
       dismissed: true,
       cacheBuster: CACHE_BUSTER,
     };
-    localStorage.setItem("welcomeBannerDismissal", JSON.stringify(dismissalData));
+    saveToStorage("welcomeBannerDismissal", dismissalData);
     setIsDismissed(true);
   };
 

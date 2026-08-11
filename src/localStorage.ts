@@ -21,6 +21,92 @@ export const STORAGE_KEYS = {
 
 export const CACHE_BUSTER = "7";
 
+const storageCapabilityTestKey = "__factorio_prints_storage_test__";
+
+function isStorage(value: unknown): value is Storage {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+
+  const storage = value as Partial<Storage>;
+  return (
+    typeof storage.clear === "function" &&
+    typeof storage.getItem === "function" &&
+    typeof storage.key === "function" &&
+    typeof storage.removeItem === "function" &&
+    typeof storage.setItem === "function"
+  );
+}
+
+function getLocalStorageCapability(): Storage | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  try {
+    const storage = window.localStorage;
+    return isStorage(storage) ? storage : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function createSafeStorage(storage: Storage): Storage {
+  return {
+    clear: () => {
+      try {
+        storage.clear();
+      } catch {}
+    },
+    getItem: (key) => {
+      try {
+        return storage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    key: (index) => {
+      try {
+        return storage.key(index);
+      } catch {
+        return null;
+      }
+    },
+    get length() {
+      try {
+        return storage.length;
+      } catch {
+        return 0;
+      }
+    },
+    removeItem: (key) => {
+      try {
+        storage.removeItem(key);
+      } catch {}
+    },
+    setItem: (key, value) => {
+      try {
+        storage.setItem(key, value);
+      } catch {}
+    },
+  };
+}
+
+export function getSafeLocalStorage(): Storage | undefined {
+  const storage = getLocalStorageCapability();
+  if (!storage) {
+    return undefined;
+  }
+
+  try {
+    storage.setItem(storageCapabilityTestKey, storageCapabilityTestKey);
+    storage.removeItem(storageCapabilityTestKey);
+    return createSafeStorage(storage);
+  } catch {
+    return undefined;
+  }
+}
+
 const indexedDbStore = createStore("factorio-prints-db", "query-cache-store");
 
 interface DebounceOptions {
@@ -998,8 +1084,13 @@ export const saveToStorage = (
   retryWithoutBlueprintString = true,
 ): boolean => {
   try {
+    const storage = getLocalStorageCapability();
+    if (!storage) {
+      return false;
+    }
+
     const serializedData = JSON.stringify(data);
-    localStorage.setItem(key, serializedData);
+    storage.setItem(key, serializedData);
     return true;
   } catch (error) {
     if (
@@ -1014,30 +1105,29 @@ export const saveToStorage = (
       }
     }
 
-    console.error("Error saving to localStorage:", error);
     return false;
   }
 };
 
 export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null => {
   try {
-    const serializedData = localStorage.getItem(key);
+    const serializedData = getLocalStorageCapability()?.getItem(key);
     if (serializedData === null) {
       return defaultValue;
     }
+    if (serializedData === undefined) {
+      return defaultValue;
+    }
     return JSON.parse(serializedData) as T;
-  } catch (error) {
-    console.error("Error loading from localStorage:", error);
+  } catch {
     return defaultValue;
   }
 };
 
 export const removeFromStorage = (key: string): void => {
   try {
-    localStorage.removeItem(key);
-  } catch (error) {
-    console.error("Error removing from localStorage:", error);
-  }
+    getLocalStorageCapability()?.removeItem(key);
+  } catch {}
 };
 
 interface HighWatermarkData {

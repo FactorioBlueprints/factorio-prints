@@ -6,6 +6,7 @@ import Spinner from "react-bootstrap/Spinner";
 
 import { app } from "../base";
 import PageHeader from "../components/PageHeader";
+import { loadFromStorage, removeFromStorage } from "../localStorage";
 
 export const Route = createFileRoute("/auth/email-callback")({
   component: EmailCallback,
@@ -22,7 +23,7 @@ function EmailCallback() {
       const currentUrl = window.location.href;
 
       if (isSignInWithEmailLink(auth, currentUrl)) {
-        let email = localStorage.getItem("emailForSignIn");
+        let email = loadFromStorage<string>("emailForSignIn");
 
         if (!email) {
           email = window.prompt("Please provide your email for confirmation");
@@ -36,7 +37,7 @@ function EmailCallback() {
 
         try {
           await signInWithEmailLink(auth, email, currentUrl);
-          localStorage.removeItem("emailForSignIn");
+          removeFromStorage("emailForSignIn");
           setStatus("success");
 
           setTimeout(() => {
