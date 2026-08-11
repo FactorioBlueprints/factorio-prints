@@ -1,21 +1,36 @@
 import { useCallback, useState } from "react";
+import {
+  ClipboardCopyStatus,
+  copyBlueprintStringToClipboard,
+} from "../utils/collectionBlueprintBook";
 
-export const useCopyToClipboard = (): [boolean, (text: string) => void] => {
+interface CopyToClipboardState {
+  copiedText: boolean;
+  copyError: string;
+  copyToClipboard: (text: string) => Promise<void>;
+}
+
+export const useCopyToClipboard = (): CopyToClipboardState => {
   const [copiedText, setCopiedText] = useState(false);
+  const [copyError, setCopyError] = useState("");
 
-  const copyToClipboard = useCallback((text: string) => {
+  const copyToClipboard = useCallback(async (text: string) => {
     if (!text) return;
 
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        setCopiedText(true);
-        setTimeout(() => setCopiedText(false), 2000);
-      })
-      .catch(() => {});
+    setCopiedText(false);
+    setCopyError("");
+
+    const result = await copyBlueprintStringToClipboard(text);
+    if (result.status !== ClipboardCopyStatus.Copied) {
+      setCopyError(result.errorMessage);
+      return;
+    }
+
+    setCopiedText(true);
+    setTimeout(() => setCopiedText(false), 2000);
   }, []);
 
-  return [copiedText, copyToClipboard];
+  return { copiedText, copyError, copyToClipboard };
 };
 
 export default useCopyToClipboard;
