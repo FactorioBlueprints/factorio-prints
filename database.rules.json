@@ -80,8 +80,15 @@
 		},
 		"byTag": {
 			".read": "true",
-			".write": "true",
-			".indexOn": [".value"]
+			".indexOn": [".value"],
+			"$category": {
+				"$tag": {
+					"$blueprintId": {
+						".write": "auth != null && (root.child('blueprints').child($blueprintId).child('author').child('userId').val() === auth.uid || root.child('moderators').child(auth.uid).val() === true)",
+						".validate": "newData.isBoolean()"
+					}
+				}
+			}
 		}
 	}
 }
