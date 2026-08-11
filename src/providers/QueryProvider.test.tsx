@@ -37,13 +37,18 @@ vi.mock("../hooks/useHighWatermarkSync", () => ({
   useHighWatermarkSync: vi.fn(),
 }));
 
-vi.mock("../localStorage", () => ({
-  CACHE_BUSTER: "test-cache-buster",
-  STORAGE_KEYS: {
-    QUERY_CACHE: "test-query-cache",
-  },
-  createIDBPersister: mocks.createIDBPersister,
-}));
+vi.mock("../localStorage", async (importOriginal) => {
+  const localStorage = await importOriginal<typeof import("../localStorage")>();
+
+  return {
+    ...localStorage,
+    CACHE_BUSTER: "test-cache-buster",
+    STORAGE_KEYS: {
+      QUERY_CACHE: "test-query-cache",
+    },
+    createIDBPersister: mocks.createIDBPersister,
+  };
+});
 
 interface Deferred<T> {
   promise: Promise<T>;
@@ -69,6 +74,24 @@ function createPersister(
     persistClient: vi.fn().mockResolvedValue(undefined),
     restoreClient: vi.fn(restoreClient),
     removeClient: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
+function createDeniedStorage(): Storage {
+  const securityError = new DOMException("Test storage operation denied", "SecurityError");
+  return {
+    clear: () => undefined,
+    getItem: () => {
+      throw securityError;
+    },
+    key: () => null,
+    length: 0,
+    removeItem: () => {
+      throw securityError;
+    },
+    setItem: () => {
+      throw securityError;
+    },
   };
 }
 
@@ -135,6 +158,64 @@ describe("QueryProvider", () => {
       contentAddressedBlueprintStaleTime: QUERY_CACHE_RETENTION_MILLISECONDS,
       blueprintTagsGarbageCollectionTime: QUERY_CACHE_RETENTION_MILLISECONDS,
       blueprintTagsStaleTime: QUERY_CACHE_RETENTION_MILLISECONDS,
+    });
+  });
+
+  it.each([
+    [
+      "a throwing getter",
+      () => {
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          get: () => {
+            throw new DOMException("Test storage access denied", "SecurityError");
+          },
+        });
+      },
+    ],
+    [
+      "a null object",
+      () => {
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          value: null,
+        });
+      },
+    ],
+    [
+      "a nonconforming object",
+      () => {
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          value: { getItem: () => null },
+        });
+      },
+    ],
+    [
+      "denied operations",
+      () => {
+        Object.defineProperty(window, "localStorage", {
+          configurable: true,
+          value: createDeniedStorage(),
+        });
+      },
+    ],
+  ])("uses quiet no-op persistence for %s", (_description, configureStorage) => {
+    configureStorage();
+    mocks.createIDBPersister.mockReturnValue(createPersister());
+
+    renderProvider(<div>application</div>);
+
+    expect({
+      content: screen.getByText("application").textContent,
+      syncPersisterCalls: mocks.createSyncStoragePersister.mock.calls,
+      captureExceptionCalls: mocks.captureException.mock.calls,
+      captureMessageCalls: mocks.captureMessage.mock.calls,
+    }).toStrictEqual({
+      content: "application",
+      syncPersisterCalls: [],
+      captureExceptionCalls: [],
+      captureMessageCalls: [],
     });
   });
 

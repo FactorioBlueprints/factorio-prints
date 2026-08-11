@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { useCallback, useMemo, useState } from "react";
 import { app } from "../base";
+import { saveToStorage } from "../localStorage";
 
 export interface UseAuthProvidersReturn {
   googleProvider: GoogleAuthProvider;
@@ -117,7 +118,7 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 
       try {
         await sendSignInLinkToEmail(getAuth(app), emailAddress, actionCodeSettings);
-        localStorage.setItem("emailForSignIn", emailAddress);
+        saveToStorage("emailForSignIn", emailAddress);
         alert("Check your email for a sign-in link!");
         onAuthSuccess?.();
       } catch {

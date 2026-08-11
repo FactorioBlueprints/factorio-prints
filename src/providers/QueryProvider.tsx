@@ -10,7 +10,12 @@ import type React from "react";
 import { useMemo } from "react";
 import useBlueprintCacheSync from "../hooks/useBlueprintCacheSync";
 import { useHighWatermarkSync } from "../hooks/useHighWatermarkSync";
-import { CACHE_BUSTER, createIDBPersister, STORAGE_KEYS } from "../localStorage";
+import {
+  CACHE_BUSTER,
+  createIDBPersister,
+  getSafeLocalStorage,
+  STORAGE_KEYS,
+} from "../localStorage";
 import { queryClient, QUERY_CACHE_RETENTION_MILLISECONDS } from "./queryClient";
 
 interface BlueprintCacheSyncProviderProps {
@@ -34,30 +39,16 @@ const noOpPersister: Persister = {
 };
 
 function createLocalStoragePersister(): Persister | undefined {
-  if (typeof window === "undefined") {
+  const storage = getSafeLocalStorage();
+  if (!storage) {
     return undefined;
   }
 
-  try {
-    const storage = window.localStorage;
-    const testKey = "__factorio_prints_storage_test__";
-    storage.setItem(testKey, testKey);
-    storage.removeItem(testKey);
-
-    return createSyncStoragePersister({
-      storage,
-      key: STORAGE_KEYS.QUERY_CACHE,
-      throttleTime: 1000,
-    });
-  } catch (error) {
-    captureException(error, {
-      tags: {
-        component: "QueryProvider",
-        errorType: "localStorage-access",
-      },
-    });
-    return undefined;
-  }
+  return createSyncStoragePersister({
+    storage,
+    key: STORAGE_KEYS.QUERY_CACHE,
+    throttleTime: 1000,
+  });
 }
 
 function createFallbackPersister(
