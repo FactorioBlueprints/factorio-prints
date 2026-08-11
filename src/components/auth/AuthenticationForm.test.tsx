@@ -64,7 +64,7 @@ describe("AuthenticationForm", () => {
     ]);
   });
 
-  it("shows and reports provider authentication failures", async () => {
+  it("shows popup-blocked failures without reporting them", async () => {
     const authenticationError = new FirebaseError("auth/popup-blocked", "Popup blocked");
     const onAuthSuccess = vi.fn();
     authenticationMocks.signInWithPopup.mockRejectedValue(authenticationError);
@@ -79,25 +79,17 @@ describe("AuthenticationForm", () => {
       onAuthSuccessCalls: onAuthSuccess.mock.calls,
     }).toStrictEqual({
       alertText: "The sign-in popup was blocked. Allow popups for this site and try again.",
-      captureExceptionCalls: [
-        [
-          authenticationError,
-          {
-            tags: {
-              component: "authentication",
-              operation: "provider-sign-in",
-            },
-            extra: { authenticationErrorCode: "auth/popup-blocked" },
-          },
-        ],
-      ],
+      captureExceptionCalls: [],
       onAuthSuccessCalls: [],
     });
   });
 
-  it("keeps user-cancelled popups silent", async () => {
+  it.each([
+    ["auth/popup-closed-by-user", "Popup closed"],
+    ["auth/cancelled-popup-request", "Popup cancelled"],
+  ])("keeps %s failures silent", async (errorCode, errorMessage) => {
     authenticationMocks.signInWithPopup.mockRejectedValue(
-      new FirebaseError("auth/popup-closed-by-user", "Popup closed"),
+      new FirebaseError(errorCode, errorMessage),
     );
     const { result } = renderHook(() => useAuthProviders());
 
@@ -109,6 +101,51 @@ describe("AuthenticationForm", () => {
     }).toStrictEqual({
       authenticationError: undefined,
       captureExceptionCalls: [],
+    });
+  });
+
+  it("shows network failures without reporting them", async () => {
+    authenticationMocks.signInWithPopup.mockRejectedValue(
+      new FirebaseError("auth/network-request-failed", "Network failure"),
+    );
+    const { result } = renderHook(() => useAuthProviders());
+
+    await act(() => result.current.authenticateWithProvider(result.current.githubProvider));
+
+    expect({
+      authenticationError: result.current.authenticationError,
+      captureExceptionCalls: authenticationMocks.captureException.mock.calls,
+    }).toStrictEqual({
+      authenticationError:
+        "Unable to reach the authentication service. Check your connection and try again.",
+      captureExceptionCalls: [],
+    });
+  });
+
+  it("shows and reports unexpected provider failures", async () => {
+    const authenticationError = new FirebaseError("auth/internal-error", "Unexpected failure");
+    authenticationMocks.signInWithPopup.mockRejectedValue(authenticationError);
+    const { result } = renderHook(() => useAuthProviders());
+
+    await act(() => result.current.authenticateWithProvider(result.current.googleProvider));
+
+    expect({
+      authenticationError: result.current.authenticationError,
+      captureExceptionCalls: authenticationMocks.captureException.mock.calls,
+    }).toStrictEqual({
+      authenticationError: "Unable to sign in. Please try again.",
+      captureExceptionCalls: [
+        [
+          authenticationError,
+          {
+            tags: {
+              component: "authentication",
+              operation: "provider-sign-in",
+            },
+            extra: { authenticationErrorCode: "auth/internal-error" },
+          },
+        ],
+      ],
     });
   });
 
