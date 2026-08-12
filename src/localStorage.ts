@@ -1,6 +1,8 @@
 import { addBreadcrumb, captureException } from "@sentry/react";
 import { createStore, del } from "idb-keyval";
 import {
+  MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+  type PayloadRejection,
   PersistenceStore,
   type PersistResult,
   type RestoreResult,
@@ -677,10 +679,49 @@ type StorageOperation = "persist" | "restore" | "delete";
 type WorkerOperationResult = { success: boolean; data?: any };
 
 let fallbackPersistenceStore: PersistenceStore | undefined;
+const discardedPayloadKeys = new Set<string>();
 
 function getFallbackPersistenceStore(): PersistenceStore {
   fallbackPersistenceStore ??= new PersistenceStore(indexedDbStore);
   return fallbackPersistenceStore;
+}
+
+function isWorkerPayloadTransferError(error: unknown): boolean {
+  if (error === null || typeof error !== "object") {
+    return false;
+  }
+
+  const namedError = error as { message?: unknown; name?: unknown };
+  if (namedError.name === "DataCloneError") {
+    return true;
+  }
+
+  if (typeof namedError.message !== "string") {
+    return false;
+  }
+
+  const message = namedError.message.toLowerCase();
+  return message.includes("clone") && message.includes("out of memory");
+}
+
+async function discardRejectedPayload(key: string, rejection: PayloadRejection): Promise<void> {
+  if (discardedPayloadKeys.has(key)) {
+    return;
+  }
+
+  discardedPayloadKeys.add(key);
+  addBreadcrumb({
+    message: "IndexedDB worker persistence payload discarded",
+    category: "indexeddb",
+    level: "info",
+    data: {
+      key,
+      reason: rejection.reason,
+      serializedCharacters: rejection.serializedCharacters,
+      maximumCharacters: rejection.maximumCharacters,
+    },
+  });
+  await workerOperation("delete", key);
 }
 
 async function workerOperation(
@@ -735,7 +776,7 @@ async function workerOperation(
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const id = operationCounter++;
       const baseTimeout = type === "persist" ? 30000 : type === "delete" ? 5000 : 20000;
       const retryMultiplier = Math.min(retryCount + 1, 3);
@@ -822,6 +863,15 @@ async function workerOperation(
       }
     });
   } catch (error) {
+    if (type === "persist" && isWorkerPayloadTransferError(error)) {
+      const rejection: PayloadRejection = {
+        status: "payload-rejected",
+        reason: "post-message-failed",
+        maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+      };
+      return { success: false, data: rejection };
+    }
+
     if (
       error instanceof Error &&
       (error.message.includes("Connection to Indexed Database server lost") ||
@@ -883,6 +933,15 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
       try {
         const result = await workerOperation("persist", idbValidKey, client);
         const persistenceData = result.data as PersistResult["data"] | undefined;
+
+        if (persistenceData?.status === "payload-rejected") {
+          await discardRejectedPayload(idbValidKey, persistenceData);
+          return;
+        }
+
+        if (result.success) {
+          discardedPayloadKeys.delete(idbValidKey);
+        }
 
         if (persistenceData?.status === "unchanged") {
           logIndexedDbDebug("[IndexedDB] Cache state unchanged, skipping persistence");

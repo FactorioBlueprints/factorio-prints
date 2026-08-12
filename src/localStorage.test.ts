@@ -9,7 +9,10 @@ const workerState = vi.hoisted(() => ({
     | "error"
     | "initialization-error"
     | "null-initialization-error"
-    | "connection-closing",
+    | "connection-closing"
+    | "data-clone-error"
+    | "out-of-memory"
+    | "payload-too-large",
   throwDuringConstruction: false,
   constructionCount: 0,
   restoreMessageCount: 0,
@@ -39,6 +42,35 @@ vi.mock("./localStorage.worker.wrapper", () => ({
 
     postMessage(message: { type: string; id?: number; key?: string; data?: unknown }): void {
       workerState.messages.push(message);
+
+      if (message.type === "persist" && workerState.response === "data-clone-error") {
+        throw new DOMException("Test worker payload could not be cloned", "DataCloneError");
+      }
+
+      if (message.type === "persist" && workerState.response === "out-of-memory") {
+        throw new Error(
+          "Failed to execute 'postMessage' on 'Worker': Test data cannot be cloned, out of memory",
+        );
+      }
+
+      if (message.type === "persist" && workerState.response === "payload-too-large") {
+        this.onmessage?.({
+          data: {
+            id: message.id,
+            success: true,
+            result: {
+              success: false,
+              data: {
+                status: "payload-rejected",
+                reason: "payload-too-large",
+                serializedCharacters: 9_000_000,
+                maximumCharacters: 8_388_608,
+              },
+            },
+          },
+        } as MessageEvent);
+        return;
+      }
 
       if (message.type === "init") {
         if (workerState.response === "null-initialization-error") {
@@ -106,7 +138,16 @@ vi.mock("./localStorage.worker.wrapper", () => ({
             },
           },
         } as MessageEvent);
+        return;
       }
+
+      this.onmessage?.({
+        data: {
+          id: message.id,
+          success: true,
+          result: { success: true },
+        },
+      } as MessageEvent);
     }
 
     terminate(): void {}
@@ -229,8 +270,218 @@ describe("IndexedDB worker orchestration", () => {
     workerState.throwDuringConstruction = false;
     workerState.constructionCount = 0;
     workerState.restoreMessageCount = 0;
+    sentryState.addBreadcrumb.mockReset();
+    sentryState.captureException.mockReset();
     vi.resetModules();
   });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("persists a payload through the worker without serializing it on the main thread", async () => {
+    vi.useFakeTimers();
+    const stringifySpy = vi.spyOn(JSON, "stringify");
+    const { createIDBPersister } = await import("./localStorage");
+    const cacheKey = "FACTORIO_PRINTS_QUERY_CACHE_MAIN_THREAD_TEST";
+    const client = { data: "Test cache payload" };
+    const persister = createIDBPersister(cacheKey);
+
+    await persister.persistClient(client);
+    await vi.advanceTimersByTimeAsync(2_000);
+    const mainThreadSerializations = stringifySpy.mock.calls.filter(([value]) => value === client);
+    stringifySpy.mockRestore();
+
+    expect({
+      mainThreadSerializations,
+      messages: workerState.messages.map(({ data, ...message }) => ({
+        ...message,
+        data: data === client ? "client" : data,
+      })),
+      breadcrumbs: sentryState.addBreadcrumb.mock.calls,
+      capturedExceptions: sentryState.captureException.mock.calls,
+    }).toStrictEqual({
+      mainThreadSerializations: [],
+      messages: [
+        {
+          type: "init",
+          storeConfig: {
+            dbName: "factorio-prints-db",
+            storeName: "query-cache-store",
+          },
+          data: undefined,
+        },
+        {
+          type: "persist",
+          id: 0,
+          key: cacheKey,
+          data: "client",
+        },
+      ],
+      breadcrumbs: [],
+      capturedExceptions: [],
+    });
+  });
+
+  it("reports and deletes a worker-rejected payload once until a later persist succeeds", async () => {
+    vi.useFakeTimers();
+    workerState.response = "payload-too-large";
+    const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+    const { createIDBPersister } = await import("./localStorage");
+    const cacheKey = "FACTORIO_PRINTS_QUERY_CACHE_OVERSIZED_PAYLOAD_TEST";
+    const secondCacheKey = "FACTORIO_PRINTS_QUERY_CACHE_SECOND_OVERSIZED_PAYLOAD_TEST";
+    const clientLabels = new Map<unknown, string>([
+      [{ data: "Test first oversized payload" }, "first-oversized"],
+      [{ data: "Test second oversized payload" }, "second-oversized"],
+      [{ data: "Test other key oversized payload" }, "other-key-oversized"],
+      [{ data: "Test bounded payload" }, "bounded"],
+      [{ data: "Test third oversized payload" }, "third-oversized"],
+    ]);
+    const [firstOversized, secondOversized, otherKeyOversized, bounded, thirdOversized] = [
+      ...clientLabels.keys(),
+    ];
+    const persister = createIDBPersister(cacheKey);
+    const secondPersister = createIDBPersister(secondCacheKey);
+
+    await persister.persistClient(firstOversized);
+    await vi.advanceTimersByTimeAsync(2_000);
+    await persister.persistClient(secondOversized);
+    await vi.advanceTimersByTimeAsync(2_000);
+    await secondPersister.persistClient(otherKeyOversized);
+    await vi.advanceTimersByTimeAsync(2_000);
+    workerState.response = "success";
+    await persister.persistClient(bounded);
+    await vi.advanceTimersByTimeAsync(2_000);
+    workerState.response = "payload-too-large";
+    await persister.persistClient(thirdOversized);
+    await vi.advanceTimersByTimeAsync(2_000);
+
+    const discardBreadcrumb = (key: string) => [
+      {
+        message: "IndexedDB worker persistence payload discarded",
+        category: "indexeddb",
+        level: "info",
+        data: {
+          key,
+          reason: "payload-too-large",
+          serializedCharacters: 9_000_000,
+          maximumCharacters: 8_388_608,
+        },
+      },
+    ];
+
+    expect({
+      messages: workerState.messages.map(({ data, ...message }) => ({
+        ...message,
+        data: clientLabels.get(data) ?? data,
+      })),
+      clearTimeoutCalls: clearTimeoutSpy.mock.calls.length,
+      remainingTimers: vi.getTimerCount(),
+      breadcrumbs: sentryState.addBreadcrumb.mock.calls,
+      capturedExceptions: sentryState.captureException.mock.calls,
+    }).toStrictEqual({
+      messages: [
+        {
+          type: "init",
+          storeConfig: {
+            dbName: "factorio-prints-db",
+            storeName: "query-cache-store",
+          },
+          data: undefined,
+        },
+        { type: "persist", id: 0, key: cacheKey, data: "first-oversized" },
+        { type: "delete", id: 1, key: cacheKey, data: null },
+        { type: "persist", id: 2, key: cacheKey, data: "second-oversized" },
+        { type: "persist", id: 3, key: secondCacheKey, data: "other-key-oversized" },
+        { type: "delete", id: 4, key: secondCacheKey, data: null },
+        { type: "persist", id: 5, key: cacheKey, data: "bounded" },
+        { type: "persist", id: 6, key: cacheKey, data: "third-oversized" },
+        { type: "delete", id: 7, key: cacheKey, data: null },
+      ],
+      clearTimeoutCalls: 9,
+      remainingTimers: 0,
+      breadcrumbs: [
+        discardBreadcrumb(cacheKey),
+        discardBreadcrumb(secondCacheKey),
+        discardBreadcrumb(cacheKey),
+      ],
+      capturedExceptions: [],
+    });
+
+    clearTimeoutSpy.mockRestore();
+  });
+
+  it.each(["data-clone-error", "out-of-memory"] as const)(
+    "reports and deletes once across repeated synchronous %s postMessage failures",
+    async (workerFailure) => {
+      vi.useFakeTimers();
+      workerState.response = workerFailure;
+      const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+      const { createIDBPersister } = await import("./localStorage");
+      const cacheKey = "FACTORIO_PRINTS_QUERY_CACHE_POST_MESSAGE_FAILURE_TEST";
+      const clientLabels = new Map<unknown, string>([
+        [{ data: "Test first rejected payload" }, "first-rejected"],
+        [{ data: "Test second rejected payload" }, "second-rejected"],
+        [{ data: "Test later payload" }, "later"],
+      ]);
+      const [firstRejected, secondRejected, later] = [...clientLabels.keys()];
+      const persister = createIDBPersister(cacheKey);
+
+      await persister.persistClient(firstRejected);
+      await vi.advanceTimersByTimeAsync(2_000);
+      await persister.persistClient(secondRejected);
+      await vi.advanceTimersByTimeAsync(2_000);
+      workerState.response = "success";
+      await persister.persistClient(later);
+      await vi.advanceTimersByTimeAsync(2_000);
+
+      expect({
+        messages: workerState.messages.map(({ data, ...message }) => ({
+          ...message,
+          data: clientLabels.get(data) ?? data,
+        })),
+        clearTimeoutCalls: clearTimeoutSpy.mock.calls.length,
+        remainingTimers: vi.getTimerCount(),
+        breadcrumbs: sentryState.addBreadcrumb.mock.calls,
+        capturedExceptions: sentryState.captureException.mock.calls,
+      }).toStrictEqual({
+        messages: [
+          {
+            type: "init",
+            storeConfig: {
+              dbName: "factorio-prints-db",
+              storeName: "query-cache-store",
+            },
+            data: undefined,
+          },
+          { type: "persist", id: 0, key: cacheKey, data: "first-rejected" },
+          { type: "delete", id: 1, key: cacheKey, data: null },
+          { type: "persist", id: 2, key: cacheKey, data: "second-rejected" },
+          { type: "persist", id: 3, key: cacheKey, data: "later" },
+        ],
+        clearTimeoutCalls: 5,
+        remainingTimers: 0,
+        breadcrumbs: [
+          [
+            {
+              message: "IndexedDB worker persistence payload discarded",
+              category: "indexeddb",
+              level: "info",
+              data: {
+                key: cacheKey,
+                reason: "post-message-failed",
+                serializedCharacters: undefined,
+                maximumCharacters: 8_388_608,
+              },
+            },
+          ],
+        ],
+        capturedExceptions: [],
+      });
+
+      clearTimeoutSpy.mockRestore();
+    },
+  );
 
   it("clears initialization and operation timers as soon as restoration succeeds", async () => {
     const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
