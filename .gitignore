@@ -39,3 +39,9 @@ public/**/*.js
 
 # TypeScript build info
 tsconfig.tsbuildinfo
+
+# Staging environment
+.env.staging
+
+# Functions build output
+functions/lib
