@@ -11,6 +11,7 @@ import {
   groupMobileIosRecursion,
   isFirebaseAuthDatabaseClosingError,
   isUnactionableError,
+  normalizeAndFilterThirdPartyNoise,
 } from "./utils/sentryFiltering";
 import { sentryIntegrations } from "./utils/sentryIntegrations";
 import { setupTooltipCleanup } from "./utils/cleanupTooltips";
@@ -224,6 +225,10 @@ init({
 
     groupMobileIosRecursion(event);
 
+    if (normalizeAndFilterThirdPartyNoise(event)) {
+      return null;
+    }
+
     if (eventMessage.includes("_nonReactive")) {
       event.contexts = {
         ...event.contexts,
@@ -319,10 +324,6 @@ init({
       }
     }
 
-    // 🔇 Filter transient network errors
-    if (error instanceof TypeError && error.message === "Failed to fetch") {
-      return null;
-    }
     if (event.exception?.values?.[0]?.stacktrace?.frames) {
       const frames = event.exception.values[0].stacktrace.frames;
       const hasExtensionFrame = frames.some(
