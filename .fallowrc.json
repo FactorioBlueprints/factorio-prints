@@ -1,4 +1,0 @@
-{
-	"$schema": "./node_modules/fallow/schema.json",
-	"ignoreDependencies": ["@firebase/app", "less"]
-}
