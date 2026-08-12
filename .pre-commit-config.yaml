@@ -25,7 +25,6 @@ repos:
     rev: v1.38.0
     hooks:
       - id: yamllint
-        args: ["-d", "{extends: default, rules: {line-length: disable}}"]
         types: [yaml]
         exclude: "^(node_modules/|dist/|storybook-static/|\\.llm/|\\.claude/|pnpm-lock\\.yaml)"
 

@@ -64,12 +64,12 @@ format: install
 # Run formatter, linter, and type checker
 [group('test')]
 check: install route-generate
-    vp check {{ if ci != "" { "" } else { "--fix" } }}
+    vp run --cache check {{ if ci != "" { "" } else { "--fix" } }}
 
 # `vp run test:run`
 [group('test')]
 test: install route-generate
-    vp run test:run
+    vp run --cache test:run
     vp run test:database-rules
 
 # `vp run test:run`
@@ -81,11 +81,11 @@ test-ci: install-ci route-generate-ci
 # `vp run typecheck`
 [group('test')]
 typecheck: install route-generate
-    vp run typecheck
+    vp run --cache typecheck
 
-# `uv tool run pre-commit run`
+# `uv tool run pre-commit run --all-files`
 [group('test')]
-hooks:
+pre-commit: install
     uv tool run pre-commit run --all-files
 
 # `vp run build`
@@ -105,8 +105,15 @@ build-ci: route-generate-ci install-ci
 
 # Run all pre-commit checks
 [group('build')]
-precommit: check build-no-secrets test
+[arg("quick", long, value="true", help="Skip tests")]
+verify quick="": check build-no-secrets pre-commit
+    {{ if quick != "true" { "just test" } else { "true" } }}
     @echo "✅ All pre-commit checks passed!"
+
+# Deprecated alias for `verify`
+[group('build')]
+[arg("quick", long, value="true", help="Skip tests")]
+precommit quick="": (verify quick)
 
 # Fail if there are local modifications or untracked files
 [group('git')]
