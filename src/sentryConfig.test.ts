@@ -16,4 +16,8 @@ describe("Sentry startup configuration", () => {
     expect(mainSource).toContain('eventMessage.includes("_nonReactive")');
     expect(mainSource).toContain("router: getRouterDiagnostics()");
   });
+
+  it("groups diagnosed mobile iOS inline recursion before sending", () => {
+    expect(mainSource).toContain("groupMobileIosRecursion(event)");
+  });
 });
