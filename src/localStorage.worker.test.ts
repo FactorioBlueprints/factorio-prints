@@ -1,5 +1,6 @@
 import { createStore, get, set } from "idb-keyval";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS } from "./localStorage.persistence";
 import { compressForStorage, decompressFromStorage } from "./utils/dataCompression";
 
 interface WorkerResponse {
@@ -218,5 +219,37 @@ describe("localStorage worker persistence protocol", () => {
       success: true,
     });
     expect(storedData).toStrictEqual(existingStoredData);
+  });
+
+  it("rejects an oversized payload without storing it", async () => {
+    const databaseName = "factorio-prints-worker-oversized-test-db";
+    const existingStoredData = compressForStorage(createPersistedClient("dana"));
+    await set(cacheKey, existingStoredData, createStore(databaseName, storeName));
+    const workerScope = await loadWorker(databaseName);
+
+    const response = await workerScope.dispatch({
+      type: "persist",
+      id: 600,
+      key: cacheKey,
+      data: { data: "x".repeat(MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS) },
+    });
+    const storedData = await get(cacheKey, createStore(databaseName, storeName));
+
+    expect({ response, storedData }).toStrictEqual({
+      response: {
+        id: 600,
+        result: {
+          success: false,
+          data: {
+            status: "payload-rejected",
+            reason: "payload-too-large",
+            serializedCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS + '{"data":""}'.length,
+            maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+          },
+        },
+        success: true,
+      },
+      storedData: existingStoredData,
+    });
   });
 });

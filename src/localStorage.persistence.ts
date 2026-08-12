@@ -6,6 +6,15 @@ import {
   type StoredData,
 } from "./utils/dataCompression";
 
+export const MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS = 8 * 1024 * 1024;
+
+export interface PayloadRejection {
+  status: "payload-rejected";
+  reason: "payload-too-large" | "post-message-failed";
+  serializedCharacters?: number;
+  maximumCharacters: number;
+}
+
 export interface PersistResult {
   success: boolean;
   data:
@@ -23,7 +32,8 @@ export interface PersistResult {
         requiredSize: number;
         availableSize: number;
         usedSize: number;
-      };
+      }
+    | PayloadRejection;
 }
 
 export interface RestoreResult {
@@ -68,6 +78,18 @@ export class PersistenceStore {
 
   async persist(key: string, client: unknown): Promise<PersistResult> {
     const fingerprint = createPersistenceFingerprint(client);
+    if (fingerprint.length > MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS) {
+      return {
+        success: false,
+        data: {
+          status: "payload-rejected",
+          reason: "payload-too-large",
+          serializedCharacters: fingerprint.length,
+          maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+        },
+      };
+    }
+
     if (fingerprint === this.lastPersistedFingerprint) {
       return {
         success: true,
