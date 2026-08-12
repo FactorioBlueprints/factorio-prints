@@ -1,7 +1,343 @@
-import { describe, expect, it } from "vite-plus/test";
-import { isFirebaseAuthDatabaseClosingError, isUnactionableError } from "./sentryFiltering";
+import type { Event, StackFrame } from "@sentry/react";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import {
+  groupMobileIosRecursion,
+  isFirebaseAuthDatabaseClosingError,
+  isUnactionableError,
+} from "./sentryFiltering";
+
+const chromeIosUserAgent =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/151.0.7103.56 Mobile/15E148 Safari/604.1";
+const mobileSafariUserAgent =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1";
+const desktopChromeUserAgent =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36";
+
+// Mirrors what @sentry/browser hands to beforeSend: the HttpContext integration copies
+// navigator.userAgent into request.headers, and contexts.browser is only derived server-side.
+function createMobileIosStackOverflowEvent(
+  route: string,
+  release: string,
+  frames: StackFrame[],
+  userAgent: string = chromeIosUserAgent,
+): Event {
+  return {
+    exception: {
+      values: [
+        {
+          type: "RangeError",
+          value: "Maximum call stack size exceeded.",
+          stacktrace: { frames },
+        },
+      ],
+    },
+    release,
+    request: {
+      url: `https://example.com${route}`,
+      headers: {
+        "User-Agent": userAgent,
+      },
+    },
+    transaction: route,
+  };
+}
 
 describe("Sentry error filtering", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("groups a Chrome iOS event identified only by its User-Agent header", () => {
+    const event = createMobileIosStackOverflowEvent("/view/example-print", "release-two", [
+      {
+        filename: "/view/example-print",
+        lineno: 187,
+      },
+    ]);
+
+    expect({ event, grouped: groupMobileIosRecursion(event) }).toStrictEqual({
+      event: {
+        contexts: {
+          mobile_ios_recursion: {
+            first_party_asset_frame_count: 0,
+            frame_count: 1,
+            frame_samples: ["<anonymous>@/view/example-print:187:0 × 1"],
+            inline_document_frame_count: 1,
+            release: "release-two",
+            repeated_frame_pattern: false,
+            route: "/view/example-print",
+          },
+        },
+        exception: {
+          values: [
+            {
+              type: "RangeError",
+              value: "Maximum call stack size exceeded.",
+              stacktrace: {
+                frames: [
+                  {
+                    filename: "/view/example-print",
+                    lineno: 187,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        fingerprint: ["mobile-ios-inline-document-recursion"],
+        release: "release-two",
+        request: {
+          url: "https://example.com/view/example-print",
+          headers: {
+            "User-Agent": chromeIosUserAgent,
+          },
+        },
+        tags: { mobile_ios_recursion: "inline-document" },
+        transaction: "/view/example-print",
+      },
+      grouped: true,
+    });
+  });
+
+  it("falls back to navigator.userAgent when the event has no User-Agent header", () => {
+    vi.stubGlobal("navigator", { userAgent: chromeIosUserAgent });
+    const event = createMobileIosStackOverflowEvent("/blueprints", "release-one", [
+      {
+        filename: "/blueprints",
+        lineno: 184,
+      },
+    ]);
+    delete event.request!.headers;
+
+    expect({
+      grouped: groupMobileIosRecursion(event),
+      fingerprint: event.fingerprint,
+    }).toStrictEqual({
+      grouped: true,
+      fingerprint: ["mobile-ios-inline-document-recursion"],
+    });
+  });
+
+  it("groups the four observed Chrome Mobile iOS inline recursion variants", () => {
+    const repeatedViewFrames = Array.from({ length: 4 }).flatMap(() => [
+      {
+        filename: "https://example.com/",
+        function: "Fk",
+        lineno: 224,
+        colno: 63,
+      },
+      {
+        filename: "https://example.com/",
+        function: "Hk",
+        lineno: 224,
+        colno: 408,
+      },
+    ]);
+    const repeatedPreviousRouteFrames = Array.from({ length: 4 }).flatMap(() => [
+      {
+        filename: "/view/example-blueprint",
+        function: "Fk",
+        lineno: 224,
+        colno: 63,
+      },
+      {
+        filename: "/view/example-blueprint",
+        function: "Hk",
+        lineno: 224,
+        colno: 408,
+      },
+    ]);
+    const cases = [
+      {
+        issueId: "FACTORIO-PRINTS-1JV",
+        event: createMobileIosStackOverflowEvent(
+          "/view/example-blueprint",
+          "release-one",
+          repeatedViewFrames,
+        ),
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1JW",
+        event: createMobileIosStackOverflowEvent(
+          "/search",
+          "release-one",
+          repeatedPreviousRouteFrames,
+        ),
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1JP",
+        event: createMobileIosStackOverflowEvent("/blueprints", "release-one", [
+          {
+            filename: "/blueprints",
+            lineno: 184,
+            context_line: ".fa-6x {",
+          },
+        ]),
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1KC",
+        event: createMobileIosStackOverflowEvent("/view/example-print", "release-two", [
+          {
+            filename: "/view/example-print",
+            lineno: 187,
+          },
+        ]),
+      },
+    ];
+
+    expect(
+      cases.map(({ event, issueId }) => ({
+        context: groupMobileIosRecursion(event) ? event.contexts?.mobile_ios_recursion : undefined,
+        fingerprint: event.fingerprint,
+        issueId,
+        tags: event.tags,
+      })),
+    ).toStrictEqual([
+      {
+        context: {
+          first_party_asset_frame_count: 0,
+          frame_count: 8,
+          frame_samples: [
+            "Fk@https://example.com/:224:63 × 4",
+            "Hk@https://example.com/:224:408 × 4",
+          ],
+          inline_document_frame_count: 8,
+          release: "release-one",
+          repeated_frame_pattern: true,
+          route: "/view/example-blueprint",
+        },
+        fingerprint: ["mobile-ios-inline-document-recursion"],
+        issueId: "FACTORIO-PRINTS-1JV",
+        tags: { mobile_ios_recursion: "inline-document" },
+      },
+      {
+        context: {
+          first_party_asset_frame_count: 0,
+          frame_count: 8,
+          frame_samples: [
+            "Fk@/view/example-blueprint:224:63 × 4",
+            "Hk@/view/example-blueprint:224:408 × 4",
+          ],
+          inline_document_frame_count: 8,
+          release: "release-one",
+          repeated_frame_pattern: true,
+          route: "/search",
+        },
+        fingerprint: ["mobile-ios-inline-document-recursion"],
+        issueId: "FACTORIO-PRINTS-1JW",
+        tags: { mobile_ios_recursion: "inline-document" },
+      },
+      {
+        context: {
+          first_party_asset_frame_count: 0,
+          frame_count: 1,
+          frame_samples: ["<anonymous>@/blueprints:184:0 × 1"],
+          inline_document_frame_count: 1,
+          release: "release-one",
+          repeated_frame_pattern: false,
+          route: "/blueprints",
+        },
+        fingerprint: ["mobile-ios-inline-document-recursion"],
+        issueId: "FACTORIO-PRINTS-1JP",
+        tags: { mobile_ios_recursion: "inline-document" },
+      },
+      {
+        context: {
+          first_party_asset_frame_count: 0,
+          frame_count: 1,
+          frame_samples: ["<anonymous>@/view/example-print:187:0 × 1"],
+          inline_document_frame_count: 1,
+          release: "release-two",
+          repeated_frame_pattern: false,
+          route: "/view/example-print",
+        },
+        fingerprint: ["mobile-ios-inline-document-recursion"],
+        issueId: "FACTORIO-PRINTS-1KC",
+        tags: { mobile_ios_recursion: "inline-document" },
+      },
+    ]);
+  });
+
+  it("preserves unrelated range errors and external script failures", () => {
+    const firstPartyRangeError = createMobileIosStackOverflowEvent("/search", "release-one", [
+      {
+        filename: "https://example.com/assets/application.js",
+        function: "renderResults",
+        lineno: 100,
+        colno: 20,
+      },
+    ]);
+    const otherRangeError = createMobileIosStackOverflowEvent("/search", "release-one", [
+      {
+        filename: "/search",
+        function: "renderResults",
+        lineno: 100,
+        colno: 20,
+      },
+    ]);
+    otherRangeError.exception!.values![0].value = "Invalid array length";
+    const safariStackOverflow = createMobileIosStackOverflowEvent(
+      "/search",
+      "release-one",
+      [
+        {
+          filename: "/search",
+          lineno: 100,
+          colno: 20,
+        },
+      ],
+      mobileSafariUserAgent,
+    );
+    const desktopChromeStackOverflow = createMobileIosStackOverflowEvent(
+      "/search",
+      "release-one",
+      [
+        {
+          filename: "/search",
+          lineno: 100,
+          colno: 20,
+        },
+      ],
+      desktopChromeUserAgent,
+    );
+    // A server-style browser context must not override the User-Agent the client actually sent.
+    desktopChromeStackOverflow.contexts = {
+      browser: { name: "Chrome Mobile iOS", version: "151.0.0" },
+    };
+    const advertisingScriptStackOverflow = createMobileIosStackOverflowEvent(
+      "/search",
+      "release-one",
+      [
+        {
+          filename: "https://ads.example.net/advertisement.js",
+          function: "renderAdvertisement",
+          lineno: 100,
+          colno: 20,
+        },
+      ],
+    );
+    const cases = [
+      firstPartyRangeError,
+      otherRangeError,
+      safariStackOverflow,
+      desktopChromeStackOverflow,
+      advertisingScriptStackOverflow,
+    ];
+    const expectedEvents = structuredClone(cases);
+
+    expect(
+      cases.map((event) => ({
+        event,
+        grouped: groupMobileIosRecursion(event),
+      })),
+    ).toStrictEqual(
+      expectedEvents.map((event) => ({
+        event,
+        grouped: false,
+      })),
+    );
+  });
+
   it("filters expected Firebase user transaction disconnect warnings", () => {
     const messages = [
       "[2026-07-27T18:07:41.068Z] @firebase/database: FIREBASE WARNING: transaction at /users/user-123 failed: disconnect",
