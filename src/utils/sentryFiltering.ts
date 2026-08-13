@@ -57,6 +57,11 @@ export function isUnactionableError(message: string): boolean {
     "dynamically imported module",
     "Importing a module script failed",
 
+    // Vite asset preload failures - the preload hint fails but the normal
+    // <link>/<script> fetch still succeeds, so the page renders fine
+    "Unable to preload CSS for",
+    "Unable to preload the module",
+
     // Firebase Realtime Database internal transport error
     "scriptTagHolder is null",
   ];

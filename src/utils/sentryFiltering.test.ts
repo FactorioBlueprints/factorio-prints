@@ -11,4 +11,15 @@ describe("Sentry error filtering", () => {
 
     expect(messages.map(isUnactionableError)).toStrictEqual([true, false, false]);
   });
+
+  it("filters Vite asset preload failures", () => {
+    const messages = [
+      "Unable to preload CSS for https://factorioprints.com/assets/RichText-BKC2Zd9i.css",
+      "Unable to preload CSS for /assets/index-CzBJOCTd.css",
+      "Unable to preload the module https://factorioprints.com/assets/RichText-CYTSpsh0.js",
+      "Unable to preload the user's saved blueprint",
+    ];
+
+    expect(messages.map(isUnactionableError)).toStrictEqual([true, true, true, false]);
+  });
 });
