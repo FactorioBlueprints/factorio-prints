@@ -78,7 +78,7 @@
 		"@vitejs/plugin-react": "6.0.5",
 		"fake-indexeddb": "6.2.5",
 		"fallow": "3.14.0",
-		"firebase-tools": "^15.25.1",
+		"firebase-tools": "^15.26.0",
 		"jsdom": "30.0.1",
 		"less": "4.8.1",
 		"markdownlint-cli2": "0.23.2",
