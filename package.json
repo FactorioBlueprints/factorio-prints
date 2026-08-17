@@ -67,7 +67,7 @@
 		"@tanstack/router-cli": "1.167.24",
 		"@tanstack/router-vite-plugin": "1.167.26",
 		"@testing-library/dom": "10.4.1",
-		"@testing-library/jest-dom": "7.0.0",
+		"@testing-library/jest-dom": "7.0.1",
 		"@testing-library/react": "16.3.2",
 		"@types/atob": "2.1.4",
 		"@types/lodash": "4.17.25",
