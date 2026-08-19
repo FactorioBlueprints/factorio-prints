@@ -29,6 +29,7 @@
 		"imgur:check-first-10": "tsx src/test-broken-imgur-finder-streaming.ts",
 		"imgur:scan-all": "tsx src/broken-imgur-finder-streaming.ts",
 		"imgur:scan-resume": "tsx src/broken-imgur-finder-streaming-resumable.ts",
+		"imgur:fix-interactive": "tsx src/fix-broken-imgur-interactive.ts",
 		"prepare": "VITE_GIT_HOOKS=0 vp config"
 	},
 	"dependencies": {

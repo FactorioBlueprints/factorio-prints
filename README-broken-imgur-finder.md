@@ -4,9 +4,16 @@ This script finds blueprints with broken Imgur image links by analyzing a local 
 
 ## 📦 Scripts
 
-- `npm run test-broken-imgur <backup.json>` - Test with first 10 blueprints from backup
-- `npm run find-broken-imgur <backup.json>` - Run full scan from backup
-- `npm run find-broken-imgur:resume <backup.json>` - Run resumable scan from backup
+### Finding Broken Images
+
+- `vp run imgur:check-one -- <backup.json> <blueprint-id>` - Check a specific blueprint
+- `vp run imgur:check-first-10 -- <backup.json>` - Test with first 10 blueprints from backup
+- `vp run imgur:scan-all -- <backup.json>` - Run full scan from backup
+- `vp run imgur:scan-resume -- <backup.json>` - Run resumable scan from backup
+
+### Fixing Broken Images
+
+- `vp run imgur:fix-interactive -- <backup.json> <blueprint-id>` - Interactive script that guides you through manual fixes
 
 ## 📊 Output
 
@@ -54,17 +61,47 @@ The resumable version (`find-broken-imgur:resume`) is useful for large scans:
 
 ## 📄 Example Usage
 
-```bash
-# Test with local backup (first 10 blueprints)
-npm run test-broken-imgur ./firebase-backup-2024-01-31.json
+### Checking for Broken Images
 
-# Full scan with local backup
-npm run find-broken-imgur ./firebase-backup-2024-01-31.json
+```bash
+# Check a specific blueprint
+vp run imgur:check-one -- ./backup.json -OTaHk_8pJg92J9_o8zQ
+
+# Test with first 10 blueprints
+vp run imgur:check-first-10 -- ./backup.json
+
+# Full scan
+vp run imgur:scan-all -- ./backup.json
 
 # Resumable scan (can interrupt with Ctrl+C and resume later)
-npm run find-broken-imgur:resume ./firebase-backup-2024-01-31.json
+vp run imgur:scan-resume -- ./backup.json
 ```
+
+### Fixing Broken Images
+
+```bash
+# Interactive fix process (guides you through manual steps)
+vp run imgur:fix-interactive -- ./backup.json -OTaHk_8pJg92J9_o8zQ
+```
+
+## 🔧 Fix Process
+
+The interactive fix script (`imgur:fix-interactive`) guides you through:
+
+1. Sending a Discord message to BlueprintBot to regenerate the image
+2. Downloading the generated image
+3. Uploading to imgur using the FactorioBlueprints account
+4. Updating the blueprint on factorioprints.com
+
+The script saves progress between steps, so you can resume if interrupted.
 
 ## 🚨 Large File Support
 
 The scripts use `stream-json` to parse JSON files in a streaming fashion, allowing them to process backup files that are too large to fit in memory. This is essential for production Firebase backups which can be several gigabytes in size.
+
+## ⚠️ Important Notes
+
+- Imgur returns 302 redirects for deleted images (not 404)
+- The scripts detect these redirects as broken images
+- Rate limiting is implemented to avoid hitting imgur's API limits
+- Fix scripts require manual interaction due to authentication requirements
