@@ -95,6 +95,15 @@ The interactive fix script (`imgur:fix-interactive`) guides you through:
 
 The script saves progress between steps, so you can resume if interrupted.
 
+### Automatic Imgur Upload
+
+Set one of these environment variables before running the interactive repair workflow:
+
+- `IMGUR_ACCESS_TOKEN` uploads to the authenticated account.
+- `IMGUR_CLIENT_ID` performs an anonymous upload through the registered application.
+
+Without either variable, the workflow pauses for a manual upload. API upload failures stop the workflow and preserve its progress file for a retry.
+
 ## 🚨 Large File Support
 
 The scripts use `stream-json` to parse JSON files in a streaming fashion, allowing them to process backup files that are too large to fit in memory. This is essential for production Firebase backups which can be several gigabytes in size.
