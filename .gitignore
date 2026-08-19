@@ -45,3 +45,8 @@ tsconfig.tsbuildinfo
 
 # Functions build output
 functions/lib
+
+# Broken Imgur scanner output
+/broken-imgur-checkpoint-streaming.json
+/broken-imgur-report.csv
+/broken-imgur-report.json
