@@ -52,6 +52,12 @@ const imgurUrlSchema = z
     const hostname = new URL(value).hostname;
     return hostname === "imgur.com" || hostname.endsWith(".imgur.com");
   }, "URL must point to imgur.com");
+const imgurUploadResponseSchema = z
+  .object({
+    data: z.object({ link: imgurUrlSchema }).strict(),
+    success: z.literal(true),
+  })
+  .strict();
 
 async function findBlueprintInBackup(
   backupFile: string,
@@ -103,6 +109,39 @@ function copyToClipboard(value: string): void {
     input: value,
     stdio: ["pipe", "ignore", "ignore"],
   });
+}
+
+function hasImgurUploadCredentials(): boolean {
+  return Boolean(process.env.IMGUR_ACCESS_TOKEN || process.env.IMGUR_CLIENT_ID);
+}
+
+function getImgurAuthorization(): string {
+  if (process.env.IMGUR_ACCESS_TOKEN) {
+    return `Bearer ${process.env.IMGUR_ACCESS_TOKEN}`;
+  }
+  if (process.env.IMGUR_CLIENT_ID) {
+    return `Client-ID ${process.env.IMGUR_CLIENT_ID}`;
+  }
+
+  throw new Error("IMGUR_ACCESS_TOKEN or IMGUR_CLIENT_ID is required for API uploads.");
+}
+
+async function uploadToImgur(imagePath: string, title: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("image", readFileSync(imagePath, { encoding: "base64" }));
+  formData.append("title", title);
+  formData.append("type", "base64");
+
+  const response = await fetch("https://api.imgur.com/3/image", {
+    method: "POST",
+    headers: { Authorization: getImgurAuthorization() },
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error(`Imgur upload failed with status ${response.status}.`);
+  }
+
+  return imgurUploadResponseSchema.parse(await response.json()).data.link;
 }
 
 function findNewestImage(directory: string): string | null {
@@ -255,15 +294,22 @@ async function fixBrokenImgurInteractive(backupFile: string, blueprintId: string
   // Step 4: Upload to imgur
   if (progress.step === FixStep.ImageDownloaded && progress.downloadedImagePath) {
     console.log("\n☁️  Step 4: Upload to imgur");
-    console.log("   1. Go to your imgur account");
-    openUrl("https://imgur.com/user/FactorioBlueprints");
+    let imgurUrl: string;
+    if (hasImgurUploadCredentials()) {
+      console.log("   Uploading with configured Imgur API credentials...");
+      imgurUrl = await uploadToImgur(progress.downloadedImagePath, progress.title);
+      console.log(`   Uploaded: ${imgurUrl}`);
+    } else {
+      console.log("   1. Go to your imgur account");
+      openUrl("https://imgur.com/user/FactorioBlueprints");
 
-    console.log('\n   2. Click "New post" and upload the image:');
-    console.log(`      ${progress.downloadedImagePath}`);
-    console.log(`\n   3. Use title: ${progress.title}`);
-    console.log('\n   4. After uploading, click ... then "Copy link"');
+      console.log('\n   2. Click "New post" and upload the image:');
+      console.log(`      ${progress.downloadedImagePath}`);
+      console.log(`\n   3. Use title: ${progress.title}`);
+      console.log('\n   4. After uploading, click ... then "Copy link"');
 
-    const imgurUrl = imgurUrlSchema.parse(await promptUser("Paste the new imgur URL:"));
+      imgurUrl = imgurUrlSchema.parse(await promptUser("Paste the new imgur URL:"));
+    }
 
     progress.newImgurUrl = imgurUrl;
     progress.step = FixStep.ImgurUploaded;
