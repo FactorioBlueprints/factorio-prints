@@ -2,10 +2,12 @@ import { faCog } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import Image from "react-bootstrap/Image";
+import buildImageUrl, { ImageVariant } from "../helpers/buildImageUrl";
 
 interface BlueprintImageProps {
   image?: {
-    id?: string;
+    id: string;
+    type: string;
   };
   thumbnail?: string | null;
   isLoading: boolean;
@@ -20,12 +22,16 @@ const BlueprintImage: React.FC<BlueprintImageProps> = ({ image, thumbnail, isLoa
     );
   }
 
-  if (!image?.id || !thumbnail) {
+  if (!image || !thumbnail) {
     return null;
   }
 
   return (
-    <a href={`http://imgur.com/${image.id}`} target="_blank" rel="noopener noreferrer">
+    <a
+      href={buildImageUrl(image.id, image.type, ImageVariant.Original)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <Image thumbnail className="border-warning" src={thumbnail} referrerPolicy="no-referrer" />
     </a>
   );
