@@ -1,0 +1,23 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "factorio-prints-images",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-08-21",
+	"compatibility_flags": ["nodejs_compat"],
+	"r2_buckets": [
+		{
+			"binding": "IMAGES",
+			"bucket_name": "factorio-prints-images",
+		},
+	],
+	"analytics_engine_datasets": [
+		{
+			"binding": "IMAGE_GATEWAY_METRICS",
+			"dataset": "factorio_prints_image_gateway",
+		},
+	],
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1,
+	},
+}
