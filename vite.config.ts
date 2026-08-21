@@ -30,6 +30,14 @@ export const createViteConfiguration = (
   const version = getReleaseVersion(environment);
 
   return {
+    run: {
+      tasks: {
+        check: {
+          command: "vp check",
+          dependsOn: ["check:images"],
+        },
+      },
+    },
     fmt: {
       overrides: [
         {
