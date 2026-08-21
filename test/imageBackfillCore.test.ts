@@ -137,10 +137,15 @@ describe("image downloading", () => {
       sha256: "374ffede23adbc8bc625205f4bf86750807ffb6ce71fc7d10cac8bded0872bf5",
       sourceUrl: "https://example.com/image.jpeg",
     });
-    expect(fetcher).toHaveBeenCalledExactlyOnceWith("https://example.com/image.jpeg", {
-      redirect: "manual",
-      signal: expect.any(AbortSignal),
-    });
+    expect(fetcher.mock.calls).toStrictEqual([
+      [
+        "https://example.com/image.jpeg",
+        {
+          redirect: "manual",
+          signal: expect.any(AbortSignal),
+        },
+      ],
+    ]);
   });
 
   test("classifies redirects and unprocessable variants as missing source images", async () => {

@@ -9,6 +9,7 @@
 		"dev": "vp dev",
 		"preview": "vp preview",
 		"check": "vp check",
+		"check:images": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/wrangler.log wrangler types workers/images/worker-configuration.d.ts --config workers/images/wrangler.jsonc && tsc --project workers/images/tsconfig.json",
 		"build": "vp run route:generate && tsc && vp build && VERIFY_SERVICE_WORKER_BUILD=true node node_modules/vitest/dist/cli.js run src/serviceWorkerTombstones.test.ts",
 		"build:staging": "vp run route:generate && tsc && vp build --mode staging",
 		"lint": "vp lint . --fix",
