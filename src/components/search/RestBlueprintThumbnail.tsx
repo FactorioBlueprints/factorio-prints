@@ -6,7 +6,7 @@ import Card from "react-bootstrap/Card";
 import Tooltip from "react-bootstrap/Tooltip";
 
 import type { RestBlueprintSummary } from "../../api/rest/types";
-import buildImageUrl from "../../helpers/buildImageUrl";
+import buildImageUrl, { ImageVariant } from "../../helpers/buildImageUrl";
 import { RichText } from "../core/text/RichText";
 import SafeOverlayTrigger from "../SafeOverlayTrigger";
 
@@ -30,7 +30,7 @@ const RestBlueprintThumbnail: React.FC<RestBlueprintThumbnailProps> = ({ bluepri
     if (!imgurId || !imgurType) {
       imageUrl = "/icons/entity-unknown.png";
     } else {
-      imageUrl = buildImageUrl(imgurId, imgurType, "b");
+      imageUrl = buildImageUrl(imgurId, imgurType, ImageVariant.Thumbnail);
     }
   } catch {
     imageUrl = "/icons/entity-unknown.png";

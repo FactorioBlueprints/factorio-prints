@@ -1,4 +1,4 @@
-import buildImageUrl from "../helpers/buildImageUrl";
+import buildImageUrl, { ImageVariant } from "../helpers/buildImageUrl";
 import {
   type EnrichedBlueprintSummary,
   type RawBlueprintSummary,
@@ -21,7 +21,7 @@ export const enrichBlueprintSummary = (
   if (rawBlueprintSummary.imgurId) {
     const imgurId = rawBlueprintSummary.imgurId;
     const imgurType = rawBlueprintSummary.imgurType || "image/png";
-    thumbnail = buildImageUrl(imgurId, imgurType, "b");
+    thumbnail = buildImageUrl(imgurId, imgurType, ImageVariant.Thumbnail);
   }
 
   const enrichedBlueprintSummary = {

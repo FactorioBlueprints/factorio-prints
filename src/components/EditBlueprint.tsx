@@ -25,7 +25,7 @@ import { z } from "zod";
 import Blueprint, { type V15DecodedObject } from "../Blueprint";
 import { app } from "../base";
 import noImageAvailable from "../gif/No_available_image.gif";
-import buildImageUrl from "../helpers/buildImageUrl";
+import buildImageUrl, { ImageVariant } from "../helpers/buildImageUrl";
 import generateTagSuggestions from "../helpers/generateTagSuggestions";
 import { sanitizeHtml } from "../helpers/sanitizeHtml";
 import { useEnrichedBlueprint } from "../hooks/useEnrichedBlueprint";
@@ -424,7 +424,7 @@ function EditBlueprintWrapper() {
     // Prefer new Imgur image format when available
     if (blueprintData?.image?.id) {
       const { id, type } = blueprintData.image;
-      const imageUrl = buildImageUrl(id, type, "b");
+      const imageUrl = buildImageUrl(id, type, ImageVariant.Thumbnail);
       return (
         <Form.Group as={Row} className="mb-3">
           <Form.Label column sm="2">
