@@ -49,7 +49,7 @@ describe("enrichBlueprint", () => {
   it("creates thumbnail from image data", () => {
     const result = enrichBlueprint(rawBlueprint, blueprintId);
     expect(result).not.toBeNull();
-    expect(result!.thumbnail).toBe("https://i.imgur.com/image-123l.png");
+    expect(result!.thumbnail).toBe("http://localhost:8787/legacy-imgur/image-123/large.png");
   });
 
   it("handles missing image id gracefully", () => {
@@ -75,7 +75,7 @@ describe("enrichBlueprint", () => {
     };
     const result = enrichBlueprint(blueprintWithJpegImage, blueprintId);
     expect(result).not.toBeNull();
-    expect(result!.thumbnail).toBe("https://i.imgur.com/image-456l.jpeg");
+    expect(result!.thumbnail).toBe("http://localhost:8787/legacy-imgur/image-456/large.jpeg");
   });
 
   it("skips malformed tag paths and reports to Sentry", () => {
@@ -197,7 +197,7 @@ describe("enrichBlueprint", () => {
     expect(result).toEqual({
       ...rawBlueprint,
       key: blueprintId,
-      thumbnail: "https://i.imgur.com/image-123l.png",
+      thumbnail: "http://localhost:8787/legacy-imgur/image-123/large.png",
       parsedData: expect.objectContaining({
         blueprint: expect.objectContaining({
           item: "blueprint",
