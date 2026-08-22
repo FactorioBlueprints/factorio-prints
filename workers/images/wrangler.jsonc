@@ -4,6 +4,9 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-08-21",
 	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"LEGACY_R2_READS_ENABLED": "true",
+	},
 	"r2_buckets": [
 		{
 			"binding": "IMAGES",
