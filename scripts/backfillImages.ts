@@ -26,7 +26,7 @@ const DEFAULT_REPORT_PATH = ".llm/image-backfill-report.json";
 
 const unknownRecordSchema = z.record(z.string(), z.unknown());
 const shallowRecordSchema = z.record(z.string(), z.boolean());
-const environmentSchema = z.object({
+export const imageR2EnvironmentSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().min(1),
   R2_ACCOUNT_ID: z.string().min(1),
   R2_BUCKET: z.string().min(1),
@@ -127,7 +127,7 @@ const getJson = async (requestUrl: string): Promise<unknown> => {
   return response.json();
 };
 
-const loadInventory = async (databaseUrl: string, concurrency: number) => {
+export const loadImageInventory = async (databaseUrl: string, concurrency: number) => {
   const [blueprintSummariesValue, rawBlueprintKeysValue] = await Promise.all([
     getJson(`${databaseUrl}/blueprintSummaries.json`),
     getJson(`${databaseUrl}/blueprints.json?shallow=true`),
@@ -153,7 +153,7 @@ const loadInventory = async (databaseUrl: string, concurrency: number) => {
   );
 };
 
-const listExistingObjectKeys = async (
+export const listExistingImageObjectKeys = async (
   client: S3Client,
   bucket: string,
   prefix: string,
@@ -178,7 +178,7 @@ const listExistingObjectKeys = async (
   return keys;
 };
 
-const putAndVerifyObject = async (
+export const putAndVerifyImageObject = async (
   client: S3Client,
   bucket: string,
   key: string,
@@ -239,7 +239,7 @@ const migrateImage = async (
         maximumBytes: options.maximumBytes,
         requestTimeoutMilliseconds: 20_000,
       });
-      await putAndVerifyObject(client, bucket, key, image, downloadedImage);
+      await putAndVerifyImageObject(client, bucket, key, image, downloadedImage);
       existingObjectKeys.add(key);
       variants.push({
         bytes: downloadedImage.bytes.length,
@@ -278,7 +278,7 @@ const countVariantStatuses = (images: ImageReport[]) => {
 const main = async () => {
   const options = parseCommandOptions();
   const startedAt = new Date().toISOString();
-  const inventory = await loadInventory(options.databaseUrl, options.concurrency);
+  const inventory = await loadImageInventory(options.databaseUrl, options.concurrency);
   const selectedImages = options.limit
     ? inventory.images.slice(0, options.limit)
     : inventory.images;
@@ -301,7 +301,7 @@ const main = async () => {
 
   let images: ImageReport[] = [];
   if (options.execute) {
-    const environment = environmentSchema.parse(process.env);
+    const environment = imageR2EnvironmentSchema.parse(process.env);
     const client = new S3Client({
       credentials: {
         accessKeyId: environment.R2_ACCESS_KEY_ID,
@@ -310,7 +310,7 @@ const main = async () => {
       endpoint: `https://${environment.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       region: "auto",
     });
-    const existingObjectKeys = await listExistingObjectKeys(
+    const existingObjectKeys = await listExistingImageObjectKeys(
       client,
       environment.R2_BUCKET,
       options.objectPrefix,
