@@ -17,6 +17,19 @@ enum GatewayMetric {
   Invalid = "invalid",
 }
 
+enum GatewaySource {
+  LegacyImgur = "legacy-imgur",
+  Unknown = "unknown",
+}
+
+enum GatewayDetail {
+  R2 = "r2",
+  R2Error = "r2-error",
+  R2Miss = "r2-miss",
+  Rollback = "rollback",
+  Validation = "validation",
+}
+
 interface ImageRequestPath {
   extension: string;
   imgurId: string;
@@ -44,16 +57,24 @@ const recordMetric = (
   metrics: AnalyticsEngineDataset,
   metric: GatewayMetric,
   variant: ImageVariant | "none",
+  source: GatewaySource,
+  detail: GatewayDetail,
 ) => {
   metrics.writeDataPoint({
     indexes: ["factorio-prints-image-gateway"],
-    blobs: [metric, variant],
+    blobs: [metric, variant, source, detail],
     doubles: [1],
   });
 };
 
 const invalidResponse = (environment: Env, status: number, message: string): Response => {
-  recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Invalid, "none");
+  recordMetric(
+    environment.IMAGE_GATEWAY_METRICS,
+    GatewayMetric.Invalid,
+    "none",
+    GatewaySource.Unknown,
+    GatewayDetail.Validation,
+  );
   return new Response(message, {
     status,
     headers: {
@@ -63,8 +84,18 @@ const invalidResponse = (environment: Env, status: number, message: string): Res
   });
 };
 
-const fallbackResponse = (environment: Env, path: ImageRequestPath): Response => {
-  recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Fallback, path.variant);
+const fallbackResponse = (
+  environment: Env,
+  path: ImageRequestPath,
+  detail: GatewayDetail,
+): Response => {
+  recordMetric(
+    environment.IMAGE_GATEWAY_METRICS,
+    GatewayMetric.Fallback,
+    path.variant,
+    GatewaySource.LegacyImgur,
+    detail,
+  );
   const suffix = imgurVariantSuffixes[path.variant];
   const location = `https://i.imgur.com/${path.imgurId}${suffix}.${path.extension}`;
   return new Response(null, {
@@ -81,8 +112,15 @@ const hitResponse = (
   object: R2Object,
   path: ImageRequestPath,
   body: ReadableStream | null,
+  source: GatewaySource,
 ): Response => {
-  recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Hit, path.variant);
+  recordMetric(
+    environment.IMAGE_GATEWAY_METRICS,
+    GatewayMetric.Hit,
+    path.variant,
+    source,
+    GatewayDetail.R2,
+  );
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set("etag", object.httpEtag);
@@ -92,7 +130,13 @@ const hitResponse = (
 };
 
 const r2ErrorResponse = (environment: Env, path: ImageRequestPath, error: unknown): Response => {
-  recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Error, path.variant);
+  recordMetric(
+    environment.IMAGE_GATEWAY_METRICS,
+    GatewayMetric.Error,
+    path.variant,
+    GatewaySource.LegacyImgur,
+    GatewayDetail.R2Error,
+  );
   console.error({
     event: "image_gateway_r2_error",
     imgurId: path.imgurId,
@@ -118,18 +162,21 @@ const handleImageRequest = async (request: Request, environment: Env): Promise<R
 
   const path = parseImageRequestPath(new URL(request.url).pathname);
   if (!path) return invalidResponse(environment, 404, "Image not found");
+  if (String(environment.LEGACY_R2_READS_ENABLED) !== "true") {
+    return fallbackResponse(environment, path, GatewayDetail.Rollback);
+  }
 
   const objectKey = `${r2ObjectPrefix}/${path.imgurId}/${path.variant}`;
   try {
     if (request.method === "HEAD") {
       const object = await environment.IMAGES.head(objectKey);
-      if (!object) return fallbackResponse(environment, path);
-      return hitResponse(environment, object, path, null);
+      if (!object) return fallbackResponse(environment, path, GatewayDetail.R2Miss);
+      return hitResponse(environment, object, path, null, GatewaySource.LegacyImgur);
     }
 
     const object = await environment.IMAGES.get(objectKey);
-    if (!object) return fallbackResponse(environment, path);
-    return hitResponse(environment, object, path, object.body);
+    if (!object) return fallbackResponse(environment, path, GatewayDetail.R2Miss);
+    return hitResponse(environment, object, path, object.body, GatewaySource.LegacyImgur);
   } catch (error) {
     return r2ErrorResponse(environment, path, error);
   }

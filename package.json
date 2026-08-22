@@ -16,6 +16,7 @@
 		"fmt": "vp fmt",
 		"fmt:ci": "vp fmt --check",
 		"images:backfill": "node scripts/backfillImages.ts",
+		"images:reconcile": "node scripts/reconcileImages.ts",
 		"test": "node node_modules/vitest/dist/cli.js",
 		"test:run": "node node_modules/vitest/dist/cli.js run",
 		"test:database-rules": "firebase emulators:exec --only database \"node --test test/database.rules.emulator.mjs\"",

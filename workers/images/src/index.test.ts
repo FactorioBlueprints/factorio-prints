@@ -27,6 +27,7 @@ const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment =
     environment: {
       IMAGES: images,
       IMAGE_GATEWAY_METRICS: { writeDataPoint },
+      LEGACY_R2_READS_ENABLED: "true",
     },
     get,
     head,
@@ -82,7 +83,7 @@ describe("handleImageRequest", () => {
     expect(writeDataPoint.mock.calls).toStrictEqual([
       [
         {
-          blobs: ["hit", "original"],
+          blobs: ["hit", "original", "legacy-imgur", "r2"],
           doubles: [1],
           indexes: ["factorio-prints-image-gateway"],
         },
@@ -138,7 +139,7 @@ describe("handleImageRequest", () => {
       expect(writeDataPoint.mock.calls).toStrictEqual([
         [
           {
-            blobs: ["fallback", variant],
+            blobs: ["fallback", variant, "legacy-imgur", "r2-miss"],
             doubles: [1],
             indexes: ["factorio-prints-image-gateway"],
           },
@@ -146,6 +147,39 @@ describe("handleImageRequest", () => {
       ]);
     },
   );
+
+  it("bypasses R2 and records a rollback fallback when legacy reads are disabled", async () => {
+    const { environment, get, head, writeDataPoint } = createEnvironment(createStoredImage());
+    const rollbackEnvironment = {
+      ...environment,
+      LEGACY_R2_READS_ENABLED: "false",
+    } as unknown as Env;
+
+    const response = await handleImageRequest(
+      new Request("https://images.example.com/legacy-imgur/alice100/original.png"),
+      rollbackEnvironment,
+    );
+
+    expect(await readResponse(response)).toStrictEqual({
+      body: null,
+      headers: {
+        "cache-control": "public, max-age=300",
+        location: "https://i.imgur.com/alice100.png",
+      },
+      status: 307,
+    });
+    expect(get.mock.calls).toStrictEqual([]);
+    expect(head.mock.calls).toStrictEqual([]);
+    expect(writeDataPoint.mock.calls).toStrictEqual([
+      [
+        {
+          blobs: ["fallback", "original", "legacy-imgur", "rollback"],
+          doubles: [1],
+          indexes: ["factorio-prints-image-gateway"],
+        },
+      ],
+    ]);
+  });
 
   it.each([
     "/legacy-imgur/alice-100/original.png",
@@ -175,7 +209,7 @@ describe("handleImageRequest", () => {
     expect(writeDataPoint.mock.calls).toStrictEqual([
       [
         {
-          blobs: ["invalid", "none"],
+          blobs: ["invalid", "none", "unknown", "validation"],
           doubles: [1],
           indexes: ["factorio-prints-image-gateway"],
         },
@@ -207,7 +241,7 @@ describe("handleImageRequest", () => {
     expect(writeDataPoint.mock.calls).toStrictEqual([
       [
         {
-          blobs: ["invalid", "none"],
+          blobs: ["invalid", "none", "unknown", "validation"],
           doubles: [1],
           indexes: ["factorio-prints-image-gateway"],
         },
@@ -241,7 +275,7 @@ describe("handleImageRequest", () => {
     expect(writeDataPoint.mock.calls).toStrictEqual([
       [
         {
-          blobs: ["hit", "large"],
+          blobs: ["hit", "large", "legacy-imgur", "r2"],
           doubles: [1],
           indexes: ["factorio-prints-image-gateway"],
         },
@@ -272,7 +306,7 @@ describe("handleImageRequest", () => {
     expect(writeDataPoint.mock.calls).toStrictEqual([
       [
         {
-          blobs: ["error", "thumbnail"],
+          blobs: ["error", "thumbnail", "legacy-imgur", "r2-error"],
           doubles: [1],
           indexes: ["factorio-prints-image-gateway"],
         },
