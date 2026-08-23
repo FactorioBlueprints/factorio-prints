@@ -2,11 +2,18 @@
 	"$schema": "../../node_modules/wrangler/config-schema.json",
 	"name": "factorio-prints-images",
 	"main": "src/index.ts",
-	"compatibility_date": "2026-08-21",
+	"compatibility_date": "2026-08-23",
 	"compatibility_flags": ["nodejs_compat"],
 	"vars": {
 		"LEGACY_R2_READS_ENABLED": "true",
 	},
+	"workers_dev": false,
+	"routes": [
+		{
+			"pattern": "images.factorioprints.com",
+			"custom_domain": true,
+		},
+	],
 	"r2_buckets": [
 		{
 			"binding": "IMAGES",
@@ -22,5 +29,31 @@
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 1,
+	},
+	"env": {
+		"preview": {
+			"name": "factorio-prints-images-preview",
+			"workers_dev": true,
+			"routes": [],
+			"vars": {
+				"LEGACY_R2_READS_ENABLED": "true",
+			},
+			"r2_buckets": [
+				{
+					"binding": "IMAGES",
+					"bucket_name": "factorio-prints-images",
+				},
+			],
+			"analytics_engine_datasets": [
+				{
+					"binding": "IMAGE_GATEWAY_METRICS",
+					"dataset": "factorio_prints_image_gateway_preview",
+				},
+			],
+			"observability": {
+				"enabled": true,
+				"head_sampling_rate": 1,
+			},
+		},
 	},
 }
