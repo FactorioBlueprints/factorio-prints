@@ -37,6 +37,7 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ENVIRONMENT: production-firebase
           SENTRY_RELEASE: ${{ github.sha }}
+          VITE_IMAGE_GATEWAY_ORIGIN: https://images.factorioprints.com
 
       - name: Verify Cloud Functions
         run: npm run verify:functions

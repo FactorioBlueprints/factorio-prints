@@ -44,6 +44,7 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ENVIRONMENT: production-cloudflare
           SENTRY_RELEASE: ${{ github.sha }}
+          VITE_IMAGE_GATEWAY_ORIGIN: https://images.factorioprints.com
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
