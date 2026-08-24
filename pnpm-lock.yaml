@@ -162,8 +162,8 @@ importers:
         specifier: 6.2.5
         version: 6.2.5
       fallow:
-        specifier: 3.16.0
-        version: 3.16.0
+        specifier: 3.17.0
+        version: 3.17.0
       firebase-tools:
         specifier: ^15.27.0
         version: 15.27.0(@types/node@26.2.0)(supports-color@10.2.2)
@@ -603,43 +603,43 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@fallow-cli/darwin-arm64@3.16.0':
-    resolution: {integrity: sha512-y3reFgZ/d8JOsCJyBtyi94mOVwxnfNNtEvQuxr3OyrjTGXk8efs4ww1wKg3NS3ZrfWUCt24bAl2Jx355NcRlQQ==}
+  '@fallow-cli/darwin-arm64@3.17.0':
+    resolution: {integrity: sha512-u9O4aQaTSdaZaa4MAVEZEiwOx6QQzChymyQPrxV6KvDcVbcl0oYSekJKdvN4gEqUY8ClMze9gWS1tbn/W3N4dQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@fallow-cli/darwin-x64@3.16.0':
-    resolution: {integrity: sha512-+0ch/wroWhCUoa426CRAtRZknD/vWa2vy8KsXkffWEUh4U3WQ4klIilGQvGTtRMO3C7qOp7ARLT9CPfCKgFTYw==}
+  '@fallow-cli/darwin-x64@3.17.0':
+    resolution: {integrity: sha512-l3tZJovnCa8j+im4qTl4GVSfrx4gisJYeHDwb5TbcdTGaWYz42gHriAaz5MhOR8S24q3xRegX8QrI8PA4XXU4g==}
     cpu: [x64]
     os: [darwin]
 
-  '@fallow-cli/linux-arm64-gnu@3.16.0':
-    resolution: {integrity: sha512-GdQWKYDu1/iIXKFJ+0dQs3Ro515FXKq3MhqAB0bzuYS7DiehiIXQ0+NgaWt4B/yo5MmckhdjrKzhE9jJLDVU8A==}
+  '@fallow-cli/linux-arm64-gnu@3.17.0':
+    resolution: {integrity: sha512-IAjS6qR4tHcRo1y5lzYT6mktN/ATPyPNrJ6yjwTORwwQV1YfMO58A5zGBfJlPBY+lUmaMZ9w37ftvH9a2AS4dQ==}
     cpu: [arm64]
     os: [linux]
 
-  '@fallow-cli/linux-arm64-musl@3.16.0':
-    resolution: {integrity: sha512-Iejp/ZugU2es7v4pZQw4/8+mqZCfhw3WWUns4pjhyXcXrggnS1kbnaSfS1jwZKDqlAKmTVS+oPJqIHg0pIj/Yg==}
+  '@fallow-cli/linux-arm64-musl@3.17.0':
+    resolution: {integrity: sha512-Oe1dvk5Wt5Bmnxfc6HufJTaFY9SEwDVrZpnSdVQlv+nvz7DzrTK1r91cR3Ip477ANSLa9XD/MHPMpfqqo0dlZg==}
     cpu: [arm64]
     os: [linux]
 
-  '@fallow-cli/linux-x64-gnu@3.16.0':
-    resolution: {integrity: sha512-sqov+wY5FmUNfXZufqLEEThFISNU1G2xUIZ+no1aT5TwFVNJ22uXaLidB5VMnxWugLx6yzXvIuwqs6PJ0b+FDA==}
+  '@fallow-cli/linux-x64-gnu@3.17.0':
+    resolution: {integrity: sha512-XgLU2a51zuky7gifjVDHuiJGToAReDsVCDcyDF84TQz/h3bqO0iRkpDL8dh7+HODku84+EffpK5ZHY19n6Ij0w==}
     cpu: [x64]
     os: [linux]
 
-  '@fallow-cli/linux-x64-musl@3.16.0':
-    resolution: {integrity: sha512-JZSDV8yYyXc0Dl/mWtGDPlng+wMpdd8P+nj7YEwyc8+9DYHDdk6xbSqT2KwSzI4pP57FcSuF4KuxM9W9BBZZhw==}
+  '@fallow-cli/linux-x64-musl@3.17.0':
+    resolution: {integrity: sha512-GnDZx2kbLKKdYAp05NSKv6CZHgzEKvhRd0btCKFMMpUEhdzmr4uh2Qb4UzKDBg/q2r1EhkzN4b/qC+tbFCmtwA==}
     cpu: [x64]
     os: [linux]
 
-  '@fallow-cli/win32-arm64-msvc@3.16.0':
-    resolution: {integrity: sha512-Nsmh9UlduwNqqM88brJKPs1honCv5wxqWSoQg2SRZdFxCf5D0HI912hfgj9YHhVVVfFZ3yqSOOqTMpyw+Djrrw==}
+  '@fallow-cli/win32-arm64-msvc@3.17.0':
+    resolution: {integrity: sha512-u9n5WzPuKuC1PKegKQknWtngAUJ2szQaRXsbY54s7UMqeFNyC+W04LV5D+sEZywU7L0kzL+Kck9LxFLXBQcgvA==}
     cpu: [arm64]
     os: [win32]
 
-  '@fallow-cli/win32-x64-msvc@3.16.0':
-    resolution: {integrity: sha512-ugyhSEEcyIHJOtQRAkJabd+/xlyHSkfd8uOxJCLnpt/i6h5Z27msbNh+m0S+QDIJ1eMAuBEWo66js/1rcJD8TQ==}
+  '@fallow-cli/win32-x64-msvc@3.17.0':
+    resolution: {integrity: sha512-/OcyxHuCKabzQ9hKIjM/CFJ9fr30n0Mw5MK6nzi5rn26mbYUgh073UZq4FONOpPJ/FqHtC726rxpgBtR4qS+gg==}
     cpu: [x64]
     os: [win32]
 
@@ -3370,13 +3370,13 @@ packages:
     resolution: {integrity: sha512-CGnyrvbhPlWYMngksqrSSUT1BAVP49dZocrHuK0SvtR0D5TMs5wP0o3j7jexDJW01KSadjBp1M/71o/KR3nD1w==}
     engines: {node: '>=18'}
 
-  fallow-type-aware@3.16.0:
-    resolution: {integrity: sha512-y/1p6K9Opr308vs1n88umLTMsVyhR6cLe3V7+6UI3xKHj7gcAYSH3l65XqjVNaCDhSFRLHiqG2WukrEs106d7A==}
+  fallow-type-aware@3.17.0:
+    resolution: {integrity: sha512-DFtZUK5oqP56tSsrBWPzjrTIwPPxwlBV8QoSaGghMru347Nqj8ZBY6u9HFa/TIPcxvFU/zIZMRF8xS/XAWQTzg==}
     engines: {node: '>=20'}
     hasBin: true
 
-  fallow@3.16.0:
-    resolution: {integrity: sha512-JzwjtBpd9t2kKtZnYyJ3VU8DSNFqgqSpsJ6bCtE/fKlZ343DpWCvhuVqE58bvmh79WbxEvvJswwErd1lVJgYfg==}
+  fallow@3.17.0:
+    resolution: {integrity: sha512-tbLuvsPq3I2CzpoF/9MgSQ7hWzOqlj3avFUAmCr1J9OERE6z714SlDmA38NVvNy/zuK/70utXB3/b33xC9z29g==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -6138,28 +6138,28 @@ snapshots:
 
   '@exodus/bytes@1.15.1': {}
 
-  '@fallow-cli/darwin-arm64@3.16.0':
+  '@fallow-cli/darwin-arm64@3.17.0':
     optional: true
 
-  '@fallow-cli/darwin-x64@3.16.0':
+  '@fallow-cli/darwin-x64@3.17.0':
     optional: true
 
-  '@fallow-cli/linux-arm64-gnu@3.16.0':
+  '@fallow-cli/linux-arm64-gnu@3.17.0':
     optional: true
 
-  '@fallow-cli/linux-arm64-musl@3.16.0':
+  '@fallow-cli/linux-arm64-musl@3.17.0':
     optional: true
 
-  '@fallow-cli/linux-x64-gnu@3.16.0':
+  '@fallow-cli/linux-x64-gnu@3.17.0':
     optional: true
 
-  '@fallow-cli/linux-x64-musl@3.16.0':
+  '@fallow-cli/linux-x64-musl@3.17.0':
     optional: true
 
-  '@fallow-cli/win32-arm64-msvc@3.16.0':
+  '@fallow-cli/win32-arm64-msvc@3.17.0':
     optional: true
 
-  '@fallow-cli/win32-x64-msvc@3.16.0':
+  '@fallow-cli/win32-x64-msvc@3.17.0':
     optional: true
 
   '@firebase/ai@2.14.0(@firebase/app-types@0.9.5)(@firebase/app@0.16.0)':
@@ -8717,24 +8717,24 @@ snapshots:
 
   fake-indexeddb@6.2.5: {}
 
-  fallow-type-aware@3.16.0:
+  fallow-type-aware@3.17.0:
     dependencies:
       typescript: 7.0.2
     optional: true
 
-  fallow@3.16.0:
+  fallow@3.17.0:
     dependencies:
       detect-libc: 2.1.2
     optionalDependencies:
-      '@fallow-cli/darwin-arm64': 3.16.0
-      '@fallow-cli/darwin-x64': 3.16.0
-      '@fallow-cli/linux-arm64-gnu': 3.16.0
-      '@fallow-cli/linux-arm64-musl': 3.16.0
-      '@fallow-cli/linux-x64-gnu': 3.16.0
-      '@fallow-cli/linux-x64-musl': 3.16.0
-      '@fallow-cli/win32-arm64-msvc': 3.16.0
-      '@fallow-cli/win32-x64-msvc': 3.16.0
-      fallow-type-aware: 3.16.0
+      '@fallow-cli/darwin-arm64': 3.17.0
+      '@fallow-cli/darwin-x64': 3.17.0
+      '@fallow-cli/linux-arm64-gnu': 3.17.0
+      '@fallow-cli/linux-arm64-musl': 3.17.0
+      '@fallow-cli/linux-x64-gnu': 3.17.0
+      '@fallow-cli/linux-x64-musl': 3.17.0
+      '@fallow-cli/win32-arm64-msvc': 3.17.0
+      '@fallow-cli/win32-x64-msvc': 3.17.0
+      fallow-type-aware: 3.17.0
 
   fast-deep-equal@3.1.3: {}
 
