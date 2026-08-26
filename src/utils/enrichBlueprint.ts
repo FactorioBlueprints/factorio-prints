@@ -2,7 +2,7 @@ import { captureMessage } from "@sentry/react";
 import DOMPurify from "dompurify";
 import MarkdownIt from "markdown-it";
 import Blueprint from "../Blueprint";
-import buildImageUrl from "../helpers/buildImageUrl";
+import buildImageUrl, { ImageVariant } from "../helpers/buildImageUrl";
 import {
   type EnrichedBlueprint,
   type RawBlueprint,
@@ -90,7 +90,7 @@ const enrichBlueprint = (
   }
 
   if (imgurId && imgurType) {
-    thumbnail = buildImageUrl(imgurId, imgurType, "l");
+    thumbnail = buildImageUrl(imgurId, imgurType, ImageVariant.Large);
   }
 
   const processedTags: Record<string, boolean> = {};

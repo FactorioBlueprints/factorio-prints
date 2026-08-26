@@ -8,7 +8,7 @@ import Card from "react-bootstrap/Card";
 import Tooltip from "react-bootstrap/Tooltip";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { app } from "../base";
-import buildImageUrl from "../helpers/buildImageUrl";
+import buildImageUrl, { ImageVariant } from "../helpers/buildImageUrl";
 import useToggleCollectionMutation from "../hooks/useToggleCollectionMutation";
 import useToggleFavoriteMutation from "../hooks/useToggleFavoriteMutation";
 import { useUserBlueprints, useUserCollection, useUserFavorites } from "../hooks/useUser";
@@ -82,7 +82,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({
     if (!imgurId || !imgurType) {
       imageUrl = "/icons/entity-unknown.png";
     } else {
-      imageUrl = buildImageUrl(imgurId, imgurType, "b");
+      imageUrl = buildImageUrl(imgurId, imgurType, ImageVariant.Thumbnail);
     }
   } catch {
     imageUrl = "/icons/entity-unknown.png";

@@ -39,6 +39,7 @@ public/**/*.js
 
 # TypeScript build info
 tsconfig.tsbuildinfo
+workers/images/worker-configuration.d.ts
 
 # Staging environment
 .env.staging

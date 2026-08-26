@@ -1,0 +1,35 @@
+name: Reconcile Imgur images to R2
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: r2-image-reconciliation
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    name: Reconcile images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: r2-image-reconciliation
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4.2.5
+      - run: just install-ci
+      - name: Copy missing Imgur images to R2
+        run: >-
+          node scripts/reconcileImages.ts
+          --execute
+          --checkpoint-object-key=operations/reconciliation/checkpoint-v1.json
+          --report-object-key=operations/reconciliation/reports/${{ github.run_id }}-${{ github.run_attempt }}.json
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}

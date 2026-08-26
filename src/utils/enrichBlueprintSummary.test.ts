@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import buildImageUrl from "../helpers/buildImageUrl";
+import buildImageUrl, { ImageVariant } from "../helpers/buildImageUrl";
 import { enrichBlueprintSummary } from "./enrichBlueprintSummary";
 
 // Mock the dependencies
@@ -12,8 +12,8 @@ describe("enrichBlueprintSummary", () => {
 
   beforeEach(() => {
     // Set up mock implementations
-    mockedBuildImageUrl.mockImplementation((imgurId, imgurType, suffix) => {
-      return `https://i.imgur.com/${imgurId}${suffix}.${imgurType.split("/")[1] || "png"}`;
+    mockedBuildImageUrl.mockImplementation((imgurId, imgurType, variant) => {
+      return `https://images.example.com/legacy-imgur/${imgurId}/${variant}.${imgurType.split("/")[1] || "png"}`;
     });
   });
 
@@ -47,9 +47,9 @@ describe("enrichBlueprintSummary", () => {
     };
 
     const result = enrichBlueprintSummary(mockData, mockBlueprintId);
-    expect(mockedBuildImageUrl).toHaveBeenCalledWith("abc123", "image/png", "b");
+    expect(mockedBuildImageUrl).toHaveBeenCalledWith("abc123", "image/png", ImageVariant.Thumbnail);
     expect(result).not.toBeNull();
-    expect(result!.thumbnail).toBe("https://i.imgur.com/abc123b.png");
+    expect(result!.thumbnail).toBe("https://images.example.com/legacy-imgur/abc123/thumbnail.png");
   });
 
   it("should handle missing imgurType by defaulting to image/png", () => {
@@ -63,7 +63,7 @@ describe("enrichBlueprintSummary", () => {
       mockBlueprintId,
     );
 
-    expect(mockedBuildImageUrl).toHaveBeenCalledWith("abc123", "image/png", "b");
+    expect(mockedBuildImageUrl).toHaveBeenCalledWith("abc123", "image/png", ImageVariant.Thumbnail);
   });
 
   it("should have a null thumbnail if imgurId is missing", () => {

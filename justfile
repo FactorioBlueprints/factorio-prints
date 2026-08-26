@@ -65,6 +65,7 @@ format: install
 [group('test')]
 check: install route-generate
     vp run --cache check {{ if ci != "" { "" } else { "--fix" } }}
+    vp run --cache check:images
 
 # `vp run test:run`
 [group('test')]
