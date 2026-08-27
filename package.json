@@ -60,7 +60,7 @@
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@firebase/rules-unit-testing": "5.0.1",
+		"@firebase/rules-unit-testing": "5.0.2",
 		"@sentry/vite-plugin": "5.4.0",
 		"@tanstack/react-query-devtools": "5.101.4",
 		"@tanstack/router-cli": "1.167.32",
