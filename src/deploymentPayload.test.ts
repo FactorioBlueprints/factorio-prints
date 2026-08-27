@@ -19,13 +19,16 @@ describe("deployment payload", () => {
     expect(entrypoint).toContain('import "bootswatch/dist/slate/bootstrap.min.css";');
   });
 
-  it("ships only the locally referenced fallback icon", () => {
+  it("ships only locally referenced icons", () => {
     const icons = readdirSync(resolve(process.cwd(), "public/icons")).sort();
 
-    expect(icons).toStrictEqual(["entity-unknown.png"]);
+    expect(icons).toStrictEqual(["entity-unknown.png", "fbe.png"]);
     expect(readProjectFile("src/helpers/buildImageUrl.ts")).toContain("/icons/entity-unknown.png");
     expect(readProjectFile("src/components/BlueprintThumbnail.tsx")).toContain(
       "/icons/entity-unknown.png",
+    );
+    expect(readProjectFile("src/components/single/BlueprintContentHeader.tsx")).toContain(
+      "/icons/fbe.png",
     );
   });
 
