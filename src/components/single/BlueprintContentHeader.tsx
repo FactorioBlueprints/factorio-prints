@@ -72,6 +72,9 @@ function getBlueprintBook(
 	);
 }
 
+// The maintained fork of the blueprint editor; teoxoy's original is unmaintained.
+const FBE_BASE_URL = 'https://fbe.factorygamefan.com/';
+
 function getFbeButton(positionArray: number[], blueprintStringSha: string) {
 	const href = positionArray.length === 0 ? '/' : `/position/${positionArray.join('.')}`;
 
@@ -80,7 +83,7 @@ function getFbeButton(positionArray: number[], blueprintStringSha: string) {
 	return (
 		<Button
 			type="button"
-			href={`https://fbe.teoxoy.com/?source=https://www.factorio.school/api/blueprintData/${blueprintStringSha}${href}`}
+			href={`${FBE_BASE_URL}?source=https://www.factorio.school/api/blueprintData/${blueprintStringSha}${href}`}
 			target="_blank"
 			className="float-end"
 			size="sm"
