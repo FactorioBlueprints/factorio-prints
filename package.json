@@ -44,7 +44,7 @@
 		"bootswatch": "5.3.8",
 		"date-fns": "4.4.0",
 		"disqus-react": "1.1.7",
-		"dompurify": "3.4.13",
+		"dompurify": "3.4.14",
 		"fflate": "0.8.3",
 		"firebase": "12.17.1",
 		"idb-keyval": "6.3.0",
