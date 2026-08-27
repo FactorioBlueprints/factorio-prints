@@ -7,10 +7,16 @@ import BlueprintContentHeader from "./BlueprintContentHeader";
 interface BlueprintTitlesProps {
   blueprintKey: string;
   parsedData: RawBlueprintData | null | undefined;
+  blueprintStringSha?: string;
   isLoading?: boolean;
 }
 
-function BlueprintTitles({ blueprintKey, parsedData, isLoading = false }: BlueprintTitlesProps) {
+function BlueprintTitles({
+  blueprintKey,
+  parsedData,
+  blueprintStringSha,
+  isLoading = false,
+}: BlueprintTitlesProps) {
   if (isLoading) {
     return (
       <Card>
@@ -23,7 +29,13 @@ function BlueprintTitles({ blueprintKey, parsedData, isLoading = false }: Bluepr
     return null;
   }
 
-  return <BlueprintContentHeader data={parsedData} blueprintKey={blueprintKey} />;
+  return (
+    <BlueprintContentHeader
+      data={parsedData}
+      blueprintKey={blueprintKey}
+      blueprintStringSha={blueprintStringSha}
+    />
+  );
 }
 
 export default BlueprintTitles;

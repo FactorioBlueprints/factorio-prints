@@ -12,6 +12,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { app } from "../base";
 import { useIsFavorite } from "../hooks/useBlueprintFavorite";
 import { useBlueprintHistograms } from "../hooks/useBlueprintHistograms";
+import { useBlueprintStringSha } from "../hooks/useBlueprintStringSha";
 import { useEnrichedBlueprint } from "../hooks/useEnrichedBlueprint";
 import { useEnrichedBlueprintSummary } from "../hooks/useEnrichedBlueprintSummary";
 import { useIsModerator } from "../hooks/useModerators";
@@ -57,6 +58,8 @@ function SingleBlueprint() {
   } = useEnrichedBlueprint(blueprintId, blueprintSummary);
 
   const tagsData = Object.keys(blueprintData?.tags || {});
+
+  const blueprintStringSha = useBlueprintStringSha(blueprintData?.blueprintString);
 
   const blueprintWrapper = React.useMemo(
     () => (blueprintData?.parsedData ? new BlueprintWrapper(blueprintData?.parsedData) : null),
@@ -230,6 +233,7 @@ function SingleBlueprint() {
               <BlueprintTitles
                 blueprintKey={blueprintId}
                 parsedData={blueprintData?.parsedData}
+                blueprintStringSha={blueprintStringSha}
                 isLoading={blueprintIsLoading}
               />
             </Card.Body>
