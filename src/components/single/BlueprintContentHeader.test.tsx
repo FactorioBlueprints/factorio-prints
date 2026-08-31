@@ -4,7 +4,7 @@ import BlueprintContentHeader from "./BlueprintContentHeader";
 
 const sha = "1b472ffa07106d9380321fb46b1dbd5b465d483b";
 const editorUrl = (position: string) =>
-  `https://fbe.factorygamefan.com/?source=https://www.factorio.school/api/blueprintData/${sha}${position}`;
+  `https://fbe.factorygamefan.com/?source=https://factorioprints.xyz/api/blueprintData/${sha}${position}`;
 
 const book = {
   blueprint_book: {

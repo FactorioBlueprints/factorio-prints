@@ -17,12 +17,11 @@ import type {
 const FBE_BASE_URL = "https://fbe.factorygamefan.com/";
 
 /*
-  The editor only passes an /api/ URL straight through to its cors proxy for
-  factorio.school hostnames - factorioprints.xyz would be routed to the Firebase
-  record for the whole book instead, which loses the position. Both hosts serve
-  the same API, so link the one the editor understands.
+  The editor passes an /api/ URL straight through to its cors proxy, so this
+  addresses one blueprint inside a book by its position. www.factorio.school
+  serves the same API and works too; this is the factorioprints spelling of it.
 */
-const BLUEPRINT_DATA_URL = "https://www.factorio.school/api/blueprintData";
+const BLUEPRINT_DATA_URL = "https://factorioprints.xyz/api/blueprintData";
 
 interface BlueprintContentHeaderProps {
   data: RawBlueprintData;
