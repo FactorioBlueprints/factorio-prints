@@ -73,7 +73,7 @@
 		"@types/markdown-it": "14.2.0",
 		"@types/node": "26.2.0",
 		"@types/react": "19.2.18",
-		"@types/react-dom": "19.2.4",
+		"@types/react-dom": "19.2.5",
 		"@types/serviceworker": "0.0.200",
 		"@vitejs/plugin-react": "6.1.0",
 		"fake-indexeddb": "6.2.5",
