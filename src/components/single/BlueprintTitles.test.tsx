@@ -16,7 +16,7 @@ describe("BlueprintTitles", () => {
 
     expect(screen.getByRole("button", { name: /Open in editor/ })).toHaveAttribute(
       "href",
-      `https://fbe.factorygamefan.com/?source=https://www.factorio.school/api/blueprintData/${sha}/`,
+      `https://fbe.factorygamefan.com/?source=https://factorioprints.xyz/api/blueprintData/${sha}/`,
     );
   });
 });
