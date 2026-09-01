@@ -33,7 +33,7 @@
 		"@fortawesome/free-regular-svg-icons": "7.3.1",
 		"@fortawesome/free-solid-svg-icons": "7.3.1",
 		"@fortawesome/react-fontawesome": "3.5.0",
-		"@sentry/react": "10.70.0",
+		"@sentry/react": "10.71.0",
 		"@tanstack/query-sync-storage-persister": "5.102.3",
 		"@tanstack/react-form": "1.33.5",
 		"@tanstack/react-query": "5.102.3",
