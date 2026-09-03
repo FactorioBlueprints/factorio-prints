@@ -161,6 +161,42 @@ root {
 .navbar {
   background: linear-gradient(#faa123, #f89406 60%, #e48806);
 }
+@media (min-width: 992px) {
+  .site-navbar {
+    flex-wrap: nowrap;
+  }
+  .site-navbar .navbar-brand {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 66px;
+  }
+  .site-navbar .navbar-collapse {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .site-navbar .navbar-nav {
+    flex-direction: row;
+  }
+  .site-navbar .primary-navigation {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .site-navbar .account-navigation {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  .site-navbar .nav-link,
+  .site-navbar .dropdown-toggle {
+    white-space: nowrap;
+  }
+  .site-navbar .primary-navigation > .nav-item > .nav-link,
+  .site-navbar .primary-navigation > .nav-link {
+    padding-right: 0.65rem;
+    padding-left: 0.65rem;
+  }
+}
 .card-header {
   background: linear-gradient(#8a9196, #7a8288 60%, #70787d);
   color: #fff;
