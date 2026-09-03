@@ -65,7 +65,7 @@ const Header: React.FC = () => {
           show={showAccountDropdown}
           onToggle={(isOpen) => setShowAccountDropdown(isOpen)}
         >
-          <Dropdown.Toggle variant="link">Account Settings</Dropdown.Toggle>
+          <Dropdown.Toggle variant="link">Account</Dropdown.Toggle>
           <Dropdown.Menu className="dropdown-menu-right text-left">
             <Dropdown.Item as="div" className="user-photo-container">
               {getDisplayName()}
@@ -164,17 +164,16 @@ const Header: React.FC = () => {
   };
 
   return (
-    <Navbar expand="lg" sticky="top" collapseOnSelect bg="warning">
+    <Navbar expand="lg" sticky="top" collapseOnSelect bg="warning" className="site-navbar">
       <Navbar.Brand>
-        <Link to="/">
+        <Link to="/" aria-label="Factorio Prints home" title="Factorio Prints home">
           <FontAwesomeIcon icon={faCogs} size="lg" fixedWidth />
-          {" Factorio Prints"}
         </Link>
       </Navbar.Brand>
       <Navbar.Toggle />
 
       <Navbar.Collapse>
-        <Nav className="mr-auto">
+        <Nav className="primary-navigation">
           <Nav.Item>
             <Link to="/search" className="nav-link text-light">
               <FontAwesomeIcon icon={faSearch} size="lg" fixedWidth />
@@ -184,19 +183,19 @@ const Header: React.FC = () => {
           <Nav.Item>
             <Link to="/blueprints" className="nav-link text-light">
               <FontAwesomeIcon icon={faClock} size="lg" fixedWidth />
-              {" Most Recent"}
+              {" Recent"}
             </Link>
           </Nav.Item>
           <Nav.Item>
             <Link to="/top" className="nav-link text-light">
               <FontAwesomeIcon icon={faTrophy} size="lg" fixedWidth />
-              {" Most Favorited"}
+              {" Favorites"}
             </Link>
           </Nav.Item>
           <Nav.Item>
             <Link to="/collection" className="nav-link text-light">
               <FontAwesomeIcon icon={faSave} size="lg" fixedWidth />
-              {" Your Collection"}
+              {" Collection"}
             </Link>
           </Nav.Item>
           <NavDropdown
@@ -248,7 +247,7 @@ const Header: React.FC = () => {
             {" Donate"}
           </Nav.Link>
         </Nav>
-        <Nav className="mr-sm-2" justify>
+        <Nav className="account-navigation" justify>
           {renderAuthentication()}
         </Nav>
       </Navbar.Collapse>
