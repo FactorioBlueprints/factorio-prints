@@ -161,7 +161,7 @@ root {
 .navbar {
   background: linear-gradient(#faa123, #f89406 60%, #e48806);
 }
-@media (min-width: 992px) {
+@media (min-width: 1200px) {
   .site-navbar {
     flex-wrap: nowrap;
   }
@@ -171,6 +171,9 @@ root {
     align-items: center;
     justify-content: center;
     min-width: 66px;
+  }
+  .site-navbar .navbar-brand-text {
+    display: none;
   }
   .site-navbar .navbar-collapse {
     flex: 1 1 auto;
@@ -193,8 +196,8 @@ root {
   }
   .site-navbar .primary-navigation > .nav-item > .nav-link,
   .site-navbar .primary-navigation > .nav-link {
-    padding-right: 0.65rem;
-    padding-left: 0.65rem;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
   }
 }
 .card-header {

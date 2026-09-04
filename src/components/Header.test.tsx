@@ -62,9 +62,11 @@ describe("Header", () => {
       ".primary-navigation > .nav-item > .nav-link, .primary-navigation > .nav-link",
     );
     const accountToggle = container.querySelector(".account-navigation .dropdown-toggle");
+    const brandText = container.querySelector(".navbar-brand .navbar-brand-text");
 
     expect({
       accountLabel: normalizeText(accountToggle),
+      brandText: normalizeText(brandText),
       homeLink: {
         ariaLabel: homeLink?.getAttribute("aria-label"),
         text: normalizeText(homeLink),
@@ -73,9 +75,10 @@ describe("Header", () => {
       primaryLabels: Array.from(primaryLinks, normalizeText),
     }).toStrictEqual({
       accountLabel: "Account",
+      brandText: "Factorio Prints",
       homeLink: {
         ariaLabel: "Factorio Prints home",
-        text: "",
+        text: "Factorio Prints",
         title: "Factorio Prints home",
       },
       primaryLabels: [
