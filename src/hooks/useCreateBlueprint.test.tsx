@@ -101,8 +101,6 @@ describe("useCreateBlueprint", () => {
         lastUpdatedDate: "SERVER_TIMESTAMP",
       },
       "/blueprintsPrivate/newBlueprint123/imageUrl": "https://imgur.com/abc1234",
-      "/byTag/tag1/newBlueprint123": true,
-      "/byTag/tag2/newBlueprint123": true,
     });
 
     expect(navigateMock).toHaveBeenCalledWith({

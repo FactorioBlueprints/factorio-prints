@@ -101,10 +101,6 @@ export const useCreateBlueprint = () => {
       updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
       updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageUrl;
 
-      (formData.tags || []).forEach((tag) => {
-        updates[`/byTag/${tag}/${newBlueprintKey}`] = true;
-      });
-
       await dbUpdate(ref(getFirebaseDatabase()), updates);
 
       return {
