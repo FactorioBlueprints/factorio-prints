@@ -200,6 +200,17 @@ root {
     padding-left: 0.5rem;
   }
 }
+@media (max-width: 1199.98px) {
+  .site-navbar .nav-link {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-right: 0;
+    border-left: 0;
+  }
+  .site-navbar .navbar-brand {
+    border-right: 0;
+  }
+}
 .card-header {
   background: linear-gradient(#8a9196, #7a8288 60%, #70787d);
   color: #fff;
