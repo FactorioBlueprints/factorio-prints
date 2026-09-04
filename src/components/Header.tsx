@@ -164,10 +164,11 @@ const Header: React.FC = () => {
   };
 
   return (
-    <Navbar expand="lg" sticky="top" collapseOnSelect bg="warning" className="site-navbar">
+    <Navbar expand="xl" sticky="top" collapseOnSelect bg="warning" className="site-navbar">
       <Navbar.Brand>
         <Link to="/" aria-label="Factorio Prints home" title="Factorio Prints home">
           <FontAwesomeIcon icon={faCogs} size="lg" fixedWidth />
+          <span className="navbar-brand-text">{" Factorio Prints"}</span>
         </Link>
       </Navbar.Brand>
       <Navbar.Toggle />
