@@ -2,12 +2,14 @@ import { faTags } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useParams } from "@tanstack/react-router";
 import type React from "react";
+import { useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
 import { useEnrichedTagBlueprintSummaries } from "../hooks/useEnrichedTagBlueprintSummaries";
 import { useFilterByTitle } from "../hooks/useFilterByTitle";
 import type { EnrichedBlueprintSummary } from "../schemas";
+import { searchParamsStore } from "../store/searchParamsStore";
 
 import BlueprintThumbnail from "./BlueprintThumbnail";
 import EmptyResults from "./grid/EmptyResults";
@@ -18,8 +20,20 @@ import SearchForm from "./SearchForm";
 import SingleTagSelector from "./SingleTagSelector";
 
 const SingleTagGrid: React.FC = () => {
-  const { tag } = useParams({ strict: false });
-  const tagId = tag || "";
+  const { category, name } = useParams({ strict: false });
+  const tagId = category && name ? `${category}/${name}` : "";
+
+  useEffect(() => {
+    if (!tagId) {
+      return;
+    }
+
+    searchParamsStore.setState((state) => ({
+      ...state,
+      filteredTags: [`/${tagId}/`],
+      titleFilter: "",
+    }));
+  }, [tagId]);
 
   const { tagQuery, blueprintQueries, isLoading, isError } =
     useEnrichedTagBlueprintSummaries(tagId);
@@ -53,7 +67,7 @@ const SingleTagGrid: React.FC = () => {
           </>
         }
       />
-      <Row>
+      <Row className="search-row">
         <SearchForm />
         <SingleTagSelector currentTag={tagId} />
       </Row>
