@@ -262,6 +262,36 @@ describe("blueprint creation rules", () => {
   });
 });
 
+describe("blueprint collector index rules", () => {
+  test("allow a user to add and remove their own collector entry on an existing blueprint", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+    const collectorRef = ref(database, `blueprintCollectors/${blueprintId}/${userId}`);
+
+    await assertSucceeds(set(collectorRef, true));
+    await assertSucceeds(set(collectorRef, null));
+  });
+
+  test("reject a user writing another user's collector entry", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+
+    await assertFails(set(ref(database, `blueprintCollectors/${blueprintId}/${ownerId}`), true));
+  });
+
+  test("reject a collector entry that would create a phantom blueprint", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+
+    await assertFails(
+      set(ref(database, `blueprintCollectors/deleted-blueprint-100/${userId}`), true),
+    );
+  });
+
+  test("reject a client read of collector membership", async () => {
+    const database = testEnvironment.authenticatedContext(userId).database();
+
+    await assertFails(get(ref(database, `blueprintCollectors/${blueprintId}`)));
+  });
+});
+
 describe("tags registry rules", () => {
   test("reject a write from an authenticated non-moderator", async () => {
     const database = testEnvironment.authenticatedContext(userId).database();
