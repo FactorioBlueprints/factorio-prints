@@ -210,6 +210,10 @@ root {
   .site-navbar .navbar-brand {
     border-right: 0;
   }
+  .site-navbar .account-navigation .nav-link,
+  .site-navbar .account-navigation .dropdown-toggle {
+    text-align: left;
+  }
 }
 .card-header {
   background: linear-gradient(#8a9196, #7a8288 60%, #70787d);
