@@ -57,7 +57,7 @@
 		"react-dom": "19.2.8",
 		"react-firebase-hooks": "5.1.1",
 		"react-select": "5.10.2",
-		"zod": "4.4.3"
+		"zod": "4.5.4"
 	},
 	"devDependencies": {
 		"@firebase/rules-unit-testing": "5.0.2",
