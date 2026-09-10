@@ -80,7 +80,7 @@
 		"fallow": "3.22.0",
 		"firebase-tools": "^15.29.0",
 		"jsdom": "30.0.1",
-		"less": "4.9.0",
+		"less": "4.9.1",
 		"markdownlint-cli2": "0.23.2",
 		"typescript": "7.0.2",
 		"vite": "catalog:",
