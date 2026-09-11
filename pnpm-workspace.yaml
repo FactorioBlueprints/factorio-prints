@@ -6,7 +6,7 @@ minimumReleaseAgeIgnoreMissingTime: false
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.8
   vitest: 5.0.0
-  vite-plus: 0.2.8
+  vite-plus: 0.3.0
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
