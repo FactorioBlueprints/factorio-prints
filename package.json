@@ -74,7 +74,7 @@
 		"@types/node": "26.5.0",
 		"@types/react": "19.2.18",
 		"@types/react-dom": "19.2.7",
-		"@types/serviceworker": "0.0.200",
+		"@types/serviceworker": "0.0.201",
 		"@vitejs/plugin-react": "6.1.1",
 		"fake-indexeddb": "6.2.5",
 		"fallow": "3.23.0",
