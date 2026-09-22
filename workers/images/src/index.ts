@@ -1,9 +1,16 @@
 import { verifyFirebaseIdToken } from "./firebaseAuth.ts";
 import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
-import { handleUploadRequest, type UploadDependencies, uploadPathname } from "./uploads.ts";
+import {
+  handleUploadRequest,
+  publishedUploadPrefix,
+  type UploadDependencies,
+  uploadPathname,
+} from "./uploads.ts";
 
 const imagePathPattern =
   /^\/legacy-imgur\/([A-Za-z0-9]+)\/(original|thumbnail|large)\.(png|jpe?g|gif)$/;
+const uploadPathPattern =
+  /^\/uploads\/([0-9a-f]{32})\/(original|thumbnail|large)\.(png|jpe?g|gif)$/;
 const r2ObjectPrefix = "legacy-imgur";
 const immutableCacheControl = "public, max-age=31536000, immutable";
 const fallbackCacheControl = "public, max-age=300";
@@ -24,6 +31,7 @@ enum GatewayMetric {
 enum GatewaySource {
   LegacyImgur = "legacy-imgur",
   Unknown = "unknown",
+  Upload = "upload",
 }
 
 enum GatewayDetail {
@@ -114,14 +122,14 @@ const fallbackResponse = (
 const hitResponse = (
   environment: Env,
   object: R2Object,
-  path: ImageRequestPath,
+  variant: ImageVariant,
   body: ReadableStream | null,
   source: GatewaySource,
 ): Response => {
   recordMetric(
     environment.IMAGE_GATEWAY_METRICS,
     GatewayMetric.Hit,
-    path.variant,
+    variant,
     source,
     GatewayDetail.R2,
   );
@@ -133,18 +141,24 @@ const hitResponse = (
   return new Response(body, { headers });
 };
 
-const r2ErrorResponse = (environment: Env, path: ImageRequestPath, error: unknown): Response => {
+const r2ErrorResponse = (
+  environment: Env,
+  identifier: string,
+  variant: ImageVariant,
+  source: GatewaySource,
+  error: unknown,
+): Response => {
   recordMetric(
     environment.IMAGE_GATEWAY_METRICS,
     GatewayMetric.Error,
-    path.variant,
-    GatewaySource.LegacyImgur,
+    variant,
+    source,
     GatewayDetail.R2Error,
   );
   console.error({
     event: "image_gateway_r2_error",
-    imgurId: path.imgurId,
-    variant: path.variant,
+    imgurId: identifier,
+    variant,
     message: error instanceof Error ? error.message : String(error),
   });
   return new Response("Image storage is temporarily unavailable", {
@@ -157,6 +171,49 @@ const r2ErrorResponse = (environment: Env, path: ImageRequestPath, error: unknow
   });
 };
 
+interface UploadReadPath {
+  imageId: string;
+  variant: ImageVariant;
+}
+
+const parseUploadReadPath = (pathname: string): UploadReadPath | null => {
+  const match = uploadPathPattern.exec(pathname);
+  if (!match) return null;
+
+  return { imageId: match[1]!, variant: match[2]! as ImageVariant };
+};
+
+const handleUploadReadRequest = async (
+  request: Request,
+  environment: Env,
+  path: UploadReadPath,
+): Promise<Response> => {
+  const base = `${publishedUploadPrefix}/${path.imageId}`;
+  const candidateKeys =
+    path.variant === ImageVariant.Original
+      ? [`${base}/original`]
+      : [`${base}/${path.variant}`, `${base}/original`];
+
+  try {
+    for (const key of candidateKeys) {
+      if (request.method === "HEAD") {
+        const object = await environment.IMAGES.head(key);
+        if (object)
+          return hitResponse(environment, object, path.variant, null, GatewaySource.Upload);
+        continue;
+      }
+
+      const object = await environment.IMAGES.get(key);
+      if (object) {
+        return hitResponse(environment, object, path.variant, object.body, GatewaySource.Upload);
+      }
+    }
+    return invalidResponse(environment, 404, "Image not found");
+  } catch (error) {
+    return r2ErrorResponse(environment, path.imageId, path.variant, GatewaySource.Upload, error);
+  }
+};
+
 const handleImageRequest = async (request: Request, environment: Env): Promise<Response> => {
   if (request.method !== "GET" && request.method !== "HEAD") {
     const response = invalidResponse(environment, 405, "Method not allowed");
@@ -164,7 +221,11 @@ const handleImageRequest = async (request: Request, environment: Env): Promise<R
     return response;
   }
 
-  const path = parseImageRequestPath(new URL(request.url).pathname);
+  const pathname = new URL(request.url).pathname;
+  const uploadReadPath = parseUploadReadPath(pathname);
+  if (uploadReadPath) return handleUploadReadRequest(request, environment, uploadReadPath);
+
+  const path = parseImageRequestPath(pathname);
   if (!path) return invalidResponse(environment, 404, "Image not found");
   if (String(environment.LEGACY_R2_READS_ENABLED) !== "true") {
     return fallbackResponse(environment, path, GatewayDetail.Rollback);
@@ -175,14 +236,20 @@ const handleImageRequest = async (request: Request, environment: Env): Promise<R
     if (request.method === "HEAD") {
       const object = await environment.IMAGES.head(objectKey);
       if (!object) return fallbackResponse(environment, path, GatewayDetail.R2Miss);
-      return hitResponse(environment, object, path, null, GatewaySource.LegacyImgur);
+      return hitResponse(environment, object, path.variant, null, GatewaySource.LegacyImgur);
     }
 
     const object = await environment.IMAGES.get(objectKey);
     if (!object) return fallbackResponse(environment, path, GatewayDetail.R2Miss);
-    return hitResponse(environment, object, path, object.body, GatewaySource.LegacyImgur);
+    return hitResponse(environment, object, path.variant, object.body, GatewaySource.LegacyImgur);
   } catch (error) {
-    return r2ErrorResponse(environment, path, error);
+    return r2ErrorResponse(
+      environment,
+      path.imgurId,
+      path.variant,
+      GatewaySource.LegacyImgur,
+      error,
+    );
   }
 };
 

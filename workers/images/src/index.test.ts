@@ -351,3 +351,101 @@ describe("upload routing", () => {
     expect(response.status).toBe(200);
   });
 });
+
+describe("uploaded image reads", () => {
+  const imageId = "0123456789abcdef0123456789abcdef";
+
+  const createUploadEnvironment = (storedKeys: readonly string[]) => {
+    const get = vi
+      .fn()
+      .mockImplementation((key: string) =>
+        Promise.resolve(storedKeys.includes(key) ? createStoredImage() : null),
+      );
+    const head = vi
+      .fn()
+      .mockImplementation((key: string) =>
+        Promise.resolve(storedKeys.includes(key) ? createStoredImage() : null),
+      );
+    const writeDataPoint = vi.fn();
+    const environment = {
+      IMAGES: { get, head },
+      IMAGE_GATEWAY_METRICS: { writeDataPoint },
+      LEGACY_R2_READS_ENABLED: "true",
+    } as unknown as Env;
+    return { environment, get, writeDataPoint };
+  };
+
+  const read = (environment: Env, variant: string, method = "GET") =>
+    handleImageRequest(
+      new Request(`https://images.factorioprints.com/uploads/${imageId}/${variant}.png`, {
+        method,
+      }),
+      environment,
+    );
+
+  it("serves a stored original", async () => {
+    const { environment, get } = createUploadEnvironment([`uploads/published/${imageId}/original`]);
+
+    const response = await read(environment, "original");
+
+    expect(response.status).toBe(200);
+    expect(get).toHaveBeenCalledExactlyOnceWith(`uploads/published/${imageId}/original`);
+  });
+
+  it("serves a stored rendition when one exists", async () => {
+    const { environment, get } = createUploadEnvironment([
+      `uploads/published/${imageId}/thumbnail`,
+    ]);
+
+    const response = await read(environment, "thumbnail");
+
+    expect(response.status).toBe(200);
+    expect(get).toHaveBeenCalledExactlyOnceWith(`uploads/published/${imageId}/thumbnail`);
+  });
+
+  it("falls back to the original when a rendition has not been generated", async () => {
+    const { environment, get } = createUploadEnvironment([`uploads/published/${imageId}/original`]);
+
+    const response = await read(environment, "large");
+
+    expect(response.status).toBe(200);
+    expect(get.mock.calls).toStrictEqual([
+      [`uploads/published/${imageId}/large`],
+      [`uploads/published/${imageId}/original`],
+    ]);
+  });
+
+  it("records the upload source rather than the legacy source", async () => {
+    const { environment, writeDataPoint } = createUploadEnvironment([
+      `uploads/published/${imageId}/original`,
+    ]);
+
+    await read(environment, "original");
+
+    expect(writeDataPoint).toHaveBeenCalledWith({
+      blobs: ["hit", "original", "upload", "r2"],
+      doubles: [1],
+      indexes: ["factorio-prints-image-gateway"],
+    });
+  });
+
+  it("responds 404 instead of redirecting to Imgur when the image is absent", async () => {
+    const { environment } = createUploadEnvironment([]);
+
+    const response = await read(environment, "original");
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("rejects an image identifier that is not a server-generated key", async () => {
+    const { environment } = createUploadEnvironment([]);
+
+    const response = await handleImageRequest(
+      new Request("https://images.factorioprints.com/uploads/../secret/original.png"),
+      environment,
+    );
+
+    expect(response.status).toBe(404);
+  });
+});

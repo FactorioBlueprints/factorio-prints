@@ -2,7 +2,7 @@ import type { IdTokenVerification } from "./firebaseAuth.ts";
 import { ImageRejection, inspectImageBytes, maximumImageBytes } from "./imageValidation.ts";
 
 export const uploadPathname = "/uploads";
-const publishedUploadPrefix = "uploads/published";
+export const publishedUploadPrefix = "uploads/published";
 
 const immutableCacheControl = "public, max-age=31536000, immutable";
 const bearerPrefix = "Bearer ";
