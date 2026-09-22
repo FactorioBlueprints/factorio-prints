@@ -1,3 +1,7 @@
+import { verifyFirebaseIdToken } from "./firebaseAuth.ts";
+import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
+import { handleUploadRequest, type UploadDependencies, uploadPathname } from "./uploads.ts";
+
 const imagePathPattern =
   /^\/legacy-imgur\/([A-Za-z0-9]+)\/(original|thumbnail|large)\.(png|jpe?g|gif)$/;
 const r2ObjectPrefix = "legacy-imgur";
@@ -182,6 +186,34 @@ const handleImageRequest = async (request: Request, environment: Env): Promise<R
   }
 };
 
+let cachedPublicKeyProvider: ((keyId: string) => Promise<CryptoKey | null>) | null = null;
+
+const buildUploadDependencies = (environment: Env): UploadDependencies => {
+  cachedPublicKeyProvider ??= createGooglePublicKeyProvider({
+    fetch: (url) => fetch(url),
+    now: () => Math.floor(Date.now() / 1000),
+  });
+  const publicKey = cachedPublicKeyProvider;
+
+  return {
+    newImageId: () => crypto.randomUUID().replaceAll("-", ""),
+    now: () => Date.now(),
+    verifyIdToken: (token) =>
+      verifyFirebaseIdToken(token, {
+        now: () => Math.floor(Date.now() / 1000),
+        projectId: environment.FIREBASE_PROJECT_ID,
+        publicKey,
+      }),
+  };
+};
+
+const handleRequest = async (request: Request, environment: Env): Promise<Response> => {
+  if (new URL(request.url).pathname === uploadPathname) {
+    return handleUploadRequest(request, environment, buildUploadDependencies(environment));
+  }
+  return handleImageRequest(request, environment);
+};
+
 export default {
-  fetch: handleImageRequest,
+  fetch: handleRequest,
 } satisfies ExportedHandler<Env>;

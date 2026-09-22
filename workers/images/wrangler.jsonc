@@ -5,7 +5,9 @@
 	"compatibility_date": "2026-08-23",
 	"compatibility_flags": ["nodejs_compat"],
 	"vars": {
+		"FIREBASE_PROJECT_ID": "facorio-blueprints",
 		"LEGACY_R2_READS_ENABLED": "true",
+		"UPLOADS_ENABLED": "false",
 	},
 	"workers_dev": false,
 	"routes": [
@@ -36,7 +38,9 @@
 			"workers_dev": true,
 			"routes": [],
 			"vars": {
+				"FIREBASE_PROJECT_ID": "facorio-blueprints",
 				"LEGACY_R2_READS_ENABLED": "true",
+				"UPLOADS_ENABLED": "false",
 			},
 			"r2_buckets": [
 				{

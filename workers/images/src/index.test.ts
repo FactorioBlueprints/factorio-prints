@@ -25,9 +25,11 @@ const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment =
   } as R2Bucket;
   return {
     environment: {
+      FIREBASE_PROJECT_ID: "facorio-blueprints",
       IMAGES: images,
       IMAGE_GATEWAY_METRICS: { writeDataPoint },
       LEGACY_R2_READS_ENABLED: "true",
+      UPLOADS_ENABLED: "false",
     },
     get,
     head,
@@ -323,5 +325,29 @@ describe("handleImageRequest", () => {
       ],
     ]);
     errorLog.mockRestore();
+  });
+});
+
+describe("upload routing", () => {
+  it("routes an upload request to the upload handler, which is disabled by default", async () => {
+    const { environment } = createEnvironment(null);
+
+    const response = await handleImageRequest(
+      new Request("https://images.factorioprints.com/uploads", { method: "POST" }),
+      environment,
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it("still serves legacy reads alongside the upload route", async () => {
+    const { environment } = createEnvironment(createStoredImage());
+
+    const response = await handleImageRequest(
+      new Request("https://images.factorioprints.com/legacy-imgur/alice100/original.png"),
+      environment,
+    );
+
+    expect(response.status).toBe(200);
   });
 });
