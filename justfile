@@ -59,6 +59,7 @@ lint: install
 # Run formatter
 [group('lint')]
 format: install
+    pre-commit run just-fmt --all-files
     vp fmt {{ if ci != "" { "--check" } else { "" } }}
 
 # Run formatter, linter, and type checker
@@ -104,15 +105,15 @@ build-ci: route-generate-ci install-ci
     vp run build
 
 # Run all pre-commit checks
-[group('build')]
 [arg("quick", long, value="true", help="Skip tests")]
+[group('build')]
 verify quick="": check build-no-secrets pre-commit
     {{ if quick != "true" { "just test" } else { "true" } }}
     @echo "✅ All pre-commit checks passed!"
 
 # Deprecated alias for `verify`
-[group('build')]
 [arg("quick", long, value="true", help="Skip tests")]
+[group('build')]
 precommit quick="": (verify quick)
 
 # Fail if there are local modifications or untracked files
