@@ -86,7 +86,7 @@
 		"@types/serviceworker": "0.0.201",
 		"@vitejs/plugin-react": "6.1.1",
 		"fake-indexeddb": "6.2.5",
-		"fallow": "3.25.0",
+		"fallow": "3.26.0",
 		"firebase-tools": "^15.30.1",
 		"jsdom": "30.0.1",
 		"less": "4.9.1",
