@@ -30,6 +30,12 @@ repos:
 
   - repo: local
     hooks:
+      - id: just-fmt
+        name: just --fmt
+        entry: sh -c 'for file do just --fmt --justfile "$file" || exit; done' --
+        language: system
+        files: '(?i)(^|/)\.?justfile$|\.just$'
+        types: [file]
       - id: markdownlint-cli2
         name: markdownlint-cli2
         entry: vp exec markdownlint-cli2
