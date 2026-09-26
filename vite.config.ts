@@ -34,7 +34,7 @@ export const createViteConfiguration = (
       tasks: {
         check: {
           command: "vp check",
-          dependsOn: ["check:images"],
+          dependsOn: ["check:images", "check:toolchain"],
         },
       },
     },
