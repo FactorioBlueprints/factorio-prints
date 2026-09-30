@@ -47,7 +47,7 @@ const createMockFormData = (blueprint: any, overrides: any = {}) => ({
   blueprintString: blueprint.blueprintString,
   descriptionMarkdown: blueprint.descriptionMarkdown,
   tags: blueprint.tags,
-  imageUrl: "https://i.imgur.com/img123.png",
+  image: { id: "img123", type: "image/png" },
   ...overrides,
 });
 
@@ -291,7 +291,7 @@ describe("Tag Operations Cache Consistency", () => {
         blueprintString: "test-string",
         descriptionMarkdown: "test description",
         tags: ["combat", "logistics"],
-        imageUrl: "https://i.imgur.com/abc123.png",
+        image: { id: "abc123", type: "image/png" },
       };
 
       // Set up existing tag caches
@@ -346,7 +346,7 @@ describe("Tag Operations Cache Consistency", () => {
         blueprintString: "test-string",
         descriptionMarkdown: "test description",
         tags: [],
-        imageUrl: "https://i.imgur.com/abc123.png",
+        image: { id: "abc123", type: "image/png" },
       };
 
       // Set up existing tag caches
@@ -384,7 +384,7 @@ describe("Tag Operations Cache Consistency", () => {
         blueprintString: "test-string",
         descriptionMarkdown: "test description",
         tags: ["combat", "uncached-tag"],
-        imageUrl: "https://i.imgur.com/abc123.png",
+        image: { id: "abc123", type: "image/png" },
       };
 
       // Set up only combat tag cache
@@ -547,7 +547,7 @@ describe("Tag Operations Cache Consistency", () => {
           blueprintString: "test-string",
           descriptionMarkdown: "test description",
           tags: ["combat", "logistics"],
-          imageUrl: "https://i.imgur.com/abc123.png",
+          image: { id: "abc123", type: "image/png" },
         },
         user,
       });

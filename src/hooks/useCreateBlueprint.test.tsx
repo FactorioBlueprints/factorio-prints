@@ -56,7 +56,7 @@ describe("useCreateBlueprint", () => {
       blueprintString: "test blueprint string",
       descriptionMarkdown: "test description",
       tags: ["tag1", "tag2"],
-      imageUrl: "https://imgur.com/abc1234",
+      image: { id: "abc1234", type: "image/png" },
     };
 
     const user = {
@@ -112,7 +112,7 @@ describe("useCreateBlueprint", () => {
     });
   });
 
-  it("should handle imgur URLs with file extension", async () => {
+  it("records the content type the upload reported", async () => {
     const mockRef = {};
     const mockNewBlueprintRef = { key: "newBlueprint123" };
     vi.mocked(ref).mockReturnValue(mockRef as any);
@@ -124,7 +124,7 @@ describe("useCreateBlueprint", () => {
       blueprintString: "test blueprint string",
       descriptionMarkdown: "test description",
       tags: [],
-      imageUrl: "https://i.imgur.com/xyz5678.png",
+      image: { id: "xyz5678", type: "image/jpeg" },
     };
 
     const user = {
@@ -144,33 +144,50 @@ describe("useCreateBlueprint", () => {
       expect.objectContaining({
         image: {
           id: "xyz5678",
-          type: "image/png",
+          type: "image/jpeg",
         },
+      }),
+    );
+    expect(dbUpdate).toHaveBeenCalledWith(
+      mockRef,
+      expect.objectContaining({
+        "/blueprintSummaries/newBlueprint123": expect.objectContaining({
+          imgurId: "xyz5678",
+          imgurType: "image/jpeg",
+        }),
       }),
     );
   });
 
-  it("should reject invalid image URLs", async () => {
+  it("records the gateway URL for an image only R2 holds", async () => {
+    const mockRef = {};
+    vi.mocked(ref).mockReturnValue(mockRef as any);
+    vi.mocked(push).mockReturnValue({ key: "newBlueprint123" } as any);
+    vi.mocked(dbUpdate).mockResolvedValue();
+
     const formData = {
       title: "Test Blueprint",
       blueprintString: "test blueprint string",
       descriptionMarkdown: "test description",
       tags: [],
-      imageUrl: "https://invalid-url.com/image",
+      image: { id: "Fallback0123456789Ab", type: "image/png" },
     };
-
-    const user = {
-      uid: "user123",
-    } as Partial<User> as User;
 
     const { result } = renderHook(() => useCreateBlueprint(), { wrapper });
 
-    await expect(
-      result.current.mutateAsync({
-        formData,
-        user,
+    await result.current.mutateAsync({
+      formData,
+      user: { uid: "user123" } as Partial<User> as User,
+    });
+
+    expect(dbUpdate).toHaveBeenCalledWith(
+      mockRef,
+      expect.objectContaining({
+        "/blueprintsPrivate/newBlueprint123/imageUrl": expect.stringMatching(
+          /\/legacy-imgur\/Fallback0123456789Ab\/original\.png$/,
+        ),
       }),
-    ).rejects.toThrow("Invalid image URL format");
+    );
   });
 
   it("should update cache on success", async () => {
@@ -209,7 +226,7 @@ describe("useCreateBlueprint", () => {
       blueprintString: "new blueprint string",
       descriptionMarkdown: "new description",
       tags: ["newTag"],
-      imageUrl: "https://imgur.com/new1234",
+      image: { id: "new1234", type: "image/png" },
     };
 
     const user = {
@@ -261,7 +278,7 @@ describe("useCreateBlueprint", () => {
       blueprintString: "test blueprint string",
       descriptionMarkdown: "test description",
       tags: [],
-      imageUrl: "https://imgur.com/abc1234",
+      image: { id: "abc1234", type: "image/png" },
     };
 
     const user = {
@@ -299,7 +316,7 @@ describe("useCreateBlueprint", () => {
       blueprintString: "test blueprint string",
       descriptionMarkdown: "test description",
       tags: [],
-      imageUrl: "https://imgur.com/abc1234",
+      image: { id: "abc1234", type: "image/png" },
     };
 
     const user = {
@@ -336,7 +353,7 @@ describe("useCreateBlueprint", () => {
       blueprintString: "test blueprint string",
       descriptionMarkdown: "test description",
       tags: ["tag1", "tag3"],
-      imageUrl: "https://imgur.com/abc1234",
+      image: { id: "abc1234", type: "image/png" },
     };
 
     const user = {

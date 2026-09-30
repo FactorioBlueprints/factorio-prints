@@ -77,7 +77,7 @@ describe("useUpdateBlueprint", () => {
       blueprintString: "new string",
       descriptionMarkdown: "new description",
       tags: ["new-tag"],
-      imageUrl: "https://imgur.com/abc1234",
+      image: { id: "abc1234", type: "image/jpeg" },
     };
 
     const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
@@ -96,11 +96,12 @@ describe("useUpdateBlueprint", () => {
       "/blueprints/blueprint123/descriptionMarkdown": "new description",
       "/blueprints/blueprint123/tags": ["new-tag"],
       "/blueprints/blueprint123/lastUpdatedDate": "SERVER_TIMESTAMP",
-      "/blueprints/blueprint123/image": { id: "abc1234", type: "image/png" },
+      "/blueprints/blueprint123/image": { id: "abc1234", type: "image/jpeg" },
       "/blueprintSummaries/blueprint123/title/": "New Title",
       "/blueprintSummaries/blueprint123/lastUpdatedDate/": "SERVER_TIMESTAMP",
       "/blueprintSummaries/blueprint123/imgurId/": "abc1234",
-      "/blueprintSummaries/blueprint123/imgurType/": "image/png",
+      "/blueprintSummaries/blueprint123/imgurType/": "image/jpeg",
+      "/blueprintsPrivate/blueprint123/imageUrl": "https://imgur.com/abc1234",
       "/byTag/old-tag/blueprint123": null,
       "/byTag/new-tag/blueprint123": true,
     });
@@ -145,7 +146,7 @@ describe("useUpdateBlueprint", () => {
       blueprintString: "new string",
       descriptionMarkdown: "new description",
       tags: ["new-tag"],
-      imageUrl: "https://imgur.com/same123",
+      image: { id: "same123", type: "image/png" },
     };
 
     const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
@@ -162,6 +163,7 @@ describe("useUpdateBlueprint", () => {
     expect(updateCalls["/blueprints/blueprint123/image"]).toBeUndefined();
     expect(updateCalls["/blueprintSummaries/blueprint123/imgurId/"]).toBeUndefined();
     expect(updateCalls["/blueprintSummaries/blueprint123/imgurType/"]).toBeUndefined();
+    expect(updateCalls["/blueprintsPrivate/blueprint123/imageUrl"]).toBeUndefined();
   });
 
   it("should update cache on success", async () => {
@@ -196,7 +198,7 @@ describe("useUpdateBlueprint", () => {
       blueprintString: "new string",
       descriptionMarkdown: "new description",
       tags: ["new-tag"],
-      imageUrl: "",
+      image: null,
     };
 
     const { result } = renderHook(() => useUpdateBlueprint(), { wrapper });
@@ -219,5 +221,10 @@ describe("useUpdateBlueprint", () => {
     expect(updatedBlueprint.descriptionMarkdown).toBe("new description");
     expect(updatedBlueprint.tags).toEqual(["new-tag"]);
     expect(updatedBlueprint.lastUpdatedDate).toBeGreaterThan(1000000);
+    expect(updatedBlueprint.image).toEqual({
+      id: "img123",
+      type: "image/png",
+      deletehash: "delete123",
+    });
   });
 });

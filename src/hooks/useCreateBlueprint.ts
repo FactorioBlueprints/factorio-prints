@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import type { User } from "firebase/auth";
 import { update as dbUpdate, push, ref, serverTimestamp } from "firebase/database";
 import flatMap from "lodash/flatMap";
+import { imageSourceUrl, type UploadedImage } from "../helpers/uploadImage";
 import { getFirebaseDatabase } from "../utils/firebaseDatabase";
 import {
   validateRawBlueprintSummary,
@@ -16,7 +17,7 @@ interface CreateBlueprintFormData {
   blueprintString: string;
   descriptionMarkdown: string;
   tags?: string[];
-  imageUrl: string;
+  image: UploadedImage;
 }
 
 interface CreateBlueprintMutationParams {
@@ -29,38 +30,13 @@ interface CreateBlueprintResult {
   authorId: string;
 }
 
-interface ImgurRegexPatterns {
-  imgurUrl1: RegExp;
-  imgurUrl2: RegExp;
-}
-
 export const useCreateBlueprint = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   return useMutation<CreateBlueprintResult, Error, CreateBlueprintMutationParams>({
     mutationFn: async ({ formData, user }) => {
-      const imageUrl = formData.imageUrl;
-
-      const regexPatterns: ImgurRegexPatterns = {
-        imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-        imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-      };
-
-      const matches = Object.values(regexPatterns)
-        .map((pattern) => imageUrl.match(pattern))
-        .filter(Boolean);
-
-      if (matches.length <= 0) {
-        throw new Error("Invalid image URL format");
-      }
-
-      const match = matches[0]!;
-      const imgurId = match[1]!;
-      const image = {
-        id: imgurId,
-        type: "image/png",
-      };
+      const image = { id: formData.image.id, type: formData.image.type };
 
       const blueprintData = {
         title: formData.title,
@@ -99,7 +75,7 @@ export const useCreateBlueprint = () => {
       updates[`/users/${user.uid}/blueprints/${newBlueprintKey}`] = true;
       updates[`/users/${user.uid}/collection/${newBlueprintKey}`] = true;
       updates[`/blueprintSummaries/${newBlueprintKey}`] = blueprintSummary;
-      updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageUrl;
+      updates[`/blueprintsPrivate/${newBlueprintKey}/imageUrl`] = imageSourceUrl(image);
 
       (formData.tags || []).forEach((tag) => {
         updates[`/byTag/${tag}/${newBlueprintKey}`] = true;
@@ -116,16 +92,8 @@ export const useCreateBlueprint = () => {
       const now = new Date();
       const unixTimestamp = now.getTime();
 
-      const regexPatterns: ImgurRegexPatterns = {
-        imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-        imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-      };
-
-      const matches = Object.values(regexPatterns)
-        .map((pattern) => formData.imageUrl.match(pattern))
-        .filter(Boolean);
-
-      const imgurId = matches.length > 0 ? matches[0]![1]! : "";
+      const imgurId = formData.image.id;
+      const imgurType = formData.image.type;
 
       const lastUpdatedDateKey = ["blueprintSummaries", "orderByField", "lastUpdatedDate"];
       const lastUpdatedDateData = queryClient.getQueryData(lastUpdatedDateKey);
@@ -140,7 +108,7 @@ export const useCreateBlueprint = () => {
           const summaryData = {
             title: formData.title,
             imgurId: imgurId,
-            imgurType: "image/png",
+            imgurType,
             numberOfFavorites: 0,
             lastUpdatedDate: unixTimestamp,
           };
@@ -212,7 +180,7 @@ export const useCreateBlueprint = () => {
       const summaryData = {
         title: formData.title,
         imgurId: imgurId,
-        imgurType: "image/png",
+        imgurType,
         numberOfFavorites: 0,
         lastUpdatedDate: unixTimestamp,
       };
