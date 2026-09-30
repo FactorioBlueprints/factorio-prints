@@ -2,6 +2,7 @@ import { verifyFirebaseIdToken } from "./firebaseAuth.ts";
 import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
 import { newFallbackImageId } from "./imageIds.ts";
 import { deleteThroughImgurUploader, uploadThroughImgurUploader } from "./imgurUploader.ts";
+import { consumeThroughUploadQuota } from "./uploadQuota.ts";
 import { handleUploadRequest, type UploadDependencies, uploadPathname } from "./uploads.ts";
 
 const imagePathPattern =
@@ -198,6 +199,7 @@ const buildUploadDependencies = (environment: Env): UploadDependencies => {
   const publicKey = cachedPublicKeyProvider;
 
   return {
+    consumeUploadQuota: (userId) => consumeThroughUploadQuota(environment.UPLOAD_QUOTA, userId),
     deleteFromImgur: (deletehash) =>
       deleteThroughImgurUploader(environment.IMGUR_UPLOADER, deletehash),
     newFallbackId: newFallbackImageId,
@@ -225,3 +227,4 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 export { ImgurUploader } from "./imgurUploader.ts";
+export { UploadQuota } from "./uploadQuota.ts";

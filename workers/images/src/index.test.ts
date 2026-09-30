@@ -31,6 +31,8 @@ const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment =
       IMGUR_UPLOADER: {} as Env["IMGUR_UPLOADER"],
       LEGACY_R2_READS_ENABLED: "true",
       UPLOAD_ALLOWED_ORIGINS: "https://factorioprints.com, https://www.factorioprints.com",
+      UPLOAD_HOURLY_LIMIT: "10",
+      UPLOAD_QUOTA: {} as Env["UPLOAD_QUOTA"],
     },
     get,
     head,

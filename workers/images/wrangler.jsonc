@@ -8,6 +8,7 @@
 		"FIREBASE_PROJECT_ID": "facorio-blueprints",
 		"LEGACY_R2_READS_ENABLED": "true",
 		"UPLOAD_ALLOWED_ORIGINS": "https://factorioprints.com, https://www.factorioprints.com",
+		"UPLOAD_HOURLY_LIMIT": "10",
 	},
 	"workers_dev": false,
 	"routes": [
@@ -34,12 +35,20 @@
 				"name": "IMGUR_UPLOADER",
 				"class_name": "ImgurUploader",
 			},
+			{
+				"name": "UPLOAD_QUOTA",
+				"class_name": "UploadQuota",
+			},
 		],
 	},
 	"migrations": [
 		{
 			"tag": "v1",
 			"new_sqlite_classes": ["ImgurUploader"],
+		},
+		{
+			"tag": "v2",
+			"new_sqlite_classes": ["UploadQuota"],
 		},
 	],
 	"observability": {
@@ -55,6 +64,7 @@
 				"FIREBASE_PROJECT_ID": "facorio-blueprints",
 				"LEGACY_R2_READS_ENABLED": "true",
 				"UPLOAD_ALLOWED_ORIGINS": "https://preview.factorio-prints.pages.dev, http://localhost:3000",
+				"UPLOAD_HOURLY_LIMIT": "10",
 			},
 			"r2_buckets": [
 				{
@@ -73,6 +83,10 @@
 					{
 						"name": "IMGUR_UPLOADER",
 						"class_name": "ImgurUploader",
+					},
+					{
+						"name": "UPLOAD_QUOTA",
+						"class_name": "UploadQuota",
 					},
 				],
 			},
