@@ -26,6 +26,20 @@
 			"dataset": "factorio_prints_image_gateway",
 		},
 	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "IMGUR_UPLOADER",
+				"class_name": "ImgurUploader",
+			},
+		],
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["ImgurUploader"],
+		},
+	],
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 1,
@@ -50,6 +64,14 @@
 					"dataset": "factorio_prints_image_gateway_preview",
 				},
 			],
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "IMGUR_UPLOADER",
+						"class_name": "ImgurUploader",
+					},
+				],
+			},
 			"observability": {
 				"enabled": true,
 				"head_sampling_rate": 1,
