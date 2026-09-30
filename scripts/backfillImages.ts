@@ -287,6 +287,7 @@ const main = async () => {
     JSON.stringify(
       {
         execute: options.execute,
+        fallbackImages: inventory.fallbackImageCount,
         invalidBlueprintImages: inventory.invalidBlueprintImages.length,
         rawBlueprints: inventory.rawBlueprintCount,
         rawOnlyBlueprints: inventory.rawOnlyBlueprintCount,

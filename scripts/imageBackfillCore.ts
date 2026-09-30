@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { isFallbackImageId } from "../workers/images/src/imageIds.ts";
 
 export const imageVariants = ["original", "thumbnail", "large"] as const;
 
@@ -32,6 +33,7 @@ export interface InvalidBlueprintImage {
 }
 
 export interface ImageInventory {
+  fallbackImageCount: number;
   images: BackfillImage[];
   invalidBlueprintImages: InvalidBlueprintImage[];
   rawBlueprintCount: number;
@@ -69,6 +71,16 @@ export const buildImageInventory = (
 ): ImageInventory => {
   const images = new Map<string, MutableBackfillImage>();
   const invalidBlueprintImages: InvalidBlueprintImage[] = [];
+  // Fallback ids were assigned when Imgur failed: the image exists only in R2 already.
+  const fallbackImageIds = new Set<string>();
+  const addImgurImage = (
+    blueprintId: string,
+    imgurId: string,
+    mediaType: z.infer<typeof supportedMediaTypeSchema>,
+  ) => {
+    if (isFallbackImageId(imgurId)) fallbackImageIds.add(imgurId);
+    else addImage(images, blueprintId, imgurId, mediaType);
+  };
 
   for (const [blueprintId, value] of Object.entries(blueprintSummaries)) {
     const result = blueprintSummarySchema.safeParse(value);
@@ -80,7 +92,7 @@ export const buildImageInventory = (
       });
       continue;
     }
-    addImage(images, blueprintId, result.data.imgurId, result.data.imgurType);
+    addImgurImage(blueprintId, result.data.imgurId, result.data.imgurType);
   }
 
   for (const [blueprintId, value] of Object.entries(rawBlueprintImages)) {
@@ -93,7 +105,7 @@ export const buildImageInventory = (
       });
       continue;
     }
-    addImage(images, blueprintId, result.data.id, result.data.type);
+    addImgurImage(blueprintId, result.data.id, result.data.type);
   }
 
   return {
@@ -104,6 +116,7 @@ export const buildImageInventory = (
         mediaTypes: [...image.mediaTypes].sort(),
       }))
       .sort((left, right) => left.imgurId.localeCompare(right.imgurId)),
+    fallbackImageCount: fallbackImageIds.size,
     invalidBlueprintImages: invalidBlueprintImages.sort((left, right) =>
       left.blueprintId.localeCompare(right.blueprintId),
     ),
