@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { update as dbUpdate, ref, serverTimestamp } from "firebase/database";
+import { imageSourceUrl, type UploadedImage } from "../helpers/uploadImage";
 import { getFirebaseDatabase } from "../utils/firebaseDatabase";
 import type { ImgurImage, RawBlueprint } from "../schemas";
 import {
@@ -15,7 +16,8 @@ interface UpdateBlueprintFormData {
   blueprintString: string;
   descriptionMarkdown: string;
   tags: string[];
-  imageUrl: string;
+  // A screenshot uploaded while editing; null keeps the current one.
+  image: UploadedImage | null;
 }
 
 interface UpdateBlueprintMutationParams {
@@ -31,40 +33,15 @@ interface DeleteBlueprintMutationParams {
   tags: string[];
 }
 
-interface ImgurRegexPatterns {
-  imgurUrl1: RegExp;
-  imgurUrl2: RegExp;
-}
-
 export const useUpdateBlueprint = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   return useMutation<string, Error, UpdateBlueprintMutationParams>({
     mutationFn: async ({ id, rawBlueprint, formData, availableTags }) => {
-      // Process image URL if provided
-      let image: ImgurImage | null = null;
-      if (formData.imageUrl) {
-        const regexPatterns: ImgurRegexPatterns = {
-          imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-          imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-        };
-
-        const matches = Object.values(regexPatterns)
-          .map((pattern) => formData.imageUrl.match(pattern))
-          .filter(Boolean);
-
-        if (matches.length <= 0) {
-          throw new Error("Invalid image URL format");
-        }
-
-        const match = matches[0]!;
-        const imgurId = match[1]!;
-        image = {
-          id: imgurId,
-          type: "image/png",
-        };
-      }
+      const image: ImgurImage | null = formData.image
+        ? { id: formData.image.id, type: formData.image.type }
+        : null;
 
       const currentImageId = rawBlueprint?.image?.id;
       const shouldUpdateImage = image && image.id !== currentImageId;
@@ -83,6 +60,7 @@ export const useUpdateBlueprint = () => {
         updates[`/blueprints/${id}/image`] = image;
         updates[`/blueprintSummaries/${id}/imgurId/`] = image.id;
         updates[`/blueprintSummaries/${id}/imgurType/`] = image.type;
+        updates[`/blueprintsPrivate/${id}/imageUrl`] = imageSourceUrl(image);
       }
 
       availableTags.forEach((tag) => {
@@ -115,25 +93,10 @@ export const useUpdateBlueprint = () => {
         lastUpdatedDate: unixTimestamp,
       };
 
-      // Update image if a new one was provided
-      if (variables.formData.imageUrl) {
-        const regexPatterns: ImgurRegexPatterns = {
-          imgurUrl1: /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/,
-          imgurUrl2: /^https:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)\.[a-zA-Z0-9]{3,4}$/,
-        };
-
-        const matches = Object.values(regexPatterns)
-          .map((pattern) => variables.formData.imageUrl.match(pattern))
-          .filter(Boolean);
-
-        if (matches.length > 0) {
-          const match = matches[0]!;
-          const imgurId = match[1]!;
-          updatedBlueprint.image = {
-            id: imgurId,
-            type: "image/png",
-          };
-        }
+      // Update image if a new one was uploaded
+      const uploadedImage = variables.formData.image;
+      if (uploadedImage && uploadedImage.id !== existingBlueprint?.image?.id) {
+        updatedBlueprint.image = { id: uploadedImage.id, type: uploadedImage.type };
       }
 
       const validatedBlueprint = validateRawBlueprint(updatedBlueprint);
