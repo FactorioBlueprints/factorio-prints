@@ -20,6 +20,7 @@
 		"images:deploy:production": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-production.log wrangler deploy --config workers/images/wrangler.jsonc --env=\"\"",
 		"images:dry-run:preview": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-preview-dry-run.log wrangler deploy --config workers/images/wrangler.jsonc --env preview --dry-run",
 		"images:dry-run:production": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-production-dry-run.log wrangler deploy --config workers/images/wrangler.jsonc --env=\"\" --dry-run",
+		"images:imgur-authorize": "node scripts/imgurAuthorize.ts",
 		"images:reconcile": "node scripts/reconcileImages.ts",
 		"images:verify:preview": "node scripts/verifyImageGateway.ts \"$IMAGE_GATEWAY_PREVIEW_ORIGIN\"",
 		"images:verify:production": "node scripts/verifyImageGateway.ts https://images.factorioprints.com",
