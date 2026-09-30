@@ -348,3 +348,69 @@ describe("upload routing", () => {
     expect(get).not.toHaveBeenCalled();
   });
 });
+
+describe("fallback-id images", () => {
+  const fallbackId = "Fallback0123456789Ab";
+
+  const environmentWith = (keys: string[], legacyReads = "true") => {
+    const { environment, get, head } = createEnvironment(null);
+    const lookup = async (key: string) => (keys.includes(key) ? createStoredImage() : null);
+    get.mockImplementation(lookup);
+    head.mockImplementation(lookup);
+    return {
+      environment: { ...environment, LEGACY_R2_READS_ENABLED: legacyReads } as Env,
+      get,
+    };
+  };
+
+  it("serves the original when R2 holds no resized version, since Imgur never made one", async () => {
+    const { environment, get } = environmentWith([`legacy-imgur/${fallbackId}/original`]);
+
+    const response = await handleImageRequest(
+      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/thumbnail.png`),
+      environment,
+    );
+
+    expect(response.status).toBe(200);
+    expect(get.mock.calls).toStrictEqual([
+      [`legacy-imgur/${fallbackId}/thumbnail`],
+      [`legacy-imgur/${fallbackId}/original`],
+    ]);
+  });
+
+  it("answers 404 instead of redirecting to Imgur when R2 has nothing", async () => {
+    const { environment } = environmentWith([]);
+
+    const response = await handleImageRequest(
+      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/original.png`),
+      environment,
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.has("location")).toBe(false);
+  });
+
+  it("keeps serving from R2 while the all-Imgur rollback switch is on", async () => {
+    const { environment } = environmentWith([`legacy-imgur/${fallbackId}/original`], "false");
+
+    const response = await handleImageRequest(
+      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/original.png`),
+      environment,
+    );
+
+    expect(response.status).toBe(200);
+  });
+
+  it("answers HEAD from R2 with the original's metadata too", async () => {
+    const { environment } = environmentWith([`legacy-imgur/${fallbackId}/original`]);
+
+    const response = await handleImageRequest(
+      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/large.png`, {
+        method: "HEAD",
+      }),
+      environment,
+    );
+
+    expect(response.status).toBe(200);
+  });
+});
