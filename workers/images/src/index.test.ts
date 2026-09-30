@@ -25,10 +25,12 @@ const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment =
   } as R2Bucket;
   return {
     environment: {
+      FIREBASE_PROJECT_ID: "facorio-blueprints",
       IMAGES: images,
       IMAGE_GATEWAY_METRICS: { writeDataPoint },
       IMGUR_UPLOADER: {} as Env["IMGUR_UPLOADER"],
       LEGACY_R2_READS_ENABLED: "true",
+      UPLOAD_ALLOWED_ORIGINS: "https://factorioprints.com, https://www.factorioprints.com",
     },
     get,
     head,
@@ -324,5 +326,23 @@ describe("handleImageRequest", () => {
       ],
     ]);
     errorLog.mockRestore();
+  });
+});
+
+describe("upload routing", () => {
+  it("sends /uploads to the upload handler rather than the image gateway", async () => {
+    const { environment, get } = createEnvironment(null);
+
+    const response = await handleImageRequest(
+      new Request("https://images.factorioprints.com/uploads", {
+        method: "OPTIONS",
+        headers: { origin: "https://factorioprints.com" },
+      }),
+      environment,
+    );
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe("https://factorioprints.com");
+    expect(get).not.toHaveBeenCalled();
   });
 });
