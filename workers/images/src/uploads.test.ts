@@ -35,6 +35,7 @@ const imgurUploaded: ImgurUploadResult = { ok: true, id: "AbCdE12", deletehash: 
 
 interface DependencyOptions {
   readonly imgur?: ImgurUploadResult | Error;
+  readonly quotaAllows?: boolean;
   readonly verification?: IdTokenVerification;
 }
 
@@ -42,6 +43,7 @@ const createDependencies = (options: DependencyOptions = {}) => {
   const imgur = options.imgur ?? imgurUploaded;
   return {
     deleteFromImgur: vi.fn(async (): Promise<ImgurDeleteResult> => ({ ok: true })),
+    consumeUploadQuota: vi.fn(async () => options.quotaAllows ?? true),
     newFallbackId: () => fallbackId,
     now: () => uploadedAt,
     uploadToImgur: vi.fn(async (): Promise<ImgurUploadResult> => {
@@ -204,6 +206,45 @@ describe("upload validation", () => {
     expect(notImage.status).toBe(415);
     expect(tooWide.status).toBe(422);
     expect(dependencies.uploadToImgur).not.toHaveBeenCalled();
+  });
+});
+
+describe("upload hourly limit", () => {
+  it("answers 429 once the user reaches the hourly limit, before calling Imgur", async () => {
+    const { environment, put } = createEnvironment();
+    const dependencies = createDependencies({ quotaAllows: false });
+
+    const response = await handleUploadRequest(createRequest(), environment, dependencies);
+
+    expect(response.status).toBe(429);
+    expect(dependencies.consumeUploadQuota).toHaveBeenCalledWith(ownerId);
+    expect(dependencies.uploadToImgur).not.toHaveBeenCalled();
+    expect(put).not.toHaveBeenCalled();
+  });
+
+  it("answers a readable 503 when the quota cannot be checked", async () => {
+    const { environment } = createEnvironment();
+    const dependencies = createDependencies();
+    dependencies.consumeUploadQuota.mockRejectedValue(new Error("Durable Object reset"));
+
+    const response = await handleUploadRequest(createRequest(), environment, dependencies);
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("access-control-allow-origin")).toBe(siteOrigin);
+    expect(dependencies.uploadToImgur).not.toHaveBeenCalled();
+  });
+
+  it("does not count an upload that fails validation", async () => {
+    const { environment } = createEnvironment();
+    const dependencies = createDependencies();
+
+    await handleUploadRequest(
+      createRequest({ body: new TextEncoder().encode("not an image at all") }),
+      environment,
+      dependencies,
+    );
+
+    expect(dependencies.consumeUploadQuota).not.toHaveBeenCalled();
   });
 });
 

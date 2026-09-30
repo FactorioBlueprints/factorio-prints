@@ -22,6 +22,7 @@ enum UploadOutcome {
 }
 
 export interface UploadDependencies {
+  readonly consumeUploadQuota: (userId: string) => Promise<boolean>;
   readonly deleteFromImgur: (deletehash: string) => Promise<ImgurDeleteResult>;
   readonly newFallbackId: () => string;
   readonly now: () => number;
@@ -175,6 +176,27 @@ export const handleUploadRequest = async (
       bytes.length,
     );
     return textResponse(rejectionStatuses[inspection.reason], "Image was rejected", origin);
+  }
+
+  let withinQuota: boolean;
+  try {
+    withinQuota = await dependencies.consumeUploadQuota(ownerId);
+  } catch (error) {
+    console.error({ event: "image_upload_quota_error", ownerId, message: String(error) });
+    return textResponse(503, "Upload limits are temporarily unavailable", origin, {
+      "retry-after": "60",
+    });
+  }
+  if (!withinQuota) {
+    recordUpload(
+      environment,
+      UploadOutcome.Rejected,
+      "hourly-limit",
+      inspection.format,
+      ownerId,
+      bytes.length,
+    );
+    return textResponse(429, "Hourly upload limit reached", origin, { "retry-after": "600" });
   }
 
   const imgur = await tryImgur(dependencies, bytes, inspection.contentType);
