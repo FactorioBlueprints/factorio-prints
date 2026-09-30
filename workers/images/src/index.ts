@@ -3,6 +3,7 @@ import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
 import { isFallbackImageId, newFallbackImageId } from "./imageIds.ts";
 import { deleteThroughImgurUploader, uploadThroughImgurUploader } from "./imgurUploader.ts";
 import { consumeThroughUploadQuota } from "./uploadQuota.ts";
+import { scheduleThroughUploadExpiry } from "./uploadExpiry.ts";
 import { handleUploadRequest, type UploadDependencies, uploadPathname } from "./uploads.ts";
 
 const imagePathPattern =
@@ -242,6 +243,8 @@ const buildUploadDependencies = (environment: Env): UploadDependencies => {
       deleteThroughImgurUploader(environment.IMGUR_UPLOADER, deletehash),
     newFallbackId: newFallbackImageId,
     now: () => Date.now(),
+    scheduleExpiry: (imageId, imgurDeletehash) =>
+      scheduleThroughUploadExpiry(environment.UPLOAD_EXPIRY, imageId, imgurDeletehash),
     uploadToImgur: (bytes, contentType) =>
       uploadThroughImgurUploader(environment.IMGUR_UPLOADER, bytes, contentType),
     verifyIdToken: (token) =>
@@ -265,4 +268,5 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 export { ImgurUploader } from "./imgurUploader.ts";
+export { UploadExpiry } from "./uploadExpiry.ts";
 export { UploadQuota } from "./uploadQuota.ts";
