@@ -27,6 +27,7 @@ import { app } from "../base";
 import noImageAvailable from "../gif/No_available_image.gif";
 import buildImageUrl, { ImageVariant } from "../helpers/buildImageUrl";
 import generateTagSuggestions from "../helpers/generateTagSuggestions";
+import { type UploadedImage, uploadImage } from "../helpers/uploadImage";
 import { sanitizeHtml } from "../helpers/sanitizeHtml";
 import { useEnrichedBlueprint } from "../hooks/useEnrichedBlueprint";
 import { useEnrichedBlueprintSummary } from "../hooks/useEnrichedBlueprintSummary";
@@ -37,6 +38,7 @@ import { useDeleteBlueprint, useUpdateBlueprint } from "../hooks/useUpdateBluepr
 import type { BlueprintBook } from "../schemas";
 import { MarkdownWithRichText } from "./core/text/MarkdownWithRichText";
 import { RichText } from "./core/text/RichText";
+import ImageUpload from "./ImageUpload";
 import NoMatch from "./NoMatch";
 import PageHeader from "./PageHeader";
 import TagSuggestionButton from "./TagSuggestionButton";
@@ -64,23 +66,8 @@ const blueprintFormSchema = z.object({
   title: z.string().min(10, "Title must be at least 10 characters"),
   descriptionMarkdown: z.string().min(10, "Description must be at least 10 characters"),
   blueprintString: z.string().min(10, "Blueprint String must be at least 10 characters"),
-  imageUrl: z.string().refine(
-    (url) => {
-      if (!url) return true;
-      const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.[a-zA-Z0-9]{3,4}$/;
-      const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
-      const badRegex = /^https:\/\/imgur\.com\/(a|gallery)\/[a-zA-Z0-9]+$/;
-
-      if (badRegex.test(url)) {
-        return false;
-      }
-      return !url || goodRegex1.test(url) || goodRegex2.test(url);
-    },
-    {
-      message:
-        "Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.",
-    },
-  ),
+  // A screenshot uploaded while editing; null keeps the current one.
+  image: z.object({ id: z.string(), type: z.string() }).nullable(),
   tags: z.array(z.string()),
 });
 
@@ -110,7 +97,7 @@ type FormValues = {
   title: string;
   descriptionMarkdown: string;
   blueprintString: string;
-  imageUrl: string;
+  image: UploadedImage | null;
   tags: string[];
 };
 
@@ -179,23 +166,11 @@ function EditBlueprintWrapper() {
       ? Object.keys(blueprintData.tags).filter((tag) => blueprintData.tags[tag])
       : emptyTags;
 
-    // Handle both old Firebase Storage URLs and new Imgur format
-    // Prefer the new format (image.id) when both exist, as it's more reliable
-    let imageUrl = "";
-    if (blueprintData?.image?.id) {
-      // New format: Imgur image data - always prefer this
-      imageUrl = `https://imgur.com/${blueprintData.image.id}`;
-    } else if (blueprintData?.imageUrl) {
-      // Old format: could be Firebase Storage URL or Imgur page URL
-      // The form field conversion logic will handle both cases
-      imageUrl = blueprintData.imageUrl;
-    }
-
     return {
       title: blueprintData?.title || "",
       descriptionMarkdown: blueprintData?.descriptionMarkdown || "",
       blueprintString: blueprintData?.blueprintString || "",
-      imageUrl: imageUrl,
+      image: null,
       tags: tags,
     };
   }, [blueprintData]);
@@ -365,6 +340,15 @@ function EditBlueprintWrapper() {
       }
     },
     [updateBlueprintMutation, blueprintId, form.state.values, rawBlueprintData, tags],
+  );
+
+  const uploadScreenshot = useCallback(
+    (file: File) =>
+      uploadImage(file, async () => {
+        if (!user) throw new Error("Sign in again, then retry the upload.");
+        return user.getIdToken();
+      }),
+    [user],
   );
 
   const handleCancel = useCallback(() => {
@@ -869,82 +853,13 @@ function EditBlueprintWrapper() {
             {renderOldThumbnail()}
 
             <form.Field
-              name="imageUrl"
+              name="image"
               children={(field) => (
-                <>
-                  <Form.Group as={Row} className="mb-3">
-                    <Form.Label column sm="2">
-                      {"Imgur URL"}
-                    </Form.Label>
-                    <Col sm={10}>
-                      <FormControl
-                        type="text"
-                        name={field.name}
-                        placeholder="https://imgur.com/kRua41d"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                      {field.state.meta.errors?.length > 0 && (
-                        <div className="text-danger mt-1">
-                          {field.state.meta.errors
-                            .map((error) =>
-                              typeof error === "string"
-                                ? error
-                                : (error as any)?.message || JSON.stringify(error),
-                            )
-                            .join(", ")}
-                        </div>
-                      )}
-                    </Col>
-                  </Form.Group>
-
-                  {field.state.value &&
-                    (() => {
-                      // Convert imgur URLs to direct image URLs for preview
-                      let previewUrl = field.state.value;
-                      const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
-                      const match = previewUrl.match(imgurPageRegex);
-                      if (match) {
-                        // Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
-                        previewUrl = `https://i.imgur.com/${match[1]}.png`;
-                      }
-
-                      // Handle direct image URLs (including old Firebase Storage URLs)
-                      const directImageRegex = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i;
-                      if (!match && directImageRegex.test(previewUrl)) {
-                        // It's already a direct image URL, use as-is
-                        // This handles Firebase Storage URLs and other direct image links
-                      }
-
-                      return (
-                        <Form.Group as={Row} className="mb-3">
-                          <Form.Label column sm="2">
-                            {"New screenshot"}
-                          </Form.Label>
-                          <Col sm={10}>
-                            <Card
-                              className="mb-2 mr-2"
-                              style={{ width: "14rem", backgroundColor: "#1c1e22" }}
-                            >
-                              <Card.Img
-                                variant="top"
-                                src={previewUrl || noImageAvailable}
-                                key={field.state.value}
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = noImageAvailable;
-                                }}
-                              />
-                              <Card.Title className="truncate">
-                                <RichText text={form.state.values.title} />
-                              </Card.Title>
-                            </Card>
-                          </Col>
-                        </Form.Group>
-                      );
-                    })()}
-                </>
+                <ImageUpload
+                  image={field.state.value}
+                  onUploaded={(image) => field.handleChange(image)}
+                  upload={uploadScreenshot}
+                />
               )}
             />
 
