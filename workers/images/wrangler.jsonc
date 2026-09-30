@@ -5,7 +5,9 @@
 	"compatibility_date": "2026-08-23",
 	"compatibility_flags": ["nodejs_compat"],
 	"vars": {
+		"FIREBASE_PROJECT_ID": "facorio-blueprints",
 		"LEGACY_R2_READS_ENABLED": "true",
+		"UPLOAD_ALLOWED_ORIGINS": "https://factorioprints.com, https://www.factorioprints.com",
 	},
 	"workers_dev": false,
 	"routes": [
@@ -50,7 +52,9 @@
 			"workers_dev": true,
 			"routes": [],
 			"vars": {
+				"FIREBASE_PROJECT_ID": "facorio-blueprints",
 				"LEGACY_R2_READS_ENABLED": "true",
+				"UPLOAD_ALLOWED_ORIGINS": "https://preview.factorio-prints.pages.dev, http://localhost:3000",
 			},
 			"r2_buckets": [
 				{

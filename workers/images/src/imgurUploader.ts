@@ -143,3 +143,35 @@ export class ImgurUploader implements DurableObject {
     });
   }
 }
+
+const accountObjectName = "factorio-blueprints-account";
+
+const uploaderStub = (namespace: DurableObjectNamespace): DurableObjectStub => {
+  const us = namespace.jurisdiction("us");
+  return us.get(us.idFromName(accountObjectName));
+};
+
+export const uploadThroughImgurUploader = async (
+  namespace: DurableObjectNamespace,
+  bytes: Uint8Array,
+  contentType: string,
+): Promise<ImgurUploadResult> => {
+  const response = await uploaderStub(namespace).fetch("https://imgur-uploader/upload", {
+    method: "POST",
+    headers: { "content-type": contentType },
+    body: bytes,
+  });
+  return (await response.json()) as ImgurUploadResult;
+};
+
+export const deleteThroughImgurUploader = async (
+  namespace: DurableObjectNamespace,
+  deletehash: string,
+): Promise<ImgurDeleteResult> => {
+  const response = await uploaderStub(namespace).fetch("https://imgur-uploader/delete", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ deletehash }),
+  });
+  return (await response.json()) as ImgurDeleteResult;
+};
