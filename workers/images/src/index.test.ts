@@ -27,6 +27,7 @@ const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment =
     environment: {
       IMAGES: images,
       IMAGE_GATEWAY_METRICS: { writeDataPoint },
+      IMGUR_UPLOADER: {} as Env["IMGUR_UPLOADER"],
       LEGACY_R2_READS_ENABLED: "true",
     },
     get,

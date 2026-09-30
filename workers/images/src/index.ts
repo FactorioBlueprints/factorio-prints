@@ -185,3 +185,5 @@ const handleImageRequest = async (request: Request, environment: Env): Promise<R
 export default {
   fetch: handleImageRequest,
 } satisfies ExportedHandler<Env>;
+
+export { ImgurUploader } from "./imgurUploader.ts";
