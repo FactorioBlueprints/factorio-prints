@@ -25,11 +25,13 @@ const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment =
   } as R2Bucket;
   return {
     environment: {
+      FIREBASE_DATABASE_URL: "https://facorio-blueprints.firebaseio.com",
       FIREBASE_PROJECT_ID: "facorio-blueprints",
       IMAGES: images,
       IMAGE_GATEWAY_METRICS: { writeDataPoint },
       IMGUR_UPLOADER: {} as Env["IMGUR_UPLOADER"],
       LEGACY_R2_READS_ENABLED: "true",
+      UPLOAD_EXPIRY: {} as Env["UPLOAD_EXPIRY"],
       UPLOAD_ALLOWED_ORIGINS: "https://factorioprints.com, https://www.factorioprints.com",
       UPLOAD_HOURLY_LIMIT: "10",
       UPLOAD_QUOTA: {} as Env["UPLOAD_QUOTA"],

@@ -26,6 +26,7 @@ export interface UploadDependencies {
   readonly deleteFromImgur: (deletehash: string) => Promise<ImgurDeleteResult>;
   readonly newFallbackId: () => string;
   readonly now: () => number;
+  readonly scheduleExpiry: (imageId: string, imgurDeletehash: string | undefined) => Promise<void>;
   readonly uploadToImgur: (bytes: Uint8Array, contentType: string) => Promise<ImgurUploadResult>;
   readonly verifyIdToken: (token: string) => Promise<IdTokenVerification>;
 }
@@ -246,6 +247,14 @@ export const handleUploadRequest = async (
       "retry-after": "60",
     });
   }
+
+  // An upload no blueprint uses within an hour is deleted. If scheduling fails the upload is merely
+  // never cleaned up, so that does not fail the upload.
+  await dependencies
+    .scheduleExpiry(imageId, imgur.ok ? imgur.deletehash : undefined)
+    .catch((error: unknown) => {
+      console.error({ event: "image_upload_expiry_error", imageId, message: String(error) });
+    });
 
   recordUpload(
     environment,

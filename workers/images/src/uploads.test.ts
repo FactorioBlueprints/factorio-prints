@@ -46,6 +46,7 @@ const createDependencies = (options: DependencyOptions = {}) => {
     consumeUploadQuota: vi.fn(async () => options.quotaAllows ?? true),
     newFallbackId: () => fallbackId,
     now: () => uploadedAt,
+    scheduleExpiry: vi.fn(async () => {}),
     uploadToImgur: vi.fn(async (): Promise<ImgurUploadResult> => {
       if (imgur instanceof Error) throw imgur;
       return imgur;
@@ -281,6 +282,26 @@ describe("upload storage", () => {
     expect(writeDataPoint).toHaveBeenCalledWith(
       expect.objectContaining({ blobs: ["accepted", "imgur", "png", ownerId] }),
     );
+  });
+
+  it("schedules the upload to expire unless a blueprint uses it", async () => {
+    const { environment } = createEnvironment();
+    const dependencies = createDependencies();
+
+    await handleUploadRequest(createRequest(), environment, dependencies);
+
+    expect(dependencies.scheduleExpiry).toHaveBeenCalledWith("AbCdE12", "delete-hash");
+  });
+
+  it("schedules a fallback-id upload to expire with no Imgur copy to delete", async () => {
+    const { environment } = createEnvironment();
+    const dependencies = createDependencies({
+      imgur: { ok: false, reason: ImgurFailure.Unavailable, detail: "upload returned 503" },
+    });
+
+    await handleUploadRequest(createRequest(), environment, dependencies);
+
+    expect(dependencies.scheduleExpiry).toHaveBeenCalledWith(fallbackId, undefined);
   });
 
   it("falls back to an R2-only id when Imgur fails", async () => {
