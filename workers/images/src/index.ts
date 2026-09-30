@@ -1,6 +1,6 @@
 import { verifyFirebaseIdToken } from "./firebaseAuth.ts";
 import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
-import { newFallbackImageId } from "./imageIds.ts";
+import { isFallbackImageId, newFallbackImageId } from "./imageIds.ts";
 import { deleteThroughImgurUploader, uploadThroughImgurUploader } from "./imgurUploader.ts";
 import { consumeThroughUploadQuota } from "./uploadQuota.ts";
 import { handleUploadRequest, type UploadDependencies, uploadPathname } from "./uploads.ts";
@@ -25,6 +25,7 @@ enum GatewayMetric {
 }
 
 enum GatewaySource {
+  Fallback = "fallback",
   LegacyImgur = "legacy-imgur",
   Unknown = "unknown",
 }
@@ -136,12 +137,17 @@ const hitResponse = (
   return new Response(body, { headers });
 };
 
-const r2ErrorResponse = (environment: Env, path: ImageRequestPath, error: unknown): Response => {
+const r2ErrorResponse = (
+  environment: Env,
+  path: ImageRequestPath,
+  error: unknown,
+  source: GatewaySource = GatewaySource.LegacyImgur,
+): Response => {
   recordMetric(
     environment.IMAGE_GATEWAY_METRICS,
     GatewayMetric.Error,
     path.variant,
-    GatewaySource.LegacyImgur,
+    source,
     GatewayDetail.R2Error,
   );
   console.error({
@@ -160,6 +166,37 @@ const r2ErrorResponse = (environment: Env, path: ImageRequestPath, error: unknow
   });
 };
 
+// Fallback ids were assigned when Imgur failed, so Imgur has never seen them: they are served from
+// R2 whatever the Imgur switches say, a missing resized version falls back to the original, and a
+// miss is a 404 rather than a redirect to a guaranteed Imgur miss.
+const handleFallbackIdRequest = async (
+  request: Request,
+  environment: Env,
+  path: ImageRequestPath,
+): Promise<Response> => {
+  const base = `${r2ObjectPrefix}/${path.imgurId}`;
+  const candidateKeys =
+    path.variant === ImageVariant.Original
+      ? [`${base}/original`]
+      : [`${base}/${path.variant}`, `${base}/original`];
+
+  try {
+    for (const key of candidateKeys) {
+      if (request.method === "HEAD") {
+        const object = await environment.IMAGES.head(key);
+        if (object) return hitResponse(environment, object, path, null, GatewaySource.Fallback);
+        continue;
+      }
+      const object = await environment.IMAGES.get(key);
+      if (object)
+        return hitResponse(environment, object, path, object.body, GatewaySource.Fallback);
+    }
+    return invalidResponse(environment, 404, "Image not found");
+  } catch (error) {
+    return r2ErrorResponse(environment, path, error, GatewaySource.Fallback);
+  }
+};
+
 const handleImageRequest = async (request: Request, environment: Env): Promise<Response> => {
   if (request.method !== "GET" && request.method !== "HEAD") {
     const response = invalidResponse(environment, 405, "Method not allowed");
@@ -169,6 +206,7 @@ const handleImageRequest = async (request: Request, environment: Env): Promise<R
 
   const path = parseImageRequestPath(new URL(request.url).pathname);
   if (!path) return invalidResponse(environment, 404, "Image not found");
+  if (isFallbackImageId(path.imgurId)) return handleFallbackIdRequest(request, environment, path);
   if (String(environment.LEGACY_R2_READS_ENABLED) !== "true") {
     return fallbackResponse(environment, path, GatewayDetail.Rollback);
   }
