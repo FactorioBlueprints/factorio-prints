@@ -56,10 +56,26 @@ describe("image backfill inventory", () => {
           source: "blueprint",
         },
       ],
+      fallbackImageCount: 0,
       rawBlueprintCount: 6,
       rawOnlyBlueprintCount: 2,
       summaryCount: 4,
     });
+  });
+
+  test("leaves out fallback ids, which exist only in R2 and have nothing on Imgur to copy", () => {
+    const inventory = buildImageInventory(
+      {
+        "blueprint-alice": { imgurId: "AbCdE12", imgurType: "image/png" },
+        "blueprint-bob": { imgurId: "Fallback0123456789Ab", imgurType: "image/png" },
+      },
+      { "blueprint-raw": { id: "Fallback0123456789Cd", type: "image/jpeg" } },
+      3,
+    );
+
+    expect(inventory.images.map((image) => image.imgurId)).toStrictEqual(["AbCdE12"]);
+    expect(inventory.fallbackImageCount).toBe(2);
+    expect(inventory.invalidBlueprintImages).toStrictEqual([]);
   });
 });
 
