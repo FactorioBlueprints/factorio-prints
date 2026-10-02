@@ -5,7 +5,11 @@
 	"compatibility_date": "2026-08-23",
 	"compatibility_flags": ["nodejs_compat"],
 	"vars": {
+		"FIREBASE_DATABASE_URL": "https://facorio-blueprints.firebaseio.com",
+		"FIREBASE_PROJECT_ID": "facorio-blueprints",
 		"LEGACY_R2_READS_ENABLED": "true",
+		"UPLOAD_ALLOWED_ORIGINS": "https://factorioprints.com, https://www.factorioprints.com",
+		"UPLOAD_HOURLY_LIMIT": "10",
 	},
 	"workers_dev": false,
 	"routes": [
@@ -26,6 +30,36 @@
 			"dataset": "factorio_prints_image_gateway",
 		},
 	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "IMGUR_UPLOADER",
+				"class_name": "ImgurUploader",
+			},
+			{
+				"name": "UPLOAD_QUOTA",
+				"class_name": "UploadQuota",
+			},
+			{
+				"name": "UPLOAD_EXPIRY",
+				"class_name": "UploadExpiry",
+			},
+		],
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["ImgurUploader"],
+		},
+		{
+			"tag": "v2",
+			"new_sqlite_classes": ["UploadQuota"],
+		},
+		{
+			"tag": "v3",
+			"new_sqlite_classes": ["UploadExpiry"],
+		},
+	],
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 1,
@@ -36,7 +70,11 @@
 			"workers_dev": true,
 			"routes": [],
 			"vars": {
+				"FIREBASE_DATABASE_URL": "https://facorio-blueprints.firebaseio.com",
+				"FIREBASE_PROJECT_ID": "facorio-blueprints",
 				"LEGACY_R2_READS_ENABLED": "true",
+				"UPLOAD_ALLOWED_ORIGINS": "https://preview.factorio-prints.pages.dev, http://localhost:3000",
+				"UPLOAD_HOURLY_LIMIT": "10",
 			},
 			"r2_buckets": [
 				{
@@ -50,6 +88,22 @@
 					"dataset": "factorio_prints_image_gateway_preview",
 				},
 			],
+			"durable_objects": {
+				"bindings": [
+					{
+						"name": "IMGUR_UPLOADER",
+						"class_name": "ImgurUploader",
+					},
+					{
+						"name": "UPLOAD_QUOTA",
+						"class_name": "UploadQuota",
+					},
+					{
+						"name": "UPLOAD_EXPIRY",
+						"class_name": "UploadExpiry",
+					},
+				],
+			},
 			"observability": {
 				"enabled": true,
 				"head_sampling_rate": 1,

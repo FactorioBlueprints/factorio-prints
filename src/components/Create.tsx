@@ -24,8 +24,8 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Select from "react-select";
 import Blueprint from "../Blueprint";
 import { app } from "../base";
-import noImageAvailable from "../gif/No_available_image.gif";
 import generateTagSuggestions from "../helpers/generateTagSuggestions";
+import { restorableDraftImage, type UploadedImage, uploadImage } from "../helpers/uploadImage";
 import { useCreateBlueprint } from "../hooks/useCreateBlueprint";
 import { useTags } from "../hooks/useTags";
 import { loadFromStorage, removeFromStorage, STORAGE_KEYS, saveToStorage } from "../localStorage";
@@ -36,13 +36,14 @@ import BlueprintPreview from "./BlueprintPreview";
 import { MarkdownWithRichText } from "./core/text/MarkdownWithRichText";
 import { RichText } from "./core/text/RichText";
 import PageHeader from "./PageHeader";
+import ImageUpload from "./ImageUpload";
 import TagSuggestionButton from "./TagSuggestionButton";
 
 interface BlueprintFormData {
   title: string;
   descriptionMarkdown: string;
   blueprintString: string;
-  imageUrl: string;
+  image: UploadedImage | null;
   tags?: string[];
 }
 
@@ -102,7 +103,7 @@ const initialState: CreateState = {
     title: "",
     descriptionMarkdown: "",
     blueprintString: "",
-    imageUrl: "",
+    image: null,
   },
   blueprintPasted: false,
   blueprintValidationError: null,
@@ -148,8 +149,13 @@ const Create: React.FC = () => {
   const cacheBlueprintState = useCallback(
     (blueprint: BlueprintFormData | null) => {
       if (blueprint) {
+        // Drafts saved before screenshots were uploaded carry an imageUrl and no image.
+        const { imageUrl: _legacyImageUrl, ...draft } = blueprint as BlueprintFormData & {
+          imageUrl?: string;
+        };
         const newBlueprint = {
-          ...blueprint,
+          ...draft,
+          image: restorableDraftImage(draft.image, Date.now()),
           tags: blueprint.tags || emptyTags,
         };
 
@@ -162,7 +168,7 @@ const Create: React.FC = () => {
         const hasSavedData = !!(
           blueprint.title ||
           blueprint.descriptionMarkdown ||
-          blueprint.imageUrl ||
+          blueprint.image ||
           (blueprint.tags && blueprint.tags.length > 0)
         );
 
@@ -361,19 +367,8 @@ const Create: React.FC = () => {
       submissionErrors.push("Blueprint String must be at least 10 characters");
     }
 
-    const badRegex = /^https:\/\/imgur\.com\/(a|gallery)\/[a-zA-Z0-9]+$/;
-    if (badRegex.test(blueprint.imageUrl)) {
-      submissionErrors.push(
-        "Please use a direct link to an image like https://imgur.com/{id}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.",
-      );
-    } else {
-      const goodRegex1 = /^https:\/\/i\.imgur\.com\/[a-zA-Z0-9]+\.[a-zA-Z0-9]{3,4}$/;
-      const goodRegex2 = /^https:\/\/imgur\.com\/[a-zA-Z0-9]+$/;
-      if (!goodRegex1.test(blueprint.imageUrl) && !goodRegex2.test(blueprint.imageUrl)) {
-        submissionErrors.push(
-          "Please use a direct link to an image like https://imgur.com/{id} or https://i.imgur.com/{id}.{ext}. On Imgur, either: Click the share icon, then the link icon; OR hover over the image, click the inner of the two ... buttons, then click Copy Link.",
-        );
-      }
+    if (!blueprint.image) {
+      submissionErrors.push("Upload a screenshot of the blueprint");
     }
 
     return submissionErrors;
@@ -441,7 +436,7 @@ const Create: React.FC = () => {
 
       createBlueprintMutation.mutate(
         {
-          formData: state.blueprint,
+          formData: { ...state.blueprint, image: state.blueprint.image! },
           user: user,
         },
         {
@@ -492,7 +487,7 @@ const Create: React.FC = () => {
 
       createBlueprintMutation.mutate(
         {
-          formData: state.blueprint,
+          formData: { ...state.blueprint, image: state.blueprint.image! },
           user: user!,
         },
         {
@@ -527,7 +522,7 @@ const Create: React.FC = () => {
 
       createBlueprintMutation.mutate(
         {
-          formData: state.blueprint,
+          formData: { ...state.blueprint, image: state.blueprint.image! },
           user: user!,
         },
         {
@@ -565,43 +560,20 @@ const Create: React.FC = () => {
     );
   }, []);
 
-  const renderPreview = useCallback(() => {
-    if (!state.blueprint.imageUrl) {
-      return <div />;
-    }
+  const uploadScreenshot = useCallback(
+    (file: File) =>
+      uploadImage(file, async () => {
+        if (!user) throw new Error("Sign in to upload a screenshot.");
+        return user.getIdToken();
+      }),
+    [user],
+  );
 
-    // Convert imgur URLs to direct image URLs for preview
-    let previewUrl = state.blueprint.imageUrl;
-    const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
-    const match = previewUrl.match(imgurPageRegex);
-    if (match) {
-      // Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
-      previewUrl = `https://i.imgur.com/${match[1]}.png`;
-    }
-
-    return (
-      <Form.Group as={Row} className="mb-3">
-        <Form.Label column sm="2">
-          {"Attached screenshot"}
-        </Form.Label>
-        <Col sm={10}>
-          <Card className="mb-2 mr-2" style={{ width: "14rem", backgroundColor: "#1c1e22" }}>
-            <Card.Img
-              variant="top"
-              src={previewUrl || noImageAvailable}
-              key={previewUrl}
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                e.currentTarget.src = noImageAvailable;
-              }}
-            />
-            <Card.Title className="truncate">
-              <RichText text={state.blueprint.title} />
-            </Card.Title>
-          </Card>
-        </Col>
-      </Form.Group>
+  const handleScreenshotUploaded = useCallback((image: UploadedImage) => {
+    setState((prevState) =>
+      update(prevState, { blueprint: { image: { $set: { ...image, uploadedAt: Date.now() } } } }),
     );
-  }, [state.blueprint]);
+  }, []);
 
   const { blueprint } = state;
   const allTagSuggestions = generateTagSuggestions(
@@ -842,22 +814,11 @@ const Create: React.FC = () => {
                   </Col>
                 </Form.Group>
 
-                <Form.Group as={Row} className="mb-3">
-                  <Form.Label column sm="2">
-                    {"Imgur URL"}
-                  </Form.Label>
-                  <Col sm={10}>
-                    <FormControl
-                      type="text"
-                      name="imageUrl"
-                      placeholder="https://imgur.com/kRua41d"
-                      value={blueprint.imageUrl}
-                      onChange={handleChange}
-                    />
-                  </Col>
-                </Form.Group>
-
-                {renderPreview()}
+                <ImageUpload
+                  image={blueprint.image}
+                  onUploaded={handleScreenshotUploaded}
+                  upload={uploadScreenshot}
+                />
 
                 {/* Blueprint Preview Section */}
                 {blueprintWrapper && v15Decoded && !state.blueprintValidationError && (
