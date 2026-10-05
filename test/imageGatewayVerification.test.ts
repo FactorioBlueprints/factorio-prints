@@ -23,7 +23,7 @@ describe("image gateway live verification", () => {
         status: 307,
         headers: {
           "cache-control": "public, max-age=300",
-          location: "https://i.imgur.com/factorioPrintsGatewayMissing0000000000000000.png",
+          location: "https://i.imgur.com/zzzzzzz.png",
         },
       }),
       new Response("Image not found", {
@@ -78,8 +78,8 @@ describe("image gateway live verification", () => {
         cacheControl: "public, max-age=300",
         contentType: null,
         etag: null,
-        location: "https://i.imgur.com/factorioPrintsGatewayMissing0000000000000000.png",
-        path: "/legacy-imgur/factorioPrintsGatewayMissing0000000000000000/original.png",
+        location: "https://i.imgur.com/zzzzzzz.png",
+        path: "/legacy-imgur/zzzzzzz/original.png",
         status: 307,
       },
       {
@@ -107,8 +107,7 @@ describe("image gateway live verification", () => {
       },
       {
         init: { method: "GET", redirect: "manual" },
-        input:
-          "https://images.example.com/legacy-imgur/factorioPrintsGatewayMissing0000000000000000/original.png",
+        input: "https://images.example.com/legacy-imgur/zzzzzzz/original.png",
       },
       {
         init: { method: "GET", redirect: "manual" },
