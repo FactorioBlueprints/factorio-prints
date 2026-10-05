@@ -3,7 +3,8 @@ import { pathToFileURL } from "node:url";
 
 const immutableCacheControl = "public, max-age=31536000, immutable";
 const fallbackCacheControl = "public, max-age=300";
-const missingImageId = "factorioPrintsGatewayMissing0000000000000000";
+// Imgur-shaped, so the gateway falls back to Imgur; a 16+ character id is an R2-only fallback id and 404s.
+const missingImageId = "zzzzzzz";
 
 interface GatewayRequest {
   contentType: string;
