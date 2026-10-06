@@ -34,6 +34,7 @@ const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment =
       UPLOAD_EXPIRY: {} as Env["UPLOAD_EXPIRY"],
       UPLOAD_ALLOWED_ORIGINS: "https://factorioprints.com, https://www.factorioprints.com",
       UPLOAD_HOURLY_LIMIT: "10",
+      RECENT_IMAGE_COPIER: {} as Env["RECENT_IMAGE_COPIER"],
       UPLOAD_QUOTA: {} as Env["UPLOAD_QUOTA"],
     },
     get,
@@ -414,5 +415,37 @@ describe("fallback-id images", () => {
     );
 
     expect(response.status).toBe(200);
+  });
+});
+
+describe("scheduled image copy", () => {
+  it("hands each Cron Trigger run to the recent image copier", async () => {
+    const stubFetch = vi.fn(async () =>
+      Response.json({
+        checked: 1,
+        copied: ["legacy-imgur/qBG1NJ9/original"],
+        failed: [],
+        missing: [],
+      }),
+    );
+    const usNamespace = { idFromName: () => "id", get: () => ({ fetch: stubFetch }) };
+    const { environment } = createEnvironment(null);
+    const waited: Array<Promise<unknown>> = [];
+
+    await imageGateway.scheduled(
+      { cron: "*/10 * * * *", scheduledTime: 0, noRetry: () => undefined } as ScheduledController,
+      {
+        ...environment,
+        RECENT_IMAGE_COPIER: {
+          jurisdiction: () => usNamespace,
+        } as unknown as Env["RECENT_IMAGE_COPIER"],
+      },
+      {
+        waitUntil: (promise: Promise<unknown>) => waited.push(promise),
+      } as unknown as ExecutionContext,
+    );
+    await Promise.all(waited);
+
+    expect(stubFetch).toHaveBeenCalledWith("https://recent-image-copier/run", { method: "POST" });
   });
 });

@@ -44,6 +44,10 @@
 				"name": "UPLOAD_EXPIRY",
 				"class_name": "UploadExpiry",
 			},
+			{
+				"name": "RECENT_IMAGE_COPIER",
+				"class_name": "RecentImageCopier",
+			},
 		],
 	},
 	"migrations": [
@@ -59,7 +63,15 @@
 			"tag": "v3",
 			"new_sqlite_classes": ["UploadExpiry"],
 		},
+		{
+			"tag": "v4",
+			"new_sqlite_classes": ["RecentImageCopier"],
+		},
 	],
+	// Copies images of recently saved blueprints into R2. Production only: preview shares the bucket.
+	"triggers": {
+		"crons": ["*/10 * * * *"],
+	},
 	"observability": {
 		"enabled": true,
 		"head_sampling_rate": 1,
@@ -67,6 +79,9 @@
 	"env": {
 		"preview": {
 			"name": "factorio-prints-images-preview",
+			"triggers": {
+				"crons": [],
+			},
 			"workers_dev": true,
 			"routes": [],
 			"vars": {
@@ -101,6 +116,10 @@
 					{
 						"name": "UPLOAD_EXPIRY",
 						"class_name": "UploadExpiry",
+					},
+					{
+						"name": "RECENT_IMAGE_COPIER",
+						"class_name": "RecentImageCopier",
 					},
 				],
 			},
