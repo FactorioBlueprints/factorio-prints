@@ -2,6 +2,7 @@ import { verifyFirebaseIdToken } from "./firebaseAuth.ts";
 import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
 import { isFallbackImageId, newFallbackImageId } from "./imageIds.ts";
 import { deleteThroughImgurUploader, uploadThroughImgurUploader } from "./imgurUploader.ts";
+import { runThroughRecentImageCopier } from "./recentImageCopy.ts";
 import { consumeThroughUploadQuota } from "./uploadQuota.ts";
 import { scheduleThroughUploadExpiry } from "./uploadExpiry.ts";
 import { handleUploadRequest, type UploadDependencies, uploadPathname } from "./uploads.ts";
@@ -265,8 +266,12 @@ const handleRequest = async (request: Request, environment: Env): Promise<Respon
 
 export default {
   fetch: handleRequest,
+  scheduled: async (_controller, environment, context) => {
+    context.waitUntil(runThroughRecentImageCopier(environment.RECENT_IMAGE_COPIER));
+  },
 } satisfies ExportedHandler<Env>;
 
 export { ImgurUploader } from "./imgurUploader.ts";
+export { RecentImageCopier } from "./recentImageCopy.ts";
 export { UploadExpiry } from "./uploadExpiry.ts";
 export { UploadQuota } from "./uploadQuota.ts";
