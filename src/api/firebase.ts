@@ -44,15 +44,15 @@ const isNetworkError = (error: unknown): boolean => {
 };
 
 /**
- * Transforms a blueprint key to its CDN URL format.
+ * Transforms a blueprint key to its CDN URL format. The directory is lower-cased so keys that
+ * differ only in case share a directory instead of colliding on case-insensitive filesystems.
  *
  * @param blueprintKey - The blueprint key (e.g., "-KnQ865j-qQ21WoUPbd3")
- * @returns The CDN URL (e.g., "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json")
+ * @returns The CDN URL (e.g., "https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json")
  */
 export const getBlueprintCdnUrl = (blueprintKey: string): string => {
-  const prefix = blueprintKey.slice(0, 3);
-  const suffix = blueprintKey.slice(3);
-  return `https://factorio-blueprint-firebase-cdn.pages.dev/${prefix}/${suffix}.json`;
+  const prefix = blueprintKey.slice(0, 3).toLowerCase();
+  return `https://factorio-blueprint-firebase-cdn.pages.dev/${prefix}/${blueprintKey}.json`;
 };
 
 /**
