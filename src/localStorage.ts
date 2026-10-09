@@ -676,11 +676,125 @@ async function getWorker(): Promise<Worker | undefined> {
 type StorageOperation = "persist" | "restore" | "delete";
 type WorkerOperationResult = { success: boolean; data?: any };
 
+export const MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS = 8 * 1024 * 1024;
+
+enum WorkerPayloadRejectionReason {
+  PayloadTooLarge = "payload-too-large",
+  PostMessageFailed = "post-message-failed",
+  SerializationFailed = "serialization-failed",
+}
+
+interface WorkerPayloadRejection {
+  status: "payload-rejected";
+  reason: WorkerPayloadRejectionReason;
+  serializedCharacters?: number;
+  maximumCharacters: number;
+}
+
 let fallbackPersistenceStore: PersistenceStore | undefined;
+const rejectedWorkerPayloads = new WeakMap<object, Map<string, WorkerPayloadRejection>>();
 
 function getFallbackPersistenceStore(): PersistenceStore {
   fallbackPersistenceStore ??= new PersistenceStore(indexedDbStore);
   return fallbackPersistenceStore;
+}
+
+function getRejectedWorkerPayload(key: string, data: unknown): WorkerPayloadRejection | undefined {
+  if (data !== null && typeof data === "object") {
+    return rejectedWorkerPayloads.get(data)?.get(key);
+  }
+  return undefined;
+}
+
+function rememberRejectedWorkerPayload(
+  key: string,
+  data: unknown,
+  rejection: WorkerPayloadRejection,
+): void {
+  if (data !== null && typeof data === "object") {
+    const rejectionsByKey = rejectedWorkerPayloads.get(data) ?? new Map();
+    rejectionsByKey.set(key, rejection);
+    rejectedWorkerPayloads.set(data, rejectionsByKey);
+  }
+}
+
+function inspectWorkerPayload(key: string, data: unknown): WorkerPayloadRejection | undefined {
+  const previousRejection = getRejectedWorkerPayload(key, data);
+  if (previousRejection) {
+    return previousRejection;
+  }
+
+  try {
+    const serializedPayload = JSON.stringify(data);
+    if (serializedPayload === undefined) {
+      return {
+        status: "payload-rejected",
+        reason: WorkerPayloadRejectionReason.SerializationFailed,
+        maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+      };
+    }
+
+    if (serializedPayload.length > MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS) {
+      return {
+        status: "payload-rejected",
+        reason: WorkerPayloadRejectionReason.PayloadTooLarge,
+        serializedCharacters: serializedPayload.length,
+        maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+      };
+    }
+  } catch {
+    return {
+      status: "payload-rejected",
+      reason: WorkerPayloadRejectionReason.SerializationFailed,
+      maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+    };
+  }
+
+  return undefined;
+}
+
+function isWorkerPayloadTransferError(error: unknown): boolean {
+  if (error === null || typeof error !== "object") {
+    return false;
+  }
+
+  const namedError = error as { message?: unknown; name?: unknown };
+  if (namedError.name === "DataCloneError") {
+    return true;
+  }
+
+  if (typeof namedError.message !== "string") {
+    return false;
+  }
+
+  const message = namedError.message.toLowerCase();
+  return message.includes("clone") && message.includes("out of memory");
+}
+
+async function discardRejectedWorkerPayload(
+  key: string,
+  data: unknown,
+  rejection: WorkerPayloadRejection,
+): Promise<WorkerOperationResult> {
+  const previousRejection = getRejectedWorkerPayload(key, data);
+  if (previousRejection) {
+    return { success: false, data: previousRejection };
+  }
+
+  rememberRejectedWorkerPayload(key, data, rejection);
+  addBreadcrumb({
+    message: "IndexedDB worker persistence payload discarded",
+    category: "indexeddb",
+    level: "info",
+    data: {
+      key,
+      reason: rejection.reason,
+      serializedCharacters: rejection.serializedCharacters,
+      maximumCharacters: rejection.maximumCharacters,
+    },
+  });
+  await workerOperation("delete", key);
+  return { success: false, data: rejection };
 }
 
 async function workerOperation(
@@ -691,6 +805,13 @@ async function workerOperation(
 ): Promise<WorkerOperationResult> {
   const maxRetries = type === "persist" ? 3 : 4;
   const baseDelay = type === "persist" ? 1000 : 500;
+
+  if (type === "persist") {
+    const payloadRejection = inspectWorkerPayload(key, data);
+    if (payloadRejection) {
+      return discardRejectedWorkerPayload(key, data, payloadRejection);
+    }
+  }
 
   try {
     const worker = await getWorker();
@@ -735,7 +856,7 @@ async function workerOperation(
       }
     }
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const id = operationCounter++;
       const baseTimeout = type === "persist" ? 30000 : type === "delete" ? 5000 : 20000;
       const retryMultiplier = Math.min(retryCount + 1, 3);
@@ -822,6 +943,14 @@ async function workerOperation(
       }
     });
   } catch (error) {
+    if (type === "persist" && isWorkerPayloadTransferError(error)) {
+      return discardRejectedWorkerPayload(key, data, {
+        status: "payload-rejected",
+        reason: WorkerPayloadRejectionReason.PostMessageFailed,
+        maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
+      });
+    }
+
     if (
       error instanceof Error &&
       (error.message.includes("Connection to Indexed Database server lost") ||
@@ -882,7 +1011,14 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
     async (client: any) => {
       try {
         const result = await workerOperation("persist", idbValidKey, client);
-        const persistenceData = result.data as PersistResult["data"] | undefined;
+        const persistenceData = result.data as
+          | PersistResult["data"]
+          | WorkerPayloadRejection
+          | undefined;
+
+        if (persistenceData?.status === "payload-rejected") {
+          return;
+        }
 
         if (persistenceData?.status === "unchanged") {
           logIndexedDbDebug("[IndexedDB] Cache state unchanged, skipping persistence");
