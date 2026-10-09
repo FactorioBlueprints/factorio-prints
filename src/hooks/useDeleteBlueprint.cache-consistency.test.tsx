@@ -49,7 +49,6 @@ describe("useDeleteBlueprint cache consistency", () => {
 
     const blueprintId = "test-blueprint-id";
     const authorId = "test-author-id";
-    const tags = ["combat", "logistics", "production"];
 
     // Set up cache spies to verify operations
     const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
@@ -91,7 +90,6 @@ describe("useDeleteBlueprint cache consistency", () => {
     result.current.mutate({
       id: blueprintId,
       authorId,
-      tags,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
@@ -107,15 +105,9 @@ describe("useDeleteBlueprint cache consistency", () => {
       "other-blueprint-2": true,
     });
 
-    // Verify tag caches were updated to remove the blueprint
-    expect(setQueryDataSpy).toHaveBeenCalledWith(tag1Key, {
-      "other-blueprint-1": true,
-      "other-blueprint-3": true,
-    });
-    expect(setQueryDataSpy).toHaveBeenCalledWith(tag2Key, {
-      "other-blueprint-2": true,
-    });
-    expect(setQueryDataSpy).toHaveBeenCalledWith(tag3Key, {});
+    expect(setQueryDataSpy).not.toHaveBeenCalledWith(tag1Key, expect.anything());
+    expect(setQueryDataSpy).not.toHaveBeenCalledWith(tag2Key, expect.anything());
+    expect(setQueryDataSpy).not.toHaveBeenCalledWith(tag3Key, expect.anything());
 
     // Verify blueprint queries were removed from cache
     expect(removeQueriesSpy).toHaveBeenCalledWith({
@@ -131,7 +123,6 @@ describe("useDeleteBlueprint cache consistency", () => {
 
     const blueprintId = "test-blueprint-id";
     const authorId = "test-author-id";
-    const tags = ["combat", "logistics"];
 
     // Set up cache spies to verify operations
     const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
@@ -154,15 +145,11 @@ describe("useDeleteBlueprint cache consistency", () => {
     result.current.mutate({
       id: blueprintId,
       authorId,
-      tags,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
 
-    // Verify the existing cache was updated correctly using spy
-    expect(setQueryDataSpy).toHaveBeenCalledWith(["byTag", "combat"], {
-      "other-blueprint": true,
-    });
+    expect(setQueryDataSpy).not.toHaveBeenCalledWith(["byTag", "combat"], expect.anything());
 
     // Operation should complete successfully
     expect(result.current.isSuccess).toBe(true);
@@ -177,7 +164,6 @@ describe("useDeleteBlueprint cache consistency", () => {
 
     const blueprintId = "shared-blueprint-id";
     const authorId = "author-id";
-    const tags = ["shared-tag"];
 
     // Set up cache spies to verify operations
     const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
@@ -210,7 +196,6 @@ describe("useDeleteBlueprint cache consistency", () => {
     result.current.mutate({
       id: blueprintId,
       authorId,
-      tags,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
@@ -221,11 +206,7 @@ describe("useDeleteBlueprint cache consistency", () => {
       "blueprint-2": true,
     });
 
-    // Verify tag data was updated correctly using spy
-    expect(setQueryDataSpy).toHaveBeenCalledWith(["byTag", "shared-tag"], {
-      "blueprint-1": true,
-      "blueprint-2": true,
-    });
+    expect(setQueryDataSpy).not.toHaveBeenCalledWith(["byTag", "shared-tag"], expect.anything());
 
     // Verify other user's blueprints were NOT updated (spy should not have been called with other author)
     expect(setQueryDataSpy).not.toHaveBeenCalledWith(
@@ -239,7 +220,6 @@ describe("useDeleteBlueprint cache consistency", () => {
 
     const blueprintId = "multi-tag-blueprint";
     const authorId = "author-id";
-    const tags = ["tag-with-cache", "tag-without-cache", "tag-empty"];
 
     // Set up cache spies to verify operations
     const setQueryDataSpy = vi.spyOn(queryClient, "setQueryData");
@@ -270,7 +250,6 @@ describe("useDeleteBlueprint cache consistency", () => {
     result.current.mutate({
       id: blueprintId,
       authorId,
-      tags,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });
@@ -281,19 +260,23 @@ describe("useDeleteBlueprint cache consistency", () => {
       "user-blueprint-2": true,
     });
 
-    // Verify only cached tag with data was updated using spy
-    expect(setQueryDataSpy).toHaveBeenCalledWith(["byTag", "tag-with-cache"], {
-      "other-blueprint-1": true,
-      "other-blueprint-2": true,
+    expect({
+      userBlueprints: queryClient.getQueryData(["users", "userId", authorId, "blueprints"]),
+      tagWithCache: queryClient.getQueryData(["byTag", "tag-with-cache"]),
+      tagWithoutCache: queryClient.getQueryData(["byTag", "tag-without-cache"]),
+      emptyTag: queryClient.getQueryData(["byTag", "tag-empty"]),
+    }).toStrictEqual({
+      userBlueprints: {
+        "user-blueprint-1": true,
+        "user-blueprint-2": true,
+      },
+      tagWithCache: {
+        "other-blueprint-1": true,
+        "other-blueprint-2": true,
+      },
+      tagWithoutCache: undefined,
+      emptyTag: {},
     });
-
-    // Verify setQueryData was called for both user blueprints and tag cache
-    expect(setQueryDataSpy).toHaveBeenCalledTimes(2);
-
-    // Missing cache and empty cache should not be updated based on the implementation
-    // The hook only updates existing caches that contain the blueprint ID
-
-    expect(result.current.isSuccess).toBe(true);
   });
 
   it("should ensure clean cache state after deletion", async () => {
@@ -301,7 +284,6 @@ describe("useDeleteBlueprint cache consistency", () => {
 
     const blueprintId = "cleanup-test-blueprint";
     const authorId = "test-author";
-    const tags = ["cleanup-tag"];
 
     // Set up cache with blueprint data
     const blueprint = { id: blueprintId, title: "Test" };
@@ -321,7 +303,6 @@ describe("useDeleteBlueprint cache consistency", () => {
     result.current.mutate({
       id: blueprintId,
       authorId,
-      tags,
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true), { timeout: 3000 });

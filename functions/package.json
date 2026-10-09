@@ -5,7 +5,7 @@
 	"main": "lib/index.js",
 	"scripts": {
 		"build": "tsc",
-		"verify": "npm run build && node scripts/verify-runtime.cjs",
+		"verify": "npm run build && node --test test/*.node-test.cjs && node scripts/verify-runtime.cjs",
 		"build:watch": "tsc --watch",
 		"lint": "eslint .",
 		"serve": "npm run build && firebase emulators:start --only functions",

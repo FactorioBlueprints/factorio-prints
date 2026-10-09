@@ -295,28 +295,28 @@ describe("byTag index rules", () => {
     await assertFails(set(ref(database, `byTag/category1/${blueprintId}`), true));
   });
 
-  test("allow the blueprint owner to add a tag entry", async () => {
+  test("reject the blueprint owner adding a tag entry", async () => {
     const database = testEnvironment.authenticatedContext(ownerId).database();
 
-    await assertSucceeds(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
+    await assertFails(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
   });
 
-  test("allow the blueprint owner to remove a tag entry", async () => {
+  test("reject the blueprint owner removing a tag entry", async () => {
     const database = testEnvironment.authenticatedContext(ownerId).database();
 
-    await assertSucceeds(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
+    await assertFails(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
   });
 
-  test("allow a moderator to remove a tag entry", async () => {
+  test("reject a moderator removing a tag entry", async () => {
     const database = testEnvironment.authenticatedContext(moderatorId).database();
 
-    await assertSucceeds(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
+    await assertFails(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
   });
 
-  test("allow the owner to retag through the multi-path update the edit flow issues", async () => {
+  test("reject a client retagging through a multi-path update", async () => {
     const database = testEnvironment.authenticatedContext(ownerId).database();
 
-    await assertSucceeds(
+    await assertFails(
       update(ref(database), {
         [`/byTag/category1/tag1/${blueprintId}`]: null,
         [`/byTag/category2/tag3/${blueprintId}`]: true,

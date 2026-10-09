@@ -86,7 +86,6 @@ describe("useUpdateBlueprint", () => {
       id: "blueprint123",
       rawBlueprint,
       formData,
-      availableTags: ["old-tag", "new-tag"],
     });
 
     // Verify Firebase update was called with correct data
@@ -101,8 +100,6 @@ describe("useUpdateBlueprint", () => {
       "/blueprintSummaries/blueprint123/lastUpdatedDate/": "SERVER_TIMESTAMP",
       "/blueprintSummaries/blueprint123/imgurId/": "abc1234",
       "/blueprintSummaries/blueprint123/imgurType/": "image/png",
-      "/byTag/old-tag/blueprint123": null,
-      "/byTag/new-tag/blueprint123": true,
     });
 
     // Verify navigation
@@ -154,7 +151,6 @@ describe("useUpdateBlueprint", () => {
       id: "blueprint123",
       rawBlueprint,
       formData,
-      availableTags: ["old-tag", "new-tag"],
     });
 
     // Verify Firebase update was called without image update
@@ -205,7 +201,6 @@ describe("useUpdateBlueprint", () => {
       id: "blueprint123",
       rawBlueprint: existingBlueprint,
       formData,
-      availableTags: ["old-tag"],
     });
 
     // Check cache was updated
