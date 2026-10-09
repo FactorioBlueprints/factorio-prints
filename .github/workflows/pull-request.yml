@@ -8,6 +8,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  forbid-merge-commits:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: motlin/forbid-merge-commits-action@e3c5d3f2eac047da10def5c0b7c2d26e09540472
+
   automerge-dependabot:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
