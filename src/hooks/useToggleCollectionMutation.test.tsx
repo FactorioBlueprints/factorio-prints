@@ -62,6 +62,7 @@ describe("useToggleCollectionMutation", () => {
 
     expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
       "/users/user456/collection/blueprint123": true,
+      "/blueprintCollectors/blueprint123/user456": true,
     });
   });
 
@@ -78,6 +79,7 @@ describe("useToggleCollectionMutation", () => {
 
     expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
       "/users/user456/collection/blueprint123": null,
+      "/blueprintCollectors/blueprint123/user456": null,
     });
   });
 
