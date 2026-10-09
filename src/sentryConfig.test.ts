@@ -2,22 +2,31 @@ import { describe, expect, it } from "vite-plus/test";
 import mainSource from "./main.tsx?raw";
 
 describe("Sentry startup configuration", () => {
-  it("keeps heavyweight optional integrations out of the initial bundle", () => {
-    expect(mainSource).not.toContain("import * as Sentry");
-    expect(mainSource).not.toContain("replayIntegration");
-    expect(mainSource).not.toContain("feedbackIntegration");
-  });
-
-  it("samples a bounded share of performance traces", () => {
-    expect(mainSource).toContain("tracesSampleRate: 0.1");
-  });
-
-  it("attaches router lifecycle diagnostics to missing-match failures", () => {
-    expect(mainSource).toContain('eventMessage.includes("_nonReactive")');
-    expect(mainSource).toContain("router: getRouterDiagnostics()");
-  });
-
-  it("groups diagnosed mobile iOS inline recursion before sending", () => {
-    expect(mainSource).toContain("groupMobileIosRecursion(event)");
+  it("keeps the startup and before-send safeguards narrowly configured", () => {
+    expect({
+      attachesRouterDiagnostics:
+        mainSource.includes('eventMessage.includes("_nonReactive")') &&
+        mainSource.includes("router: getRouterDiagnostics()"),
+      filtersAllFetchTypeErrors: mainSource.includes(
+        'error instanceof TypeError && error.message === "Failed to fetch"',
+      ),
+      groupsMobileIosRecursion: mainSource.includes("groupMobileIosRecursion(event)"),
+      importsSentryNamespace: mainSource.includes("import * as Sentry"),
+      includesFeedbackIntegration: mainSource.includes("feedbackIntegration"),
+      includesReplayIntegration: mainSource.includes("replayIntegration"),
+      normalizesThirdPartyNoiseBeforeSending: mainSource.includes(
+        "if (normalizeAndFilterThirdPartyNoise(event))",
+      ),
+      tracesSampleRate: mainSource.includes("tracesSampleRate: 0.1"),
+    }).toStrictEqual({
+      attachesRouterDiagnostics: true,
+      filtersAllFetchTypeErrors: false,
+      groupsMobileIosRecursion: true,
+      importsSentryNamespace: false,
+      includesFeedbackIntegration: false,
+      includesReplayIntegration: false,
+      normalizesThirdPartyNoiseBeforeSending: true,
+      tracesSampleRate: true,
+    });
   });
 });

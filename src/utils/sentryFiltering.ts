@@ -1,6 +1,8 @@
 import type { Event, StackFrame } from "@sentry/react";
 
 const firebaseAuthDatabaseClosingMessage = "Database is closing/hidden";
+const googleAdsPairFingerprint = "third-party-google-ads-inline-runtime";
+const injectedCryptoPairFingerprint = "injected-crypto-runtime";
 const mobileIosRecursionMessage = /^Maximum call stack size exceeded\.?$/;
 const mobileIosRecursionFingerprint = "mobile-ios-inline-document-recursion";
 const maximumFrameSamples = 6;
@@ -9,6 +11,24 @@ const minimumRepeatedStackLength = 8;
 
 function getExceptionFrames(event: Event): StackFrame[] {
   return (event.exception?.values ?? []).flatMap((exception) => exception.stacktrace?.frames ?? []);
+}
+
+function getEventMessage(event: Event): string {
+  if (typeof event.message === "string") {
+    return event.message;
+  }
+
+  const exceptionValue = event.exception?.values?.[0]?.value;
+  if (typeof exceptionValue === "string") {
+    return exceptionValue;
+  }
+
+  const argumentsValue = event.extra?.arguments;
+  if (Array.isArray(argumentsValue)) {
+    return argumentsValue.map(String).join(" ");
+  }
+
+  return "";
 }
 
 function getFrameIdentity(frame: StackFrame): string {
@@ -78,6 +98,135 @@ function hasRepeatedFramePattern(frames: StackFrame[]): boolean {
 
 function getEventRoute(event: Event, requestUrl: URL): string {
   return event.transaction ?? requestUrl.pathname;
+}
+
+function getFrameSource(frame: StackFrame): string {
+  return [frame.context_line, ...(frame.pre_context ?? []), ...(frame.post_context ?? [])]
+    .filter((line): line is string => typeof line === "string")
+    .join("\n");
+}
+
+function isGoogleAdsFrame(frame: StackFrame): boolean {
+  const filename = frame.filename ?? "";
+  return (
+    /(?:^|\.)googlesyndication\.com(?:\/|$)/.test(filename) ||
+    filename.includes("/pagead/js/adsbygoogle.js")
+  );
+}
+
+function isFirstPartyAssetFrame(frame: StackFrame, requestUrl: URL | undefined): boolean {
+  if (frame.in_app === true) {
+    return true;
+  }
+  if (!requestUrl || !frame.filename || !URL.canParse(frame.filename, requestUrl)) {
+    return false;
+  }
+
+  const frameUrl = new URL(frame.filename, requestUrl);
+  return (
+    frameUrl.origin === requestUrl.origin && /\.(?:js|jsx|mjs|ts|tsx)$/.test(frameUrl.pathname)
+  );
+}
+
+function setNoiseFingerprint(event: Event, fingerprint: string): void {
+  event.fingerprint = [fingerprint];
+  event.tags = {
+    ...event.tags,
+    external_runtime_noise: fingerprint,
+  };
+}
+
+function isGoogleAdsFetchFailure(event: Event, message: string): boolean {
+  if (message !== "Failed to fetch" && message !== "TypeError: Failed to fetch") {
+    return false;
+  }
+
+  const frames = getExceptionFrames(event);
+  return (
+    frames.some(isGoogleAdsFrame) &&
+    !frames.some((frame) => isFirstPartyAssetFrame(frame, getRequestUrl(event)))
+  );
+}
+
+function isGoogleAdsInlinePair(event: Event, message: string): boolean {
+  const frames = getExceptionFrames(event);
+  if (message === "Ba") {
+    return (
+      frames.length === 0 &&
+      event.contexts?.browser?.name === "Chrome Mobile iOS" &&
+      event.exception?.values?.[0]?.mechanism?.type === "onunhandledrejection"
+    );
+  }
+
+  return message === "ga" && frames.some((frame) => getFrameSource(frame).includes("adsbygoogle"));
+}
+
+function isCryptoInjectionPair(event: Event, message: string): boolean {
+  if (message === "Crypto site not identified within timeout period") {
+    return (
+      event.logger === "console" &&
+      Array.isArray(event.extra?.arguments) &&
+      event.extra.arguments.length === 1 &&
+      event.extra.arguments[0] === message
+    );
+  }
+
+  if (message !== "Cannot read properties of undefined (reading 'location')") {
+    return false;
+  }
+
+  const requestUrl = getRequestUrl(event);
+  const frames = getExceptionFrames(event);
+  return (
+    requestUrl !== undefined &&
+    frames.length > 0 &&
+    frames.every((frame) => isInlineDocumentFrame(frame, requestUrl)) &&
+    frames.some((frame) => frame.function === "HTMLInputElement.onchange")
+  );
+}
+
+function isMonkeypatchedBrowserApiWarning(event: Event, message: string): boolean {
+  return (
+    /^addEventListener ignored event='[a-z]+'$/.test(message) &&
+    event.logger === "console" &&
+    event.level === "warning" &&
+    Array.isArray(event.extra?.arguments) &&
+    event.extra.arguments.length === 1 &&
+    event.extra.arguments[0] === message &&
+    getExceptionFrames(event).some(
+      (frame) => frame.function === "window.addEventListener" && frame.filename === "<anonymous>",
+    )
+  );
+}
+
+function isStacklessNativeBridgeRejection(event: Event, message: string): boolean {
+  return (
+    /^Object Not Found Matching Id:\d+, MethodName:[A-Za-z][A-Za-z0-9_]*, ParamCount:\d+$/.test(
+      message,
+    ) &&
+    event.exception?.values?.[0]?.mechanism?.type === "onunhandledrejection" &&
+    getExceptionFrames(event).length === 0
+  );
+}
+
+export function normalizeAndFilterThirdPartyNoise(event: Event): boolean {
+  const message = getEventMessage(event);
+
+  if (isGoogleAdsInlinePair(event, message)) {
+    setNoiseFingerprint(event, googleAdsPairFingerprint);
+    return false;
+  }
+
+  if (isCryptoInjectionPair(event, message)) {
+    setNoiseFingerprint(event, injectedCryptoPairFingerprint);
+    return false;
+  }
+
+  return (
+    isGoogleAdsFetchFailure(event, message) ||
+    isMonkeypatchedBrowserApiWarning(event, message) ||
+    isStacklessNativeBridgeRejection(event, message)
+  );
 }
 
 export function groupMobileIosRecursion(event: Event): boolean {
