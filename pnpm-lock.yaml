@@ -168,8 +168,8 @@ importers:
         specifier: 3.30.0
         version: 3.30.0
       firebase-tools:
-        specifier: ^15.32.0
-        version: 15.32.0(@types/node@26.6.4)(supports-color@10.2.2)
+        specifier: ^15.32.1
+        version: 15.32.1(@types/node@26.6.4)(supports-color@10.2.2)
       jsdom:
         specifier: 30.1.1
         version: 30.1.1
@@ -3678,8 +3678,8 @@ packages:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
     engines: {node: '>=10'}
 
-  firebase-tools@15.32.0:
-    resolution: {integrity: sha512-yp0SOQFALo3q2K2/pBmWTrAM4C0503zK3UJ5IDQzr4o7i+5RKh3ZPX4RTkumCFt3STtI7EuR61M8tDJjNZmTYg==}
+  firebase-tools@15.32.1:
+    resolution: {integrity: sha512-Ppi8CWeACtJjx10LtaKQGf81+Zc5MYDQNqpE2ioY11KViaqa5OOPW9huqqwd5+Zmc/nayjyGiOrJ1YF7NGXHBQ==}
     engines: {node: '>=20.0.0 || >=22.0.0 || >=24.0.0'}
     hasBin: true
 
@@ -3905,8 +3905,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.13.11:
-    resolution: {integrity: sha512-/SMX/RQNJn7oNmFwH6DtwDqcrzZU2otm1FD6OJe2cWF6cfy/F8hq0XVBv7xW3FTJshRQwuBnXHDq2kNsdZnshg==}
+  hono@4.13.12:
+    resolution: {integrity: sha512-6E2QDAc9Ick9Sq77ZrGS/dk2WUYni91aufTw6LJKpV7w8kW5/GxVUc650FOADOmlwg3K+f7Pun6XlV+pYmW6gw==}
     engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@7.0.0:
@@ -3953,8 +3953,8 @@ packages:
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
-  ignore@7.0.10:
-    resolution: {integrity: sha512-HpbUakT7xp5miBUywCHf36ZEuAJNklBJDDsGpUIjMzOSmM8ELSfA9Sa/QDPeNeqeoN31u+UTCkL4klCOVvRm4Q==}
+  ignore@7.0.11:
+    resolution: {integrity: sha512-YChdK5txDjwGUvgR7oCJcLGkwi3LDh8Zx8tS7ndYciLEg/oOCL26VUBSUEtgS7EjiybcBqFxh5j0rAdDX7/bbg==}
     engines: {node: '>= 4'}
 
   immutability-helper@3.1.1:
@@ -3994,8 +3994,8 @@ packages:
   invariant@2.2.4:
     resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
 
-  ip-address@10.7.2:
-    resolution: {integrity: sha512-7H/2gFSIitxc0hG3nOI1glS8QLo/EHBFFLk8vEUjXY/xu0AdL8jZ9U1IzO2PUm0d2D/ofQcAifb0g6OBkt8U7w==}
+  ip-address@10.7.3:
+    resolution: {integrity: sha512-A1kdq/tSb5QjvKvAMgIoEvDBIgL7qaqVP/jkvSwYYRZ9iEzvPpopxp2wQfu3SuZRHtpHNxMn8Fs0bS+gf5Xmwg==}
     engines: {node: '>= 12'}
 
   ip-regex@2.1.0:
@@ -4722,8 +4722,8 @@ packages:
     resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  node-gyp@13.0.2:
-    resolution: {integrity: sha512-SXTvw3PxznpowYhJSOD9mVQBgDaCTWXffX+wQZsQ7PbcTV86TsXCUcSZhHnskFQvrvn/OdSzJPMsptT2pIj9ww==}
+  node-gyp@13.1.0:
+    resolution: {integrity: sha512-FpNzOLFACKG0oRBYbZ5WOeWD1EqRTIWX90MaRIWTO18lVYPx8fqIjrdS3pihjnCkSmgop6zVGkSqg1vXZLksuw==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
     hasBin: true
 
@@ -4915,11 +4915,11 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
-  pg-cloudflare@1.4.0:
-    resolution: {integrity: sha512-Vo7z/6rrQYxpNRylp4Tlob2elzbh+N/MOQbxFVWCxS7oEx6jF53GTJFxK2WWpKuBRkmiin4Mt+xofFDjx09R0A==}
+  pg-cloudflare@1.4.1:
+    resolution: {integrity: sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ==}
 
-  pg-connection-string@2.14.0:
-    resolution: {integrity: sha512-XwWDGcLRGCXAR8F/AM5bG7Q+A3Wm2s6QeEjlOKZLlH3UYcguiqCWKyWXVag5TLTIjR7oOJUY8kcADaZgWPyLeg==}
+  pg-connection-string@2.14.1:
+    resolution: {integrity: sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==}
 
   pg-gateway@0.3.0-beta.4:
     resolution: {integrity: sha512-CTjsM7Z+0Nx2/dyZ6r8zRsc3f9FScoD5UAOlfUx1Fdv/JOIWvRbF7gou6l6vP+uypXQVoYPgw8xZDXgMGvBa4Q==}
@@ -4933,15 +4933,15 @@ packages:
     peerDependencies:
       pg: '>=8.0'
 
-  pg-protocol@1.16.0:
-    resolution: {integrity: sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg==}
+  pg-protocol@1.16.1:
+    resolution: {integrity: sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg==}
 
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.23.0:
-    resolution: {integrity: sha512-Ip2EQCngowJLGOfCwkFhPXU7/ljlhn6Rxlmy4XYfL2Y+vyRM59+8uR2xqRWKdYmbXmxCFOAmKxBuSUCdF34qLg==}
+  pg@8.23.1:
+    resolution: {integrity: sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -7062,9 +7062,9 @@ snapshots:
       protobufjs: 7.6.6
       yargs: 17.7.3
 
-  '@hono/node-server@2.1.3(hono@4.13.11)':
+  '@hono/node-server@2.1.3(hono@4.13.12)':
     dependencies:
-      hono: 4.13.11
+      hono: 4.13.12
 
   '@img/colour@1.1.0': {}
 
@@ -7374,7 +7374,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.31.0(supports-color@10.2.2)(zod@4.6.5)':
     dependencies:
-      '@hono/node-server': 2.1.3(hono@4.13.11)
+      '@hono/node-server': 2.1.3(hono@4.13.12)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -7384,7 +7384,7 @@ snapshots:
       eventsource-parser: 3.1.1
       express: 5.2.1(supports-color@10.2.2)
       express-rate-limit: 8.7.0(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2)
-      hono: 4.13.11
+      hono: 4.13.12
       jose: 6.2.12
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -9268,7 +9268,7 @@ snapshots:
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
       express: 5.2.1(supports-color@10.2.2)
-      ip-address: 10.7.2
+      ip-address: 10.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -9445,7 +9445,7 @@ snapshots:
       locate-path: 6.0.0
       path-exists: 4.0.0
 
-  firebase-tools@15.32.0(@types/node@26.6.4)(supports-color@10.2.2):
+  firebase-tools@15.32.1(@types/node@26.6.4)(supports-color@10.2.2):
     dependencies:
       '@apphosting/common': 0.0.8
       '@electric-sql/pglite': 0.3.16
@@ -9479,7 +9479,7 @@ snapshots:
       gaxios: 6.7.1(supports-color@10.2.2)
       glob: 10.5.0
       google-auth-library: 9.15.1(supports-color@10.2.2)
-      ignore: 7.0.10
+      ignore: 7.0.11
       js-yaml: 4.3.2
       jsonwebtoken: 9.0.3
       libsodium-wrappers: 0.7.16
@@ -9493,7 +9493,7 @@ snapshots:
       node-fetch: 2.7.0
       open: 6.4.0
       ora: 5.4.1
-      pg: 8.23.0
+      pg: 8.23.1
       pg-gateway: 0.3.0-beta.4
       pglite-2: '@electric-sql/pglite@0.2.17'
       portfinder: 1.0.38(supports-color@10.2.2)
@@ -9736,7 +9736,7 @@ snapshots:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
       fast-glob: 3.3.3
-      ignore: 7.0.10
+      ignore: 7.0.11
       is-path-inside: 4.0.0
       micromatch: 4.0.8
       slash: 5.1.0
@@ -9870,7 +9870,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.13.11: {}
+  hono@4.13.12: {}
 
   html-encoding-sniffer@7.0.0:
     dependencies:
@@ -9928,7 +9928,7 @@ snapshots:
 
   ieee754@1.2.1: {}
 
-  ignore@7.0.10: {}
+  ignore@7.0.11: {}
 
   immutability-helper@3.1.1: {}
 
@@ -9956,7 +9956,7 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  ip-address@10.7.2: {}
+  ip-address@10.7.3: {}
 
   ip-regex@2.1.0: {}
 
@@ -10740,7 +10740,7 @@ snapshots:
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
 
-  node-gyp@13.0.2:
+  node-gyp@13.1.0:
     dependencies:
       env-paths: 2.2.1
       exponential-backoff: 3.1.3
@@ -10970,20 +10970,20 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  pg-cloudflare@1.4.0:
+  pg-cloudflare@1.4.1:
     optional: true
 
-  pg-connection-string@2.14.0: {}
+  pg-connection-string@2.14.1: {}
 
   pg-gateway@0.3.0-beta.4: {}
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.14.0(pg@8.23.0):
+  pg-pool@3.14.0(pg@8.23.1):
     dependencies:
-      pg: 8.23.0
+      pg: 8.23.1
 
-  pg-protocol@1.16.0: {}
+  pg-protocol@1.16.1: {}
 
   pg-types@2.2.0:
     dependencies:
@@ -10993,15 +10993,15 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.23.0:
+  pg@8.23.1:
     dependencies:
-      pg-connection-string: 2.14.0
-      pg-pool: 3.14.0(pg@8.23.0)
-      pg-protocol: 1.16.0
+      pg-connection-string: 2.14.1
+      pg-pool: 3.14.0(pg@8.23.1)
+      pg-protocol: 1.16.1
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
-      pg-cloudflare: 1.4.0
+      pg-cloudflare: 1.4.1
 
   pgpass@1.0.5:
     dependencies:
@@ -11174,7 +11174,7 @@ snapshots:
     dependencies:
       install-artifact-from-github: 1.8.1
       nan: 2.29.0
-      node-gyp: 13.0.2
+      node-gyp: 13.1.0
     optional: true
 
   re2js@2.8.6: {}
@@ -11553,7 +11553,7 @@ snapshots:
 
   socks@2.8.10:
     dependencies:
-      ip-address: 10.7.2
+      ip-address: 10.7.3
       smart-buffer: 4.2.0
 
   solid-js@1.9.15:
