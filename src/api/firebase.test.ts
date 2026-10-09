@@ -60,10 +60,10 @@ describe("firebase API", () => {
   });
 
   describe("getBlueprintCdnUrl", () => {
-    it("should transform blueprint key to CDN URL format", () => {
+    it("should lower-case the prefix and keep the full mixed-case key", () => {
       const blueprintKey = "-KnQ865j-qQ21WoUPbd3";
       const expectedUrl =
-        "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json";
+        "https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json";
 
       const result = getBlueprintCdnUrl(blueprintKey);
 
@@ -72,7 +72,7 @@ describe("firebase API", () => {
 
     it("should handle short keys correctly", () => {
       const blueprintKey = "abc";
-      const expectedUrl = "https://factorio-blueprint-firebase-cdn.pages.dev/abc/.json";
+      const expectedUrl = "https://factorio-blueprint-firebase-cdn.pages.dev/abc/abc.json";
 
       const result = getBlueprintCdnUrl(blueprintKey);
 
@@ -82,7 +82,7 @@ describe("firebase API", () => {
     it("should handle keys with special characters", () => {
       const blueprintKey = "-_$defghijklmnop";
       const expectedUrl =
-        "https://factorio-blueprint-firebase-cdn.pages.dev/-_$/defghijklmnop.json";
+        "https://factorio-blueprint-firebase-cdn.pages.dev/-_$/-_$defghijklmnop.json";
 
       const result = getBlueprintCdnUrl(blueprintKey);
 
@@ -153,7 +153,7 @@ describe("firebase API", () => {
       };
 
       expect(globalThis.fetch).toHaveBeenCalledWith(
-        "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json",
+        "https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json",
       );
       expect(result).toEqual(expectedBlueprintData);
     });
@@ -170,7 +170,7 @@ describe("firebase API", () => {
       expect(globalThis.fetch).not.toHaveBeenCalled();
     });
 
-    it("should return null when CDN fetch returns 404 (without logging)", async () => {
+    it("should return null when the CDN returns 404 (without logging)", async () => {
       const mockBlueprintSummary: EnrichedBlueprintSummary = {
         key: "-KnQ865j-qQ21WoUPbd3",
         title: "Test Blueprint",
@@ -181,7 +181,7 @@ describe("firebase API", () => {
         thumbnail: null,
       };
 
-      vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+      vi.mocked(globalThis.fetch).mockResolvedValue({
         ok: false,
         status: 404,
         statusText: "Not Found",
@@ -192,6 +192,9 @@ describe("firebase API", () => {
       const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
       expect(result).toBeNull();
+      expect(vi.mocked(globalThis.fetch).mock.calls).toStrictEqual([
+        ["https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json"],
+      ]);
       expect(consoleWarnSpy).not.toHaveBeenCalled();
 
       consoleWarnSpy.mockRestore();
@@ -217,6 +220,9 @@ describe("firebase API", () => {
       const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
       expect(result).toBeNull();
+      expect(vi.mocked(globalThis.fetch).mock.calls).toStrictEqual([
+        ["https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json"],
+      ]);
     });
 
     it("should return null when network error occurs", async () => {
@@ -237,6 +243,9 @@ describe("firebase API", () => {
       const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
       expect(result).toBeNull();
+      expect(vi.mocked(globalThis.fetch).mock.calls).toStrictEqual([
+        ["https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json"],
+      ]);
       // Network errors (status 0) should not be logged
       expect(consoleWarnSpy).not.toHaveBeenCalled();
 
@@ -429,7 +438,7 @@ describe("firebase API", () => {
 
       // Should NOT fetch from CDN
       expect(globalThis.fetch).not.toHaveBeenCalledWith(
-        "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json",
+        "https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json",
       );
 
       // Should fetch from Firebase
@@ -469,7 +478,7 @@ describe("firebase API", () => {
       );
       expect(globalThis.fetch).toHaveBeenNthCalledWith(
         2,
-        "https://factorio-blueprint-firebase-cdn.pages.dev/-Kn/Q865j-qQ21WoUPbd3.json",
+        "https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json",
       );
 
       // Should NOT fetch from Firebase since CDN had matching data
@@ -480,6 +489,38 @@ describe("firebase API", () => {
       expect(consoleLogSpy).toHaveBeenCalledWith(
         "Blueprint -KnQ865j-qQ21WoUPbd3 fetched from CDN (dates match)",
       );
+
+      consoleLogSpy.mockRestore();
+    });
+
+    it("should fall back to Firebase when the CDN returns 404", async () => {
+      vi.mocked(globalThis.fetch)
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () => "2025-05-25T04:18:36Z",
+        } as unknown as Response)
+        .mockResolvedValue({
+          ok: false,
+          status: 404,
+          statusText: "Not Found",
+        } as unknown as Response);
+
+      const mockSnapshot = {
+        exists: () => true,
+        val: () => mockBlueprint,
+      };
+      vi.mocked(get).mockResolvedValue(mockSnapshot as any);
+
+      const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      const result = await fetchBlueprint(mockBlueprintId, mockBlueprintSummary);
+
+      expect(vi.mocked(globalThis.fetch).mock.calls).toStrictEqual([
+        ["https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt"],
+        ["https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json"],
+      ]);
+      expect(get).toHaveBeenCalled();
+      expect(result).toStrictEqual(mockBlueprint);
 
       consoleLogSpy.mockRestore();
     });
