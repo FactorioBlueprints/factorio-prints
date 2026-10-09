@@ -16,7 +16,11 @@ import "./css/style.css";
 import QueryProvider from "./providers/QueryProvider";
 import { getRouterDiagnostics, Router } from "./router";
 import { getReleaseInfo, getReleaseMetadata } from "./utils/release";
-import { isFirebaseAuthDatabaseClosingError, isUnactionableError } from "./utils/sentryFiltering";
+import {
+  groupMobileIosRecursion,
+  isFirebaseAuthDatabaseClosingError,
+  isUnactionableError,
+} from "./utils/sentryFiltering";
 import { setupTooltipCleanup } from "./utils/cleanupTooltips";
 import { suppressGoogleAuthDeprecationWarning } from "./utils/suppressGoogleAuthWarning";
 import { createVitePreloadErrorHandler } from "./utils/vitePreloadError";
@@ -240,6 +244,8 @@ init({
     };
 
     const eventMessage = getEventMessage();
+
+    groupMobileIosRecursion(event);
 
     if (eventMessage.includes("_nonReactive")) {
       event.contexts = {
