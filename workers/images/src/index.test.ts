@@ -143,7 +143,11 @@ describe("handleImageRequest", () => {
         },
         status: 307,
       });
-      expect(get.mock.calls).toStrictEqual([[`legacy-imgur/alice100/${variant}`]]);
+      expect(get.mock.calls).toStrictEqual(
+        variant === "original"
+          ? [[`legacy-imgur/alice100/original`]]
+          : [[`legacy-imgur/alice100/${variant}`], ["legacy-imgur/alice100/original"]],
+      );
       expect(writeDataPoint.mock.calls).toStrictEqual([
         [
           {
@@ -415,6 +419,90 @@ describe("fallback-id images", () => {
     );
 
     expect(response.status).toBe(200);
+  });
+});
+
+describe("fresh uploads", () => {
+  const environmentWith = (objects: Record<string, Record<string, string>>) => {
+    const { environment, get, head, writeDataPoint } = createEnvironment(null);
+    const lookup = async (key: string) => {
+      const customMetadata = objects[key];
+      return customMetadata ? { ...createStoredImage(), customMetadata } : null;
+    };
+    get.mockImplementation(lookup);
+    head.mockImplementation(lookup);
+    return { environment, get, head, writeDataPoint };
+  };
+
+  it.each(["thumbnail", "large"])(
+    "serves the uploaded original briefly while the %s is not copied yet, so it loads where Imgur is blocked",
+    async (variant) => {
+      const { environment, get, writeDataPoint } = environmentWith({
+        "legacy-imgur/alice10/original": { origin: "upload" },
+      });
+
+      const response = await handleImageRequest(
+        new Request(`https://images.example.com/legacy-imgur/alice10/${variant}.png`),
+        environment,
+      );
+
+      expect(await readResponse(response)).toStrictEqual({
+        body: "obviously fake image bytes",
+        headers: {
+          "cache-control": "public, max-age=300",
+          "content-language": "en",
+          "content-type": "image/png",
+          etag: '"fake-etag"',
+          "x-content-type-options": "nosniff",
+        },
+        status: 200,
+      });
+      expect(get.mock.calls).toStrictEqual([
+        [`legacy-imgur/alice10/${variant}`],
+        ["legacy-imgur/alice10/original"],
+      ]);
+      expect(writeDataPoint.mock.calls).toStrictEqual([
+        [
+          {
+            blobs: ["hit", variant, "legacy-imgur", "r2-original"],
+            doubles: [1],
+            indexes: ["factorio-prints-image-gateway"],
+          },
+        ],
+      ]);
+    },
+  );
+
+  it("answers HEAD for a missing size from the uploaded original too", async () => {
+    const { environment, head } = environmentWith({
+      "legacy-imgur/alice10/original": { origin: "upload" },
+    });
+
+    const response = await handleImageRequest(
+      new Request("https://images.example.com/legacy-imgur/alice10/large.png", { method: "HEAD" }),
+      environment,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(head.mock.calls).toStrictEqual([
+      ["legacy-imgur/alice10/large"],
+      ["legacy-imgur/alice10/original"],
+    ]);
+  });
+
+  it("still redirects to Imgur when the original came from Imgur rather than an upload", async () => {
+    const { environment } = environmentWith({
+      "legacy-imgur/alice10/original": { "source-provider": "imgur" },
+    });
+
+    const response = await handleImageRequest(
+      new Request("https://images.example.com/legacy-imgur/alice10/thumbnail.png"),
+      environment,
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("https://i.imgur.com/alice10b.png");
   });
 });
 

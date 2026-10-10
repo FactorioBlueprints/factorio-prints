@@ -36,6 +36,7 @@ enum GatewayDetail {
   R2 = "r2",
   R2Error = "r2-error",
   R2Miss = "r2-miss",
+  R2Original = "r2-original",
   Rollback = "rollback",
   Validation = "validation",
 }
@@ -123,18 +124,18 @@ const hitResponse = (
   path: ImageRequestPath,
   body: ReadableStream | null,
   source: GatewaySource,
+  detail: GatewayDetail = GatewayDetail.R2,
 ): Response => {
-  recordMetric(
-    environment.IMAGE_GATEWAY_METRICS,
-    GatewayMetric.Hit,
-    path.variant,
-    source,
-    GatewayDetail.R2,
-  );
+  recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Hit, path.variant, source, detail);
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set("etag", object.httpEtag);
-  headers.set("cache-control", headers.get("cache-control") ?? immutableCacheControl);
+  headers.set(
+    "cache-control",
+    detail === GatewayDetail.R2Original
+      ? fallbackCacheControl
+      : (headers.get("cache-control") ?? immutableCacheControl),
+  );
   headers.set("x-content-type-options", "nosniff");
   return new Response(body, { headers });
 };
@@ -213,17 +214,34 @@ const handleImageRequest = async (request: Request, environment: Env): Promise<R
     return fallbackResponse(environment, path, GatewayDetail.Rollback);
   }
 
-  const objectKey = `${r2ObjectPrefix}/${path.imgurId}/${path.variant}`;
+  const base = `${r2ObjectPrefix}/${path.imgurId}`;
+  const read = (key: string) =>
+    request.method === "HEAD" ? environment.IMAGES.head(key) : environment.IMAGES.get(key);
+  const bodyOf = (object: R2Object) =>
+    request.method === "HEAD" ? null : (object as R2ObjectBody).body;
   try {
-    if (request.method === "HEAD") {
-      const object = await environment.IMAGES.head(objectKey);
-      if (!object) return fallbackResponse(environment, path, GatewayDetail.R2Miss);
-      return hitResponse(environment, object, path, null, GatewaySource.LegacyImgur);
+    const object = await read(`${base}/${path.variant}`);
+    if (object) {
+      return hitResponse(environment, object, path, bodyOf(object), GatewaySource.LegacyImgur);
+    }
+    if (path.variant === ImageVariant.Original) {
+      return fallbackResponse(environment, path, GatewayDetail.R2Miss);
     }
 
-    const object = await environment.IMAGES.get(objectKey);
-    if (!object) return fallbackResponse(environment, path, GatewayDetail.R2Miss);
-    return hitResponse(environment, object, path, object.body, GatewaySource.LegacyImgur);
+    // An upload's resized versions reach R2 only when the recent image copier next runs, so until
+    // then its original stands in, briefly cached, rather than sending the browser to Imgur.
+    const original = await read(`${base}/original`);
+    if (original?.customMetadata?.origin !== "upload") {
+      return fallbackResponse(environment, path, GatewayDetail.R2Miss);
+    }
+    return hitResponse(
+      environment,
+      original,
+      path,
+      bodyOf(original),
+      GatewaySource.LegacyImgur,
+      GatewayDetail.R2Original,
+    );
   } catch (error) {
     return r2ErrorResponse(environment, path, error);
   }
