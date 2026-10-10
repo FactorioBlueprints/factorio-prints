@@ -1,0 +1,41 @@
+name: Deploy image Worker
+
+on:
+  push:
+    branches:
+      - factorio-prints.com
+    paths:
+      - workers/images/**
+      - .github/workflows/deploy-image-worker.yml
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-image-worker-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy images.factorioprints.com
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: image-worker-production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5.0.0
+      - run: just install-ci
+
+      - name: Test the Worker
+        run: vp run test:run workers/images
+
+      - name: Type check the Worker
+        run: vp run check:images
+
+      # The Pages deploy token can't touch Workers, R2 or Durable Objects, so the Worker has its own token.
+      - name: Deploy to production
+        run: vp exec wrangler deploy --config workers/images/wrangler.jsonc --env=""
+        env:
+          CLOUDFLARE_ACCOUNT_ID: d6a6604075c347336a008699794d5fb9
+          CLOUDFLARE_API_TOKEN: ${{ secrets.IMAGE_WORKER_CLOUDFLARE_API_TOKEN }}
