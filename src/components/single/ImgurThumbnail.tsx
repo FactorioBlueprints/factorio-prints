@@ -18,7 +18,7 @@ function ImgurThumbnail({blueprintKey}: ImgurThumbnailProps) {
 	const thumbnail = buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, 'l');
 	return (
 		<a
-			href={`http://imgur.com/${imgurImage.imgurId}`}
+			href={buildImageUrl(imgurImage.imgurId, imgurImage.imgurType, '')}
 			target="_blank"
 			rel="noopener noreferrer"
 		>
