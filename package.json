@@ -72,7 +72,7 @@
 	"devDependencies": {
 		"@aws-sdk/client-s3": "3.1146.0",
 		"@firebase/rules-unit-testing": "5.0.2",
-		"@sentry/vite-plugin": "5.4.0",
+		"@sentry/vite-plugin": "5.4.1",
 		"@tanstack/react-query-devtools": "5.104.1",
 		"@tanstack/router-cli": "1.167.40",
 		"@tanstack/router-vite-plugin": "1.167.42",
