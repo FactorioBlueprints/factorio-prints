@@ -114,8 +114,8 @@ importers:
         specifier: 3.1147.0
         version: 3.1147.0
       '@firebase/rules-unit-testing':
-        specifier: 5.0.2
-        version: 5.0.2(firebase@13.0.0)
+        specifier: 6.0.0
+        version: 6.0.0(firebase@13.0.0)
       '@sentry/vite-plugin':
         specifier: 5.4.1
         version: 5.4.1(supports-color@10.2.2)
@@ -929,11 +929,11 @@ packages:
     peerDependencies:
       '@firebase/app': 0.x
 
-  '@firebase/rules-unit-testing@5.0.2':
-    resolution: {integrity: sha512-g053AaFcuf4gpAQbwRK/GIIGfPHhpomW3qkIYLi4xnaTUrf65yGP+0TPdojoXfB/ejrfevkXmMs5qXOTSwdN6A==}
-    engines: {node: '>=20.0.0'}
+  '@firebase/rules-unit-testing@6.0.0':
+    resolution: {integrity: sha512-BsBqAoClN55cj9rVIruzA1vHzxl2WyS2+G/r93hjp7wM0UatlVHblvp5SPLCKylWBFMHWL4/JdFnFnYwrLdJjg==}
+    engines: {node: '>=24.12.0'}
     peerDependencies:
-      firebase: ^12.0.0
+      firebase: ^13.0.0
 
   '@firebase/storage-compat@0.4.6':
     resolution: {integrity: sha512-te0IsqX1bM+OZCJF7jNSKXcMqCA2yYmpshRHjX4axy0lI/P9ZP9GLjEZMVL8wrjUWF4e3cZxMZTbck3Zd5E1hA==}
@@ -6911,7 +6911,7 @@ snapshots:
       '@firebase/util': 1.15.3
       tslib: 2.8.1
 
-  '@firebase/rules-unit-testing@5.0.2(firebase@13.0.0)':
+  '@firebase/rules-unit-testing@6.0.0(firebase@13.0.0)':
     dependencies:
       firebase: 13.0.0
 
