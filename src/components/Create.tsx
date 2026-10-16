@@ -804,6 +804,7 @@ const Create: React.FC = () => {
                   </Form.Label>
                   <Col sm={10}>
                     <Select
+                      classNamePrefix="fp-select"
                       value={(state.blueprint.tags || []).map((value) => ({ value, label: value }))}
                       options={tags.map((value) => ({ value, label: value }))}
                       onChange={handleTagSelection}

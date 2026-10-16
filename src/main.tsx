@@ -13,6 +13,7 @@ import { createRoot } from "react-dom/client";
 
 import "bootswatch/dist/slate/bootstrap.min.css";
 import "./css/style.css";
+import "./css/factorio-gui.css";
 import QueryProvider from "./providers/QueryProvider";
 import { getRouterDiagnostics, Router } from "./router";
 import { getReleaseInfo, getReleaseMetadata } from "./utils/release";

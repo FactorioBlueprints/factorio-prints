@@ -1,0 +1,501 @@
+/*
+ * Factorio in-game GUI theme.
+ *
+ * Loaded after the Bootswatch Slate theme and style.css. Recreates the look of the
+ * game's interface: beveled dark frames, lighter inner panels, warm caption text,
+ * light gray buttons with black text that turn orange on hover, and the striped
+ * "dragger" filler in window title bars.
+ */
+
+:root {
+  --fp-page-bg: #1b1a1b;
+  --fp-frame-bg: #313031;
+  --fp-panel-bg: #403f40;
+  --fp-deep-bg: #242324;
+  --fp-border: #000;
+  --fp-caption: #ffe6c0;
+  --fp-text: #fff;
+  --fp-text-muted: #a8a7a8;
+  --fp-orange: #ffa600;
+  --fp-orange-light: #ffc355;
+  --fp-orange-dark: #e48700;
+  --fp-button: #8e8e8e;
+  --fp-button-light: #b4b4b4;
+  --fp-green: #5eb663;
+  --fp-green-light: #8ad48d;
+  --fp-red: #e04545;
+  --fp-red-light: #f77b7b;
+  --fp-textfield: #dcdcdc;
+
+  --fp-raised:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 0 0 1px var(--fp-border), 0 4px 10px rgba(0, 0, 0, 0.45);
+  --fp-sunken:
+    inset 0 2px 4px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.07);
+  --fp-dragger: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.16) 0 1px,
+    rgba(0, 0, 0, 0.65) 1px 2px,
+    transparent 2px 4px
+  );
+
+  --bs-body-bg: var(--fp-page-bg);
+  --bs-body-color: var(--fp-text);
+  --bs-secondary-color: var(--fp-text-muted);
+  --bs-border-color: var(--fp-border);
+  --bs-link-color: var(--fp-orange);
+  --bs-link-color-rgb: 255, 166, 0;
+  --bs-link-hover-color: var(--fp-caption);
+  --bs-link-hover-color-rgb: 255, 230, 192;
+  --bs-heading-color: var(--fp-caption);
+  --bs-border-radius: 2px;
+  --bs-border-radius-sm: 2px;
+  --bs-border-radius-lg: 3px;
+}
+
+body {
+  background-color: var(--fp-page-bg);
+}
+
+::selection {
+  background: var(--fp-orange);
+  color: #000;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+.display-4 {
+  color: var(--fp-caption);
+  font-weight: 700;
+}
+
+/* Window title: caption text followed by the striped dragger filler. */
+.jumbotron > h1.display-4,
+.blueprint-grid-row > h1.display-4 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.jumbotron > h1.display-4::after,
+.blueprint-grid-row > h1.display-4::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1.25rem;
+  background: var(--fp-dragger);
+}
+
+/* Header bar */
+.site-navbar {
+  background: var(--fp-frame-bg);
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 var(--fp-border),
+    0 4px 12px rgba(0, 0, 0, 0.55);
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.site-navbar .navbar-brand a {
+  color: var(--fp-orange);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-navbar .navbar-brand-text {
+  color: var(--fp-caption);
+}
+
+.site-navbar .nav-link,
+.site-navbar .dropdown-toggle {
+  border-radius: 2px;
+  text-decoration: none;
+  transition:
+    background-color 0.1s,
+    color 0.1s;
+}
+
+.site-navbar .nav-link:hover,
+.site-navbar .nav-link:focus-visible,
+.site-navbar .nav-item-dropdown.show > a {
+  background: var(--fp-orange);
+  color: #000 !important;
+}
+
+.site-navbar .navbar-toggler {
+  border-color: var(--fp-border);
+  background: var(--fp-button);
+  box-shadow: var(--fp-raised);
+}
+
+/* Frames: cards and banners */
+.card,
+.jumbotron {
+  background-color: var(--fp-frame-bg);
+  border: 0;
+  border-radius: 2px;
+  box-shadow: var(--fp-raised);
+}
+
+.jumbotron {
+  margin: 0.75rem;
+  padding: 1rem 1.5rem 1.5rem !important;
+}
+
+/* Keep the title dragger clear of the banner's close button. */
+.jumbotron:has(> .btn-close) > h1.display-4 {
+  margin-right: 2rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: transparent;
+  border-bottom: 0;
+  color: var(--fp-caption);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.card-header:not(:has(button, .btn, a, input, select))::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1rem;
+  background: var(--fp-dragger);
+}
+
+/* Inner panels inside a frame. */
+.card > .card-body,
+.card > .table,
+.card > .table-responsive,
+.card > .list-group {
+  width: auto;
+  margin: 0 0.5rem 0.5rem;
+  background-color: var(--fp-panel-bg);
+  box-shadow: var(--fp-sunken);
+}
+
+.card > .card-header + .card-body,
+.card > .card-header + .table,
+.card > .card-header + .table-responsive,
+.card > .card-header + .list-group {
+  margin-top: 0;
+}
+
+.card > .card-body:first-child,
+.card > .table:first-child,
+.card > .list-group:first-child {
+  margin-top: 0.5rem;
+}
+
+.card > .card-header:first-child {
+  border-radius: 2px 2px 0 0;
+}
+
+.card .list-group-item {
+  background-color: transparent;
+  color: var(--fp-text);
+  border-color: rgba(0, 0, 0, 0.45);
+}
+
+/* Tables */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--fp-text);
+  --bs-table-border-color: rgba(0, 0, 0, 0.45);
+  --bs-table-striped-bg: rgba(0, 0, 0, 0.12);
+  --bs-table-striped-color: var(--fp-text);
+  --bs-table-hover-bg: rgba(255, 166, 0, 0.12);
+  --bs-table-hover-color: var(--fp-text);
+}
+
+.table > :not(caption) > * > * {
+  background-color: var(--bs-table-bg);
+  border-bottom-color: var(--bs-table-border-color);
+}
+
+/* Buttons: light gray with black text, orange on hover. :where() keeps the base
+   rules at single-class specificity so the variants below can override them. */
+.btn {
+  --fp-btn-bg: var(--fp-button);
+  --fp-btn-bg-light: var(--fp-button-light);
+  --fp-btn-hover-bg: var(--fp-orange);
+  --fp-btn-hover-bg-light: var(--fp-orange-light);
+}
+
+.btn:where(:not(.btn-link, .btn-close)) {
+  color: #000;
+  font-weight: 600;
+  background-color: var(--fp-btn-bg);
+  background-image: linear-gradient(var(--fp-btn-bg-light), var(--fp-btn-bg) 45%);
+  border: 1px solid var(--fp-border);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: none;
+  transition: none;
+}
+
+.btn-warning {
+  --fp-btn-bg: var(--fp-orange);
+  --fp-btn-bg-light: var(--fp-orange-light);
+  --fp-btn-hover-bg: #ffd27a;
+  --fp-btn-hover-bg-light: #ffe6b0;
+}
+
+.btn-success {
+  --fp-btn-bg: var(--fp-green);
+  --fp-btn-bg-light: var(--fp-green-light);
+  --fp-btn-hover-bg: var(--fp-green-light);
+  --fp-btn-hover-bg-light: #b6e8b8;
+}
+
+.btn-danger {
+  --fp-btn-bg: var(--fp-red);
+  --fp-btn-bg-light: var(--fp-red-light);
+  --fp-btn-hover-bg: var(--fp-red-light);
+  --fp-btn-hover-bg-light: #ffadad;
+}
+
+/* Outline buttons render as dark sunken slots. */
+.btn[class*="btn-outline-"] {
+  color: var(--fp-text);
+  background-color: var(--fp-deep-bg);
+  background-image: none;
+  box-shadow: var(--fp-sunken);
+}
+
+.btn.btn-outline-warning {
+  color: var(--fp-orange);
+}
+
+.btn:where(:not(.btn-link, .btn-close)):hover,
+.btn:where(:not(.btn-link, .btn-close)):focus-visible {
+  color: #000;
+  background-color: var(--fp-btn-hover-bg);
+  background-image: linear-gradient(var(--fp-btn-hover-bg-light), var(--fp-btn-hover-bg) 45%);
+  border-color: var(--fp-border);
+}
+
+.btn[class*="btn-outline-"]:hover,
+.btn[class*="btn-outline-"]:focus-visible {
+  color: #000;
+  background-color: var(--fp-orange);
+  background-image: none;
+}
+
+.btn:where(:not(.btn-link, .btn-close)):focus-visible {
+  outline: 2px solid var(--fp-caption);
+  outline-offset: 1px;
+}
+
+.btn:where(:not(.btn-link, .btn-close)):active,
+.btn:where(:not(.btn-link, .btn-close)).active {
+  color: #000;
+  background-color: var(--fp-orange-dark);
+  background-image: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+.btn:where(:not(.btn-link, .btn-close)):disabled,
+.btn:where(:not(.btn-link, .btn-close)).disabled {
+  color: #2a2a2a;
+  background-color: #5c5b5c;
+  background-image: none;
+  opacity: 1;
+}
+
+/* Text fields */
+.form-control,
+.form-select,
+.input-group-text {
+  color: #000;
+  background-color: var(--fp-textfield);
+  border: 1px solid var(--fp-border);
+  border-radius: 2px;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.form-control::placeholder {
+  color: #5f5e5f;
+}
+
+.form-control:focus,
+.form-select:focus {
+  color: #000;
+  background-color: #f0f0f0;
+  border-color: var(--fp-orange);
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.35),
+    0 0 0 2px rgba(255, 166, 0, 0.45);
+}
+
+/* react-select, styled through classNamePrefix="fp-select". The doubled class beats
+   the library's own emotion styles. */
+.fp-select__control.fp-select__control {
+  min-height: 31px;
+  background-color: var(--fp-textfield);
+  border: 1px solid var(--fp-border);
+  border-radius: 2px;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.fp-select__control.fp-select__control--is-focused {
+  border-color: var(--fp-orange);
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.35),
+    0 0 0 2px rgba(255, 166, 0, 0.45);
+}
+
+.fp-select__placeholder.fp-select__placeholder {
+  color: #5f5e5f;
+}
+
+.fp-select__single-value.fp-select__single-value,
+.fp-select__input-container.fp-select__input-container {
+  color: #000;
+}
+
+.fp-select__menu.fp-select__menu {
+  z-index: 1050;
+  background-color: var(--fp-frame-bg);
+  border-radius: 2px;
+  box-shadow: var(--fp-raised);
+}
+
+.fp-select__option.fp-select__option {
+  color: var(--fp-text);
+  background-color: transparent;
+}
+
+.fp-select__option.fp-select__option--is-focused {
+  color: #000;
+  background-color: var(--fp-orange);
+}
+
+.fp-select__option.fp-select__option--is-selected {
+  color: var(--fp-orange);
+  background-color: var(--fp-deep-bg);
+}
+
+.fp-select__multi-value.fp-select__multi-value {
+  background-image: linear-gradient(var(--fp-button-light), var(--fp-button) 45%);
+  border: 1px solid var(--fp-border);
+  border-radius: 2px;
+}
+
+.fp-select__multi-value__label.fp-select__multi-value__label {
+  color: #000;
+  font-weight: 600;
+}
+
+.fp-select__multi-value__remove.fp-select__multi-value__remove:hover {
+  color: #000;
+  background-color: var(--fp-red-light);
+}
+
+/* Dropdown menus and tooltips */
+.dropdown-menu {
+  --bs-dropdown-bg: var(--fp-frame-bg);
+  --bs-dropdown-link-color: var(--fp-text);
+  --bs-dropdown-link-hover-color: #000;
+  --bs-dropdown-link-hover-bg: var(--fp-orange);
+  --bs-dropdown-link-active-color: #000;
+  --bs-dropdown-link-active-bg: var(--fp-orange-dark);
+  --bs-dropdown-divider-bg: var(--fp-border);
+  border: 0;
+  border-radius: 2px;
+  box-shadow: var(--fp-raised);
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+  color: #000 !important;
+}
+
+.tooltip {
+  --bs-tooltip-bg: var(--fp-deep-bg);
+  --bs-tooltip-color: var(--fp-caption);
+  --bs-tooltip-opacity: 1;
+}
+
+.tooltip-inner {
+  border: 1px solid var(--fp-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Blueprint thumbnails: a frame holding a sunken item slot. */
+.card.blueprint-thumbnail {
+  padding: 0.25rem;
+  margin: 0.125rem;
+}
+
+.blueprint-thumbnail-image-link {
+  display: block;
+  background-color: var(--fp-deep-bg);
+  box-shadow: var(--fp-sunken);
+}
+
+.blueprint-thumbnail-image {
+  display: block;
+  border: 1px solid var(--fp-border);
+  border-radius: 0;
+}
+
+.blueprint-thumbnail-image-link:hover .blueprint-thumbnail-image,
+.blueprint-thumbnail-image-link:focus-visible .blueprint-thumbnail-image {
+  outline: 2px solid var(--fp-orange);
+  outline-offset: -2px;
+}
+
+.blueprint-thumbnail-title {
+  display: block;
+  margin-top: 0.25rem;
+  padding: 0 0.125rem;
+  color: var(--fp-caption);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.blueprint-thumbnail-title:hover,
+.blueprint-thumbnail-title:focus-visible {
+  color: var(--fp-orange);
+}
+
+.blueprint-thumbnail-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 0.125rem;
+  color: var(--fp-text-muted);
+  font-size: 0.8125rem;
+}
+
+.blueprint-thumbnail-actions [role="button"]:not([aria-disabled="true"]):hover {
+  color: var(--fp-orange);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-color: var(--fp-button) var(--fp-deep-bg);
+}

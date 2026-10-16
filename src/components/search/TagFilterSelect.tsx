@@ -33,6 +33,7 @@ const TagFilterSelect: React.FC = () => {
     <Form.Group className="mb-3">
       <Form.Label>Tags</Form.Label>
       <Select<TagOption>
+        classNamePrefix="fp-select"
         value={selectedOption}
         options={options}
         onChange={handleChange}

@@ -33,6 +33,7 @@ const EntityFilterSelect: React.FC = () => {
     <Form.Group className="mb-3">
       <Form.Label>Entities</Form.Label>
       <Select<EntityOption>
+        classNamePrefix="fp-select"
         value={selectedOption}
         options={options}
         onChange={handleChange}
