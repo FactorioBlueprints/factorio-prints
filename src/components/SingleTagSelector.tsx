@@ -52,6 +52,7 @@ const SingleTagSelector: React.FC<SingleTagSelectorProps> = ({ currentTag }) => 
   return (
     <Col md={6}>
       <Select
+        classNamePrefix="fp-select"
         value={selectedOption}
         options={options}
         onChange={handleTagSelection}

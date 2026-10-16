@@ -33,6 +33,7 @@ const RecipeFilterSelect: React.FC = () => {
     <Form.Group className="mb-3">
       <Form.Label>Recipes</Form.Label>
       <Select<RecipeOption>
+        classNamePrefix="fp-select"
         value={selectedOption}
         options={options}
         onChange={handleChange}

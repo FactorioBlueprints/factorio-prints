@@ -38,6 +38,7 @@ const TagForm: React.FC = () => {
   return (
     <Col md={6}>
       <Select<TagOption, true>
+        classNamePrefix="fp-select"
         value={selectedOptions}
         options={options}
         onChange={handleTagSelection}
