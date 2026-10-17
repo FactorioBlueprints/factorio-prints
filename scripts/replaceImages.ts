@@ -8,10 +8,9 @@ import { type BrowserContext, chromium, type Page } from "playwright-core";
 import {
   auditReplacement,
   buildReplacementQueue,
-  classifyImageField,
   emptyReplacementLedger,
-  ImageFieldState,
-  parseImgurUploadState,
+  gatewayImageUrl,
+  parseUploadResponse,
   replacementCandidatesSchema,
   replacementDecisionsSchema,
   type ReplacementLedger,
@@ -19,6 +18,7 @@ import {
   ReplacementStatus,
   runReplacementLoop,
   type SaveOutcome,
+  type UploadRecord,
   type UploadState,
   uploadPlanSchema,
 } from "./imageReplacementCore.ts";
@@ -26,16 +26,22 @@ import {
 // Applies a reviewed screenshot-replacement round from a round directory holding
 // decisions.json, candidates.json and upload-plan.json (plus an optional hold-keys.txt).
 //
-//   node scripts/replaceImages.ts --round <dir> --login     sign in to Imgur and Factorio Prints once
-//   node scripts/replaceImages.ts --round <dir>             dry run: show what would happen
-//   node scripts/replaceImages.ts --round <dir> --execute   upload, save, then audit
+//   node scripts/replaceImages.ts --round <dir> --login       sign in to Factorio Prints once
+//   node scripts/replaceImages.ts --round <dir>               dry run: show what would happen
+//   node scripts/replaceImages.ts --round <dir> --execute     upload, save, then audit
+//   node scripts/replaceImages.ts --round <dir> --audit-only  audit what earlier runs saved
+//
+// Each replacement goes through the blueprint's own edit form: the file is dropped on its upload
+// zone, which sends it to the image Worker (R2 plus Imgur), and the form is saved straight away.
+// The Worker allows 10 uploads per user per UTC hour and deletes an upload no blueprint uses
+// within an hour, so the run paces itself and never leaves an upload waiting for a later save.
 //
 // Progress lives in <dir>/replacement-ledger.json, so rerunning resumes where the last run stopped.
 
 const databaseUrl = "https://facorio-blueprints.firebaseio.com";
-const browserUserAgent =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/128 Safari/537.36";
-const minute = 60 * 1_000;
+const siteOrigin = "https://factorioprints.com";
+const gatewayOrigin = "https://images.factorioprints.com";
+const uploadUrl = `${gatewayOrigin}/uploads`;
 
 interface CommandOptions {
   audit: boolean;
@@ -109,55 +115,38 @@ const loadRound = async (round: string) => {
 const openBrowser = (profile: string): Promise<BrowserContext> =>
   chromium.launchPersistentContext(profile, { channel: "chrome", headless: false, viewport: null });
 
-const observeImgurPage = (page: Page) =>
-  page.evaluate(() => ({
-    captcha: /not a robot|Captcha is required/i.test(document.body.innerText),
-    failed: /upload failed/i.test(document.body.innerText),
-    imageFiles: [
-      ...new Set(
-        [...document.querySelectorAll("img")]
-          .map((image) => image.src)
-          .filter((source) => /^https:\/\/i\.imgur\.com\/\w+\.\w+$/.test(source))
-          .map((source) => source.split("/").pop()!),
-      ),
-    ],
-    url: location.href,
-  }));
+const dropZone = (page: Page) => page.locator('[data-testid="image-drop-zone"]');
 
-// An upload made while signed out still succeeds, but anonymously, and Imgur purges anonymous
-// images: the exact failure these rounds repair. Refuse rather than upload into that.
-const uploadToImgur = async (page: Page, file: string): Promise<UploadState> => {
-  await page.goto("https://imgur.com/upload", { waitUntil: "domcontentloaded" });
-  const avatar = page.locator(".NavbarAvatar").first();
-  if (!(await avatar.isVisible({ timeout: 15_000 }).catch(() => false))) {
-    return { kind: "ambiguous", reason: "not signed in to Imgur; run with --login first" };
-  }
-  await page.locator('input[type="file"]').first().setInputFiles(file);
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    await sleep(1_500);
-    const observation = await observeImgurPage(page);
-    const leftUploadPage = !new URL(observation.url).pathname.startsWith("/upload");
-    if (
-      observation.captcha ||
-      observation.failed ||
-      (leftUploadPage && observation.imageFiles.length > 0)
-    ) {
-      return parseImgurUploadState(observation);
-    }
-  }
-  return parseImgurUploadState(await observeImgurPage(page));
+const corsHeaders = {
+  "access-control-allow-headers": "authorization, content-type",
+  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-allow-origin": siteOrigin,
 };
 
-const saveOnFactorioPrints = async (
+// Answers the form's upload request with an earlier, still-unexpired upload, so a resumed save
+// attaches the same image without spending another upload from the hourly quota.
+const answerUploadsWith = (page: Page, reuse: UploadRecord) =>
+  page.route(uploadUrl, (route) =>
+    route.request().method() === "OPTIONS"
+      ? route.fulfill({ headers: corsHeaders, status: 204 })
+      : route.fulfill({
+          body: JSON.stringify({ id: reuse.imageId, type: reuse.type }),
+          headers: { ...corsHeaders, "content-type": "application/json" },
+          status: 201,
+        }),
+  );
+
+const uploadThroughEditForm = async (
   page: Page,
   key: string,
-  previousImgurId: string | null,
-  imgurId: string,
-): Promise<SaveOutcome> => {
-  await page.goto(`https://factorioprints.com/edit/${key}`, { waitUntil: "domcontentloaded" });
-  const field = page.locator('input[name="imageUrl"]');
+  file: string,
+  reuse?: UploadRecord,
+): Promise<UploadState> => {
+  await page.unrouteAll({ behavior: "ignoreErrors" });
+  if (reuse) await answerUploadsWith(page, reuse);
+  await page.goto(`${siteOrigin}/edit/${key}`, { waitUntil: "domcontentloaded" });
   try {
-    await field.waitFor({ timeout: 45_000 });
+    await dropZone(page).waitFor({ timeout: 45_000 });
   } catch {
     const signedOut = await page
       .getByText(/sign in/i)
@@ -165,31 +154,70 @@ const saveOnFactorioPrints = async (
       .isVisible()
       .catch(() => false);
     return {
-      detail: signedOut ? "not signed in to Factorio Prints" : "no image field on the edit page",
-      outcome: "failed",
+      kind: "ambiguous",
+      reason: signedOut
+        ? "not signed in to Factorio Prints; run with --login first"
+        : "no image upload on the edit page",
     };
   }
-  const fieldValue = await field.inputValue();
-  const state = classifyImageField(fieldValue, previousImgurId, imgurId);
-  if (state === ImageFieldState.AlreadySaved) return { outcome: "alreadySaved" };
-  if (state === ImageFieldState.Conflict)
-    return { detail: `field held "${fieldValue}"`, outcome: "conflict" };
 
-  await field.fill(`https://imgur.com/${imgurId}`);
-  await page.getByRole("button", { exact: true, name: "Save" }).first().click();
-  // Pre-existing problems such as "Blueprint has no name" open a "Submission warnings" dialog
-  // whose own Save forces the edit through.
-  const warnings = page.getByRole("dialog").filter({ hasText: "Submission warnings" });
-  let forced = false;
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    await sleep(1_000);
-    if (new URL(page.url()).pathname === `/view/${key}`) return { outcome: "saved" };
-    if (!forced && (await warnings.isVisible())) {
-      await warnings.getByRole("button", { exact: true, name: "Save" }).click();
-      forced = true;
-    }
+  const responded = page.waitForResponse(
+    (response) => response.url() === uploadUrl && response.request().method() === "POST",
+    { timeout: 120_000 },
+  );
+  await dropZone(page).locator('input[type="file"]').setInputFiles(file);
+  let state: UploadState;
+  try {
+    const response = await responded;
+    state = parseUploadResponse({
+      body: await response.text(),
+      retryAfter: (await response.headerValue("retry-after")) ?? null,
+      status: response.status(),
+    });
+  } catch {
+    // The form checks type and size before sending, and shows why it refused.
+    const refused = await page
+      .locator(".text-danger")
+      .first()
+      .textContent({ timeout: 1_000 })
+      .catch(() => null);
+    return refused
+      ? { kind: "failed", reason: `the form refused the file: ${refused}` }
+      : { kind: "ambiguous", reason: "the form never sent the upload" };
   }
-  return { detail: `save never reached /view/${key}`, outcome: "failed" };
+  if (state.kind !== "uploaded") return state;
+
+  const preview = page.locator(`img[alt="New screenshot"][src*="/${state.imageId}/"]`);
+  try {
+    await preview.waitFor({ timeout: 30_000 });
+  } catch {
+    return { kind: "ambiguous", reason: `uploaded ${state.imageId} but the form shows no preview` };
+  }
+  return state;
+};
+
+const saveEditForm = async (page: Page, key: string, imageId: string): Promise<SaveOutcome> => {
+  try {
+    if (!(await page.locator(`img[alt="New screenshot"][src*="/${imageId}/"]`).isVisible())) {
+      return { detail: `the edit form does not hold ${imageId}`, outcome: "failed" };
+    }
+    await page.getByRole("button", { exact: true, name: "Save" }).first().click();
+    // Pre-existing problems such as "Blueprint has no name" open a "Submission warnings" dialog
+    // whose own Save forces the edit through.
+    const warnings = page.getByRole("dialog").filter({ hasText: "Submission warnings" });
+    let forced = false;
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+      await sleep(1_000);
+      if (new URL(page.url()).pathname === `/view/${key}`) return { outcome: "saved" };
+      if (!forced && (await warnings.isVisible())) {
+        await warnings.getByRole("button", { exact: true, name: "Save" }).click();
+        forced = true;
+      }
+    }
+    return { detail: `save never reached /view/${key}`, outcome: "failed" };
+  } finally {
+    await page.unrouteAll({ behavior: "ignoreErrors" });
+  }
 };
 
 const firebaseImageId = async (key: string): Promise<string | null> => {
@@ -200,40 +228,32 @@ const firebaseImageId = async (key: string): Promise<string | null> => {
   return (await response.json()) as string | null;
 };
 
-const confirmInFirebase = async (key: string, imgurId: string): Promise<boolean> => {
+const confirmInFirebase = async (key: string, imageId: string): Promise<boolean> => {
   for (let attempt = 0; attempt < 10; attempt += 1) {
-    if ((await firebaseImageId(key)) === imgurId) return true;
+    if ((await firebaseImageId(key)) === imageId) return true;
     await sleep(3_000);
   }
   return false;
 };
 
-// Imgur 429s bursts of requests, so the audit runs serially with a browser user agent and backs
-// off when throttled. `redirect: "manual"` keeps the 302 that marks a deleted image visible.
-const imgurStatus = async (url: string): Promise<number> => {
-  for (let attempt = 1; ; attempt += 1) {
-    const response = await fetch(url, {
-      headers: { "user-agent": browserUserAgent },
-      method: "HEAD",
-      redirect: "manual",
-    });
-    if (response.status !== 429 || attempt === 4) return response.status;
-    await sleep(10_000 * attempt);
-  }
-};
+const gatewayStatus = async (url: string): Promise<number> =>
+  (await fetch(url, { method: "HEAD", redirect: "manual" })).status;
 
 const auditLedger = async (ledger: ReplacementLedger): Promise<Record<string, string[]>> => {
   const problems: Record<string, string[]> = {};
   for (const [key, entry] of Object.entries(ledger.entries)) {
     if (entry.status !== ReplacementStatus.Saved || !entry.upload) continue;
-    const { imgurId } = entry.upload;
-    const found = auditReplacement(imgurId, {
+    const { imageId, type } = entry.upload;
+    const found = auditReplacement(entry.upload, gatewayOrigin, {
       firebaseImageId: await firebaseImageId(key),
-      fullStatus: await imgurStatus(`https://i.imgur.com/${imgurId}.png`),
-      thumbnailStatus: await imgurStatus(`https://i.imgur.com/${imgurId}l.png`),
+      originalStatus: await gatewayStatus(
+        gatewayImageUrl(gatewayOrigin, imageId, type, "original"),
+      ),
+      thumbnailStatus: await gatewayStatus(
+        gatewayImageUrl(gatewayOrigin, imageId, type, "thumbnail"),
+      ),
     });
     if (found.length > 0) problems[key] = found;
-    await sleep(300);
   }
   return problems;
 };
@@ -251,16 +271,15 @@ const main = async (): Promise<void> => {
   if (options.login) {
     const context = await openBrowser(options.profile);
     const page = context.pages()[0] ?? (await context.newPage());
-    await page.goto("https://imgur.com/signin");
-    await (await context.newPage()).goto("https://factorioprints.com/");
-    console.log("Sign in to Imgur and Factorio Prints in the opened window, then close it.");
+    await page.goto(siteOrigin);
+    console.log("Sign in to Factorio Prints in the opened window, then close it.");
     await new Promise<void>((done) => context.on("close", () => done()));
     return;
   }
 
   const round = await loadRound(options.round);
   const ledgerPath = join(options.round, "replacement-ledger.json");
-  const { blocked, queue } = buildReplacementQueue(round);
+  const { blocked, queue } = buildReplacementQueue({ ...round, now: new Date() });
   const selected = options.limit ? queue.slice(0, options.limit) : queue;
   console.log(
     JSON.stringify(
@@ -269,9 +288,9 @@ const main = async (): Promise<void> => {
         execute: options.execute,
         ledger: countStatuses(round.ledger),
         queued: queue.length,
-        saves: selected.filter((item) => item.step === "save").length,
+        reattaches: selected.filter((item) => item.upload).length,
         selected: selected.length,
-        uploads: selected.filter((item) => item.step === "upload").length,
+        uploads: selected.filter((item) => !item.upload).length,
       },
       null,
       2,
@@ -283,26 +302,25 @@ const main = async (): Promise<void> => {
   if (options.execute && !options.audit && selected.length > 0) {
     const context = await openBrowser(options.profile);
     try {
-      const imgurPage = context.pages()[0] ?? (await context.newPage());
-      const factorioPrintsPage = await context.newPage();
+      const page = context.pages()[0] ?? (await context.newPage());
       const result = await runReplacementLoop(
         selected,
         round.ledger,
         {
           confirmSaved: confirmInFirebase,
+          currentImageId: firebaseImageId,
           log: (message) => console.log(`${new Date().toISOString()} ${message}`),
           now: () => new Date(),
           persistLedger: (current) => writeJsonAtomically(ledgerPath, current),
-          saveImage: (key, previousImgurId, imgurId) =>
-            saveOnFactorioPrints(factorioPrintsPage, key, previousImgurId, imgurId),
+          saveImage: (key, imageId) => saveEditForm(page, key, imageId),
           sleep: (milliseconds) => sleep(milliseconds),
-          uploadImage: (file) => uploadToImgur(imgurPage, file),
+          uploadImage: (key, file, reuse) => uploadThroughEditForm(page, key, file, reuse),
         },
         {
-          captchaBackoffMilliseconds: 30 * minute,
-          maximumConsecutiveCaptchas: 4,
+          maximumConsecutiveRateLimits: 3,
           maximumConsecutiveSaveFailures: 3,
           uploadSpacingMilliseconds: 8_000,
+          uploadsPerHour: 10,
         },
       );
       ledger = result.ledger;

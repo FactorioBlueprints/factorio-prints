@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-// Applies a reviewed image-replacement round: each replacement is uploaded to Imgur as its own
-// post and saved on its blueprint straight away, so progress is visible on the site and a crash
-// or an Imgur throttle never strands a batch of uploaded-but-unsaved images.
+// Applies a reviewed image-replacement round: each replacement is uploaded through the image
+// Worker (which stores it in R2 and on Imgur) and saved on its blueprint straight away. The Worker
+// deletes an upload no blueprint uses within an hour, so an upload is never left waiting for a
+// later save, and progress is visible on the site as the round goes.
 
 export const replacementDecisionsSchema = z.record(
   z.string(),
@@ -31,14 +32,13 @@ export const ReplacementStatus = {
 export type ReplacementStatus = (typeof ReplacementStatus)[keyof typeof ReplacementStatus];
 
 const uploadRecordSchema = z.object({
-  ext: z.string().min(1),
-  imgurId: z.string().min(1),
-  postUrl: z.string().url(),
+  imageId: z.string().min(1),
+  type: z.string().min(1),
   uploadedAt: z.string().datetime(),
 });
 
 const ledgerEntrySchema = z.object({
-  previousImgurId: z.string().nullable(),
+  previousImageId: z.string().nullable(),
   reason: z.string().optional(),
   savedAt: z.string().datetime().optional(),
   status: z.enum(ReplacementStatus),
@@ -47,20 +47,30 @@ const ledgerEntrySchema = z.object({
 
 export const replacementLedgerSchema = z.object({
   entries: z.record(z.string(), ledgerEntrySchema),
-  version: z.literal(1),
+  // When this round sent each upload, so a rerun within the same UTC hour respects the quota.
+  uploadAttempts: z.array(z.string().datetime()),
+  version: z.literal(2),
 });
 
 export type ReplacementLedger = z.infer<typeof replacementLedgerSchema>;
 export type LedgerEntry = z.infer<typeof ledgerEntrySchema>;
 export type UploadRecord = z.infer<typeof uploadRecordSchema>;
 
-export const emptyReplacementLedger = (): ReplacementLedger => ({ entries: {}, version: 1 });
+export const emptyReplacementLedger = (): ReplacementLedger => ({
+  entries: {},
+  uploadAttempts: [],
+  version: 2,
+});
+
+// The Worker deletes an unsaved upload after an hour. Like the site's Create drafts, an upload is
+// only reused while it is safely younger than that; an older one is uploaded again.
+const uploadReuseMilliseconds = 45 * 60 * 1000;
 
 export interface ReplacementItem {
   file: string;
   key: string;
-  previousImgurId: string | null;
-  step: "save" | "upload";
+  previousImageId: string | null;
+  // A recent upload that was never saved, to attach again instead of spending another upload.
   upload?: UploadRecord;
 }
 
@@ -74,6 +84,7 @@ export interface ReplacementQueueInputs {
   decisions: z.infer<typeof replacementDecisionsSchema>;
   holdKeys: string[];
   ledger: ReplacementLedger;
+  now: Date;
   uploadPlan: z.infer<typeof uploadPlanSchema>;
 }
 
@@ -82,6 +93,7 @@ export const buildReplacementQueue = ({
   decisions,
   holdKeys,
   ledger,
+  now,
   uploadPlan,
 }: ReplacementQueueInputs): { blocked: BlockedReplacement[]; queue: ReplacementItem[] } => {
   const held = new Set(holdKeys);
@@ -112,112 +124,184 @@ export const buildReplacementQueue = ({
       });
       continue;
     }
-    const previousImgurId = reviewed.get(key) ?? null;
-    if (entry?.status === ReplacementStatus.Uploaded && entry.upload) {
-      queue.push({ file, key, previousImgurId, step: "save", upload: entry.upload });
-    } else {
-      queue.push({ file, key, previousImgurId, step: "upload" });
-    }
+    const previousImageId = reviewed.get(key) ?? null;
+    const upload = entry?.status === ReplacementStatus.Uploaded ? entry.upload : undefined;
+    const reusable =
+      upload && now.getTime() - Date.parse(upload.uploadedAt) < uploadReuseMilliseconds;
+    queue.push(reusable ? { file, key, previousImageId, upload } : { file, key, previousImageId });
   }
   return { blocked, queue };
 };
 
-export interface ImgurPageObservation {
-  captcha: boolean;
-  failed: boolean;
-  imageFiles: string[];
-  url: string;
-}
-
 export type UploadState =
-  | { ext: string; imgurId: string; kind: "uploaded"; postUrl: string }
-  | { kind: "captcha"; postUrl: string }
+  | { imageId: string; kind: "uploaded"; type: string }
+  | { kind: "rateLimited"; reason: string; retryAfterMilliseconds: number }
   | { kind: "failed"; reason: string }
   | { kind: "ambiguous"; reason: string };
 
-export const parseImgurUploadState = ({
-  captcha,
-  failed,
-  imageFiles,
-  url,
-}: ImgurPageObservation): UploadState => {
-  if (captcha) return { kind: "captcha", postUrl: url };
-  if (failed) return { kind: "failed", reason: "Imgur reported the upload failed" };
-  if (new URL(url).pathname.startsWith("/upload")) {
-    return { kind: "ambiguous", reason: `the upload never left ${url}` };
-  }
-  const distinct = [...new Set(imageFiles)];
-  if (distinct.length !== 1) {
-    return { kind: "ambiguous", reason: `${distinct.length} images on ${url}` };
-  }
-  const [imgurId, ext] = distinct[0]!.split(".");
-  return { ext: ext!, imgurId: imgurId!, kind: "uploaded", postUrl: url };
+export interface UploadResponse {
+  body: string;
+  retryAfter: string | null;
+  status: number;
+}
+
+const defaultRetryAfterMilliseconds = 10 * 60 * 1000;
+
+const parseRetryAfter = (retryAfter: string | null): number => {
+  const seconds = Number(retryAfter);
+  return retryAfter !== null && Number.isFinite(seconds) && seconds > 0
+    ? seconds * 1000
+    : defaultRetryAfterMilliseconds;
 };
 
-export const ImageFieldState = {
+const uploadedImageSchema = z.object({ id: z.string().min(1), type: z.string().min(1) });
+
+// Reads the Worker's answer to POST /uploads (see workers/images/src/uploads.ts).
+export const parseUploadResponse = ({ body, retryAfter, status }: UploadResponse): UploadState => {
+  if (status === 200 || status === 201) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(body);
+    } catch {
+      parsed = undefined;
+    }
+    const image = uploadedImageSchema.safeParse(parsed);
+    return image.success
+      ? { imageId: image.data.id, kind: "uploaded", type: image.data.type }
+      : {
+          kind: "ambiguous",
+          reason: `upload answered ${status} without an image id and type: ${body}`,
+        };
+  }
+  if (status === 429 || status === 503) {
+    return {
+      kind: "rateLimited",
+      reason: `${status} ${body}`,
+      retryAfterMilliseconds: parseRetryAfter(retryAfter),
+    };
+  }
+  if (status === 413 || status === 415 || status === 422) {
+    return { kind: "failed", reason: `upload rejected with ${status}: ${body}` };
+  }
+  if (status === 401) {
+    return {
+      kind: "ambiguous",
+      reason: "the Worker rejected the Factorio Prints sign-in; run with --login",
+    };
+  }
+  return { kind: "ambiguous", reason: `upload answered ${status}: ${body}` };
+};
+
+const hourMilliseconds = 60 * 60 * 1000;
+const hourBoundaryMarginMilliseconds = 5_000;
+
+const utcHourStart = (time: number): number =>
+  Math.floor(time / hourMilliseconds) * hourMilliseconds;
+
+const attemptsThisHour = (attempts: string[], now: Date): string[] => {
+  const hourStart = utcHourStart(now.getTime());
+  return attempts.filter((attempt) => Date.parse(attempt) >= hourStart);
+};
+
+// The Worker allows each user a fixed number of uploads per UTC hour; once this hour's are spent,
+// waiting for the next hour beats collecting 429s.
+export const millisecondsUntilUploadAllowed = (
+  attempts: string[],
+  now: Date,
+  uploadsPerHour: number,
+): number => {
+  if (attemptsThisHour(attempts, now).length < uploadsPerHour) return 0;
+  return (
+    utcHourStart(now.getTime()) + hourMilliseconds - now.getTime() + hourBoundaryMarginMilliseconds
+  );
+};
+
+export const ImageState = {
   AlreadySaved: "alreadySaved",
   Conflict: "conflict",
   Replace: "replace",
 } as const;
 
-export type ImageFieldState = (typeof ImageFieldState)[keyof typeof ImageFieldState];
+export type ImageState = (typeof ImageState)[keyof typeof ImageState];
 
-const imgurIdInField = (fieldValue: string): string | null =>
-  /imgur\.com\/(?:a\/|gallery\/)?([A-Za-z0-9]+)/.exec(fieldValue)?.[1] ?? null;
-
-// The save only goes ahead if the blueprint still shows the image that was reviewed, so an
+// The save only goes ahead if the blueprint still holds the image that was reviewed, so an
 // author's own fix made after the review is never overwritten.
-export const classifyImageField = (
-  fieldValue: string,
-  previousImgurId: string | null,
-  imgurId: string,
-): ImageFieldState => {
-  const current = imgurIdInField(fieldValue);
-  if (current === imgurId) return ImageFieldState.AlreadySaved;
-  if (current === previousImgurId) return ImageFieldState.Replace;
-  return ImageFieldState.Conflict;
+export const classifyCurrentImage = (
+  currentImageId: string | null,
+  previousImageId: string | null,
+  imageId?: string,
+): ImageState => {
+  if (imageId !== undefined && currentImageId === imageId) return ImageState.AlreadySaved;
+  if (currentImageId === previousImageId) return ImageState.Replace;
+  return ImageState.Conflict;
 };
+
+const imageExtensions: Readonly<Record<string, string>> = {
+  "image/gif": "gif",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+};
+
+// Mirrors src/helpers/buildImageUrl.ts, which Node can't import directly because of its enum.
+export const gatewayImageUrl = (
+  gatewayOrigin: string,
+  imageId: string,
+  type: string,
+  variant: "original" | "thumbnail",
+): string =>
+  `${gatewayOrigin}/legacy-imgur/${imageId}/${variant}.${imageExtensions[type] ?? "png"}`;
 
 export interface ReplacementObservation {
   firebaseImageId: string | null;
-  fullStatus: number;
+  originalStatus: number;
   thumbnailStatus: number;
 }
 
-// Factorio Prints shows the 640px `<id>l` thumbnail on the view page, so a replacement is only
-// live once that variant resolves too. Imgur answers 302 for a deleted image.
-export const auditReplacement = (imgurId: string, observed: ReplacementObservation): string[] => {
+// The view page shows the thumbnail, so a replacement is only live once that variant resolves too.
+export const auditReplacement = (
+  { imageId, type }: { imageId: string; type: string },
+  gatewayOrigin: string,
+  observed: ReplacementObservation,
+): string[] => {
   const problems: string[] = [];
-  if (observed.firebaseImageId !== imgurId) {
-    problems.push(`Firebase holds ${observed.firebaseImageId ?? "no image"}, not ${imgurId}`);
+  if (observed.firebaseImageId !== imageId) {
+    problems.push(`Firebase holds ${observed.firebaseImageId ?? "no image"}, not ${imageId}`);
   }
-  if (observed.fullStatus !== 200)
-    problems.push(`i.imgur.com/${imgurId}.png returned ${observed.fullStatus}`);
+  if (observed.originalStatus !== 200) {
+    problems.push(
+      `${gatewayImageUrl(gatewayOrigin, imageId, type, "original")} returned ${observed.originalStatus}`,
+    );
+  }
   if (observed.thumbnailStatus !== 200) {
-    problems.push(`i.imgur.com/${imgurId}l.png returned ${observed.thumbnailStatus}`);
+    problems.push(
+      `${gatewayImageUrl(gatewayOrigin, imageId, type, "thumbnail")} returned ${observed.thumbnailStatus}`,
+    );
   }
   return problems;
 };
 
-export type SaveOutcome =
-  | { detail?: string; outcome: "saved" | "alreadySaved" }
-  | { detail: string; outcome: "conflict" | "failed" };
+export type SaveOutcome = { outcome: "saved" } | { detail: string; outcome: "failed" };
 
 export interface ReplacementDependencies {
-  confirmSaved: (key: string, imgurId: string) => Promise<boolean>;
+  confirmSaved: (key: string, imageId: string) => Promise<boolean>;
+  currentImageId: (key: string) => Promise<string | null>;
   log: (message: string) => void;
   now: () => Date;
   persistLedger: (ledger: ReplacementLedger) => Promise<void>;
-  saveImage: (key: string, previousImgurId: string | null, imgurId: string) => Promise<SaveOutcome>;
+  // Saves the edit form that uploadImage left open for this key.
+  saveImage: (key: string, imageId: string) => Promise<SaveOutcome>;
   sleep: (milliseconds: number) => Promise<void>;
-  uploadImage: (file: string) => Promise<UploadState>;
+  // Opens the blueprint's edit form and attaches the file through the image Worker; with `reuse`,
+  // attaches that earlier upload again without sending a new one.
+  uploadImage: (key: string, file: string, reuse?: UploadRecord) => Promise<UploadState>;
 }
 
 export interface ReplacementOptions {
-  captchaBackoffMilliseconds: number;
-  maximumConsecutiveCaptchas: number;
+  maximumConsecutiveRateLimits: number;
   maximumConsecutiveSaveFailures: number;
   uploadSpacingMilliseconds: number;
+  uploadsPerHour: number;
 }
 
 export interface ReplacementResult {
@@ -241,75 +325,113 @@ export const runReplacementLoop = async (
 
   for (const [index, item] of queue.entries()) {
     const progress = `${index + 1}/${queue.length} ${item.key}`;
-    let upload = item.upload;
+    const { previousImageId } = item;
 
-    if (item.step === "upload") {
-      let consecutiveCaptchas = 0;
+    const current = await dependencies.currentImageId(item.key);
+    const state = classifyCurrentImage(current, previousImageId, item.upload?.imageId);
+    if (state === ImageState.AlreadySaved && item.upload) {
+      await record(item.key, {
+        previousImageId,
+        savedAt: dependencies.now().toISOString(),
+        status: ReplacementStatus.Saved,
+        upload: item.upload,
+      });
+      dependencies.log(`${progress}: already saved ${item.upload.imageId}`);
+      continue;
+    }
+    if (state === ImageState.Conflict) {
+      const reason = `Firebase holds ${current ?? "no image"}, not the reviewed ${previousImageId ?? "no image"}`;
+      dependencies.log(`${progress}: not saved, ${reason}`);
+      await record(item.key, {
+        previousImageId,
+        reason,
+        status: ReplacementStatus.Conflict,
+        ...(item.upload && { upload: item.upload }),
+      });
+      continue;
+    }
+
+    let upload = item.upload;
+    if (upload) {
+      const reattached = await dependencies.uploadImage(item.key, item.file, upload);
+      if (reattached.kind !== "uploaded" || reattached.imageId !== upload.imageId) {
+        return {
+          ledger,
+          stoppedReason: `could not attach the earlier upload ${upload.imageId} for ${item.key}`,
+        };
+      }
+    } else {
+      let consecutiveRateLimits = 0;
       for (;;) {
-        if (uploadedBefore) await dependencies.sleep(options.uploadSpacingMilliseconds);
+        const wait = millisecondsUntilUploadAllowed(
+          ledger.uploadAttempts,
+          dependencies.now(),
+          options.uploadsPerHour,
+        );
+        if (wait > 0) {
+          dependencies.log(
+            `${progress}: hourly upload budget spent, waiting ${Math.ceil(wait / 60_000)} minutes`,
+          );
+          await dependencies.sleep(wait);
+        } else if (uploadedBefore) {
+          await dependencies.sleep(options.uploadSpacingMilliseconds);
+        }
         uploadedBefore = true;
-        const state = await dependencies.uploadImage(item.file);
-        if (state.kind === "captcha") {
-          consecutiveCaptchas += 1;
-          if (consecutiveCaptchas >= options.maximumConsecutiveCaptchas) {
+        const uploadState = await dependencies.uploadImage(item.key, item.file);
+        if (uploadState.kind === "rateLimited") {
+          consecutiveRateLimits += 1;
+          if (consecutiveRateLimits >= options.maximumConsecutiveRateLimits) {
             return {
               ledger,
-              stoppedReason: `Imgur captcha persisted through ${consecutiveCaptchas} attempts; rerun later to resume`,
+              stoppedReason: `upload rate limited ${consecutiveRateLimits} times in a row (last: ${uploadState.reason}); rerun later to resume`,
             };
           }
           dependencies.log(
-            `${progress}: captcha, backing off ${options.captchaBackoffMilliseconds / 60_000} minutes`,
+            `${progress}: ${uploadState.reason}, waiting ${uploadState.retryAfterMilliseconds / 60_000} minutes`,
           );
-          await dependencies.sleep(options.captchaBackoffMilliseconds);
+          await dependencies.sleep(uploadState.retryAfterMilliseconds);
           uploadedBefore = false;
           continue;
         }
-        if (state.kind === "ambiguous") {
-          return { ledger, stoppedReason: `ambiguous upload for ${item.key}: ${state.reason}` };
+        const attemptedAt = dependencies.now();
+        ledger.uploadAttempts = [
+          ...attemptsThisHour(ledger.uploadAttempts, attemptedAt),
+          attemptedAt.toISOString(),
+        ];
+        if (uploadState.kind === "ambiguous") {
+          await dependencies.persistLedger(ledger);
+          return {
+            ledger,
+            stoppedReason: `ambiguous upload for ${item.key}: ${uploadState.reason}`,
+          };
         }
-        if (state.kind === "failed") {
-          dependencies.log(`${progress}: upload failed, ${state.reason}`);
+        if (uploadState.kind === "failed") {
+          dependencies.log(`${progress}: upload failed, ${uploadState.reason}`);
           await record(item.key, {
-            previousImgurId: item.previousImgurId,
-            reason: state.reason,
+            previousImageId,
+            reason: uploadState.reason,
             status: ReplacementStatus.UploadFailed,
           });
           break;
         }
         upload = {
-          ext: state.ext,
-          imgurId: state.imgurId,
-          postUrl: state.postUrl,
-          uploadedAt: dependencies.now().toISOString(),
+          imageId: uploadState.imageId,
+          type: uploadState.type,
+          uploadedAt: attemptedAt.toISOString(),
         };
-        await record(item.key, {
-          previousImgurId: item.previousImgurId,
-          status: ReplacementStatus.Uploaded,
-          upload,
-        });
-        dependencies.log(`${progress}: uploaded ${upload.imgurId}`);
+        await record(item.key, { previousImageId, status: ReplacementStatus.Uploaded, upload });
+        dependencies.log(`${progress}: uploaded ${upload.imageId}`);
         break;
       }
     }
     if (!upload) continue;
 
-    const saved = await dependencies.saveImage(item.key, item.previousImgurId, upload.imgurId);
-    if (saved.outcome === "conflict") {
-      consecutiveSaveFailures = 0;
-      dependencies.log(`${progress}: not saved, ${saved.detail}`);
-      await record(item.key, {
-        previousImgurId: item.previousImgurId,
-        reason: saved.detail,
-        status: ReplacementStatus.Conflict,
-        upload,
-      });
-      continue;
-    }
+    const saved = await dependencies.saveImage(item.key, upload.imageId);
     if (saved.outcome === "failed") {
       consecutiveSaveFailures += 1;
       dependencies.log(`${progress}: save failed, ${saved.detail}`);
       await record(item.key, {
-        previousImgurId: item.previousImgurId,
+        previousImageId,
         reason: saved.detail,
         status: ReplacementStatus.Uploaded,
         upload,
@@ -324,23 +446,23 @@ export const runReplacementLoop = async (
     }
     consecutiveSaveFailures = 0;
 
-    if (!(await dependencies.confirmSaved(item.key, upload.imgurId))) {
+    if (!(await dependencies.confirmSaved(item.key, upload.imageId))) {
       dependencies.log(`${progress}: save not visible in Firebase yet`);
       await record(item.key, {
-        previousImgurId: item.previousImgurId,
-        reason: `Firebase does not show ${upload.imgurId} yet`,
+        previousImageId,
+        reason: `Firebase does not show ${upload.imageId} yet`,
         status: ReplacementStatus.Uploaded,
         upload,
       });
       continue;
     }
     await record(item.key, {
-      previousImgurId: item.previousImgurId,
+      previousImageId,
       savedAt: dependencies.now().toISOString(),
       status: ReplacementStatus.Saved,
       upload,
     });
-    dependencies.log(`${progress}: saved ${upload.imgurId}`);
+    dependencies.log(`${progress}: saved ${upload.imageId}`);
   }
   return { ledger };
 };

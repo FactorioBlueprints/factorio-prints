@@ -1,19 +1,26 @@
+import buildImageUrl, { ImageVariant } from "../src/helpers/buildImageUrl";
 import {
   auditReplacement,
   buildReplacementQueue,
-  classifyImageField,
+  classifyCurrentImage,
   emptyReplacementLedger,
-  ImageFieldState,
-  parseImgurUploadState,
+  gatewayImageUrl,
+  ImageState,
+  millisecondsUntilUploadAllowed,
+  parseUploadResponse,
   type ReplacementDependencies,
   type ReplacementLedger,
+  type ReplacementOptions,
   ReplacementStatus,
   runReplacementLoop,
   type SaveOutcome,
+  type UploadRecord,
   type UploadState,
 } from "../scripts/imageReplacementCore";
 
 const minutes = (count: number): number => count * 60 * 1_000;
+const gatewayOrigin = "https://images.factorioprints.com";
+const longImageId = "abcdefghijklmnopqrst";
 
 describe("replacement queue", () => {
   const candidates = [
@@ -28,6 +35,7 @@ describe("replacement queue", () => {
     { bytes: 1, file: "/round/uploads/dave.png", key: "dave" },
     { bytes: 1, file: "/round/uploads/erin.png", key: "erin" },
   ];
+  const now = new Date("2000-01-01T12:00:00.000Z");
 
   test("queues only replace decisions, in upload-plan order", () => {
     const { blocked, queue } = buildReplacementQueue({
@@ -35,17 +43,13 @@ describe("replacement queue", () => {
       decisions: { alice: "replace", bob: "keep", carol: "delete", dave: "replace" },
       holdKeys: [],
       ledger: emptyReplacementLedger(),
+      now,
       uploadPlan,
     });
 
     expect(queue).toEqual([
-      {
-        file: "/round/uploads/alice.png",
-        key: "alice",
-        previousImgurId: "oldAlice",
-        step: "upload",
-      },
-      { file: "/round/uploads/dave.png", key: "dave", previousImgurId: null, step: "upload" },
+      { file: "/round/uploads/alice.png", key: "alice", previousImageId: "oldAlice" },
+      { file: "/round/uploads/dave.png", key: "dave", previousImageId: null },
     ]);
     expect(blocked).toEqual([]);
   });
@@ -56,10 +60,13 @@ describe("replacement queue", () => {
       decisions: { alice: "replace", dave: "replace" },
       holdKeys: ["alice"],
       ledger: emptyReplacementLedger(),
+      now,
       uploadPlan,
     });
 
-    expect(queue.map((item) => item.key)).toEqual(["dave"]);
+    expect(queue).toEqual([
+      { file: "/round/uploads/dave.png", key: "dave", previousImageId: null },
+    ]);
   });
 
   test("blocks replace decisions with no staged file or no reviewed candidate", () => {
@@ -68,6 +75,7 @@ describe("replacement queue", () => {
       decisions: { carol: "replace", erin: "replace" },
       holdKeys: [],
       ledger: emptyReplacementLedger(),
+      now,
       uploadPlan,
     });
 
@@ -78,36 +86,35 @@ describe("replacement queue", () => {
     ]);
   });
 
-  test("resumes from the ledger: saved and conflicting keys are done, uploaded keys only need saving", () => {
+  test("resumes from the ledger: saved and conflicting keys are done, a fresh upload is reused", () => {
     const ledger: ReplacementLedger = {
       entries: {
         alice: {
-          previousImgurId: "oldAlice",
+          previousImageId: "oldAlice",
           status: ReplacementStatus.Saved,
           upload: {
-            ext: "png",
-            imgurId: "newAlice",
-            postUrl: "https://imgur.com/a/pa",
-            uploadedAt: "2000-01-01T00:00:00.000Z",
+            imageId: "newAlice",
+            type: "image/png",
+            uploadedAt: "2000-01-01T11:00:00.000Z",
           },
         },
         bob: {
-          previousImgurId: "oldBob",
+          previousImageId: "oldBob",
           status: ReplacementStatus.Uploaded,
           upload: {
-            ext: "jpeg",
-            imgurId: "newBob",
-            postUrl: "https://imgur.com/a/pb",
-            uploadedAt: "2000-01-01T00:00:00.000Z",
+            imageId: longImageId,
+            type: "image/jpeg",
+            uploadedAt: "2000-01-01T11:30:00.000Z",
           },
         },
         dave: {
-          previousImgurId: null,
-          reason: "field held imgur.com/xyz",
+          previousImageId: null,
+          reason: "Firebase holds authorPick",
           status: ReplacementStatus.Conflict,
         },
       },
-      version: 1,
+      uploadAttempts: [],
+      version: 2,
     };
 
     const { queue } = buildReplacementQueue({
@@ -115,6 +122,7 @@ describe("replacement queue", () => {
       decisions: { alice: "replace", bob: "replace", dave: "replace" },
       holdKeys: [],
       ledger,
+      now,
       uploadPlan,
     });
 
@@ -122,121 +130,174 @@ describe("replacement queue", () => {
       {
         file: "/round/uploads/bob.png",
         key: "bob",
-        previousImgurId: "oldBob",
-        step: "save",
+        previousImageId: "oldBob",
         upload: {
-          ext: "jpeg",
-          imgurId: "newBob",
-          postUrl: "https://imgur.com/a/pb",
-          uploadedAt: "2000-01-01T00:00:00.000Z",
+          imageId: longImageId,
+          type: "image/jpeg",
+          uploadedAt: "2000-01-01T11:30:00.000Z",
         },
       },
     ]);
   });
+
+  test("an unsaved upload old enough that the Worker may expire it is uploaded again", () => {
+    const ledger: ReplacementLedger = {
+      entries: {
+        bob: {
+          previousImageId: "oldBob",
+          status: ReplacementStatus.Uploaded,
+          upload: { imageId: "newBob", type: "image/png", uploadedAt: "2000-01-01T11:14:59.000Z" },
+        },
+      },
+      uploadAttempts: [],
+      version: 2,
+    };
+
+    const { queue } = buildReplacementQueue({
+      candidates,
+      decisions: { bob: "replace" },
+      holdKeys: [],
+      ledger,
+      now,
+      uploadPlan,
+    });
+
+    expect(queue).toEqual([
+      { file: "/round/uploads/bob.png", key: "bob", previousImageId: "oldBob" },
+    ]);
+  });
 });
 
-describe("imgur upload page state", () => {
-  test("a new post with exactly one image is an upload", () => {
+describe("upload response", () => {
+  test("a created upload answers the image id and type to save", () => {
     expect(
-      parseImgurUploadState({
-        captcha: false,
-        failed: false,
-        imageFiles: ["cU8VrDV.png"],
-        url: "https://imgur.com/a/WsGDjmT",
+      parseUploadResponse({
+        body: JSON.stringify({ id: longImageId, type: "image/png" }),
+        retryAfter: null,
+        status: 201,
       }),
-    ).toEqual({
-      ext: "png",
-      imgurId: "cU8VrDV",
-      kind: "uploaded",
-      postUrl: "https://imgur.com/a/WsGDjmT",
+    ).toEqual({ imageId: longImageId, kind: "uploaded", type: "image/png" });
+  });
+
+  test("a created upload without an id and type is ambiguous", () => {
+    expect(parseUploadResponse({ body: "{}", retryAfter: null, status: 201 })).toEqual({
+      kind: "ambiguous",
+      reason: "upload answered 201 without an image id and type: {}",
+    });
+    expect(parseUploadResponse({ body: "not json", retryAfter: null, status: 201 })).toEqual({
+      kind: "ambiguous",
+      reason: "upload answered 201 without an image id and type: not json",
     });
   });
 
-  test("the captcha wins even when the page already navigated to a post", () => {
+  test("the hourly limit and a busy Worker wait for retry-after", () => {
     expect(
-      parseImgurUploadState({
-        captcha: true,
-        failed: false,
-        imageFiles: [],
-        url: "https://imgur.com/a/xkI5wNf",
-      }),
-    ).toEqual({ kind: "captcha", postUrl: "https://imgur.com/a/xkI5wNf" });
+      parseUploadResponse({ body: "Hourly upload limit reached", retryAfter: "600", status: 429 }),
+    ).toEqual({
+      kind: "rateLimited",
+      reason: "429 Hourly upload limit reached",
+      retryAfterMilliseconds: minutes(10),
+    });
+    expect(
+      parseUploadResponse({ body: "Image storage is busy", retryAfter: "60", status: 503 }),
+    ).toEqual({
+      kind: "rateLimited",
+      reason: "503 Image storage is busy",
+      retryAfterMilliseconds: minutes(1),
+    });
   });
 
-  test("an explicit upload failure is a failure", () => {
-    expect(
-      parseImgurUploadState({
-        captcha: false,
-        failed: true,
-        imageFiles: [],
-        url: "https://imgur.com/upload",
-      }),
-    ).toEqual({ kind: "failed", reason: "Imgur reported the upload failed" });
+  test("a rate limit without a usable retry-after waits ten minutes", () => {
+    expect(parseUploadResponse({ body: "", retryAfter: null, status: 429 })).toEqual({
+      kind: "rateLimited",
+      reason: "429 ",
+      retryAfterMilliseconds: minutes(10),
+    });
+    expect(parseUploadResponse({ body: "", retryAfter: "soon", status: 429 })).toEqual({
+      kind: "rateLimited",
+      reason: "429 ",
+      retryAfterMilliseconds: minutes(10),
+    });
   });
 
-  test("anything other than exactly one image on a post page is ambiguous", () => {
+  test("an image the Worker rejects fails only that replacement", () => {
     expect(
-      parseImgurUploadState({
-        captcha: false,
-        failed: false,
-        imageFiles: [],
-        url: "https://imgur.com/a/empty",
-      }).kind,
-    ).toBe("ambiguous");
-    expect(
-      parseImgurUploadState({
-        captcha: false,
-        failed: false,
-        imageFiles: ["aaaaaaa.png", "bbbbbbb.jpeg"],
-        url: "https://imgur.com/a/two",
-      }).kind,
-    ).toBe("ambiguous");
-    expect(
-      parseImgurUploadState({
-        captcha: false,
-        failed: false,
-        imageFiles: [],
-        url: "https://imgur.com/upload",
-      }).kind,
-    ).toBe("ambiguous");
+      parseUploadResponse({ body: "Image is too large", retryAfter: null, status: 413 }),
+    ).toEqual({ kind: "failed", reason: "upload rejected with 413: Image is too large" });
+    expect(parseUploadResponse({ body: "Unsupported", retryAfter: null, status: 415 })).toEqual({
+      kind: "failed",
+      reason: "upload rejected with 415: Unsupported",
+    });
+    expect(parseUploadResponse({ body: "Unreadable", retryAfter: null, status: 422 })).toEqual({
+      kind: "failed",
+      reason: "upload rejected with 422: Unreadable",
+    });
+  });
+
+  test("a rejected sign-in stops the run", () => {
+    expect(parseUploadResponse({ body: "Unauthorized", retryAfter: null, status: 401 })).toEqual({
+      kind: "ambiguous",
+      reason: "the Worker rejected the Factorio Prints sign-in; run with --login",
+    });
+  });
+
+  test("any other answer stops the run rather than guessing", () => {
+    expect(parseUploadResponse({ body: "boom", retryAfter: null, status: 500 })).toEqual({
+      kind: "ambiguous",
+      reason: "upload answered 500: boom",
+    });
   });
 });
 
-describe("factorio prints image field guard", () => {
-  test("replaces only when the field still holds the reviewed image", () => {
-    expect(classifyImageField("https://imgur.com/oldAlice", "oldAlice", "newAlice")).toBe(
-      ImageFieldState.Replace,
-    );
-    expect(classifyImageField("https://i.imgur.com/oldAlice.png", "oldAlice", "newAlice")).toBe(
-      ImageFieldState.Replace,
+describe("hourly upload budget", () => {
+  const now = new Date("2000-01-01T12:40:00.000Z");
+  const attempts = (count: number, at: string): string[] => Array.from({ length: count }, () => at);
+
+  test("uploads go ahead while this UTC hour has spent fewer than the limit", () => {
+    expect(millisecondsUntilUploadAllowed(attempts(9, "2000-01-01T12:05:00.000Z"), now, 10)).toBe(
+      0,
     );
   });
 
-  test("a field already holding the new image means an earlier save landed", () => {
-    expect(classifyImageField("https://imgur.com/newAlice", "oldAlice", "newAlice")).toBe(
-      ImageFieldState.AlreadySaved,
+  test("attempts from an earlier UTC hour do not count, matching the Worker's quota", () => {
+    expect(millisecondsUntilUploadAllowed(attempts(10, "2000-01-01T11:59:59.000Z"), now, 10)).toBe(
+      0,
+    );
+  });
+
+  test("a spent hour waits until just after the next UTC hour starts", () => {
+    expect(millisecondsUntilUploadAllowed(attempts(10, "2000-01-01T12:05:00.000Z"), now, 10)).toBe(
+      minutes(20) + 5_000,
+    );
+  });
+});
+
+describe("current image guard", () => {
+  test("replaces only when Firebase still holds the reviewed image", () => {
+    expect(classifyCurrentImage("oldAlice", "oldAlice")).toBe(ImageState.Replace);
+    expect(classifyCurrentImage(null, null)).toBe(ImageState.Replace);
+  });
+
+  test("Firebase already holding the new image means an earlier save landed", () => {
+    expect(classifyCurrentImage(longImageId, "oldAlice", longImageId)).toBe(
+      ImageState.AlreadySaved,
     );
   });
 
   test("any other image is somebody else's change and must not be overwritten", () => {
-    expect(classifyImageField("https://imgur.com/authorPick", "oldAlice", "newAlice")).toBe(
-      ImageFieldState.Conflict,
-    );
-    expect(classifyImageField("", "oldAlice", "newAlice")).toBe(ImageFieldState.Conflict);
-  });
-
-  test("a blueprint reviewed with no image accepts an empty field", () => {
-    expect(classifyImageField("", null, "newDave")).toBe(ImageFieldState.Replace);
-    expect(classifyImageField("https://imgur.com/authorPick", null, "newDave")).toBe(
-      ImageFieldState.Conflict,
-    );
+    expect(classifyCurrentImage("authorPick", "oldAlice")).toBe(ImageState.Conflict);
+    expect(classifyCurrentImage(null, "oldAlice")).toBe(ImageState.Conflict);
+    expect(classifyCurrentImage("authorPick", null, "newDave")).toBe(ImageState.Conflict);
   });
 });
 
 interface FakeScript {
+  currentImages?: Record<string, string | null>;
   saves?: SaveOutcome[];
   uploads: UploadState[];
 }
+
+const reviewedImageId = (key: string): string => `old${key[0]!.toUpperCase()}${key.slice(1)}`;
 
 const fakeDependencies = (script: FakeScript) => {
   const uploads = [...script.uploads];
@@ -245,24 +306,32 @@ const fakeDependencies = (script: FakeScript) => {
   const sleeps: number[] = [];
   const persisted: ReplacementLedger[] = [];
   const dependencies: ReplacementDependencies = {
-    confirmSaved: async (key, imgurId) => {
-      calls.push(`confirm ${key} ${imgurId}`);
+    confirmSaved: async (key, imageId) => {
+      calls.push(`confirm ${key} ${imageId}`);
       return true;
     },
+    currentImageId: async (key) =>
+      script.currentImages && key in script.currentImages
+        ? script.currentImages[key]!
+        : reviewedImageId(key),
     log: () => {},
-    now: () => new Date("2000-01-01T00:00:00.000Z"),
+    now: () => new Date("2000-01-01T12:00:00.000Z"),
     persistLedger: async (ledger) => {
       persisted.push(structuredClone(ledger));
     },
-    saveImage: async (key, previousImgurId, imgurId) => {
-      calls.push(`save ${key} ${previousImgurId} ${imgurId}`);
+    saveImage: async (key, imageId) => {
+      calls.push(`save ${key} ${imageId}`);
       return saves.shift() ?? { outcome: "saved" };
     },
     sleep: async (milliseconds) => {
       sleeps.push(milliseconds);
     },
-    uploadImage: async (file) => {
-      calls.push(`upload ${file}`);
+    uploadImage: async (key, file, reuse) => {
+      if (reuse) {
+        calls.push(`reattach ${key} ${reuse.imageId}`);
+        return { imageId: reuse.imageId, kind: "uploaded", type: reuse.type };
+      }
+      calls.push(`upload ${key} ${file}`);
       const next = uploads.shift();
       if (!next) throw new Error(`unscripted upload of ${file}`);
       return next;
@@ -271,44 +340,68 @@ const fakeDependencies = (script: FakeScript) => {
   return { calls, dependencies, persisted, sleeps };
 };
 
-const uploaded = (imgurId: string): UploadState => ({
-  ext: "png",
-  imgurId,
+const uploaded = (imageId: string): UploadState => ({
+  imageId,
   kind: "uploaded",
-  postUrl: `https://imgur.com/a/post-${imgurId}`,
+  type: "image/png",
 });
 
-const options = {
-  captchaBackoffMilliseconds: minutes(30),
-  maximumConsecutiveCaptchas: 3,
+const options: ReplacementOptions = {
+  maximumConsecutiveRateLimits: 3,
   maximumConsecutiveSaveFailures: 2,
   uploadSpacingMilliseconds: 8_000,
+  uploadsPerHour: 10,
 };
 
 describe("replacement loop", () => {
   const queue = [
-    { file: "alice.png", key: "alice", previousImgurId: "oldAlice", step: "upload" as const },
-    { file: "bob.png", key: "bob", previousImgurId: "oldBob", step: "upload" as const },
+    { file: "alice.png", key: "alice", previousImageId: "oldAlice" },
+    { file: "bob.png", key: "bob", previousImageId: "oldBob" },
   ];
 
   test("uploads then immediately saves each image, confirming every save", async () => {
     const { calls, dependencies } = fakeDependencies({
-      uploads: [uploaded("newAlice"), uploaded("newBob")],
+      uploads: [uploaded("newAlice"), uploaded(longImageId)],
     });
 
     const result = await runReplacementLoop(queue, emptyReplacementLedger(), dependencies, options);
 
     expect(calls).toEqual([
-      "upload alice.png",
-      "save alice oldAlice newAlice",
+      "upload alice alice.png",
+      "save alice newAlice",
       "confirm alice newAlice",
-      "upload bob.png",
-      "save bob oldBob newBob",
-      "confirm bob newBob",
+      "upload bob bob.png",
+      `save bob ${longImageId}`,
+      `confirm bob ${longImageId}`,
     ]);
-    expect(result.ledger.entries.alice?.status).toBe(ReplacementStatus.Saved);
-    expect(result.ledger.entries.bob?.status).toBe(ReplacementStatus.Saved);
-    expect(result.stoppedReason).toBeUndefined();
+    expect(result).toEqual({
+      ledger: {
+        entries: {
+          alice: {
+            previousImageId: "oldAlice",
+            savedAt: "2000-01-01T12:00:00.000Z",
+            status: ReplacementStatus.Saved,
+            upload: {
+              imageId: "newAlice",
+              type: "image/png",
+              uploadedAt: "2000-01-01T12:00:00.000Z",
+            },
+          },
+          bob: {
+            previousImageId: "oldBob",
+            savedAt: "2000-01-01T12:00:00.000Z",
+            status: ReplacementStatus.Saved,
+            upload: {
+              imageId: longImageId,
+              type: "image/png",
+              uploadedAt: "2000-01-01T12:00:00.000Z",
+            },
+          },
+        },
+        uploadAttempts: ["2000-01-01T12:00:00.000Z", "2000-01-01T12:00:00.000Z"],
+        version: 2,
+      },
+    });
   });
 
   test("persists the upload before attempting the save, so a crash never loses an uploaded image", async () => {
@@ -316,14 +409,97 @@ describe("replacement loop", () => {
 
     await runReplacementLoop(queue.slice(0, 1), emptyReplacementLedger(), dependencies, options);
 
-    expect(persisted[0]?.entries.alice?.status).toBe(ReplacementStatus.Uploaded);
-    expect(persisted[0]?.entries.alice?.upload?.imgurId).toBe("newAlice");
+    expect(persisted[0]?.entries.alice).toEqual({
+      previousImageId: "oldAlice",
+      status: ReplacementStatus.Uploaded,
+      upload: { imageId: "newAlice", type: "image/png", uploadedAt: "2000-01-01T12:00:00.000Z" },
+    });
     expect(persisted.at(-1)?.entries.alice?.status).toBe(ReplacementStatus.Saved);
   });
 
-  test("backs off on a captcha and retries the same image", async () => {
+  test("a guard conflict is final, never retried, and spends no upload", async () => {
+    const { calls, dependencies } = fakeDependencies({
+      currentImages: { alice: "authorPick" },
+      uploads: [uploaded("newBob")],
+    });
+
+    const result = await runReplacementLoop(queue, emptyReplacementLedger(), dependencies, options);
+
+    expect(calls).toEqual(["upload bob bob.png", "save bob newBob", "confirm bob newBob"]);
+    expect(result.ledger.entries.alice).toEqual({
+      previousImageId: "oldAlice",
+      reason: "Firebase holds authorPick, not the reviewed oldAlice",
+      status: ReplacementStatus.Conflict,
+    });
+  });
+
+  test("a resumed fresh upload is reattached without uploading again", async () => {
+    const { calls, dependencies, sleeps } = fakeDependencies({ uploads: [] });
+    const upload: UploadRecord = {
+      imageId: "newAlice",
+      type: "image/png",
+      uploadedAt: "2000-01-01T11:50:00.000Z",
+    };
+
+    const result = await runReplacementLoop(
+      [{ file: "alice.png", key: "alice", previousImageId: "oldAlice", upload }],
+      {
+        entries: {
+          alice: { previousImageId: "oldAlice", status: ReplacementStatus.Uploaded, upload },
+        },
+        uploadAttempts: [],
+        version: 2,
+      },
+      dependencies,
+      options,
+    );
+
+    expect(calls).toEqual([
+      "reattach alice newAlice",
+      "save alice newAlice",
+      "confirm alice newAlice",
+    ]);
+    expect(sleeps).toEqual([]);
+    expect(result.ledger.uploadAttempts).toEqual([]);
+  });
+
+  test("a resumed upload that Firebase already shows is recorded as saved without touching the form", async () => {
+    const { calls, dependencies } = fakeDependencies({
+      currentImages: { alice: "newAlice" },
+      uploads: [],
+    });
+    const upload: UploadRecord = {
+      imageId: "newAlice",
+      type: "image/png",
+      uploadedAt: "2000-01-01T11:50:00.000Z",
+    };
+
+    const result = await runReplacementLoop(
+      [{ file: "alice.png", key: "alice", previousImageId: "oldAlice", upload }],
+      emptyReplacementLedger(),
+      dependencies,
+      options,
+    );
+
+    expect(calls).toEqual([]);
+    expect(result.ledger.entries.alice).toEqual({
+      previousImageId: "oldAlice",
+      savedAt: "2000-01-01T12:00:00.000Z",
+      status: ReplacementStatus.Saved,
+      upload,
+    });
+  });
+
+  test("waits out the retry-after of a rate limit and retries the same image", async () => {
     const { calls, dependencies, sleeps } = fakeDependencies({
-      uploads: [{ kind: "captcha", postUrl: "https://imgur.com/a/x" }, uploaded("newAlice")],
+      uploads: [
+        {
+          kind: "rateLimited",
+          reason: "429 Hourly upload limit reached",
+          retryAfterMilliseconds: minutes(10),
+        },
+        uploaded("newAlice"),
+      ],
     });
 
     const result = await runReplacementLoop(
@@ -334,56 +510,83 @@ describe("replacement loop", () => {
     );
 
     expect(calls.filter((call) => call.startsWith("upload"))).toEqual([
-      "upload alice.png",
-      "upload alice.png",
+      "upload alice alice.png",
+      "upload alice alice.png",
     ]);
-    expect(sleeps).toContain(minutes(30));
+    expect(sleeps).toEqual([minutes(10)]);
     expect(result.ledger.entries.alice?.status).toBe(ReplacementStatus.Saved);
+    expect(result.ledger.uploadAttempts).toEqual(["2000-01-01T12:00:00.000Z"]);
   });
 
-  test("stops when the captcha keeps coming back", async () => {
-    const captcha: UploadState = { kind: "captcha", postUrl: "https://imgur.com/a/x" };
-    const { dependencies } = fakeDependencies({ uploads: [captcha, captcha, captcha] });
+  test("stops when the rate limit keeps coming back", async () => {
+    const limited: UploadState = {
+      kind: "rateLimited",
+      reason: "429 Hourly upload limit reached",
+      retryAfterMilliseconds: minutes(10),
+    };
+    const { dependencies } = fakeDependencies({ uploads: [limited, limited, limited] });
 
     const result = await runReplacementLoop(queue, emptyReplacementLedger(), dependencies, options);
 
-    expect(result.stoppedReason).toMatch(/captcha/i);
+    expect(result.stoppedReason).toBe(
+      "upload rate limited 3 times in a row (last: 429 Hourly upload limit reached); rerun later to resume",
+    );
     expect(result.ledger.entries.alice).toBeUndefined();
   });
 
-  test("stops on an ambiguous upload rather than guessing which image went up", async () => {
+  test("holds uploads back once this UTC hour's budget is spent", async () => {
+    const { calls, dependencies, sleeps } = fakeDependencies({ uploads: [uploaded("newAlice")] });
+    const spent = Array.from({ length: 10 }, () => "2000-01-01T12:00:00.000Z");
+
+    await runReplacementLoop(
+      queue.slice(0, 1),
+      { entries: {}, uploadAttempts: spent, version: 2 },
+      dependencies,
+      options,
+    );
+
+    expect(sleeps).toEqual([minutes(60) + 5_000]);
+    expect(calls[0]).toBe("upload alice alice.png");
+  });
+
+  test("forgets attempts from earlier hours so the ledger does not grow without bound", async () => {
+    const { dependencies } = fakeDependencies({ uploads: [uploaded("newAlice")] });
+
+    const result = await runReplacementLoop(
+      queue.slice(0, 1),
+      { entries: {}, uploadAttempts: ["2000-01-01T10:00:00.000Z"], version: 2 },
+      dependencies,
+      options,
+    );
+
+    expect(result.ledger.uploadAttempts).toEqual(["2000-01-01T12:00:00.000Z"]);
+  });
+
+  test("stops on an ambiguous upload rather than guessing", async () => {
     const { calls, dependencies } = fakeDependencies({
-      uploads: [{ kind: "ambiguous", reason: "2 images on https://imgur.com/a/two" }],
+      uploads: [{ kind: "ambiguous", reason: "upload answered 500: boom" }],
     });
 
     const result = await runReplacementLoop(queue, emptyReplacementLedger(), dependencies, options);
 
-    expect(result.stoppedReason).toMatch(/2 images/);
-    expect(calls).toEqual(["upload alice.png"]);
+    expect(result.stoppedReason).toBe("ambiguous upload for alice: upload answered 500: boom");
+    expect(calls).toEqual(["upload alice alice.png"]);
   });
 
   test("records a failed upload and moves on to the next image", async () => {
     const { dependencies } = fakeDependencies({
-      uploads: [{ kind: "failed", reason: "Imgur reported the upload failed" }, uploaded("newBob")],
+      uploads: [
+        { kind: "failed", reason: "upload rejected with 413: Image is too large" },
+        uploaded("newBob"),
+      ],
     });
 
     const result = await runReplacementLoop(queue, emptyReplacementLedger(), dependencies, options);
 
-    expect(result.ledger.entries.alice?.status).toBe(ReplacementStatus.UploadFailed);
-    expect(result.ledger.entries.bob?.status).toBe(ReplacementStatus.Saved);
-  });
-
-  test("a guard conflict is final and never retried", async () => {
-    const { dependencies } = fakeDependencies({
-      saves: [{ detail: "field held https://imgur.com/authorPick", outcome: "conflict" }],
-      uploads: [uploaded("newAlice"), uploaded("newBob")],
-    });
-
-    const result = await runReplacementLoop(queue, emptyReplacementLedger(), dependencies, options);
-
-    expect(result.ledger.entries.alice).toMatchObject({
-      reason: "field held https://imgur.com/authorPick",
-      status: ReplacementStatus.Conflict,
+    expect(result.ledger.entries.alice).toEqual({
+      previousImageId: "oldAlice",
+      reason: "upload rejected with 413: Image is too large",
+      status: ReplacementStatus.UploadFailed,
     });
     expect(result.ledger.entries.bob?.status).toBe(ReplacementStatus.Saved);
   });
@@ -399,14 +602,16 @@ describe("replacement loop", () => {
       options,
     );
 
-    expect(result.ledger.entries.alice).toMatchObject({
+    expect(result.ledger.entries.alice).toEqual({
+      previousImageId: "oldAlice",
       reason: "Firebase does not show newAlice yet",
       status: ReplacementStatus.Uploaded,
+      upload: { imageId: "newAlice", type: "image/png", uploadedAt: "2000-01-01T12:00:00.000Z" },
     });
   });
 
   test("stops after repeated save failures, which usually means the site session expired", async () => {
-    const failed: SaveOutcome = { detail: "no image field on the edit page", outcome: "failed" };
+    const failed: SaveOutcome = { detail: "save never reached /view/alice", outcome: "failed" };
     const { dependencies } = fakeDependencies({
       saves: [failed, failed],
       uploads: [uploaded("newAlice"), uploaded("newBob")],
@@ -414,33 +619,11 @@ describe("replacement loop", () => {
 
     const result = await runReplacementLoop(queue, emptyReplacementLedger(), dependencies, options);
 
-    expect(result.stoppedReason).toMatch(/sign/i);
+    expect(result.stoppedReason).toBe(
+      "2 saves failed in a row (last: save never reached /view/alice); check the Factorio Prints sign-in, then rerun",
+    );
     expect(result.ledger.entries.alice?.status).toBe(ReplacementStatus.Uploaded);
     expect(result.ledger.entries.bob?.status).toBe(ReplacementStatus.Uploaded);
-  });
-
-  test("a resumed save step does not upload again", async () => {
-    const { calls, dependencies } = fakeDependencies({ uploads: [] });
-    const upload = {
-      ext: "png",
-      imgurId: "newAlice",
-      postUrl: "https://imgur.com/a/pa",
-      uploadedAt: "2000-01-01T00:00:00.000Z",
-    };
-
-    await runReplacementLoop(
-      [{ file: "alice.png", key: "alice", previousImgurId: "oldAlice", step: "save", upload }],
-      {
-        entries: {
-          alice: { previousImgurId: "oldAlice", status: ReplacementStatus.Uploaded, upload },
-        },
-        version: 1,
-      },
-      dependencies,
-      options,
-    );
-
-    expect(calls).toEqual(["save alice oldAlice newAlice", "confirm alice newAlice"]);
   });
 
   test("spaces uploads out", async () => {
@@ -454,12 +637,29 @@ describe("replacement loop", () => {
   });
 });
 
+describe("gateway image url", () => {
+  test("matches the site's buildImageUrl", () => {
+    for (const variant of [ImageVariant.Original, ImageVariant.Thumbnail]) {
+      expect(gatewayImageUrl(gatewayOrigin, longImageId, "image/jpeg", variant)).toBe(
+        buildImageUrl(longImageId, "image/jpeg", variant, gatewayOrigin),
+      );
+    }
+    expect(gatewayImageUrl(gatewayOrigin, "abc1234", "image/webp", "original")).toBe(
+      buildImageUrl("abc1234", "image/webp", ImageVariant.Original, gatewayOrigin),
+    );
+  });
+});
+
 describe("replacement audit", () => {
-  test("a replacement is live when Firebase holds it and Imgur serves the image and its thumbnail", () => {
+  const upload = { imageId: longImageId, type: "image/png" };
+
+  // Until the cron copies a fresh upload's variants, the gateway answers its thumbnail with the
+  // original, still a 200, so the audit only needs both URLs to resolve.
+  test("a replacement is live when Firebase holds it and the gateway serves its original and thumbnail", () => {
     expect(
-      auditReplacement("newAlice", {
-        firebaseImageId: "newAlice",
-        fullStatus: 200,
+      auditReplacement(upload, gatewayOrigin, {
+        firebaseImageId: longImageId,
+        originalStatus: 200,
         thumbnailStatus: 200,
       }),
     ).toEqual([]);
@@ -467,22 +667,22 @@ describe("replacement audit", () => {
 
   test("reports every way a replacement can fail to be live", () => {
     expect(
-      auditReplacement("newAlice", {
+      auditReplacement(upload, gatewayOrigin, {
         firebaseImageId: "authorPick",
-        fullStatus: 302,
-        thumbnailStatus: 404,
+        originalStatus: 404,
+        thumbnailStatus: 502,
       }),
     ).toEqual([
-      "Firebase holds authorPick, not newAlice",
-      "i.imgur.com/newAlice.png returned 302",
-      "i.imgur.com/newAlicel.png returned 404",
+      `Firebase holds authorPick, not ${longImageId}`,
+      `${gatewayOrigin}/legacy-imgur/${longImageId}/original.png returned 404`,
+      `${gatewayOrigin}/legacy-imgur/${longImageId}/thumbnail.png returned 502`,
     ]);
     expect(
-      auditReplacement("newAlice", {
+      auditReplacement(upload, gatewayOrigin, {
         firebaseImageId: null,
-        fullStatus: 200,
+        originalStatus: 200,
         thumbnailStatus: 200,
       }),
-    ).toEqual(["Firebase holds no image, not newAlice"]);
+    ).toEqual([`Firebase holds no image, not ${longImageId}`]);
   });
 });
