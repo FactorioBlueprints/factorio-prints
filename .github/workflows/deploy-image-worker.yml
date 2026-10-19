@@ -24,7 +24,7 @@ jobs:
     environment: image-worker-production
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5.0.0
+      - uses: jdx/mise-action@v5.1.2
       - run: just install-ci
 
       - name: Test the Worker
