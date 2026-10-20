@@ -107,8 +107,8 @@ importers:
         specifier: 5.10.2
         version: 5.10.2(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(supports-color@10.2.2)
       zod:
-        specifier: 4.6.5
-        version: 4.6.5
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@aws-sdk/client-s3':
         specifier: 3.1148.0
@@ -6073,8 +6073,8 @@ packages:
     peerDependencies:
       zod: ^3.25.28 || ^4
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
 snapshots:
 
@@ -7372,7 +7372,7 @@ snapshots:
       '@solid-primitives/utils': 6.4.1(solid-js@1.9.15)
       solid-js: 1.9.15
 
-  '@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.5)':
+  '@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.7)':
     dependencies:
       '@hono/node-server': 2.1.4(hono@4.13.13)
       ajv: 8.20.0
@@ -7389,8 +7389,8 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 4.6.5
-      zod-to-json-schema: 3.25.2(zod@4.6.5)
+      zod: 4.6.7
+      zod-to-json-schema: 3.25.2(zod@4.6.7)
     transitivePeerDependencies:
       - supports-color
 
@@ -7985,7 +7985,7 @@ snapshots:
       jiti: 2.7.0
       magic-string: 0.30.21
       prettier: 3.9.9
-      zod: 4.6.5
+      zod: 4.6.7
     transitivePeerDependencies:
       - supports-color
 
@@ -7999,7 +7999,7 @@ snapshots:
       '@tanstack/router-utils': 1.162.3(supports-color@10.2.2)
       chokidar: 5.0.0
       unplugin: 3.4.0(@voidzero-dev/vite-plus-core@0.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(typescript@7.0.2)(yaml@2.9.1))(esbuild@0.28.2)
-      zod: 4.6.5
+      zod: 4.6.7
     optionalDependencies:
       '@tanstack/react-router': 1.170.41(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       vite: '@voidzero-dev/vite-plus-core@0.3.3(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(typescript@7.0.2)(yaml@2.9.1)'
@@ -9455,7 +9455,7 @@ snapshots:
       '@google-cloud/cloud-sql-connector': 1.12.0(supports-color@10.2.2)
       '@google-cloud/pubsub': 5.3.1(supports-color@10.2.2)
       '@inquirer/prompts': 7.10.1(@types/node@26.6.4)
-      '@modelcontextprotocol/sdk': 1.32.1(supports-color@10.2.2)(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.32.1(supports-color@10.2.2)(zod@4.6.7)
       abort-controller: 3.0.0
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
@@ -9518,7 +9518,7 @@ snapshots:
       winston-transport: 4.9.0
       ws: 8.22.0
       yaml: 2.9.1
-      zod: 4.6.5
+      zod: 4.6.7
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - '@types/node'
@@ -12294,8 +12294,8 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.8.0
 
-  zod-to-json-schema@3.25.2(zod@4.6.5):
+  zod-to-json-schema@3.25.2(zod@4.6.7):
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.7
 
-  zod@4.6.5: {}
+  zod@4.6.7: {}
