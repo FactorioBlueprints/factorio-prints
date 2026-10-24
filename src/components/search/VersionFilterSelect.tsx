@@ -46,6 +46,7 @@ const VersionFilterSelect: React.FC = () => {
     <Form.Group className="mb-3">
       <Form.Label>Versions</Form.Label>
       <Select<VersionOption>
+        classNamePrefix="fp-select"
         value={selectedOption}
         options={options}
         onChange={handleChange}

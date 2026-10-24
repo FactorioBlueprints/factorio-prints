@@ -158,9 +158,6 @@ td.number {
 root {
   width: fit-content;
 }
-.navbar {
-  background: linear-gradient(#faa123, #f89406 60%, #e48806);
-}
 @media (min-width: 1200px) {
   .site-navbar {
     flex-wrap: nowrap;
@@ -215,10 +212,6 @@ root {
     text-align: left;
   }
 }
-.card-header {
-  background: linear-gradient(#8a9196, #7a8288 60%, #70787d);
-  color: #fff;
-}
 #disqus_thread {
   width: 100%;
 }
@@ -242,20 +235,4 @@ root {
 }
 .nav-item-dropdown.show > a {
   color: #fff !important;
-}
-/* Dark theme for dropdown menu */
-.navbar .dropdown-menu {
-  background-color: #343a40;
-  border-color: #454d55;
-}
-.navbar .dropdown-item {
-  color: #fff;
-}
-.navbar .dropdown-item:hover,
-.navbar .dropdown-item:focus {
-  background-color: #495057;
-  color: #fff;
-}
-.navbar .dropdown-divider {
-  border-color: #454d55;
 }
