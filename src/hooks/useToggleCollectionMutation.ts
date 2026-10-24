@@ -28,6 +28,7 @@ export const useToggleCollectionMutation = () => {
 
       const updates: Record<string, boolean | null> = {
         [`/users/${userId}/collection/${blueprintId}`]: newIsInCollection ? true : null,
+        [`/blueprintCollectors/${blueprintId}/${userId}`]: newIsInCollection ? true : null,
       };
 
       await dbUpdate(ref(getFirebaseDatabase()), updates);

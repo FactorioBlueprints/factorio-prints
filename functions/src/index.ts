@@ -10,6 +10,12 @@ import {
 } from "firebase-functions/v2/database";
 import { Change } from "firebase-functions/v2";
 import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
+import {
+  buildCollectorBackfill,
+  getCollectedBlueprintIds,
+  getIndexedCollectorUserIds,
+  getLegacyCollectorUserIds,
+} from "./collectorIndex";
 
 initializeApp();
 
@@ -118,42 +124,82 @@ export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
   },
 );
 
+export const updateBlueprintCollector = onValueWritten(
+  "/users/{userId}/collection/{blueprintId}",
+  async (event: DatabaseEvent<Change<DataSnapshot>>) => {
+    const blueprintId = event.params.blueprintId;
+    const userId = event.params.userId;
+    const beforeValue = event.data.before.val();
+    const afterValue = event.data.after.val();
+    const wasRemoved = beforeValue === true && afterValue !== true;
+    const wasAdded = beforeValue !== true && afterValue === true;
+
+    if (!wasAdded && !wasRemoved) {
+      return null;
+    }
+
+    const database = getDatabase();
+    const blueprintSnapshot = await database.ref(`/blueprints/${blueprintId}`).once("value");
+    if (!blueprintSnapshot.exists()) {
+      functions.logger.log(
+        `Blueprint ${blueprintId} no longer exists, skipping collector update (user ${userId})`,
+      );
+      return null;
+    }
+
+    const collectorRef = database.ref(`/blueprintCollectors/${blueprintId}/${userId}`);
+    if (afterValue === true) {
+      await collectorRef.set(true);
+    } else {
+      await collectorRef.remove();
+    }
+
+    return null;
+  },
+);
+
 /**
  * Cloud Function to clean up user collections when a blueprint is deleted.
- *
- * Unlike favorites (which are denormalized onto each blueprint), collection
- * membership is only stored at /users/{uid}/collection/{blueprintId}. The
- * deleted blueprint snapshot doesn't tell us who collected it, so we scan
- * /users. Acceptable at current scale; if blueprint deletes become hot,
- * denormalize a `collectors` map onto the blueprint and read it directly.
  */
 export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
   "/blueprints/{blueprintId}",
   async (event: DatabaseEvent<DataSnapshot>) => {
     const blueprintId = event.params.blueprintId;
     const database = getDatabase();
+    const collectorSnapshot = await database
+      .ref(`/blueprintCollectors/${blueprintId}`)
+      .once("value");
+    const indexedUserIds = getIndexedCollectorUserIds(collectorSnapshot.val());
+    const backfillSnapshot = await database
+      .ref("/migrations/blueprintCollectorsBackfillComplete")
+      .once("value");
+    const userIds = new Set(indexedUserIds);
 
-    const usersSnapshot = await database.ref("/users").once("value");
-    const users = usersSnapshot.val() || {};
-
-    const updates: Record<string, null> = {};
-    let collectorCount = 0;
-
-    for (const userId of Object.keys(users)) {
-      if (users[userId]?.collection?.[blueprintId] === true) {
-        updates[`/users/${userId}/collection/${blueprintId}`] = null;
-        collectorCount++;
+    if (backfillSnapshot.val() !== true) {
+      const usersSnapshot = await database.ref("/users").once("value");
+      for (const userId of getLegacyCollectorUserIds(usersSnapshot.val(), blueprintId)) {
+        userIds.add(userId);
       }
     }
 
-    if (collectorCount === 0) {
-      functions.logger.log(`Blueprint ${blueprintId} deleted with no collections to clean up`);
+    if (userIds.size === 0) {
+      if (collectorSnapshot.exists()) {
+        await collectorSnapshot.ref.remove();
+      }
+      functions.logger.log(`Blueprint ${blueprintId} deleted with no collectors to clean up`);
       return null;
     }
 
+    const updates: Record<string, null> = {};
+
+    for (const userId of userIds) {
+      updates[`/users/${userId}/collection/${blueprintId}`] = null;
+    }
+    updates[`/blueprintCollectors/${blueprintId}`] = null;
+
     await database.ref().update(updates);
     functions.logger.log(
-      `Cleaned up deleted blueprint ${blueprintId}: removed from ${collectorCount} users' collections`,
+      `Cleaned up deleted blueprint ${blueprintId}: removed collection entries from ${userIds.size} users`,
     );
 
     return null;
@@ -210,6 +256,50 @@ export const reconcileFavoriteCounts = onRequest(async (req, res) => {
       reconciled: 0,
     });
   }
+});
+
+/**
+ * Backfill collector indexes from user collections.
+ */
+export const backfillBlueprintCollectors = onRequest(async (req, res) => {
+  const authToken = req.headers.authorization;
+  if (authToken !== `Bearer ${process.env.ADMIN_SECRET}`) {
+    res.status(403).send("Unauthorized");
+    return;
+  }
+
+  const database = getDatabase();
+  const usersSnapshot = await database.ref("/users").once("value");
+  const users = usersSnapshot.val() || {};
+  const collectedBlueprintIds = [...getCollectedBlueprintIds(users)];
+  const existingBlueprintIds = new Set<string>();
+
+  for (let offset = 0; offset < collectedBlueprintIds.length; offset += 100) {
+    const batch = collectedBlueprintIds.slice(offset, offset + 100);
+    const snapshots = await Promise.all(
+      batch.map((blueprintId) => database.ref(`/blueprints/${blueprintId}`).once("value")),
+    );
+
+    for (const [index, snapshot] of snapshots.entries()) {
+      if (snapshot.exists()) {
+        existingBlueprintIds.add(batch[index]);
+      }
+    }
+  }
+
+  const backfill = buildCollectorBackfill(users, existingBlueprintIds);
+  await database.ref().update({
+    ...backfill.updates,
+    "/migrations/blueprintCollectorsBackfillComplete": true,
+  });
+
+  res.json({
+    success: true,
+    message: `Backfilled collectors for ${backfill.entries} (user, blueprint) pairs across ${backfill.users} users`,
+    users: backfill.users,
+    entries: backfill.entries,
+    skippedEntries: backfill.skippedEntries,
+  });
 });
 
 /**
@@ -321,13 +411,17 @@ export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user)
       updates[`/blueprints/${blueprintId}/favorites/${userId}`] = null;
     }
 
+    for (const blueprintId of Object.keys(userData.collection || {})) {
+      updates[`/blueprintCollectors/${blueprintId}/${userId}`] = null;
+    }
+
     // Delete the user record itself
     updates[`/users/${userId}`] = null;
 
     await database.ref().update(updates);
 
     functions.logger.log(
-      `Cleaned up deleted user ${userId}: removed from ${Object.keys(userData.favorites || {}).length} blueprints' favorites`,
+      `Cleaned up deleted user ${userId}: removed from ${Object.keys(userData.favorites || {}).length} blueprints' favorites, ${Object.keys(userData.collection || {}).length} blueprints' collectors`,
     );
 
     return null;
