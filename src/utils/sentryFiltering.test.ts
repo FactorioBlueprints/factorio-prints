@@ -4,6 +4,7 @@ import {
   groupMobileIosRecursion,
   isFirebaseAuthDatabaseClosingError,
   isUnactionableError,
+  normalizeAndFilterThirdPartyNoise,
 } from "./sentryFiltering";
 
 const chromeMobileIosContext = {
@@ -261,6 +262,375 @@ describe("Sentry error filtering", () => {
       expectedEvents.map((event) => ({
         event,
         grouped: false,
+      })),
+    );
+  });
+
+  it("normalizes paired injected events and filters independently proven external noise", () => {
+    const cases: { event: Event; issueId: string }[] = [
+      {
+        issueId: "FACTORIO-PRINTS-1K2",
+        event: {
+          contexts: chromeMobileIosContext,
+          exception: {
+            values: [
+              {
+                type: "Error",
+                value: "Ba",
+                mechanism: { handled: false, type: "onunhandledrejection" },
+              },
+            ],
+          },
+          message: "Ba",
+          request: { url: "https://example.com/view/example-blueprint" },
+        },
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1K3",
+        event: {
+          exception: {
+            values: [
+              {
+                type: "Error",
+                value: "ga",
+                mechanism: { handled: false, type: "onerror" },
+                stacktrace: {
+                  frames: [
+                    {
+                      filename: "https://example.com/view/example-blueprint",
+                      function: "<anonymous>",
+                      lineno: 400,
+                      colno: 40,
+                      pre_context: [
+                        '<ins class="adsbygoogle adsbygoogle-noablate" data-adsbygoogle-status="done">',
+                      ],
+                      context_line: "</html>",
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          request: { url: "https://example.com/view/example-blueprint" },
+        },
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1JX",
+        event: {
+          exception: {
+            values: [
+              {
+                type: "TypeError",
+                value: "Failed to fetch",
+                mechanism: { handled: false, type: "onunhandledrejection" },
+                stacktrace: {
+                  frames: [
+                    {
+                      filename: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js",
+                      function: "fetchAdvertisement",
+                    },
+                    {
+                      filename: "https://browser.sentry-cdn.example/instrument/fetch.js",
+                      function: "<anonymous>",
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          request: { url: "https://example.com/user/alice" },
+        },
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1K5",
+        event: {
+          exception: {
+            values: [
+              {
+                value: "addEventListener ignored event='mouseout'",
+                stacktrace: {
+                  frames: [
+                    {
+                      filename: "<anonymous>",
+                      function: "window.addEventListener",
+                      lineno: 400,
+                      colno: 20,
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          extra: { arguments: ["addEventListener ignored event='mouseout'"] },
+          level: "warning",
+          logger: "console",
+          message: "addEventListener ignored event='mouseout'",
+        },
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1KB",
+        event: {
+          exception: {
+            values: [{ value: "Crypto site not identified within timeout period" }],
+          },
+          extra: { arguments: ["Crypto site not identified within timeout period"] },
+          level: "error",
+          logger: "console",
+          message: "Crypto site not identified within timeout period",
+        },
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1KA",
+        event: {
+          exception: {
+            values: [
+              {
+                type: "TypeError",
+                value: "Cannot read properties of undefined (reading 'location')",
+                mechanism: { handled: false, type: "onerror" },
+                stacktrace: {
+                  frames: [
+                    {
+                      filename: "https://example.com/view/example-blueprint",
+                      function: "HTMLInputElement.onchange",
+                      lineno: 100,
+                      colno: 3,
+                    },
+                    {
+                      filename: "https://example.com/view/example-blueprint",
+                      lineno: 60,
+                      colno: 10,
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          request: { url: "https://example.com/view/example-blueprint" },
+        },
+      },
+      {
+        issueId: "FACTORIO-PRINTS-1JR",
+        event: {
+          exception: {
+            values: [
+              {
+                type: "UnhandledRejection",
+                value:
+                  "Non-Error promise rejection captured with value: Object Not Found Matching Id:2, MethodName:update, ParamCount:4",
+                mechanism: { handled: false, type: "onunhandledrejection" },
+              },
+            ],
+          },
+          message: "Object Not Found Matching Id:2, MethodName:update, ParamCount:4",
+        },
+      },
+    ];
+
+    expect(
+      cases.map(({ event, issueId }) => ({
+        filtered: normalizeAndFilterThirdPartyNoise(event),
+        fingerprint: event.fingerprint ?? null,
+        issueId,
+        tags: event.tags ?? null,
+      })),
+    ).toStrictEqual([
+      {
+        filtered: false,
+        fingerprint: ["third-party-google-ads-inline-runtime"],
+        issueId: "FACTORIO-PRINTS-1K2",
+        tags: { external_runtime_noise: "third-party-google-ads-inline-runtime" },
+      },
+      {
+        filtered: false,
+        fingerprint: ["third-party-google-ads-inline-runtime"],
+        issueId: "FACTORIO-PRINTS-1K3",
+        tags: { external_runtime_noise: "third-party-google-ads-inline-runtime" },
+      },
+      {
+        filtered: true,
+        fingerprint: null,
+        issueId: "FACTORIO-PRINTS-1JX",
+        tags: null,
+      },
+      {
+        filtered: true,
+        fingerprint: null,
+        issueId: "FACTORIO-PRINTS-1K5",
+        tags: null,
+      },
+      {
+        filtered: false,
+        fingerprint: ["injected-crypto-runtime"],
+        issueId: "FACTORIO-PRINTS-1KB",
+        tags: { external_runtime_noise: "injected-crypto-runtime" },
+      },
+      {
+        filtered: false,
+        fingerprint: ["injected-crypto-runtime"],
+        issueId: "FACTORIO-PRINTS-1KA",
+        tags: { external_runtime_noise: "injected-crypto-runtime" },
+      },
+      {
+        filtered: true,
+        fingerprint: null,
+        issueId: "FACTORIO-PRINTS-1JR",
+        tags: null,
+      },
+    ]);
+  });
+
+  it("preserves similar first-party failures without external evidence", () => {
+    const events: Event[] = [
+      {
+        exception: {
+          values: [
+            {
+              type: "TypeError",
+              value: "Failed to fetch",
+              stacktrace: {
+                frames: [
+                  {
+                    filename: "https://example.com/assets/application.js",
+                    function: "loadBlueprint",
+                    in_app: true,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        request: { url: "https://example.com/view/example-blueprint" },
+      },
+      {
+        exception: {
+          values: [
+            {
+              type: "TypeError",
+              value: "Cannot read properties of undefined (reading 'location')",
+              stacktrace: {
+                frames: [
+                  {
+                    filename: "https://example.com/assets/application.js",
+                    function: "updateLocation",
+                    in_app: true,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        request: { url: "https://example.com/view/example-blueprint" },
+      },
+      {
+        exception: {
+          values: [
+            {
+              type: "Error",
+              value: "Ba",
+              mechanism: { handled: false, type: "onunhandledrejection" },
+              stacktrace: {
+                frames: [
+                  {
+                    filename: "https://example.com/assets/application.js",
+                    function: "processBlueprint",
+                    in_app: true,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        contexts: chromeMobileIosContext,
+        message: "Ba",
+        request: { url: "https://example.com/view/example-blueprint" },
+      },
+      {
+        exception: {
+          values: [
+            {
+              type: "UnhandledRejection",
+              value:
+                "Non-Error promise rejection captured with value: Object Not Found Matching Id:2, MethodName:update, ParamCount:4",
+              mechanism: { handled: false, type: "onunhandledrejection" },
+              stacktrace: {
+                frames: [
+                  {
+                    filename: "https://example.com/assets/application.js",
+                    function: "update",
+                    in_app: true,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        message: "Object Not Found Matching Id:2, MethodName:update, ParamCount:4",
+      },
+      {
+        exception: {
+          values: [
+            {
+              value: "addEventListener ignored event='mouseout'",
+              stacktrace: {
+                frames: [
+                  {
+                    filename: "https://example.com/assets/application.js",
+                    function: "registerEvents",
+                    in_app: true,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        extra: { arguments: ["addEventListener ignored event='mouseout'"] },
+        level: "warning",
+        logger: "console",
+        message: "addEventListener ignored event='mouseout'",
+      },
+      {
+        exception: {
+          values: [{ value: "Crypto site not identified within timeout period" }],
+        },
+        extra: {
+          arguments: ["Crypto site not identified within timeout period", "application"],
+        },
+        level: "error",
+        logger: "console",
+        message: "Crypto site not identified within timeout period",
+      },
+      {
+        exception: {
+          values: [
+            {
+              type: "Error",
+              value: "ga",
+              stacktrace: {
+                frames: [
+                  {
+                    filename: "https://example.com/view/example-blueprint",
+                    context_line: "</html>",
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        request: { url: "https://example.com/view/example-blueprint" },
+      },
+    ];
+    const expectedEvents = structuredClone(events);
+
+    expect(
+      events.map((event) => ({
+        event,
+        filtered: normalizeAndFilterThirdPartyNoise(event),
+      })),
+    ).toStrictEqual(
+      expectedEvents.map((event) => ({
+        event,
+        filtered: false,
       })),
     );
   });
