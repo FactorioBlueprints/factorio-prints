@@ -404,7 +404,8 @@ setTag("git_branch", releaseInfo.gitBranch);
 /**
  * Handle Vite preload errors (stale chunk hash mismatches after deployment).
  * These occur when users have cached HTML referencing old chunk hashes that no longer exist.
- * The fix is to reload the page to get fresh HTML with current chunk references.
+ * The fix is to reload the page to get fresh HTML with current chunk references, at most once per
+ * cooldown window so a persistent failure surfaces in Sentry instead of looping.
  * We don't log to Sentry since this is expected behavior during/after deployments.
  */
 window.addEventListener(
