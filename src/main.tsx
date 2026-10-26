@@ -1,13 +1,4 @@
-import {
-  addBreadcrumb,
-  breadcrumbsIntegration,
-  browserTracingIntegration,
-  captureConsoleIntegration,
-  contextLinesIntegration,
-  init,
-  setContext,
-  setTag,
-} from "@sentry/react";
+import { addBreadcrumb, init, setContext, setTag } from "@sentry/react";
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -21,6 +12,7 @@ import {
   isFirebaseAuthDatabaseClosingError,
   isUnactionableError,
 } from "./utils/sentryFiltering";
+import { sentryIntegrations } from "./utils/sentryIntegrations";
 import { setupTooltipCleanup } from "./utils/cleanupTooltips";
 import { suppressGoogleAuthDeprecationWarning } from "./utils/suppressGoogleAuthWarning";
 import { createVitePreloadErrorHandler } from "./utils/vitePreloadError";
@@ -154,24 +146,9 @@ function getSentryEnvironment(): string {
 
 init({
   dsn: "https://1935b5b4cd539c3dc42578938c900979@o4509417677914112.ingest.us.sentry.io/4509417682632704",
-  sendDefaultPii: true,
   release: releaseInfo.version,
   environment: getSentryEnvironment(),
-  integrations: [
-    browserTracingIntegration(),
-    captureConsoleIntegration({
-      levels: ["error", "warn"],
-    }),
-    contextLinesIntegration(),
-    breadcrumbsIntegration({
-      console: true,
-      dom: true,
-      fetch: true,
-      history: true,
-      sentry: true,
-      xhr: true,
-    }),
-  ],
+  integrations: sentryIntegrations(),
   tracesSampleRate: 0.1,
   tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
   allowUrls: ["http://localhost", "https://localhost", /localhost:\d{4}/, /https:\/\/.*factorio/],
