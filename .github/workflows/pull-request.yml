@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: motlin/forbid-merge-commits-action@e3c5d3f2eac047da10def5c0b7c2d26e09540472
+      - uses: motlin/forbid-merge-commits-action@e680ef218194e9ba87fc1b44ffd9a3b0486dfc25
 
   automerge-dependabot:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
