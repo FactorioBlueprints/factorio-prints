@@ -142,6 +142,12 @@ h6,
   box-shadow: var(--fp-raised);
 }
 
+/* The dark navbar's default icon is translucent white, which vanishes on the light
+   gray button. Draw it in black like the other button labels. */
+.site-navbar .navbar-toggler-icon {
+  --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
 /* Frames: cards and banners */
 .card,
 .jumbotron {
@@ -224,13 +230,11 @@ h6,
   --bs-table-hover-color: var(--fp-text);
 }
 
-.table > :not(caption) > * > * {
-  background-color: var(--bs-table-bg);
-  border-bottom-color: var(--bs-table-border-color);
-}
-
-/* Buttons: light gray with black text, orange on hover. :where() keeps the base
-   rules at single-class specificity so the variants below can override them. */
+/* Buttons: light gray with black text, orange on hover, dark orange while pressed.
+   Colors go through Bootstrap's own --bs-btn-* variables, so its hover, :active,
+   .active, open-dropdown (.show) and disabled rules pick them up. :where() keeps the
+   base rule at single-class specificity: it still beats the variant classes (it loads
+   later) while the .btn-* overrides below can retarget the --fp-btn-* inputs. */
 .btn {
   --fp-btn-bg: var(--fp-button);
   --fp-btn-bg-light: var(--fp-button-light);
@@ -239,18 +243,32 @@ h6,
 }
 
 .btn:where(:not(.btn-link, .btn-close)) {
-  color: #000;
-  font-weight: 600;
-  background-color: var(--fp-btn-bg);
-  background-image: linear-gradient(var(--fp-btn-bg-light), var(--fp-btn-bg) 45%);
-  border: 1px solid var(--fp-border);
-  border-radius: 2px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.25),
+  --bs-btn-color: #000;
+  --bs-btn-bg: var(--fp-btn-bg);
+  --bs-btn-border-color: var(--fp-border);
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: var(--fp-btn-hover-bg);
+  --bs-btn-hover-border-color: var(--fp-border);
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: var(--fp-orange-dark);
+  --bs-btn-active-border-color: var(--fp-border);
+  --bs-btn-disabled-color: #2a2a2a;
+  --bs-btn-disabled-bg: #5c5b5c;
+  --bs-btn-disabled-border-color: var(--fp-border);
+  --bs-btn-disabled-opacity: 1;
+  --fp-btn-image: linear-gradient(var(--fp-btn-bg-light), var(--fp-btn-bg) 45%);
+  --fp-btn-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -2px 0 rgba(0, 0, 0, 0.25),
     0 1px 2px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  border-radius: 2px;
   text-shadow: none;
   transition: none;
+  /* Slate paints per-variant gradients and shadows on every state at up to five-class
+     specificity. Overriding these two properties once, through variables the state
+     rules below set, keeps the bevel under our control without a specificity race. */
+  background-image: var(--fp-btn-image) !important;
+  box-shadow: var(--fp-btn-shadow) !important;
 }
 
 .btn-warning {
@@ -274,52 +292,41 @@ h6,
   --fp-btn-hover-bg-light: #ffadad;
 }
 
+.btn:hover,
+.btn:focus-visible {
+  --fp-btn-image: linear-gradient(var(--fp-btn-hover-bg-light), var(--fp-btn-hover-bg) 45%);
+}
+
 /* Outline buttons render as dark sunken slots. */
 .btn[class*="btn-outline-"] {
-  color: var(--fp-text);
-  background-color: var(--fp-deep-bg);
-  background-image: none;
-  box-shadow: var(--fp-sunken);
+  --bs-btn-color: var(--fp-text);
+  --bs-btn-bg: var(--fp-deep-bg);
+  --bs-btn-hover-bg: var(--fp-orange);
+  --fp-btn-image: none;
+  --fp-btn-shadow: var(--fp-sunken);
 }
 
 .btn.btn-outline-warning {
-  color: var(--fp-orange);
+  --bs-btn-color: var(--fp-orange);
 }
 
-.btn:where(:not(.btn-link, .btn-close)):hover,
-.btn:where(:not(.btn-link, .btn-close)):focus-visible {
-  color: #000;
-  background-color: var(--fp-btn-hover-bg);
-  background-image: linear-gradient(var(--fp-btn-hover-bg-light), var(--fp-btn-hover-bg) 45%);
-  border-color: var(--fp-border);
-}
-
-.btn[class*="btn-outline-"]:hover,
-.btn[class*="btn-outline-"]:focus-visible {
-  color: #000;
-  background-color: var(--fp-orange);
-  background-image: none;
-}
-
-.btn:where(:not(.btn-link, .btn-close)):focus-visible {
+.btn:where(:not(.btn-link, .btn-close)):focus-visible,
+.btn-check:focus-visible + .btn:where(:not(.btn-link, .btn-close)) {
   outline: 2px solid var(--fp-caption);
   outline-offset: 1px;
 }
 
-.btn:where(:not(.btn-link, .btn-close)):active,
-.btn:where(:not(.btn-link, .btn-close)).active {
-  color: #000;
-  background-color: var(--fp-orange-dark);
-  background-image: none;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
+.btn-check:checked + .btn,
+.btn:active,
+.btn.active,
+.btn.show {
+  --fp-btn-image: none;
+  --fp-btn-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
 }
 
-.btn:where(:not(.btn-link, .btn-close)):disabled,
-.btn:where(:not(.btn-link, .btn-close)).disabled {
-  color: #2a2a2a;
-  background-color: #5c5b5c;
-  background-image: none;
-  opacity: 1;
+.btn:disabled,
+.btn.disabled {
+  --fp-btn-image: none;
 }
 
 /* Text fields */
@@ -347,10 +354,14 @@ h6,
     0 0 0 2px rgba(255, 166, 0, 0.45);
 }
 
-/* react-select, styled through classNamePrefix="fp-select". The doubled class beats
-   the library's own emotion styles. */
+/* react-select, rendered through ThemedSelect (classNamePrefix="fp-select"). Colors,
+   control height and hover/active states come from its theme; the doubled class here
+   beats the library's base emotion styles for the bevel details the theme can't set. */
+.fp-select--sm {
+  font-size: 0.875rem;
+}
+
 .fp-select__control.fp-select__control {
-  min-height: 31px;
   background-color: var(--fp-textfield);
   border: 1px solid var(--fp-border);
   border-radius: 2px;
@@ -476,9 +487,11 @@ h6,
   text-decoration: none;
 }
 
+/* Hover uses white + underline: orange is reserved for the user's own blueprints. */
 .blueprint-thumbnail-title:hover,
 .blueprint-thumbnail-title:focus-visible {
-  color: var(--fp-orange);
+  color: var(--fp-text);
+  text-decoration: underline;
 }
 
 .blueprint-thumbnail-actions {
@@ -491,11 +504,12 @@ h6,
   font-size: 0.8125rem;
 }
 
+/* Orange marks favorited / in-collection items, so hover brightens to white instead. */
 .blueprint-thumbnail-actions [role="button"]:not([aria-disabled="true"]):hover {
-  color: var(--fp-orange);
+  color: var(--fp-text);
 }
 
-/* Scrollbars */
-* {
+/* Scrollbars (inherited, so :root covers every scroller) */
+:root {
   scrollbar-color: var(--fp-button) var(--fp-deep-bg);
 }
