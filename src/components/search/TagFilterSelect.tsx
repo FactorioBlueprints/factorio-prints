@@ -2,8 +2,9 @@ import { useStore } from "@tanstack/react-store";
 import type React from "react";
 import { useMemo } from "react";
 import Form from "react-bootstrap/Form";
-import Select, { type SingleValue } from "react-select";
+import type { SingleValue } from "react-select";
 
+import ThemedSelect from "../ThemedSelect";
 import { useRestTags } from "../../hooks/useRestTags";
 import { advancedSearchStore, setTag } from "../../store/advancedSearchStore";
 
@@ -32,8 +33,8 @@ const TagFilterSelect: React.FC = () => {
   return (
     <Form.Group className="mb-3">
       <Form.Label>Tags</Form.Label>
-      <Select<TagOption>
-        classNamePrefix="fp-select"
+      <ThemedSelect<TagOption>
+        size="sm"
         value={selectedOption}
         options={options}
         onChange={handleChange}

@@ -21,7 +21,7 @@ import Modal from "react-bootstrap/Modal";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import Row from "react-bootstrap/Row";
 import { useAuthState } from "react-firebase-hooks/auth";
-import Select from "react-select";
+import ThemedSelect from "./ThemedSelect";
 import Blueprint from "../Blueprint";
 import { app } from "../base";
 import generateTagSuggestions from "../helpers/generateTagSuggestions";
@@ -803,8 +803,7 @@ const Create: React.FC = () => {
                     {"Tags"}
                   </Form.Label>
                   <Col sm={10}>
-                    <Select
-                      classNamePrefix="fp-select"
+                    <ThemedSelect
                       value={(state.blueprint.tags || []).map((value) => ({ value, label: value }))}
                       options={tags.map((value) => ({ value, label: value }))}
                       onChange={handleTagSelection}

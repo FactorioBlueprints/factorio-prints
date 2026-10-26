@@ -2,8 +2,9 @@ import { useStore } from "@tanstack/react-store";
 import type React from "react";
 import { useMemo } from "react";
 import Col from "react-bootstrap/Col";
-import Select, { type MultiValue } from "react-select";
+import type { MultiValue } from "react-select";
 
+import ThemedSelect from "./ThemedSelect";
 import { useTags } from "../hooks/useTags";
 import { searchParamsStore } from "../store/searchParamsStore";
 
@@ -37,8 +38,8 @@ const TagForm: React.FC = () => {
 
   return (
     <Col md={6}>
-      <Select<TagOption, true>
-        classNamePrefix="fp-select"
+      <ThemedSelect<TagOption, true>
+        size="sm"
         value={selectedOptions}
         options={options}
         onChange={handleTagSelection}
