@@ -81,7 +81,7 @@
 		"@testing-library/jest-dom": "7.0.1",
 		"@testing-library/react": "16.3.3",
 		"@types/atob": "2.1.4",
-		"@types/lodash": "4.17.26",
+		"@types/lodash": "4.17.27",
 		"@types/markdown-it": "14.2.0",
 		"@types/node": "26.6.5",
 		"@types/react": "19.3.0",
