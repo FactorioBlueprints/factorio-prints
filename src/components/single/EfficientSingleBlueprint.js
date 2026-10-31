@@ -18,6 +18,7 @@ import BlueprintInfoPanel from './BlueprintInfoPanel';
 import BlueprintMarkdown from './BlueprintMarkdown';
 import BlueprintTitle from './BlueprintTitle';
 import BlueprintTitles from './BlueprintTitles';
+import CollectionButton from './CollectionButton';
 import CopyBlueprintStringButton from './CopyBlueprintButton';
 import FavoriteButton from './FavoriteButton';
 import ImgurThumbnail from './ImgurThumbnail';
@@ -115,6 +116,7 @@ function EfficientSingleBlueprint() {
 					{/*{(ownedByCurrentUser || isModerator) && renderEditButton(handleTransitionToEdit)}*/}
 					{(ownedByCurrentUser || isModerator) && renderEditLink()}
 					{!ownedByCurrentUser && <FavoriteButton blueprintKey={blueprintKey} />}
+					<CollectionButton blueprintKey={blueprintKey} />
 				</Col>
 			</Row>
 			<Row>

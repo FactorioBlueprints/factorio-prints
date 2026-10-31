@@ -22,6 +22,7 @@ const EfficientEditBlueprint = React.lazy(() => import('./EfficientEditBlueprint
 const Intro = React.lazy(() => import('./Intro'));
 const MostFavoritedGrid = React.lazy(() => import('./grid/MostFavoritedGrid'));
 const MyFavoritesGrid = React.lazy(() => import('./grid/MyFavoritesGrid'));
+const MyCollectionGrid = React.lazy(() => import('./grid/MyCollectionGrid'));
 const NoMatch = React.lazy(() => import('./NoMatch'));
 const Search = React.lazy(() => import('./search/Search'));
 const SingleBlueprint = React.lazy(() => import('./single/EfficientSingleBlueprint'));
@@ -91,6 +92,10 @@ function Root() {
 											<Route
 												path="/favorites"
 												element={<MyFavoritesGrid />}
+											/>
+											<Route
+												path="/collection"
+												element={<MyCollectionGrid />}
 											/>
 											<Route
 												path="/chat"

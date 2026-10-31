@@ -76,6 +76,19 @@ function Header() {
 						</Nav.Link>
 						<Nav.Link
 							as={Link}
+							href="/collection"
+							to="/collection"
+							className="text-light"
+						>
+							<FontAwesomeIcon
+								icon={faPlusSquare}
+								size="lg"
+								fixedWidth
+							/>
+							{' My Collection'}
+						</Nav.Link>
+						<Nav.Link
+							as={Link}
 							href={`/user/${user.uid}`}
 							to={`/user/${user.uid}`}
 							className="text-light"
