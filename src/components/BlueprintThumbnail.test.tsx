@@ -9,7 +9,11 @@ vi.mock("@fortawesome/react-fontawesome", () => ({
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children }: { children: React.ReactNode }) => <a href="/">{children}</a>,
+  Link: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <a href="/" className={className}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("firebase/auth", () => ({
@@ -123,6 +127,30 @@ describe("BlueprintThumbnail metadata", () => {
       favoritesLabelClassName: "visually-hidden",
       favoritesWrapperClassName: "me-1",
       title: "Blueprint title",
+    });
+  });
+
+  it("puts the title on its own line above the favorite and collection controls", () => {
+    const { container } = render(<BlueprintThumbnail blueprintSummary={blueprintSummary} />);
+
+    const card = container.querySelector(".blueprint-thumbnail") as HTMLElement | null;
+    const title = container.querySelector(".blueprint-thumbnail-title");
+    const actions = container.querySelector(".blueprint-thumbnail-actions");
+
+    expect({
+      actionLabels: Array.from(actions?.querySelectorAll('[role="button"]') ?? [], (element) =>
+        element.getAttribute("aria-label"),
+      ),
+      cardBackgroundColor: card?.style.backgroundColor,
+      imageIsLinked: container.querySelector(".blueprint-thumbnail-image-link img") !== null,
+      titleIsInsideActions: actions?.contains(title) ?? false,
+      titleText: title?.textContent,
+    }).toStrictEqual({
+      actionLabels: ["Add to favorites", "Add to collection"],
+      cardBackgroundColor: "",
+      imageIsLinked: true,
+      titleIsInsideActions: false,
+      titleText: "Blueprint title",
     });
   });
 });

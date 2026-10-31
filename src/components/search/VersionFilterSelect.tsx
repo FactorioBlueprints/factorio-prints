@@ -2,8 +2,9 @@ import { useStore } from "@tanstack/react-store";
 import type React from "react";
 import { useMemo } from "react";
 import Form from "react-bootstrap/Form";
-import Select, { type SingleValue } from "react-select";
+import type { SingleValue } from "react-select";
 
+import ThemedSelect from "../ThemedSelect";
 import gameVersions from "../../data/gameVersions.json";
 import { advancedSearchStore, setGameVersion } from "../../store/advancedSearchStore";
 
@@ -45,7 +46,8 @@ const VersionFilterSelect: React.FC = () => {
   return (
     <Form.Group className="mb-3">
       <Form.Label>Versions</Form.Label>
-      <Select<VersionOption>
+      <ThemedSelect<VersionOption>
+        size="sm"
         value={selectedOption}
         options={options}
         onChange={handleChange}
