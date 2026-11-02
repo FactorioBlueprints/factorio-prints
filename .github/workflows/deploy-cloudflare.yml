@@ -24,11 +24,6 @@ jobs:
 
       - uses: jdx/mise-action@v5.2.3
 
-      - uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: "21"
-
       - uses: pnpm/action-setup@v6.1.0
 
       - name: Run tests and checks
