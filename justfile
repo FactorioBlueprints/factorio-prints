@@ -51,10 +51,10 @@ route-generate-ci: install-ci
 dev: install
     vp run dev
 
-# `vp run lint`
+# `vp run oxlint`
 [group('lint')]
 lint: install
-    vp run lint
+    vp run oxlint
 
 # Run formatter
 [group('lint')]

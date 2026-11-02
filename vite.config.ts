@@ -36,6 +36,13 @@ export const createViteConfiguration = (
           command: "vp check",
           dependsOn: ["check:images", "check:toolchain"],
         },
+        "test:run": {
+          command: "node node_modules/vitest/dist/cli.js run",
+          cache: {
+            input: [{ auto: true }, "!node_modules/.vitest-cache/**"],
+            output: [],
+          },
+        },
       },
     },
     fmt: {
