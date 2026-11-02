@@ -46,9 +46,11 @@ repos:
         pass_filenames: false
         types: [file]
       - id: oxfmt
-        name: vp fmt
-        entry: pnpm exec vp fmt --no-error-on-unmatched-pattern
+        name: oxfmt-next-line
+        entry: oxfmt-next-line --no-error-on-unmatched-pattern
         language: system
+        # Show "Finished in Xms on N files" so every run proves formatting happened.
+        verbose: true
       - id: markdownlint-cli2
         name: markdownlint-cli2
         entry: pnpm exec vp exec markdownlint-cli2
