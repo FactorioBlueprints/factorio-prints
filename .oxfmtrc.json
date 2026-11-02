@@ -1,0 +1,32 @@
+{
+	"braceStyle": "next-line",
+	"ignorePatterns": ["AGENTS.md", "functions/index.js", "data/factorio-blueprints-export.json"],
+	"semi": true,
+	"singleQuote": false,
+	"useTabs": true,
+	"tabWidth": 4,
+	"printWidth": 120,
+	"proseWrap": "never",
+	"embeddedLanguageFormatting": "off",
+	"bracketSpacing": false,
+	"trailingComma": "all",
+	"arrowParens": "always",
+	"overrides": [
+		{
+			"files": [".yamllint.yaml", "**/*.yaml", "**/*.yml"],
+			"options":
+			{
+				"useTabs": false,
+				"tabWidth": 2,
+				"printWidth": 240
+			}
+		},
+		{
+			"files": ["**/*.md"],
+			"options":
+			{
+				"printWidth": 320
+			}
+		}
+	]
+}

@@ -45,9 +45,9 @@ lint: install
 [group('lint')]
 format: install
     pre-commit run just-fmt --all-files
-    vp fmt {{ if ci != "" { "--check" } else { "" } }}
+    oxfmt-next-line {{ if ci != "" { "--check" } else { "" } }}
 
-# Run formatter, linter, and type checker
+# Run checks (lint + typecheck; formatting is `just format`)
 [group('test')]
 check *args: install route-generate
     vp run --cache check {{ if ci != "" { "" } else { "--fix" } }} {{ args }}

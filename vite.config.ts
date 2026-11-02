@@ -45,34 +45,9 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 				},
 			},
 		},
-		fmt: {
-			ignorePatterns: ["AGENTS.md"],
-			semi: true,
-			singleQuote: false,
-			useTabs: true,
-			tabWidth: 4,
-			printWidth: 120,
-			proseWrap: "never",
-			embeddedLanguageFormatting: "off",
-			bracketSpacing: false,
-			trailingComma: "all",
-			arrowParens: "always",
-			overrides: [
-				{
-					files: [".yamllint.yaml", "**/*.yaml", "**/*.yml"],
-					options: {
-						useTabs: false,
-						tabWidth: 2,
-						printWidth: 240,
-					},
-				},
-				{
-					files: ["**/*.md"],
-					options: {
-						printWidth: 320,
-					},
-				},
-			],
+		// Formatting runs through oxfmt-next-line (configured in .oxfmtrc.json), not Vite+'s bundled oxfmt.
+		check: {
+			fmt: false,
 		},
 		lint: {
 			plugins: ["oxc", "typescript", "unicorn", "react"],
