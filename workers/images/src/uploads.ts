@@ -24,6 +24,7 @@ enum UploadOutcome {
 export interface UploadDependencies {
   readonly consumeUploadQuota: (userId: string) => Promise<boolean>;
   readonly deleteFromImgur: (deletehash: string) => Promise<ImgurDeleteResult>;
+  readonly isModerator: (userId: string) => Promise<boolean>;
   readonly newFallbackId: () => string;
   readonly now: () => number;
   readonly scheduleExpiry: (imageId: string, imgurDeletehash: string | undefined) => Promise<void>;
@@ -181,7 +182,9 @@ export const handleUploadRequest = async (
 
   let withinQuota: boolean;
   try {
-    withinQuota = await dependencies.consumeUploadQuota(ownerId);
+    // Moderators have no hourly limit; looking them up only past the limit keeps everyone else off Firebase.
+    withinQuota =
+      (await dependencies.consumeUploadQuota(ownerId)) || (await dependencies.isModerator(ownerId));
   } catch (error) {
     console.error({ event: "image_upload_quota_error", ownerId, message: String(error) });
     return textResponse(503, "Upload limits are temporarily unavailable", origin, {

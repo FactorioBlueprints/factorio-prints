@@ -2,6 +2,7 @@ import { verifyFirebaseIdToken } from "./firebaseAuth.ts";
 import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
 import { isFallbackImageId, newFallbackImageId } from "./imageIds.ts";
 import { deleteThroughImgurUploader, uploadThroughImgurUploader } from "./imgurUploader.ts";
+import { createModeratorCheck } from "./moderators.ts";
 import { runThroughRecentImageCopier } from "./recentImageCopy.ts";
 import { consumeThroughUploadQuota } from "./uploadQuota.ts";
 import { scheduleThroughUploadExpiry } from "./uploadExpiry.ts";
@@ -260,6 +261,7 @@ const buildUploadDependencies = (environment: Env): UploadDependencies => {
     consumeUploadQuota: (userId) => consumeThroughUploadQuota(environment.UPLOAD_QUOTA, userId),
     deleteFromImgur: (deletehash) =>
       deleteThroughImgurUploader(environment.IMGUR_UPLOADER, deletehash),
+    isModerator: createModeratorCheck((url) => fetch(url), environment.FIREBASE_DATABASE_URL),
     newFallbackId: newFallbackImageId,
     now: () => Date.now(),
     scheduleExpiry: (imageId, imgurDeletehash) =>

@@ -35,6 +35,7 @@ const imgurUploaded: ImgurUploadResult = { ok: true, id: "AbCdE12", deletehash: 
 
 interface DependencyOptions {
   readonly imgur?: ImgurUploadResult | Error;
+  readonly moderator?: boolean | Error;
   readonly quotaAllows?: boolean;
   readonly verification?: IdTokenVerification;
 }
@@ -44,6 +45,10 @@ const createDependencies = (options: DependencyOptions = {}) => {
   return {
     deleteFromImgur: vi.fn(async (): Promise<ImgurDeleteResult> => ({ ok: true })),
     consumeUploadQuota: vi.fn(async () => options.quotaAllows ?? true),
+    isModerator: vi.fn(async () => {
+      if (options.moderator instanceof Error) throw options.moderator;
+      return options.moderator ?? false;
+    }),
     newFallbackId: () => fallbackId,
     now: () => uploadedAt,
     scheduleExpiry: vi.fn(async () => {}),
@@ -221,6 +226,39 @@ describe("upload hourly limit", () => {
     expect(dependencies.consumeUploadQuota).toHaveBeenCalledWith(ownerId);
     expect(dependencies.uploadToImgur).not.toHaveBeenCalled();
     expect(put).not.toHaveBeenCalled();
+  });
+
+  it("lets a moderator upload past the hourly limit", async () => {
+    const { environment } = createEnvironment();
+    const dependencies = createDependencies({ quotaAllows: false, moderator: true });
+
+    const response = await handleUploadRequest(createRequest(), environment, dependencies);
+
+    expect(response.status).toBe(201);
+    expect(dependencies.isModerator).toHaveBeenCalledWith(ownerId);
+    expect(dependencies.uploadToImgur).toHaveBeenCalled();
+  });
+
+  it("does not look up moderators while the user is within the limit", async () => {
+    const { environment } = createEnvironment();
+    const dependencies = createDependencies({ moderator: true });
+
+    await handleUploadRequest(createRequest(), environment, dependencies);
+
+    expect(dependencies.isModerator).not.toHaveBeenCalled();
+  });
+
+  it("answers a readable 503 when moderators cannot be checked past the limit", async () => {
+    const { environment } = createEnvironment();
+    const dependencies = createDependencies({
+      quotaAllows: false,
+      moderator: new Error("Firebase returned 503"),
+    });
+
+    const response = await handleUploadRequest(createRequest(), environment, dependencies);
+
+    expect(response.status).toBe(503);
+    expect(dependencies.uploadToImgur).not.toHaveBeenCalled();
   });
 
   it("answers a readable 503 when the quota cannot be checked", async () => {
