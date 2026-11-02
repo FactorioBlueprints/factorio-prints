@@ -5,18 +5,19 @@
 ### Install the toolchain
 
 The preferred setup uses [mise](https://mise.jdx.dev/) to install the versions
-of Node.js, Just, and Vite+ declared in `.mise/config.toml`:
+of Node.js, pnpm, and Just declared in `.mise/config.toml`:
 
 ```bash
 mise install
-vp install
+pnpm install
 ```
 
-Vite+ uses pnpm and the repository's `pnpm-lock.yaml` when it installs the root
-dependencies. Do not run `npm install` in the repository root.
+The Vite+ CLI (`vp`) comes from the project-local `vite-plus` dev dependency;
+mise puts `node_modules/.bin` on the `PATH`. Do not run `npm install` in the
+repository root.
 
-If you do not use mise, install [Node.js](https://nodejs.org/en/), Just, and the
-Vite+ CLI globally, then run `vp install`.
+If you do not use mise, install [Node.js](https://nodejs.org/en/), pnpm, and
+Just, then run `pnpm install` and invoke the CLI as `pnpm exec vp`.
 
 ### Run the development server
 

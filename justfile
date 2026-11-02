@@ -26,15 +26,15 @@ ANSI_BG_BRIGHT_CYAN := `tput setab 14`
 ANSI_BG_BRIGHT_MAGENTA := `tput setab 13`
 ANSI_BLACK := `tput setaf 0`
 
-# `vp install`
+# `pnpm install`
 [group('setup')]
 install:
-    vp install
+    pnpm install
 
-# `vp install --frozen-lockfile`
+# `pnpm install --frozen-lockfile`
 [group('setup')]
 install-ci:
-    vp install --frozen-lockfile
+    pnpm install --frozen-lockfile
 
 # `vp run route:generate`
 [group('codegen')]
