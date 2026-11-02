@@ -1,30 +1,143 @@
-# Jobs that run on pull_request, but not on merge_group. This is useful for jobs that post comments on Pull Requests, like ESLint annotations.
+# Jobs that run on pull_request, but not on merge_group. This is useful for jobs that post comments on Pull Requests.
 
 on:
   pull_request:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # Check if the new commits in a Pull Request contain a merge commit. If so, fail and print them out.
   forbid-merge-commits:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - uses: motlin/forbid-merge-commits-action@e680ef218194e9ba87fc1b44ffd9a3b0486dfc25
+      - uses: motlin/forbid-merge-commits-action@49483ed78d3c59ae66e338ad12edd34c6dac7fdf # v1.0.8
 
-  automerge-dependabot:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+  automerge-bots:
+    if: contains(fromJSON('["dependabot[bot]", "renovate[bot]"]'), github.event.pull_request.user.login)
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Enable auto-merge for Dependabot PR
+      - name: Enable auto-merge for bot PR
         run: gh pr merge --rebase --auto "${{ github.event.pull_request.number }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  check-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
+
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Run vp run check --fix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          pnpm install --no-frozen-lockfile
+          # Type-aware lint reads src/routeTree.gen.ts, which is generated.
+          pnpm exec vp run route:generate
+          CHECK_STATUS=0
+          pnpm exec vp run check --fix || CHECK_STATUS=$?
+
+          if [[ -n $(git status --porcelain) ]]; then
+            FIX_BRANCH="fix-${{ github.event.pull_request.number }}-check"
+            git switch --create $FIX_BRANCH
+
+            git add --all
+            git commit --message "Apply vp check fixes."
+            git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${HEAD_REPO}" "$FIX_BRANCH"
+
+            echo "vp check fixes have been pushed to the $FIX_BRANCH branch."
+            exit 1
+          else
+            echo "vp check exited with status $CHECK_STATUS without changing files."
+          fi
+          exit "$CHECK_STATUS"
+
+  pre-commit-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
+
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: just install
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Run pre-commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          CHECK_STATUS=0
+          pre-commit run --all-files || CHECK_STATUS=$?
+
+          if [[ -n $(git status --porcelain) ]]; then
+            FIX_BRANCH="fix-${{ github.event.pull_request.number }}-pre-commit"
+            git switch --create $FIX_BRANCH
+
+            git add --all
+            git commit --message "Apply pre-commit fixes."
+            git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${HEAD_REPO}" "$FIX_BRANCH"
+
+            echo "pre-commit fixes have been pushed to the $FIX_BRANCH branch."
+            exit 1
+          else
+            echo "pre-commit exited with status $CHECK_STATUS without changing files."
+          fi
+          exit "$CHECK_STATUS"
+
+  all-pr-checks:
+    name: All PR checks
+    if: ${{ !cancelled() }}
+    needs: [forbid-merge-commits, check-fix, pre-commit-fix]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
