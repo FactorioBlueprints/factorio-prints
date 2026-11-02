@@ -12,9 +12,12 @@
 		"check:images": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/wrangler.log wrangler types workers/images/worker-configuration.d.ts --config workers/images/wrangler.jsonc && tsc --project workers/images/tsconfig.json",
 		"build": "vp run route:generate && tsc && vp build && VERIFY_SERVICE_WORKER_BUILD=true node node_modules/vitest/dist/cli.js run src/serviceWorkerTombstones.test.ts",
 		"build:staging": "vp run route:generate && tsc && vp build --mode staging",
-		"lint": "vp lint . --fix",
+		"oxlint": "vp lint . --fix",
+		"oxlint:ci": "vp lint . --format github",
 		"fmt": "vp fmt",
 		"fmt:ci": "vp fmt --check",
+		"fallow": "fallow fix --yes --no-create-config",
+		"fallow:ci": "fallow dead-code",
 		"images:backfill": "node scripts/backfillImages.ts",
 		"images:deploy:preview": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-preview.log wrangler deploy --config workers/images/wrangler.jsonc --env preview",
 		"images:deploy:production": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-production.log wrangler deploy --config workers/images/wrangler.jsonc --env=\"\"",
@@ -26,7 +29,7 @@
 		"images:verify:preview": "node scripts/verifyImageGateway.ts \"$IMAGE_GATEWAY_PREVIEW_ORIGIN\"",
 		"images:verify:production": "node scripts/verifyImageGateway.ts https://images.factorioprints.com",
 		"test": "node node_modules/vitest/dist/cli.js",
-		"test:run": "node node_modules/vitest/dist/cli.js run",
+		"test:ui": "node node_modules/vitest/dist/cli.js --ui",
 		"test:database-rules": "firebase emulators:exec --only database \"node --test test/database.rules.emulator.mjs\"",
 		"route:generate": "tsr generate",
 		"typecheck": "tsc --noEmit",
@@ -100,5 +103,5 @@
 		"vitest": "catalog:",
 		"wrangler": "^4.153.0"
 	},
-	"packageManager": "pnpm@11.15.0"
+	"packageManager": "pnpm@12.12.1"
 }
