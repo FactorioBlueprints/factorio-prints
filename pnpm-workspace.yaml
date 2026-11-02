@@ -10,6 +10,8 @@ catalog:
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
+  # Older postcss reads arbitrary .map files from an attacker-controlled sourceMappingURL (GHSA-6g55-p6wh-862q).
+  postcss: ">=8.5.23"
   "gaxios@6>uuid": "11.1.1"
 peerDependencyRules:
   allowAny:

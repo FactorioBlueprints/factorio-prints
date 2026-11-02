@@ -97,11 +97,10 @@ export const createViteConfiguration = (
     ],
     build: {
       sourcemap: sentryUploadEnabled,
-      rollupOptions: {
+      rolldownOptions: {
         output: {
-          manualChunks: (id: string) => {
-            if (id.includes("entitiesWithIcons")) return "entities";
-            return undefined;
+          codeSplitting: {
+            groups: [{ name: "entities", test: /entitiesWithIcons/ }],
           },
         },
       },
