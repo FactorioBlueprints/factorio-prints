@@ -1,4 +1,5 @@
 [tools]
+java = "temurin-21"
 just = "1.58.0"
 node = "26.5.1"
 pnpm = "12.12.1"

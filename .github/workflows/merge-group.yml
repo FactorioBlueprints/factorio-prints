@@ -49,10 +49,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5.2.3
-      - uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: "21"
       - uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
