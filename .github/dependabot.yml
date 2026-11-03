@@ -11,13 +11,16 @@ updates:
       default-days: 7
     labels:
       - "dependencies"
+    # Renovate's "vite-plus monorepo" group owns vite-plus so its vite alias moves with it.
+    ignore:
+      - dependency-name: "vite-plus"
+    # Only group dependencies that must move in lockstep. typescript was a
+    # single-package group, so it gets its own PR either way -- dropped so a
+    # breaking bump is labelled by name rather than hidden behind a group.
     groups:
       fontawesome:
         patterns:
           - "@fortawesome/*"
-      typescript-ecosystem:
-        patterns:
-          - "typescript"
       vite-ecosystem:
         patterns:
           - "vite"
@@ -28,11 +31,13 @@ updates:
           - "@vitest/*"
           - "@testing-library/*"
           - "playwright"
+      # Listed explicitly rather than as "react-*", which also matched the
+      # firebase group's "react-firebase-*" and left the winning group ambiguous.
       react-ecosystem:
         patterns:
           - "react"
+          - "react-dom"
           - "@types/react*"
-          - "react-*"
       tanstack:
         patterns:
           - "@tanstack/*"
@@ -57,9 +62,6 @@ updates:
     labels:
       - "dependencies"
     groups:
-      typescript-ecosystem:
-        patterns:
-          - "typescript"
       firebase:
         patterns:
           - "firebase"
