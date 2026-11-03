@@ -33,5 +33,3 @@ export const useEnrichedTagBlueprintSummaries = (tagId: string) => {
     blueprintQueries: enrichedBlueprintQueries,
   };
 };
-
-export default useEnrichedTagBlueprintSummaries;

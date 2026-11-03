@@ -17,7 +17,6 @@ import {
   type RawBlueprint,
   type RawBlueprintSummary,
   type RawBlueprintSummaryPage,
-  type RawUser,
   validateRawBlueprint,
   validateRawBlueprintSummary,
   validateRawBlueprintSummaryPage,
@@ -410,32 +409,6 @@ export const fetchUserCollection = async (userId: string): Promise<Record<string
   } catch (error) {
     if (isNetworkError(error)) {
       return {};
-    }
-    throw error;
-  }
-};
-
-export const fetchUser = async (userId: string): Promise<RawUser | null> => {
-  try {
-    const userRef = ref(getFirebaseDatabase(), `/users/${userId}`);
-    const snapshot = await get(userRef);
-
-    if (!snapshot.exists()) {
-      return null;
-    }
-
-    const userData = snapshot.val();
-    return {
-      id: userId,
-      displayName: userData.displayName || undefined,
-      email: userData.email || undefined,
-      favorites: userData.favorites || {},
-      collection: userData.collection || {},
-      blueprints: userData.blueprints || {},
-    };
-  } catch (error) {
-    if (isNetworkError(error)) {
-      return null;
     }
     throw error;
   }

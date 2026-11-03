@@ -1,7 +1,6 @@
 import type { Quality, SignalID, SignalType } from "../../../types/factorio";
 import styles from "./FactorioIcon.module.css";
 
-export type { SignalType, Quality, SignalID };
 export type IconSize = "tiny" | "small" | "large";
 
 function getUrlType(type: SignalType | string) {

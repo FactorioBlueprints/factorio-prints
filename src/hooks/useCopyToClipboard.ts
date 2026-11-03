@@ -32,5 +32,3 @@ export const useCopyToClipboard = (): CopyToClipboardState => {
 
   return { copiedText, copyError, copyToClipboard };
 };
-
-export default useCopyToClipboard;

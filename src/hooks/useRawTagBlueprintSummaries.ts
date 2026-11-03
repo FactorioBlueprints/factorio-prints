@@ -57,5 +57,3 @@ export const useRawTagBlueprintSummaries = (tagId: string) => {
     blueprintIds,
   };
 };
-
-export default useRawTagBlueprintSummaries;

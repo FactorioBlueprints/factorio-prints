@@ -27,5 +27,3 @@ export const enrichUserFavorites = (
 
   return validateEnrichedUserFavorites(enrichedUserFavorites);
 };
-
-export default enrichUserFavorites;

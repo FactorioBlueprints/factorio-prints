@@ -12,7 +12,7 @@ import {
 import enrichBlueprint from "../utils/enrichBlueprint";
 import { enrichBlueprintSummary } from "../utils/enrichBlueprintSummary";
 
-export interface LoaderData {
+interface LoaderData {
   blueprintSummary: EnrichedBlueprintSummary | null;
   blueprintData: EnrichedBlueprint | null;
 }

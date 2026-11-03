@@ -52,8 +52,6 @@ const restPaginationMetadataSchema = z.object({
   transactionTimestamp: z.string().optional(),
 });
 
-export type RestPaginationMetadata = z.infer<typeof restPaginationMetadataSchema>;
-
 export const restPaginatedResponseSchema = z.object({
   _data: z.array(restBlueprintSummarySchema),
   _metadata: restPaginationMetadataSchema,

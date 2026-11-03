@@ -11,5 +11,3 @@ export const useRawBlueprintSummary = (blueprintId: string | undefined) => {
     enabled: Boolean(blueprintId),
   });
 };
-
-export default useRawBlueprintSummary;

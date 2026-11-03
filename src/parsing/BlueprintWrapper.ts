@@ -44,10 +44,6 @@ export class BlueprintWrapper {
     throw new Error("Invalid blueprint: no content found");
   }
 
-  getLabel(): string | undefined {
-    return this.getContent().label;
-  }
-
   getDescription(): string | undefined {
     if (this.data.blueprint) {
       return this.data.blueprint.description;
@@ -83,13 +79,5 @@ export class BlueprintWrapper {
       return settings?.icons ?? [];
     }
     throw new Error("Invalid blueprint: no content found");
-  }
-
-  getVersion(): number | undefined {
-    return this.getContent().version;
-  }
-
-  getRawData(): RawBlueprintData {
-    return this.data;
   }
 }

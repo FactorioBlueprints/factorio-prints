@@ -36,5 +36,3 @@ export const useEnrichedPaginatedBlueprintSummaries = (
     data: enrichedData,
   };
 };
-
-export default useEnrichedPaginatedBlueprintSummaries;
