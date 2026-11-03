@@ -29,6 +29,7 @@ import {useAuthState} from "react-firebase-hooks/auth";
 
 import {app} from "../base";
 import {useIsModerator} from "../hooks/useModerators";
+import {useUserDisplayName} from "../hooks/useUser";
 import {AuthenticationForm} from "./auth/AuthenticationForm";
 
 const Header: React.FC = () =>
@@ -36,6 +37,10 @@ const Header: React.FC = () =>
 	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const moderatorQuery = useIsModerator(user?.uid);
 	const isModerator = moderatorQuery.data ?? false;
+	// The auth user's displayName doesn't re-render after updateProfile, so prefer the users query
+	// that Account updates on rename.
+	const displayNameQuery = useUserDisplayName(user?.uid);
+	const displayName = displayNameQuery.data || user?.displayName;
 	const [showAccountDropdown, setShowAccountDropdown] = useState<boolean>(false);
 
 	const handleLogout = (): void =>
@@ -45,11 +50,11 @@ const Header: React.FC = () =>
 
 	const getDisplayName = (): React.ReactElement | false =>
 	{
-		if (user && user.displayName)
+		if (user && displayName)
 		{
 			return (
 				<div className="h4">
-					<b>{user.displayName}</b>
+					<b>{displayName}</b>
 				</div>
 			);
 		}

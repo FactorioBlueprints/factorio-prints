@@ -15,6 +15,7 @@ import Row from "react-bootstrap/Row";
 import {useAuthState} from "react-firebase-hooks/auth";
 
 import {app} from "../base";
+import {userDisplayNameQueryKey} from "../hooks/useUser";
 import {getFirebaseDatabase} from "../utils/firebaseDatabase";
 import PageHeader from "./PageHeader";
 
@@ -41,13 +42,9 @@ const Account = () =>
 
 				return newDisplayName;
 			},
-			onSuccess: () =>
+			onSuccess: (newDisplayName) =>
 			{
-				queryClient.invalidateQueries(
-					{
-						queryKey: ["userDisplayName", user!.uid],
-					},
-				);
+				queryClient.setQueryData(userDisplayNameQueryKey(user!.uid), newDisplayName);
 				navigate(
 					{
 						to: "/user/$userId",
