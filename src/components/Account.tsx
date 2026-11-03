@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useNavigate} from "@tanstack/react-router";
 import {getAuth, updateProfile} from "firebase/auth";
-import {ref, set} from "firebase/database";
+import {ref, update} from "firebase/database";
 import type React from "react";
 import {useState} from "react";
 import Button from "react-bootstrap/Button";
@@ -15,7 +15,14 @@ import Row from "react-bootstrap/Row";
 import {useAuthState} from "react-firebase-hooks/auth";
 
 import {app} from "../base";
-import {userDisplayNameQueryKey} from "../hooks/useUser";
+import
+{
+	useUserDisplayName,
+	userDisplayNameQueryKey,
+	userNeedsDisplayNameQueryKey,
+	useUserNeedsDisplayName,
+} from "../hooks/useUser";
+import {DEFAULT_DISPLAY_NAME} from "../utils/defaultDisplayName";
 import {getFirebaseDatabase} from "../utils/firebaseDatabase";
 import PageHeader from "./PageHeader";
 
@@ -23,7 +30,12 @@ const Account = () =>
 {
 	const [user] = useAuthState(getAuth(app));
 	const navigate = useNavigate();
-	const [displayName, setDisplayName] = useState(user?.displayName || "");
+	const {data: storedDisplayName} = useUserDisplayName(user?.uid);
+	const {data: needsDisplayName} = useUserNeedsDisplayName(user?.uid);
+	const [editedDisplayName, setEditedDisplayName] = useState<string>();
+	// Pre-fill from the public database name, never the sign-in provider's real name
+	const hasDefaultDisplayName = needsDisplayName && storedDisplayName === DEFAULT_DISPLAY_NAME;
+	const displayName = editedDisplayName ?? (hasDefaultDisplayName ? "" : (storedDisplayName ?? ""));
 	const queryClient = useQueryClient();
 
 	const updateDisplayNameMutation = useMutation(
@@ -37,14 +49,21 @@ const Account = () =>
 					},
 				);
 
-				const userRef = ref(getFirebaseDatabase(), `/users/${user!.uid}/displayName/`);
-				await set(userRef, newDisplayName);
+				const userRef = ref(getFirebaseDatabase(), `/users/${user!.uid}`);
+				await update(
+					userRef,
+					{
+						displayName: newDisplayName,
+						needsDisplayName: null,
+					},
+				);
 
 				return newDisplayName;
 			},
 			onSuccess: (newDisplayName) =>
 			{
 				queryClient.setQueryData(userDisplayNameQueryKey(user!.uid), newDisplayName);
+				queryClient.setQueryData(userNeedsDisplayNameQueryKey(user!.uid), false);
 				navigate(
 					{
 						to: "/user/$userId",
@@ -61,7 +80,7 @@ const Account = () =>
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
 	{
 		event.preventDefault();
-		setDisplayName(event.target.value);
+		setEditedDisplayName(event.target.value);
 	};
 
 	const handleSaveAccount = (event: React.MouseEvent<HTMLButtonElement>) =>

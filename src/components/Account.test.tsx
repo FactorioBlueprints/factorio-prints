@@ -2,7 +2,7 @@ import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate} from "@tanstack/react-router";
 import {fireEvent, render, screen, waitFor} from "@testing-library/react";
 import {updateProfile} from "firebase/auth";
-import {set} from "firebase/database";
+import {update} from "firebase/database";
 import {useAuthState} from "react-firebase-hooks/auth";
 import {beforeEach, describe, expect, it, vi} from "vite-plus/test";
 import Account from "./Account";
@@ -25,8 +25,11 @@ vi.mock("firebase/auth", () => (
 
 vi.mock("firebase/database", () => (
 {
-	ref: vi.fn(),
-	set: vi.fn(),
+	ref: vi.fn((_database: unknown, path: string) => (
+	{
+		path,
+	})),
+	update: vi.fn(),
 }));
 
 vi.mock("react-firebase-hooks/auth", () => (
@@ -75,7 +78,7 @@ describe("Account", () =>
 		navigateMock = vi.fn();
 		vi.mocked(useNavigate).mockReturnValue(navigateMock as unknown as ReturnType<typeof useNavigate>);
 		vi.mocked(updateProfile).mockResolvedValue(undefined);
-		vi.mocked(set).mockResolvedValue(undefined);
+		vi.mocked(update).mockResolvedValue(undefined);
 		vi.mocked(useAuthState).mockReturnValue([
 			{
 				uid: "alice",
@@ -89,6 +92,7 @@ describe("Account", () =>
 	it("writes the new display name into the user's displayName query after saving", async () =>
 	{
 		queryClient.setQueryData(["users", "userId", "alice", "displayName"], "Alice");
+		queryClient.setQueryData(["users", "userId", "alice", "needsDisplayName"], true);
 
 		render(
 			<QueryClientProvider client={queryClient}>
@@ -119,11 +123,25 @@ describe("Account", () =>
 		expect(
 			{
 				cachedDisplayName: queryClient.getQueryData(["users", "userId", "alice", "displayName"]),
+				cachedNeedsDisplayName: queryClient.getQueryData(["users", "userId", "alice", "needsDisplayName"]),
+				updateCalls: vi.mocked(update).mock.calls,
 				navigateCalls: navigateMock.mock.calls,
 			},
 		).toStrictEqual(
 			{
 				cachedDisplayName: "Alice Renamed",
+				cachedNeedsDisplayName: false,
+				updateCalls: [
+					[
+						{
+							path: "/users/alice",
+						},
+						{
+							displayName: "Alice Renamed",
+							needsDisplayName: null,
+						},
+					],
+				],
 				navigateCalls: [
 					[
 						{
@@ -137,5 +155,48 @@ describe("Account", () =>
 				],
 			},
 		);
+	});
+
+	const renderAccount = () =>
+		render(
+			<QueryClientProvider client={queryClient}>
+				<Account />
+			</QueryClientProvider>,
+		);
+
+	it("never pre-fills the provider's real name for a new account with the default name", () =>
+	{
+		vi.mocked(useAuthState).mockReturnValue([
+			{
+				uid: "alice",
+				displayName: "Real Name",
+			},
+			false,
+			undefined,
+		] as ReturnType<typeof useAuthState>);
+		queryClient.setQueryData(["users", "userId", "alice", "displayName"], "Anonymous");
+		queryClient.setQueryData(["users", "userId", "alice", "needsDisplayName"], true);
+
+		renderAccount();
+
+		expect(screen.getByPlaceholderText("DisplayName")).toHaveProperty("value", "");
+	});
+
+	it("pre-fills the stored display name rather than the provider's real name", () =>
+	{
+		vi.mocked(useAuthState).mockReturnValue([
+			{
+				uid: "alice",
+				displayName: "Real Name",
+			},
+			false,
+			undefined,
+		] as ReturnType<typeof useAuthState>);
+		queryClient.setQueryData(["users", "userId", "alice", "displayName"], "alice-gh");
+		queryClient.setQueryData(["users", "userId", "alice", "needsDisplayName"], true);
+
+		renderAccount();
+
+		expect(screen.getByPlaceholderText("DisplayName")).toHaveProperty("value", "alice-gh");
 	});
 });

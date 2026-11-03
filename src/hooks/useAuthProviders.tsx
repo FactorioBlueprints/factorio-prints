@@ -1,17 +1,24 @@
 import {captureException} from "@sentry/react";
+import {type QueryClient, useQueryClient} from "@tanstack/react-query";
 import {FirebaseError} from "firebase/app";
 import
 {
 	type AuthProvider,
 	GithubAuthProvider,
 	GoogleAuthProvider,
+	getAdditionalUserInfo,
 	getAuth,
 	sendSignInLinkToEmail,
 	signInWithPopup,
+	type UserCredential,
 } from "firebase/auth";
+import {ref, runTransaction} from "firebase/database";
 import {useCallback, useMemo, useState} from "react";
 import {app} from "../base";
 import {saveToStorage} from "../localStorage";
+import {applyProviderUsername, type UserRecord} from "../utils/defaultDisplayName";
+import {getFirebaseDatabase} from "../utils/firebaseDatabase";
+import {userDisplayNameQueryKey, userNeedsDisplayNameQueryKey} from "./useUser";
 
 export interface UseAuthProvidersReturn
 {
@@ -44,10 +51,42 @@ export const getProviderAuthenticationErrorMessage = (error: unknown): string =>
 	return "Unable to sign in. Please try again.";
 };
 
+// A brand-new account defaults to the provider's real name. When the provider has no real name
+// the account starts as "Anonymous"; if the provider exposes a username (GitHub login), use that instead.
+const claimProviderUsername = async (credential: UserCredential, queryClient: QueryClient): Promise<void> =>
+{
+	const additionalUserInfo = getAdditionalUserInfo(credential);
+	if (!additionalUserInfo?.isNewUser || !additionalUserInfo.username)
+	{
+		return;
+	}
+	const {username} = additionalUserInfo;
+	try
+	{
+		const {uid} = credential.user;
+		const userRef = ref(getFirebaseDatabase(), `/users/${uid}`);
+		const {committed, snapshot} = await runTransaction(userRef, (existingUser: UserRecord | null) =>
+			applyProviderUsername(existingUser, username, credential.user.displayName),
+		);
+		if (committed)
+		{
+			const userRecord: UserRecord | null = snapshot.val();
+			queryClient.setQueryData(userDisplayNameQueryKey(uid), userRecord?.displayName ?? null);
+			queryClient.setQueryData(userNeedsDisplayNameQueryKey(uid), userRecord?.needsDisplayName === true);
+		}
+	}
+	catch (error)
+	{
+		// The user keeps the default name and can still choose a name on the account page
+		console.log("Provider username claim skipped:", error instanceof Error ? error.message : "Unknown error");
+	}
+};
+
 export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersReturn =>
 {
 	const [isEmailSending, setIsEmailSending] = useState(false);
 	const [authenticationError, setAuthenticationError] = useState<string>();
+	const queryClient = useQueryClient();
 
 	const googleProvider = useMemo(() =>
 	{
@@ -77,7 +116,8 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 			setAuthenticationError(undefined);
 			try
 			{
-				await signInWithPopup(getAuth(app), provider);
+				const credential = await signInWithPopup(getAuth(app), provider);
+				await claimProviderUsername(credential, queryClient);
 				onAuthSuccess?.();
 			}
 			catch (error: unknown)
@@ -110,7 +150,7 @@ export const useAuthProviders = (onAuthSuccess?: () => void): UseAuthProvidersRe
 				);
 			}
 		},
-		[onAuthSuccess],
+		[onAuthSuccess, queryClient],
 	);
 
 	const authenticateWithEmail = useCallback(
