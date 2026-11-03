@@ -13,6 +13,6 @@
 	// code does.
 	"usedClassMembers": [{"implements": "DurableObject", "members": ["fetch", "alarm"]}],
 	"rules": {
-		"unused-dependencies": "warn",
+		"unused-dependencies": "error",
 	},
 }
