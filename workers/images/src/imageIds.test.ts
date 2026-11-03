@@ -1,4 +1,4 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it} from "vite-plus/test";
 import {fallbackIdLength, isFallbackImageId, newFallbackImageId} from "./imageIds.ts";
 
 describe("fallback image ids", () => {

@@ -33,12 +33,3 @@ export const getFirebaseDatabase = (): Database => {
 		throw databaseError;
 	}
 };
-
-/**
- * Resets the cached database instance and error.
- * Useful for retrying after a failure.
- */
-const resetDatabaseCache = (): void => {
-	databaseInstance = null;
-	databaseError = null;
-};

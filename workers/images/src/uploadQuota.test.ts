@@ -1,4 +1,4 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it} from "vite-plus/test";
 import {consumeHourlyQuota, type QuotaStorage} from "./uploadQuota.ts";
 
 const createStorage = (): QuotaStorage & {values: Map<string, unknown>} => {

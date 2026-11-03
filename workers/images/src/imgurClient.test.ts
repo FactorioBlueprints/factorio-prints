@@ -1,4 +1,4 @@
-import {describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vite-plus/test";
 import {deleteImgurImage, ImgurFailure, type ImgurTokenState, uploadToImgur} from "./imgurClient.ts";
 
 const now = 1_800_000_000_000;

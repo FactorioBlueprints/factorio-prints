@@ -73,59 +73,6 @@ export function serializeBlueprint(
 	return "0" + btoa(compressed.reduce((acc, byte) => acc + String.fromCharCode(byte), ""));
 }
 
-function extractBlueprint(blueprint: RawBlueprintData, path?: string): RawBlueprintData {
-	if (!path) {
-		return blueprint;
-	}
-
-	try {
-		const parts = path.split(".");
-		let current: RawBlueprintData = blueprint;
-		let traversedPath = "";
-
-		for (const part of parts) {
-			const index = parseInt(part) - 1;
-			traversedPath += (traversedPath ? "." : "") + part;
-
-			if (!current.blueprint_book?.blueprints) {
-				throw new BlueprintError(`Invalid path ${path}: no blueprint book at ${traversedPath}`);
-			}
-
-			if (isNaN(index)) {
-				throw new BlueprintError(`Invalid path ${path}: "${part}" is not a valid number at ${traversedPath}`);
-			}
-
-			if (index < 0) {
-				throw new BlueprintError(`Invalid path ${path}: index must be positive at ${traversedPath}`);
-			}
-
-			if (index >= current.blueprint_book.blueprints.length) {
-				throw new BlueprintError(
-					`Invalid path ${path}: index ${part} is out of bounds at ${traversedPath} ` +
-						`(valid range: 1-${current.blueprint_book.blueprints.length})`,
-				);
-			}
-
-			const blueprintEntry = current.blueprint_book.blueprints[index];
-			if (blueprintEntry.blueprint) {
-				current = {blueprint: blueprintEntry.blueprint};
-			} else {
-				throw new BlueprintError(`Invalid path ${path}: no blueprint at index ${part} at ${traversedPath}`);
-			}
-		}
-
-		return current;
-	} catch (err) {
-		if (err instanceof BlueprintError) {
-			throw err;
-		}
-		if (err instanceof Error) {
-			throw new BlueprintError(`Failed to extract blueprint: ${err.message}`, {cause: err});
-		}
-		throw new BlueprintError("Failed to extract blueprint: Unknown error");
-	}
-}
-
 function parseVersion4(versionNumber: number | string | bigint): string {
 	const version = BigInt(versionNumber);
 	const parts: number[] = [];

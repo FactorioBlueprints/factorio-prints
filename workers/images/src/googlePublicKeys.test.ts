@@ -1,4 +1,4 @@
-import {beforeAll, describe, expect, it, vi} from "vitest";
+import {beforeAll, describe, expect, it, vi} from "vite-plus/test";
 import {createGooglePublicKeyProvider, googlePublicKeyUrl} from "./googlePublicKeys.ts";
 
 const generateKeyPair = (): Promise<CryptoKeyPair> =>

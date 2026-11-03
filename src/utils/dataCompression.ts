@@ -164,25 +164,6 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
 }
 
 /**
- * 📊 Calculate the compression ratio
- */
-function getCompressionRatio(original: string, compressed: string): number {
-	if (original.length === 0) return 1;
-	return compressed.length / original.length;
-}
-
-/**
- * 📏 Format bytes to human readable format
- */
-function formatBytes(bytes: number): string {
-	if (bytes === 0) return "0 Bytes";
-	const k = 1024;
-	const sizes = ["Bytes", "KB", "MB", "GB"];
-	const i = Math.floor(Math.log(bytes) / Math.log(k));
-	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-}
-
-/**
  * 🔇 Check if an error is a browser shutdown abort error.
  * These occur when the user closes the tab/browser while an async operation is pending.
  * They are expected during normal browser lifecycle and should not be logged.

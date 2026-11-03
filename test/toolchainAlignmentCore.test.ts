@@ -1,4 +1,4 @@
-import {describe, expect, test} from "vitest";
+import {describe, expect, test} from "vite-plus/test";
 import {findToolchainMismatches, readWorkspaceVitePlusPins} from "../scripts/toolchainAlignmentCore.ts";
 
 const workspaceYaml = (vitePlusCore: string, vitePlus: string) => `onlyBuiltDependencies:

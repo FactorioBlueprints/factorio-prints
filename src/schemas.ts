@@ -135,8 +135,6 @@ export type EnrichedPaginatedBlueprintSummaries = z.infer<typeof enrichedPaginat
 // Raw tag schemas - matching Firebase data structure
 export const rawTagsSchema = z.record(z.string(), z.array(z.string()));
 
-const rawTagIndexSchema = z.record(z.string(), z.boolean());
-
 // Enriched tag schemas - transformed for UI consumption
 export const enrichedTagSchema = z
 	.object({
@@ -351,9 +349,6 @@ export const validateRawBlueprintSummaryPage = (data: unknown): RawBlueprintSumm
 export const validateRawPaginatedBlueprintSummaries = (data: unknown): RawPaginatedBlueprintSummaries => {
 	return validate(data, rawPaginatedBlueprintSummariesSchema, "raw paginated blueprint summaries");
 };
-
-// TODO: Remove this deprecated alias after verifying no usage
-const validateRawBlueprintSummaryPages = validateRawPaginatedBlueprintSummaries;
 
 export const validateEnrichedBlueprintSummaryPage = (data: unknown): EnrichedBlueprintSummaryPage => {
 	return validate(data, enrichedBlueprintSummaryPageSchema, "enriched blueprint summary page");

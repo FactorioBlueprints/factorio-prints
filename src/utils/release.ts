@@ -57,13 +57,6 @@ export const getReleaseInfo = (): ReleaseInfo => {
 	};
 };
 
-const formatReleaseDisplay = (info: ReleaseInfo): string => {
-	if (info.isDevelopment) {
-		return `${info.version} (dev)`;
-	}
-	return info.version;
-};
-
 export const getReleaseMetadata = (): Record<string, string | boolean | number> => {
 	const info = getReleaseInfo();
 	return {

@@ -1,4 +1,4 @@
-import {describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vite-plus/test";
 import {IdTokenRejection, type IdTokenVerification} from "./firebaseAuth.ts";
 import {ImgurFailure, type ImgurDeleteResult, type ImgurUploadResult} from "./imgurClient.ts";
 import {maximumImageBytes, maximumImageDimension} from "./imageValidation.ts";

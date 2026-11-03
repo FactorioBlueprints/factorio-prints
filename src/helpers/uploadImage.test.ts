@@ -1,4 +1,4 @@
-import {describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vite-plus/test";
 import {imageSourceUrl, maximumUploadBytes, restorableDraftImage, uploadImage} from "./uploadImage";
 
 const gatewayOrigin = "https://images.example.com";
