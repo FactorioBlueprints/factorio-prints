@@ -6,7 +6,7 @@
 			".read": "true",
 			"$blueprint":
 			{
-				".write": "(!data.exists() && auth != null && newData.child('author').child('userId').val() === auth.uid) || (data.exists() && auth != null && data.child('author').child('userId').val() === auth.uid && newData.exists()) || (auth != null && root.child('moderators').child(auth.uid).val() === true)",
+				".write": "(!data.exists() && auth != null && newData.child('author').child('userId').val() === auth.uid) || (data.exists() && auth != null && data.child('author').child('userId').val() === auth.uid) || (auth != null && root.child('moderators').child(auth.uid).val() === true)",
 				".validate": "newData.hasChildren(['author'])",
 				"author":
 				{
