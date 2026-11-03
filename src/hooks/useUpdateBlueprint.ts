@@ -1,6 +1,7 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useNavigate} from "@tanstack/react-router";
 import {update as dbUpdate, ref, serverTimestamp} from "firebase/database";
+import {deleteBlueprintData} from "../api/accountDeletion";
 import {imageSourceUrl, type UploadedImage} from "../helpers/uploadImage";
 import {getFirebaseDatabase} from "../utils/firebaseDatabase";
 import type {ImgurImage, RawBlueprint} from "../schemas";
@@ -209,37 +210,11 @@ export const useDeleteBlueprint = () =>
 
 	return useMutation<string, Error, DeleteBlueprintMutationParams>(
 		{
-			mutationFn: async ({id, authorId, tags}) =>
+			mutationFn: async (params) =>
 			{
-				// Phase 1: Shrink the blueprint by removing the large blueprintString field.
-				// This prevents TRIGGER_PAYLOAD_TOO_LARGE errors when the Cloud Function
-				// receives the deleted blueprint data.
-				await dbUpdate(
-					ref(getFirebaseDatabase()),
-					{
-						[`/blueprints/${id}/blueprintString`]: null,
-					},
-				);
+				await deleteBlueprintData(params);
 
-				// Phase 2: Delete the blueprint and all related data.
-				// The Cloud Function cleanupFavoritesOnBlueprintDelete will also run
-				// as a safety net for favorites cleanup.
-				const updates: Record<string, null> =
-				{
-					[`/blueprints/${id}`]: null,
-					[`/users/${authorId}/blueprints/${id}`]: null,
-					[`/users/${authorId}/collection/${id}`]: null,
-					[`/blueprintSummaries/${id}`]: null,
-				};
-
-				tags.forEach((tag) =>
-				{
-					updates[`/byTag/${tag}/${id}`] = null;
-				});
-
-				await dbUpdate(ref(getFirebaseDatabase()), updates);
-
-				return authorId;
+				return params.authorId;
 			},
 			onSuccess: (authorId, {id, tags}) =>
 			{

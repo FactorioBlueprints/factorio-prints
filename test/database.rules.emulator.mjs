@@ -582,4 +582,43 @@ describe("blueprint deletion rules", () =>
 
 		await assertSucceeds(update(ref(database), deleteUpdates));
 	});
+
+	test("allow the owner to clear the author name when deleting their account but keeping blueprints", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(ownerId).database();
+
+		await assertSucceeds(
+			update(
+				ref(database),
+				{
+					[`/blueprints/${blueprintId}/author/displayName`]: null,
+				},
+			),
+		);
+
+		await testEnvironment.withSecurityRulesDisabled(async (context) =>
+		{
+			const snapshot = await get(ref(context.database(), `blueprints/${blueprintId}/author`));
+			assert.deepStrictEqual(
+				snapshot.val(),
+				{
+					userId: ownerId,
+				},
+			);
+		});
+	});
+
+	test("reject a non-owner clearing someone else's author name", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(userId).database();
+
+		await assertFails(
+			update(
+				ref(database),
+				{
+					[`/blueprints/${blueprintId}/author/displayName`]: null,
+				},
+			),
+		);
+	});
 });

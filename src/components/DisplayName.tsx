@@ -8,6 +8,9 @@ import {useAuthState} from "react-firebase-hooks/auth";
 import {app} from "../base";
 import {useUserDisplayName} from "../hooks/useUser";
 
+// Shown for authors whose account (and users/{uid} record) has been deleted
+const DELETED_USER_NAME = "Deleted user";
+
 interface DisplayNameProps
 {
 	userId?: string;
@@ -33,7 +36,7 @@ const DisplayName: React.FC<DisplayNameProps> = ({userId, withLink = true, exter
 	const youText = isYou ? " (You)" : "";
 	const content = (
 		<span className={nameStyle}>
-			{displayName}
+			{displayName ?? DELETED_USER_NAME}
 			{youText}
 		</span>
 	);

@@ -7,6 +7,7 @@ import {Change} from "firebase-functions/v2";
 import {HttpsError, onCall} from "firebase-functions/v2/https";
 import {getIndexedCollectorUserIds} from "./collectorIndex";
 import {planBlueprintLastUpdatedMirror} from "./lastUpdatedMirror";
+import {buildUserDeleteCleanupUpdates} from "./userDeleteCleanup";
 
 initializeApp();
 
@@ -326,7 +327,7 @@ export const initializeUserProfile = functionsV1.auth.user().onCreate(async (use
 /**
  * Cloud Function to clean up when a user deletes their account.
  * Removes the user from all blueprints' favorites lists and deletes the user record.
- * User's authored blueprints remain in the database (orphaned).
+ * User's authored blueprints remain in the database (orphaned) with any author name cleared.
  */
 export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user) =>
 {
@@ -339,26 +340,12 @@ export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user)
 		const userSnapshot = await database.ref(`/users/${userId}`).once("value");
 		const userData = userSnapshot.val() || {};
 
-		const updates: Record<string, null> = {};
-
-		// Remove this user from all blueprints' favorites lists
-		for (const blueprintId of Object.keys(userData.favorites || {}))
-		{
-			updates[`/blueprints/${blueprintId}/favorites/${userId}`] = null;
-		}
-
-		for (const blueprintId of Object.keys(userData.collection || {}))
-		{
-			updates[`/blueprintCollectors/${blueprintId}/${userId}`] = null;
-		}
-
-		// Delete the user record itself
-		updates[`/users/${userId}`] = null;
+		const updates = buildUserDeleteCleanupUpdates(userId, userData);
 
 		await database.ref().update(updates);
 
 		functions.logger.log(
-			`Cleaned up deleted user ${userId}: removed from ${Object.keys(userData.favorites || {}).length} blueprints' favorites, ${Object.keys(userData.collection || {}).length} blueprints' collectors`,
+			`Cleaned up deleted user ${userId}: removed from ${Object.keys(userData.favorites || {}).length} blueprints' favorites, ${Object.keys(userData.collection || {}).length} blueprints' collectors, cleared the author name on ${Object.keys(userData.blueprints || {}).length} blueprints`,
 		);
 
 		return null;
