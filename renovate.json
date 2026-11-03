@@ -1,0 +1,26 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["config:recommended"],
+	"enabledManagers": ["npm", "mise"],
+	"minimumReleaseAge": "1 day",
+	"internalChecksFilter": "strict",
+	"packageRules": [
+		{
+			"description": "Default off: Dependabot owns ordinary npm deps and github-actions.",
+			"matchManagers": ["npm", "mise"],
+			"enabled": false
+		},
+		{
+			"description": "Gap 1: pnpm in package.json#packageManager plus the .mise/config.toml pin, in one PR.",
+			"matchPackageNames": ["pnpm"],
+			"enabled": true,
+			"groupName": "pnpm"
+		},
+		{
+			"description": "Gap 2: vite-plus, its npm: alias (shows up as `vite`) and the vite-plus-core override move together.",
+			"matchPackageNames": ["vite-plus", "@voidzero-dev/vite-plus-core", "vite"],
+			"enabled": true,
+			"groupName": "vite-plus monorepo"
+		}
+	]
+}
