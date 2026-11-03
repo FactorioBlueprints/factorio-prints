@@ -42,8 +42,6 @@ firebase-debug.log
 # TanStack Router generated files
 src/routeTree.gen.*
 
-eslint_report.json
-
 # Firebase export data
 factorio-blueprints-export.json
 /database-debug.log
@@ -55,12 +53,8 @@ public/**/*.js
 !public/serviceWorker.js
 !public/sw.js
 
-# TypeScript build info
-tsconfig.tsbuildinfo
+# Wrangler-generated types
 workers/images/worker-configuration.d.ts
 
 # Staging environment
 .env.staging
-
-# Functions build output
-functions/lib
