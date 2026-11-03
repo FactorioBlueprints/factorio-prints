@@ -3,11 +3,10 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches:
-      - main
       - factorio.school
   pull_request:
     branches:
-      - main
+      - factorio-prints.com
       - factorio.school
 
 jobs:
@@ -19,19 +18,23 @@ jobs:
       deployments: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
-      - uses: jdx/mise-action@v5.2.3
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        with:
+          # Deploy jobs publish build output, so don't restore a cache that a pull request could have poisoned.
+          cache: false
 
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
       - name: Build
         run: just build-ci
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v4
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
