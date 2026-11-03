@@ -1,7 +1,8 @@
 import {fireEvent, render} from "@testing-library/react";
 import type React from "react";
-import {describe, expect, it, vi} from "vite-plus/test";
+import {beforeEach, describe, expect, it, vi} from "vite-plus/test";
 import {useAuthState} from "react-firebase-hooks/auth";
+import {useUserDisplayName} from "../hooks/useUser";
 import Header from "./Header";
 
 vi.mock("@fortawesome/react-fontawesome", () => (
@@ -51,6 +52,14 @@ vi.mock("../hooks/useModerators", () => (
 	})),
 }));
 
+vi.mock("../hooks/useUser", () => (
+{
+	useUserDisplayName: vi.fn(() => (
+	{
+		data: undefined,
+	})),
+}));
+
 vi.mock("./auth/AuthenticationForm", () => (
 {
 	AuthenticationForm: () => <div>Authentication form</div>,
@@ -60,6 +69,11 @@ const normalizeText = (element: Element | null): string => element?.textContent?
 
 describe("Header", () =>
 {
+	beforeEach(() =>
+	{
+		vi.clearAllMocks();
+	});
+
 	it("renders the compact navigation labels and accessible home link", () =>
 	{
 		vi.mocked(useAuthState).mockReturnValue([
@@ -157,5 +171,38 @@ describe("Header", () =>
 		const menu = container.querySelector(".account-navigation .dropdown-menu");
 
 		expect(menu?.classList.contains("dropdown-menu-end")).toBe(true);
+	});
+
+	it("shows the display name from the users query so a rename appears immediately", () =>
+	{
+		vi.mocked(useAuthState).mockReturnValue([
+			{
+				uid: "alice",
+				displayName: "Alice",
+			},
+			false,
+			undefined,
+		] as ReturnType<typeof useAuthState>);
+		vi.mocked(useUserDisplayName).mockReturnValue(
+			{
+				data: "Alice Renamed",
+			} as ReturnType<typeof useUserDisplayName>,
+		);
+
+		const {container} = render(<Header />);
+		const toggle = container.querySelector(".account-navigation .dropdown-toggle");
+		fireEvent.click(toggle!);
+
+		expect(
+			{
+				lastCall: vi.mocked(useUserDisplayName).mock.lastCall,
+				displayName: normalizeText(container.querySelector(".user-photo-container")),
+			},
+		).toStrictEqual(
+			{
+				lastCall: ["alice"],
+				displayName: "Alice Renamed",
+			},
+		);
 	});
 });

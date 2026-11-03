@@ -1,11 +1,14 @@
 import {useQuery} from "@tanstack/react-query";
 import {fetchUserBlueprints, fetchUserCollection, fetchUserDisplayName, fetchUserFavorites} from "../api/firebase";
 
+export const userDisplayNameQueryKey = (userId: string | undefined) =>
+	["users", "userId", userId, "displayName"] as const;
+
 export const useUserDisplayName = (userId: string | undefined) =>
 {
 	return useQuery<string | null>(
 		{
-			queryKey: ["users", "userId", userId, "displayName"],
+			queryKey: userDisplayNameQueryKey(userId),
 			queryFn: () => fetchUserDisplayName(userId!),
 			enabled: !!userId,
 			// 24 hours
