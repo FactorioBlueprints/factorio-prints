@@ -8,6 +8,7 @@
 
 # production
 /dist
+/storybook-static
 
 # misc
 .DS_Store
@@ -15,15 +16,32 @@
 .env.development.local
 .env.test.local
 .env.production.local
+JUSTFILE_BRANCH
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+.envrc
+/.vite/
+
+# Local documentation and context
+.llm/
+/.claude/*
+!/.claude/commands/
+!/.claude/includes/
+/.claude/settings.local.json
+
+*storybook.log
+.fallow/
+
+# Firebase CLI cache and emulator log
+.firebase
+firebase-debug.log
+
 # TanStack Router generated files
 src/routeTree.gen.*
 
-.envrc
 eslint_report.json
 
 # Firebase export data
