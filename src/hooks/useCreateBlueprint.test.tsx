@@ -112,7 +112,6 @@ describe("useCreateBlueprint", () =>
 				author:
 				{
 					userId: "user123",
-					displayName: "Test User",
 				},
 				createdDate: "SERVER_TIMESTAMP",
 				lastUpdatedDate: "SERVER_TIMESTAMP",

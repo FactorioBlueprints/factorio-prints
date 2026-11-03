@@ -58,7 +58,6 @@ export const useCreateBlueprint = () =>
 					author:
 					{
 						userId: user.uid,
-						displayName: user.displayName || null,
 					},
 					createdDate: serverTimestamp(),
 					lastUpdatedDate: serverTimestamp(),
