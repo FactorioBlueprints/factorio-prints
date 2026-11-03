@@ -3,10 +3,13 @@ import '.just/firebase.just'
 import '.just/analysis.just'
 
 # `just --list --unsorted`
+[group('default')]
 default:
     @just --list --unsorted
 
 ci := env("CI", "")
+
+export PATH := justfile_directory() / "node_modules/.bin" + ":" + env("PATH")
 
 # Override this with a command called `woof` which notifies you in whatever ways you prefer.
 # My `woof` command uses `echo`, `say`, and sends a Pushover notification.
@@ -46,15 +49,15 @@ route-generate: install
 route-generate-ci: install-ci
     vp run route:generate
 
-# `vp run dev`
+# Run dev server
 [group('dev')]
-dev: install
-    vp run dev
+dev *args: install
+    vp dev {{ args }}
 
-# `vp run oxlint`
+# Run linter
 [group('lint')]
 lint: install
-    vp run oxlint
+    vp lint {{ if ci != "" { "--format github" } else { "--fix" } }}
 
 # Run formatter
 [group('lint')]
@@ -64,13 +67,13 @@ format: install
 
 # Run formatter, linter, and type checker
 [group('test')]
-check: install route-generate
-    vp run --cache check {{ if ci != "" { "" } else { "--fix" } }}
+check *args: install route-generate
+    vp run --cache check {{ if ci != "" { "" } else { "--fix" } }} {{ args }}
 
-# `vp run test:run`
+# Run tests
 [group('test')]
-test: install route-generate
-    vp run --cache test:run
+test *args: install route-generate
+    vp run --cache test:run {{ args }}
     vp run test:database-rules
 
 # `vp run test:run`
@@ -82,12 +85,23 @@ test-ci: install-ci route-generate-ci
 # `vp run typecheck`
 [group('test')]
 typecheck: install route-generate
-    vp run --cache typecheck
+    vp run typecheck
 
-# `uv tool run pre-commit run --all-files`
+# Apply safe Fallow fixes locally, then reject remaining dead code
+[group('test')]
+fallow: install
+    {{ if ci == "" { "vp run fallow" } else { "true" } }}
+    vp run fallow:ci
+
+# vp run fallow:ci
+[group('test')]
+fallow-check: install
+    vp run fallow:ci
+
+# Run pre-commit hooks on all files (same as CI's pre-commit job)
 [group('test')]
 pre-commit: install
-    uv tool run pre-commit run --all-files
+    pre-commit run --all-files
 
 # `vp run build`
 [group('build')]
@@ -107,9 +121,9 @@ build-ci: route-generate-ci install-ci
 # Run all pre-commit checks
 [arg("quick", long, value="true", help="Skip tests")]
 [group('build')]
-verify quick="": check build-no-secrets pre-commit
+verify quick="": check build-no-secrets fallow pre-commit
     {{ if quick != "true" { "just test" } else { "true" } }}
-    @echo "✅ All pre-commit checks passed!"
+    @echo "All pre-commit checks passed!"
 
 # Deprecated alias for `verify`
 [arg("quick", long, value="true", help="Skip tests")]
