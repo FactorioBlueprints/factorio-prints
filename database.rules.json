@@ -14,6 +14,10 @@
 					"userId":
 					{
 						".validate": "newData.val() === auth.uid"
+					},
+					"displayName":
+					{
+						".validate": "false"
 					}
 				},
 				"favorites":

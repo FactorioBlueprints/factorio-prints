@@ -51,7 +51,6 @@ const enrichBlueprint = (
 					blueprintTitle: blueprintSummary?.title || rawBlueprint.title || "Untitled",
 					blueprintUrl: `https://factorioprints.com/view/${blueprintId}`,
 					authorId: rawBlueprint.author?.userId,
-					authorName: rawBlueprint.author?.displayName,
 					issues,
 				},
 			},

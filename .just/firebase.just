@@ -39,3 +39,7 @@ firebase-deploy:
 # Set tags in Firebase database
 firebase-set-tags:
     firebase database:set /tags data/tags.json
+
+# Strip copied author.displayName from blueprints (dry run unless ARGS includes --execute)
+firebase-strip-author-display-names *ARGS:
+    vp run firebase:strip-author-display-names {{ ARGS }}

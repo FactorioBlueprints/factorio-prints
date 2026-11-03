@@ -293,7 +293,6 @@ describe("blueprint creation rules", () =>
 	{
 		author:
 		{
-			displayName: "User 100",
 			userId,
 		},
 		blueprintString: "0eNq-new-blueprint",
@@ -319,7 +318,6 @@ describe("blueprint creation rules", () =>
 					...newBlueprint,
 					author:
 					{
-						displayName: "Owner 100",
 						userId: ownerId,
 					},
 				},
@@ -332,6 +330,47 @@ describe("blueprint creation rules", () =>
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertSucceeds(set(ref(database, "blueprints/blueprint-200"), newBlueprint));
+	});
+
+	test("reject a create that copies the author's display name", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(userId).database();
+
+		await assertFails(
+			set(
+				ref(database, "blueprints/blueprint-200"),
+				{
+					...newBlueprint,
+					author:
+					{
+						displayName: "User 100",
+						userId,
+					},
+				},
+			),
+		);
+	});
+
+	test("reject an owner adding a display name to an existing blueprint's author", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(ownerId).database();
+
+		await assertFails(set(ref(database, `blueprints/${blueprintId}/author/displayName`), "Renamed Owner"));
+	});
+
+	test("allow an owner to remove a legacy display name from an existing blueprint's author", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(ownerId).database();
+
+		await assertSucceeds(set(ref(database, `blueprints/${blueprintId}/author/displayName`), null));
+
+		const snapshot = await get(ref(database, `blueprints/${blueprintId}/author`));
+		assert.deepStrictEqual(
+			snapshot.val(),
+			{
+				userId: ownerId,
+			},
+		);
 	});
 });
 
