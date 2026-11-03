@@ -46,10 +46,7 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({
     validateEnrichedBlueprintSummary(blueprintSummary);
   } catch {
     return (
-      <Card
-        className="blueprint-thumbnail col-auto"
-        style={{ width: "11rem", backgroundColor: "#1c1e22" }}
-      >
+      <Card className="blueprint-thumbnail col-auto" style={{ width: "11rem" }}>
         <Card.Img
           variant="top"
           src="/icons/entity-unknown.png"
@@ -94,11 +91,14 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({
   const collectionIcon = isInCollection ? (isCollectionHovering ? faXmark : faCheck) : faPlusSquare;
 
   return (
-    <Card
-      className="blueprint-thumbnail col-auto"
-      style={{ width: "11rem", backgroundColor: "#1c1e22" }}
-    >
-      <Link to="/view/$blueprintId" params={{ blueprintId: key }} from="/" preload={false}>
+    <Card className="blueprint-thumbnail col-auto" style={{ width: "11rem" }}>
+      <Link
+        to="/view/$blueprintId"
+        params={{ blueprintId: key }}
+        from="/"
+        preload={false}
+        className="blueprint-thumbnail-image-link"
+      >
         <Card.Img
           variant="top"
           src={imageUrl}
@@ -118,7 +118,20 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({
           }}
         />
       </Link>
-      <p className="truncate p-1">
+      <SafeOverlayTrigger placement="bottom" overlay={tooltip}>
+        <Link
+          to="/view/$blueprintId"
+          params={{ blueprintId: key }}
+          from="/"
+          preload={false}
+          className="blueprint-thumbnail-title truncate"
+        >
+          <span className={mineStyle}>
+            <RichText text={title} inline />
+          </span>
+        </Link>
+      </SafeOverlayTrigger>
+      <p className="blueprint-thumbnail-actions">
         <span className="me-1">
           {`${numberOfFavorites}`} <span className="visually-hidden">favorites</span>
         </span>
@@ -159,7 +172,6 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({
         >
           <FontAwesomeIcon icon={faHeart} className="text-error" />
         </span>
-        {"  "}
         <span
           className={`${collectionStyle} ${!user || collectionMutation.isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
           onMouseEnter={() => setIsCollectionHovering(true)}
@@ -197,14 +209,6 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({
         >
           <FontAwesomeIcon icon={collectionIcon} className="text-error" />
         </span>
-        {"  "}
-        <SafeOverlayTrigger placement="bottom" overlay={tooltip}>
-          <Link to="/view/$blueprintId" params={{ blueprintId: key }} from="/" preload={false}>
-            <span className={mineStyle}>
-              <RichText text={title} inline />
-            </span>
-          </Link>
-        </SafeOverlayTrigger>
       </p>
     </Card>
   );

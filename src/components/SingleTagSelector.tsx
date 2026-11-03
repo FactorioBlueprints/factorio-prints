@@ -2,8 +2,8 @@ import { useNavigate } from "@tanstack/react-router";
 import type React from "react";
 import { useMemo } from "react";
 import Col from "react-bootstrap/Col";
-import Select from "react-select";
 
+import ThemedSelect from "./ThemedSelect";
 import { useTags } from "../hooks/useTags";
 
 interface TagOption {
@@ -51,7 +51,8 @@ const SingleTagSelector: React.FC<SingleTagSelectorProps> = ({ currentTag }) => 
 
   return (
     <Col md={6}>
-      <Select
+      <ThemedSelect
+        size="sm"
         value={selectedOption}
         options={options}
         onChange={handleTagSelection}

@@ -94,4 +94,29 @@ describe("Header", () => {
       ],
     });
   });
+
+  it("renders a dark navbar whose links stay readable", () => {
+    vi.mocked(useAuthState).mockReturnValue([null, false, undefined] as ReturnType<
+      typeof useAuthState
+    >);
+
+    const { container } = render(<Header />);
+    const navbar = container.querySelector(".site-navbar");
+    const darkTextLinks = container.querySelectorAll(".site-navbar .text-dark");
+    const donateLink = container.querySelector(
+      'a[href="https://www.patreon.com/FactorioBlueprints"]',
+    );
+
+    expect({
+      darkTextLinkCount: darkTextLinks.length,
+      donateHasWarningText: donateLink?.classList.contains("text-warning"),
+      navbarHasWarningBackground: navbar?.classList.contains("bg-warning"),
+      navbarIsDark: navbar?.classList.contains("navbar-dark"),
+    }).toStrictEqual({
+      darkTextLinkCount: 0,
+      donateHasWarningText: true,
+      navbarHasWarningBackground: false,
+      navbarIsDark: true,
+    });
+  });
 });

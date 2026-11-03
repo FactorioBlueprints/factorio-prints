@@ -20,8 +20,8 @@ import Modal from "react-bootstrap/Modal";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import Row from "react-bootstrap/Row";
 import { useAuthState } from "react-firebase-hooks/auth";
-import Select from "react-select";
 import { z } from "zod";
+import ThemedSelect from "./ThemedSelect";
 import Blueprint, { type V15DecodedObject } from "../Blueprint";
 import { app } from "../base";
 import noImageAvailable from "../gif/No_available_image.gif";
@@ -837,7 +837,7 @@ function EditBlueprintWrapper() {
                       {"Tags"}
                     </Form.Label>
                     <Col sm={10}>
-                      <Select
+                      <ThemedSelect
                         value={currentTags.map((value) => ({ value, label: value }))}
                         options={tags.map((value) => ({ value, label: value }))}
                         onChange={handleTagSelection}

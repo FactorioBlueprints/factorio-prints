@@ -164,7 +164,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <Navbar expand="xl" sticky="top" collapseOnSelect bg="warning" className="site-navbar">
+    <Navbar expand="xl" sticky="top" collapseOnSelect variant="dark" className="site-navbar">
       <Navbar.Brand>
         <Link to="/" aria-label="Factorio Prints home" title="Factorio Prints home">
           <FontAwesomeIcon icon={faCogs} size="lg" fixedWidth />
@@ -240,7 +240,7 @@ const Header: React.FC = () => {
           </Nav.Link>
           <Nav.Link
             href="https://www.patreon.com/FactorioBlueprints"
-            className="text-dark"
+            className="text-warning"
             target="_blank"
             rel="noopener noreferrer"
           >

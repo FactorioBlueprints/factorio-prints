@@ -2,8 +2,9 @@ import { useStore } from "@tanstack/react-store";
 import type React from "react";
 import { useMemo } from "react";
 import Form from "react-bootstrap/Form";
-import Select, { type SingleValue } from "react-select";
+import type { SingleValue } from "react-select";
 
+import ThemedSelect from "../ThemedSelect";
 import { useEntityOptions } from "../../hooks/useEntityOptions";
 import { advancedSearchStore, setEntity } from "../../store/advancedSearchStore";
 
@@ -32,7 +33,8 @@ const EntityFilterSelect: React.FC = () => {
   return (
     <Form.Group className="mb-3">
       <Form.Label>Entities</Form.Label>
-      <Select<EntityOption>
+      <ThemedSelect<EntityOption>
+        size="sm"
         value={selectedOption}
         options={options}
         onChange={handleChange}
