@@ -1,539 +1,530 @@
-import { describe, expect, it, vi } from "vitest";
+import {describe, expect, it, vi} from "vitest";
 import imageGateway from "./index.ts";
 
 const handleImageRequest = imageGateway.fetch;
 
 interface TestEnvironment {
-  environment: Env;
-  get: ReturnType<typeof vi.fn>;
-  head: ReturnType<typeof vi.fn>;
-  writeDataPoint: ReturnType<typeof vi.fn>;
+	environment: Env;
+	get: ReturnType<typeof vi.fn>;
+	head: ReturnType<typeof vi.fn>;
+	writeDataPoint: ReturnType<typeof vi.fn>;
 }
 
 const createEnvironment = (storedObject: R2ObjectBody | null): TestEnvironment => {
-  const get = vi.fn().mockResolvedValue(storedObject);
-  const head = vi.fn().mockResolvedValue(storedObject);
-  const writeDataPoint = vi.fn();
-  const images = {
-    createMultipartUpload: vi.fn(),
-    delete: vi.fn(),
-    get,
-    head,
-    list: vi.fn(),
-    put: vi.fn(),
-    resumeMultipartUpload: vi.fn(),
-  } as R2Bucket;
-  return {
-    environment: {
-      FIREBASE_DATABASE_URL: "https://facorio-blueprints.firebaseio.com",
-      FIREBASE_PROJECT_ID: "facorio-blueprints",
-      IMAGES: images,
-      IMAGE_GATEWAY_METRICS: { writeDataPoint },
-      IMGUR_UPLOADER: {} as Env["IMGUR_UPLOADER"],
-      LEGACY_R2_READS_ENABLED: "true",
-      UPLOAD_EXPIRY: {} as Env["UPLOAD_EXPIRY"],
-      UPLOAD_ALLOWED_ORIGINS: "https://factorioprints.com, https://www.factorioprints.com",
-      UPLOAD_HOURLY_LIMIT: "10",
-      RECENT_IMAGE_COPIER: {} as Env["RECENT_IMAGE_COPIER"],
-      UPLOAD_QUOTA: {} as Env["UPLOAD_QUOTA"],
-    },
-    get,
-    head,
-    writeDataPoint,
-  };
+	const get = vi.fn().mockResolvedValue(storedObject);
+	const head = vi.fn().mockResolvedValue(storedObject);
+	const writeDataPoint = vi.fn();
+	const images = {
+		createMultipartUpload: vi.fn(),
+		delete: vi.fn(),
+		get,
+		head,
+		list: vi.fn(),
+		put: vi.fn(),
+		resumeMultipartUpload: vi.fn(),
+	} as R2Bucket;
+	return {
+		environment: {
+			FIREBASE_DATABASE_URL: "https://facorio-blueprints.firebaseio.com",
+			FIREBASE_PROJECT_ID: "facorio-blueprints",
+			IMAGES: images,
+			IMAGE_GATEWAY_METRICS: {writeDataPoint},
+			IMGUR_UPLOADER: {} as Env["IMGUR_UPLOADER"],
+			LEGACY_R2_READS_ENABLED: "true",
+			UPLOAD_EXPIRY: {} as Env["UPLOAD_EXPIRY"],
+			UPLOAD_ALLOWED_ORIGINS: "https://factorioprints.com, https://www.factorioprints.com",
+			UPLOAD_HOURLY_LIMIT: "10",
+			RECENT_IMAGE_COPIER: {} as Env["RECENT_IMAGE_COPIER"],
+			UPLOAD_QUOTA: {} as Env["UPLOAD_QUOTA"],
+		},
+		get,
+		head,
+		writeDataPoint,
+	};
 };
 
 const createStoredImage = (): R2ObjectBody => {
-  const bytes = new TextEncoder().encode("obviously fake image bytes");
-  return {
-    body: new ReadableStream({
-      start(controller) {
-        controller.enqueue(bytes);
-        controller.close();
-      },
-    }),
-    httpEtag: '"fake-etag"',
-    writeHttpMetadata(headers) {
-      headers.set("cache-control", "public, max-age=31536000, immutable");
-      headers.set("content-language", "en");
-      headers.set("content-type", "image/png");
-    },
-  } as R2ObjectBody;
+	const bytes = new TextEncoder().encode("obviously fake image bytes");
+	return {
+		body: new ReadableStream({
+			start(controller) {
+				controller.enqueue(bytes);
+				controller.close();
+			},
+		}),
+		httpEtag: '"fake-etag"',
+		writeHttpMetadata(headers) {
+			headers.set("cache-control", "public, max-age=31536000, immutable");
+			headers.set("content-language", "en");
+			headers.set("content-type", "image/png");
+		},
+	} as R2ObjectBody;
 };
 
 const readResponse = async (response: Response) => ({
-  body: response.body ? await response.text() : null,
-  headers: Object.fromEntries(response.headers.entries()),
-  status: response.status,
+	body: response.body ? await response.text() : null,
+	headers: Object.fromEntries(response.headers.entries()),
+	status: response.status,
 });
 
 describe("handleImageRequest", () => {
-  it("streams an R2 object using the extensionless key and stored metadata", async () => {
-    const { environment, get, writeDataPoint } = createEnvironment(createStoredImage());
+	it("streams an R2 object using the extensionless key and stored metadata", async () => {
+		const {environment, get, writeDataPoint} = createEnvironment(createStoredImage());
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice100/original.png"),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice100/original.png"),
+			environment,
+		);
 
-    expect(await readResponse(response)).toStrictEqual({
-      body: "obviously fake image bytes",
-      headers: {
-        "cache-control": "public, max-age=31536000, immutable",
-        "content-language": "en",
-        "content-type": "image/png",
-        etag: '"fake-etag"',
-        "x-content-type-options": "nosniff",
-      },
-      status: 200,
-    });
-    expect(get.mock.calls).toStrictEqual([["legacy-imgur/alice100/original"]]);
-    expect(writeDataPoint.mock.calls).toStrictEqual([
-      [
-        {
-          blobs: ["hit", "original", "legacy-imgur", "r2"],
-          doubles: [1],
-          indexes: ["factorio-prints-image-gateway"],
-        },
-      ],
-    ]);
-  });
+		expect(await readResponse(response)).toStrictEqual({
+			body: "obviously fake image bytes",
+			headers: {
+				"cache-control": "public, max-age=31536000, immutable",
+				"content-language": "en",
+				"content-type": "image/png",
+				etag: '"fake-etag"',
+				"x-content-type-options": "nosniff",
+			},
+			status: 200,
+		});
+		expect(get.mock.calls).toStrictEqual([["legacy-imgur/alice100/original"]]);
+		expect(writeDataPoint.mock.calls).toStrictEqual([
+			[
+				{
+					blobs: ["hit", "original", "legacy-imgur", "r2"],
+					doubles: [1],
+					indexes: ["factorio-prints-image-gateway"],
+				},
+			],
+		]);
+	});
 
-  it("uses the default immutable cache policy when stored metadata omits it", async () => {
-    const storedImage = createStoredImage();
-    storedImage.writeHttpMetadata = (headers) => headers.set("content-type", "image/png");
-    const { environment } = createEnvironment(storedImage);
+	it("uses the default immutable cache policy when stored metadata omits it", async () => {
+		const storedImage = createStoredImage();
+		storedImage.writeHttpMetadata = (headers) => headers.set("content-type", "image/png");
+		const {environment} = createEnvironment(storedImage);
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice100/thumbnail.png"),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice100/thumbnail.png"),
+			environment,
+		);
 
-    expect(await readResponse(response)).toStrictEqual({
-      body: "obviously fake image bytes",
-      headers: {
-        "cache-control": "public, max-age=31536000, immutable",
-        "content-type": "image/png",
-        etag: '"fake-etag"',
-        "x-content-type-options": "nosniff",
-      },
-      status: 200,
-    });
-  });
+		expect(await readResponse(response)).toStrictEqual({
+			body: "obviously fake image bytes",
+			headers: {
+				"cache-control": "public, max-age=31536000, immutable",
+				"content-type": "image/png",
+				etag: '"fake-etag"',
+				"x-content-type-options": "nosniff",
+			},
+			status: 200,
+		});
+	});
 
-  it.each([
-    ["original", "png", ""],
-    ["thumbnail", "jpeg", "b"],
-    ["large", "gif", "l"],
-  ])(
-    "redirects a missing %s variant to its fixed Imgur mapping",
-    async (variant, extension, suffix) => {
-      const { environment, get, writeDataPoint } = createEnvironment(null);
+	it.each([
+		["original", "png", ""],
+		["thumbnail", "jpeg", "b"],
+		["large", "gif", "l"],
+	])("redirects a missing %s variant to its fixed Imgur mapping", async (variant, extension, suffix) => {
+		const {environment, get, writeDataPoint} = createEnvironment(null);
 
-      const response = await handleImageRequest(
-        new Request(`https://images.example.com/legacy-imgur/alice100/${variant}.${extension}`),
-        environment,
-      );
+		const response = await handleImageRequest(
+			new Request(`https://images.example.com/legacy-imgur/alice100/${variant}.${extension}`),
+			environment,
+		);
 
-      expect(await readResponse(response)).toStrictEqual({
-        body: null,
-        headers: {
-          "cache-control": "public, max-age=300",
-          location: `https://i.imgur.com/alice100${suffix}.${extension}`,
-        },
-        status: 307,
-      });
-      expect(get.mock.calls).toStrictEqual(
-        variant === "original"
-          ? [[`legacy-imgur/alice100/original`]]
-          : [[`legacy-imgur/alice100/${variant}`], ["legacy-imgur/alice100/original"]],
-      );
-      expect(writeDataPoint.mock.calls).toStrictEqual([
-        [
-          {
-            blobs: ["fallback", variant, "legacy-imgur", "r2-miss"],
-            doubles: [1],
-            indexes: ["factorio-prints-image-gateway"],
-          },
-        ],
-      ]);
-    },
-  );
+		expect(await readResponse(response)).toStrictEqual({
+			body: null,
+			headers: {
+				"cache-control": "public, max-age=300",
+				location: `https://i.imgur.com/alice100${suffix}.${extension}`,
+			},
+			status: 307,
+		});
+		expect(get.mock.calls).toStrictEqual(
+			variant === "original"
+				? [[`legacy-imgur/alice100/original`]]
+				: [[`legacy-imgur/alice100/${variant}`], ["legacy-imgur/alice100/original"]],
+		);
+		expect(writeDataPoint.mock.calls).toStrictEqual([
+			[
+				{
+					blobs: ["fallback", variant, "legacy-imgur", "r2-miss"],
+					doubles: [1],
+					indexes: ["factorio-prints-image-gateway"],
+				},
+			],
+		]);
+	});
 
-  it("bypasses R2 and records a rollback fallback when legacy reads are disabled", async () => {
-    const { environment, get, head, writeDataPoint } = createEnvironment(createStoredImage());
-    const rollbackEnvironment = {
-      ...environment,
-      LEGACY_R2_READS_ENABLED: "false",
-    } as unknown as Env;
+	it("bypasses R2 and records a rollback fallback when legacy reads are disabled", async () => {
+		const {environment, get, head, writeDataPoint} = createEnvironment(createStoredImage());
+		const rollbackEnvironment = {
+			...environment,
+			LEGACY_R2_READS_ENABLED: "false",
+		} as unknown as Env;
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice100/original.png"),
-      rollbackEnvironment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice100/original.png"),
+			rollbackEnvironment,
+		);
 
-    expect(await readResponse(response)).toStrictEqual({
-      body: null,
-      headers: {
-        "cache-control": "public, max-age=300",
-        location: "https://i.imgur.com/alice100.png",
-      },
-      status: 307,
-    });
-    expect(get.mock.calls).toStrictEqual([]);
-    expect(head.mock.calls).toStrictEqual([]);
-    expect(writeDataPoint.mock.calls).toStrictEqual([
-      [
-        {
-          blobs: ["fallback", "original", "legacy-imgur", "rollback"],
-          doubles: [1],
-          indexes: ["factorio-prints-image-gateway"],
-        },
-      ],
-    ]);
-  });
+		expect(await readResponse(response)).toStrictEqual({
+			body: null,
+			headers: {
+				"cache-control": "public, max-age=300",
+				location: "https://i.imgur.com/alice100.png",
+			},
+			status: 307,
+		});
+		expect(get.mock.calls).toStrictEqual([]);
+		expect(head.mock.calls).toStrictEqual([]);
+		expect(writeDataPoint.mock.calls).toStrictEqual([
+			[
+				{
+					blobs: ["fallback", "original", "legacy-imgur", "rollback"],
+					doubles: [1],
+					indexes: ["factorio-prints-image-gateway"],
+				},
+			],
+		]);
+	});
 
-  it.each([
-    "/legacy-imgur/alice-100/original.png",
-    "/legacy-imgur/alice100/medium.png",
-    "/legacy-imgur/alice100/original.webp",
-    "/legacy-imgur/alice100/original.png/extra",
-    "/legacy-imgur/example.com/original.png",
-    "/unrelated/alice100/original.png",
-  ])("rejects an invalid path without reading R2 or redirecting: %s", async (pathname) => {
-    const { environment, get, head, writeDataPoint } = createEnvironment(null);
+	it.each([
+		"/legacy-imgur/alice-100/original.png",
+		"/legacy-imgur/alice100/medium.png",
+		"/legacy-imgur/alice100/original.webp",
+		"/legacy-imgur/alice100/original.png/extra",
+		"/legacy-imgur/example.com/original.png",
+		"/unrelated/alice100/original.png",
+	])("rejects an invalid path without reading R2 or redirecting: %s", async (pathname) => {
+		const {environment, get, head, writeDataPoint} = createEnvironment(null);
 
-    const response = await handleImageRequest(
-      new Request(`https://images.example.com${pathname}`),
-      environment,
-    );
+		const response = await handleImageRequest(new Request(`https://images.example.com${pathname}`), environment);
 
-    expect(await readResponse(response)).toStrictEqual({
-      body: "Image not found",
-      headers: {
-        "cache-control": "no-store",
-        "content-type": "text/plain; charset=UTF-8",
-      },
-      status: 404,
-    });
-    expect(get.mock.calls).toStrictEqual([]);
-    expect(head.mock.calls).toStrictEqual([]);
-    expect(writeDataPoint.mock.calls).toStrictEqual([
-      [
-        {
-          blobs: ["invalid", "none", "unknown", "validation"],
-          doubles: [1],
-          indexes: ["factorio-prints-image-gateway"],
-        },
-      ],
-    ]);
-  });
+		expect(await readResponse(response)).toStrictEqual({
+			body: "Image not found",
+			headers: {
+				"cache-control": "no-store",
+				"content-type": "text/plain; charset=UTF-8",
+			},
+			status: 404,
+		});
+		expect(get.mock.calls).toStrictEqual([]);
+		expect(head.mock.calls).toStrictEqual([]);
+		expect(writeDataPoint.mock.calls).toStrictEqual([
+			[
+				{
+					blobs: ["invalid", "none", "unknown", "validation"],
+					doubles: [1],
+					indexes: ["factorio-prints-image-gateway"],
+				},
+			],
+		]);
+	});
 
-  it("rejects unsupported methods without reading R2", async () => {
-    const { environment, get, head, writeDataPoint } = createEnvironment(null);
+	it("rejects unsupported methods without reading R2", async () => {
+		const {environment, get, head, writeDataPoint} = createEnvironment(null);
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice100/original.png", {
-        method: "POST",
-      }),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice100/original.png", {
+				method: "POST",
+			}),
+			environment,
+		);
 
-    expect(await readResponse(response)).toStrictEqual({
-      body: "Method not allowed",
-      headers: {
-        allow: "GET, HEAD",
-        "cache-control": "no-store",
-        "content-type": "text/plain; charset=UTF-8",
-      },
-      status: 405,
-    });
-    expect(get.mock.calls).toStrictEqual([]);
-    expect(head.mock.calls).toStrictEqual([]);
-    expect(writeDataPoint.mock.calls).toStrictEqual([
-      [
-        {
-          blobs: ["invalid", "none", "unknown", "validation"],
-          doubles: [1],
-          indexes: ["factorio-prints-image-gateway"],
-        },
-      ],
-    ]);
-  });
+		expect(await readResponse(response)).toStrictEqual({
+			body: "Method not allowed",
+			headers: {
+				allow: "GET, HEAD",
+				"cache-control": "no-store",
+				"content-type": "text/plain; charset=UTF-8",
+			},
+			status: 405,
+		});
+		expect(get.mock.calls).toStrictEqual([]);
+		expect(head.mock.calls).toStrictEqual([]);
+		expect(writeDataPoint.mock.calls).toStrictEqual([
+			[
+				{
+					blobs: ["invalid", "none", "unknown", "validation"],
+					doubles: [1],
+					indexes: ["factorio-prints-image-gateway"],
+				},
+			],
+		]);
+	});
 
-  it("returns an empty successful response for HEAD requests", async () => {
-    const { environment, get, head, writeDataPoint } = createEnvironment(createStoredImage());
+	it("returns an empty successful response for HEAD requests", async () => {
+		const {environment, get, head, writeDataPoint} = createEnvironment(createStoredImage());
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice100/large.png", {
-        method: "HEAD",
-      }),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice100/large.png", {
+				method: "HEAD",
+			}),
+			environment,
+		);
 
-    expect(await readResponse(response)).toStrictEqual({
-      body: null,
-      headers: {
-        "cache-control": "public, max-age=31536000, immutable",
-        "content-language": "en",
-        "content-type": "image/png",
-        etag: '"fake-etag"',
-        "x-content-type-options": "nosniff",
-      },
-      status: 200,
-    });
-    expect(get.mock.calls).toStrictEqual([]);
-    expect(head.mock.calls).toStrictEqual([["legacy-imgur/alice100/large"]]);
-    expect(writeDataPoint.mock.calls).toStrictEqual([
-      [
-        {
-          blobs: ["hit", "large", "legacy-imgur", "r2"],
-          doubles: [1],
-          indexes: ["factorio-prints-image-gateway"],
-        },
-      ],
-    ]);
-  });
+		expect(await readResponse(response)).toStrictEqual({
+			body: null,
+			headers: {
+				"cache-control": "public, max-age=31536000, immutable",
+				"content-language": "en",
+				"content-type": "image/png",
+				etag: '"fake-etag"',
+				"x-content-type-options": "nosniff",
+			},
+			status: 200,
+		});
+		expect(get.mock.calls).toStrictEqual([]);
+		expect(head.mock.calls).toStrictEqual([["legacy-imgur/alice100/large"]]);
+		expect(writeDataPoint.mock.calls).toStrictEqual([
+			[
+				{
+					blobs: ["hit", "large", "legacy-imgur", "r2"],
+					doubles: [1],
+					indexes: ["factorio-prints-image-gateway"],
+				},
+			],
+		]);
+	});
 
-  it("returns a retryable error without falling back when R2 fails", async () => {
-    const { environment, get, writeDataPoint } = createEnvironment(null);
-    get.mockRejectedValue(new Error("fake R2 outage"));
-    const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined);
+	it("returns a retryable error without falling back when R2 fails", async () => {
+		const {environment, get, writeDataPoint} = createEnvironment(null);
+		get.mockRejectedValue(new Error("fake R2 outage"));
+		const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice100/thumbnail.jpg"),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice100/thumbnail.jpg"),
+			environment,
+		);
 
-    expect(await readResponse(response)).toStrictEqual({
-      body: "Image storage is temporarily unavailable",
-      headers: {
-        "cache-control": "no-store",
-        "content-type": "text/plain; charset=UTF-8",
-        "retry-after": "60",
-      },
-      status: 503,
-    });
-    expect(get.mock.calls).toStrictEqual([["legacy-imgur/alice100/thumbnail"]]);
-    expect(writeDataPoint.mock.calls).toStrictEqual([
-      [
-        {
-          blobs: ["error", "thumbnail", "legacy-imgur", "r2-error"],
-          doubles: [1],
-          indexes: ["factorio-prints-image-gateway"],
-        },
-      ],
-    ]);
-    expect(errorLog.mock.calls).toStrictEqual([
-      [
-        {
-          event: "image_gateway_r2_error",
-          imgurId: "alice100",
-          message: "fake R2 outage",
-          variant: "thumbnail",
-        },
-      ],
-    ]);
-    errorLog.mockRestore();
-  });
+		expect(await readResponse(response)).toStrictEqual({
+			body: "Image storage is temporarily unavailable",
+			headers: {
+				"cache-control": "no-store",
+				"content-type": "text/plain; charset=UTF-8",
+				"retry-after": "60",
+			},
+			status: 503,
+		});
+		expect(get.mock.calls).toStrictEqual([["legacy-imgur/alice100/thumbnail"]]);
+		expect(writeDataPoint.mock.calls).toStrictEqual([
+			[
+				{
+					blobs: ["error", "thumbnail", "legacy-imgur", "r2-error"],
+					doubles: [1],
+					indexes: ["factorio-prints-image-gateway"],
+				},
+			],
+		]);
+		expect(errorLog.mock.calls).toStrictEqual([
+			[
+				{
+					event: "image_gateway_r2_error",
+					imgurId: "alice100",
+					message: "fake R2 outage",
+					variant: "thumbnail",
+				},
+			],
+		]);
+		errorLog.mockRestore();
+	});
 });
 
 describe("upload routing", () => {
-  it("sends /uploads to the upload handler rather than the image gateway", async () => {
-    const { environment, get } = createEnvironment(null);
+	it("sends /uploads to the upload handler rather than the image gateway", async () => {
+		const {environment, get} = createEnvironment(null);
 
-    const response = await handleImageRequest(
-      new Request("https://images.factorioprints.com/uploads", {
-        method: "OPTIONS",
-        headers: { origin: "https://factorioprints.com" },
-      }),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.factorioprints.com/uploads", {
+				method: "OPTIONS",
+				headers: {origin: "https://factorioprints.com"},
+			}),
+			environment,
+		);
 
-    expect(response.status).toBe(204);
-    expect(response.headers.get("access-control-allow-origin")).toBe("https://factorioprints.com");
-    expect(get).not.toHaveBeenCalled();
-  });
+		expect(response.status).toBe(204);
+		expect(response.headers.get("access-control-allow-origin")).toBe("https://factorioprints.com");
+		expect(get).not.toHaveBeenCalled();
+	});
 });
 
 describe("fallback-id images", () => {
-  const fallbackId = "Fallback0123456789Ab";
+	const fallbackId = "Fallback0123456789Ab";
 
-  const environmentWith = (keys: string[], legacyReads = "true") => {
-    const { environment, get, head } = createEnvironment(null);
-    const lookup = async (key: string) => (keys.includes(key) ? createStoredImage() : null);
-    get.mockImplementation(lookup);
-    head.mockImplementation(lookup);
-    return {
-      environment: { ...environment, LEGACY_R2_READS_ENABLED: legacyReads } as Env,
-      get,
-    };
-  };
+	const environmentWith = (keys: string[], legacyReads = "true") => {
+		const {environment, get, head} = createEnvironment(null);
+		const lookup = async (key: string) => (keys.includes(key) ? createStoredImage() : null);
+		get.mockImplementation(lookup);
+		head.mockImplementation(lookup);
+		return {
+			environment: {...environment, LEGACY_R2_READS_ENABLED: legacyReads} as Env,
+			get,
+		};
+	};
 
-  it("serves the original when R2 holds no resized version, since Imgur never made one", async () => {
-    const { environment, get } = environmentWith([`legacy-imgur/${fallbackId}/original`]);
+	it("serves the original when R2 holds no resized version, since Imgur never made one", async () => {
+		const {environment, get} = environmentWith([`legacy-imgur/${fallbackId}/original`]);
 
-    const response = await handleImageRequest(
-      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/thumbnail.png`),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request(`https://images.example.com/legacy-imgur/${fallbackId}/thumbnail.png`),
+			environment,
+		);
 
-    expect(response.status).toBe(200);
-    expect(get.mock.calls).toStrictEqual([
-      [`legacy-imgur/${fallbackId}/thumbnail`],
-      [`legacy-imgur/${fallbackId}/original`],
-    ]);
-  });
+		expect(response.status).toBe(200);
+		expect(get.mock.calls).toStrictEqual([
+			[`legacy-imgur/${fallbackId}/thumbnail`],
+			[`legacy-imgur/${fallbackId}/original`],
+		]);
+	});
 
-  it("answers 404 instead of redirecting to Imgur when R2 has nothing", async () => {
-    const { environment } = environmentWith([]);
+	it("answers 404 instead of redirecting to Imgur when R2 has nothing", async () => {
+		const {environment} = environmentWith([]);
 
-    const response = await handleImageRequest(
-      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/original.png`),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request(`https://images.example.com/legacy-imgur/${fallbackId}/original.png`),
+			environment,
+		);
 
-    expect(response.status).toBe(404);
-    expect(response.headers.has("location")).toBe(false);
-  });
+		expect(response.status).toBe(404);
+		expect(response.headers.has("location")).toBe(false);
+	});
 
-  it("keeps serving from R2 while the all-Imgur rollback switch is on", async () => {
-    const { environment } = environmentWith([`legacy-imgur/${fallbackId}/original`], "false");
+	it("keeps serving from R2 while the all-Imgur rollback switch is on", async () => {
+		const {environment} = environmentWith([`legacy-imgur/${fallbackId}/original`], "false");
 
-    const response = await handleImageRequest(
-      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/original.png`),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request(`https://images.example.com/legacy-imgur/${fallbackId}/original.png`),
+			environment,
+		);
 
-    expect(response.status).toBe(200);
-  });
+		expect(response.status).toBe(200);
+	});
 
-  it("answers HEAD from R2 with the original's metadata too", async () => {
-    const { environment } = environmentWith([`legacy-imgur/${fallbackId}/original`]);
+	it("answers HEAD from R2 with the original's metadata too", async () => {
+		const {environment} = environmentWith([`legacy-imgur/${fallbackId}/original`]);
 
-    const response = await handleImageRequest(
-      new Request(`https://images.example.com/legacy-imgur/${fallbackId}/large.png`, {
-        method: "HEAD",
-      }),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request(`https://images.example.com/legacy-imgur/${fallbackId}/large.png`, {
+				method: "HEAD",
+			}),
+			environment,
+		);
 
-    expect(response.status).toBe(200);
-  });
+		expect(response.status).toBe(200);
+	});
 });
 
 describe("fresh uploads", () => {
-  const environmentWith = (objects: Record<string, Record<string, string>>) => {
-    const { environment, get, head, writeDataPoint } = createEnvironment(null);
-    const lookup = async (key: string) => {
-      const customMetadata = objects[key];
-      return customMetadata ? { ...createStoredImage(), customMetadata } : null;
-    };
-    get.mockImplementation(lookup);
-    head.mockImplementation(lookup);
-    return { environment, get, head, writeDataPoint };
-  };
+	const environmentWith = (objects: Record<string, Record<string, string>>) => {
+		const {environment, get, head, writeDataPoint} = createEnvironment(null);
+		const lookup = async (key: string) => {
+			const customMetadata = objects[key];
+			return customMetadata ? {...createStoredImage(), customMetadata} : null;
+		};
+		get.mockImplementation(lookup);
+		head.mockImplementation(lookup);
+		return {environment, get, head, writeDataPoint};
+	};
 
-  it.each(["thumbnail", "large"])(
-    "serves the uploaded original briefly while the %s is not copied yet, so it loads where Imgur is blocked",
-    async (variant) => {
-      const { environment, get, writeDataPoint } = environmentWith({
-        "legacy-imgur/alice10/original": { origin: "upload" },
-      });
+	it.each(["thumbnail", "large"])(
+		"serves the uploaded original briefly while the %s is not copied yet, so it loads where Imgur is blocked",
+		async (variant) => {
+			const {environment, get, writeDataPoint} = environmentWith({
+				"legacy-imgur/alice10/original": {origin: "upload"},
+			});
 
-      const response = await handleImageRequest(
-        new Request(`https://images.example.com/legacy-imgur/alice10/${variant}.png`),
-        environment,
-      );
+			const response = await handleImageRequest(
+				new Request(`https://images.example.com/legacy-imgur/alice10/${variant}.png`),
+				environment,
+			);
 
-      expect(await readResponse(response)).toStrictEqual({
-        body: "obviously fake image bytes",
-        headers: {
-          "cache-control": "public, max-age=300",
-          "content-language": "en",
-          "content-type": "image/png",
-          etag: '"fake-etag"',
-          "x-content-type-options": "nosniff",
-        },
-        status: 200,
-      });
-      expect(get.mock.calls).toStrictEqual([
-        [`legacy-imgur/alice10/${variant}`],
-        ["legacy-imgur/alice10/original"],
-      ]);
-      expect(writeDataPoint.mock.calls).toStrictEqual([
-        [
-          {
-            blobs: ["hit", variant, "legacy-imgur", "r2-original"],
-            doubles: [1],
-            indexes: ["factorio-prints-image-gateway"],
-          },
-        ],
-      ]);
-    },
-  );
+			expect(await readResponse(response)).toStrictEqual({
+				body: "obviously fake image bytes",
+				headers: {
+					"cache-control": "public, max-age=300",
+					"content-language": "en",
+					"content-type": "image/png",
+					etag: '"fake-etag"',
+					"x-content-type-options": "nosniff",
+				},
+				status: 200,
+			});
+			expect(get.mock.calls).toStrictEqual([
+				[`legacy-imgur/alice10/${variant}`],
+				["legacy-imgur/alice10/original"],
+			]);
+			expect(writeDataPoint.mock.calls).toStrictEqual([
+				[
+					{
+						blobs: ["hit", variant, "legacy-imgur", "r2-original"],
+						doubles: [1],
+						indexes: ["factorio-prints-image-gateway"],
+					},
+				],
+			]);
+		},
+	);
 
-  it("answers HEAD for a missing size from the uploaded original too", async () => {
-    const { environment, head } = environmentWith({
-      "legacy-imgur/alice10/original": { origin: "upload" },
-    });
+	it("answers HEAD for a missing size from the uploaded original too", async () => {
+		const {environment, head} = environmentWith({
+			"legacy-imgur/alice10/original": {origin: "upload"},
+		});
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice10/large.png", { method: "HEAD" }),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice10/large.png", {method: "HEAD"}),
+			environment,
+		);
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("cache-control")).toBe("public, max-age=300");
-    expect(head.mock.calls).toStrictEqual([
-      ["legacy-imgur/alice10/large"],
-      ["legacy-imgur/alice10/original"],
-    ]);
-  });
+		expect(response.status).toBe(200);
+		expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+		expect(head.mock.calls).toStrictEqual([["legacy-imgur/alice10/large"], ["legacy-imgur/alice10/original"]]);
+	});
 
-  it("still redirects to Imgur when the original came from Imgur rather than an upload", async () => {
-    const { environment } = environmentWith({
-      "legacy-imgur/alice10/original": { "source-provider": "imgur" },
-    });
+	it("still redirects to Imgur when the original came from Imgur rather than an upload", async () => {
+		const {environment} = environmentWith({
+			"legacy-imgur/alice10/original": {"source-provider": "imgur"},
+		});
 
-    const response = await handleImageRequest(
-      new Request("https://images.example.com/legacy-imgur/alice10/thumbnail.png"),
-      environment,
-    );
+		const response = await handleImageRequest(
+			new Request("https://images.example.com/legacy-imgur/alice10/thumbnail.png"),
+			environment,
+		);
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("https://i.imgur.com/alice10b.png");
-  });
+		expect(response.status).toBe(307);
+		expect(response.headers.get("location")).toBe("https://i.imgur.com/alice10b.png");
+	});
 });
 
 describe("scheduled image copy", () => {
-  it("hands each Cron Trigger run to the recent image copier", async () => {
-    const stubFetch = vi.fn(async () =>
-      Response.json({
-        checked: 1,
-        copied: ["legacy-imgur/qBG1NJ9/original"],
-        failed: [],
-        missing: [],
-      }),
-    );
-    const usNamespace = { idFromName: () => "id", get: () => ({ fetch: stubFetch }) };
-    const { environment } = createEnvironment(null);
-    const waited: Array<Promise<unknown>> = [];
+	it("hands each Cron Trigger run to the recent image copier", async () => {
+		const stubFetch = vi.fn(async () =>
+			Response.json({
+				checked: 1,
+				copied: ["legacy-imgur/qBG1NJ9/original"],
+				failed: [],
+				missing: [],
+			}),
+		);
+		const usNamespace = {idFromName: () => "id", get: () => ({fetch: stubFetch})};
+		const {environment} = createEnvironment(null);
+		const waited: Array<Promise<unknown>> = [];
 
-    await imageGateway.scheduled(
-      { cron: "*/10 * * * *", scheduledTime: 0, noRetry: () => undefined } as ScheduledController,
-      {
-        ...environment,
-        RECENT_IMAGE_COPIER: {
-          jurisdiction: () => usNamespace,
-        } as unknown as Env["RECENT_IMAGE_COPIER"],
-      },
-      {
-        waitUntil: (promise: Promise<unknown>) => waited.push(promise),
-      } as unknown as ExecutionContext,
-    );
-    await Promise.all(waited);
+		await imageGateway.scheduled(
+			{cron: "*/10 * * * *", scheduledTime: 0, noRetry: () => undefined} as ScheduledController,
+			{
+				...environment,
+				RECENT_IMAGE_COPIER: {
+					jurisdiction: () => usNamespace,
+				} as unknown as Env["RECENT_IMAGE_COPIER"],
+			},
+			{
+				waitUntil: (promise: Promise<unknown>) => waited.push(promise),
+			} as unknown as ExecutionContext,
+		);
+		await Promise.all(waited);
 
-    expect(stubFetch).toHaveBeenCalledWith("https://recent-image-copier/run", { method: "POST" });
-  });
+		expect(stubFetch).toHaveBeenCalledWith("https://recent-image-copier/run", {method: "POST"});
+	});
 });

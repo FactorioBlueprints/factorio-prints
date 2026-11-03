@@ -1,17 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import React from "react";
 
 import Contributors from "../components/Contributors";
 import ErrorBoundary from "../components/ErrorBoundary";
 
 export const Route = createFileRoute("/contributors")({
-  component: ContributorsPage,
+	component: ContributorsPage,
 });
 
 function ContributorsPage() {
-  return (
-    <ErrorBoundary>
-      <Contributors />
-    </ErrorBoundary>
-  );
+	return (
+		<ErrorBoundary>
+			<Contributors />
+		</ErrorBoundary>
+	);
 }

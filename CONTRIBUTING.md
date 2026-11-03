@@ -4,20 +4,16 @@
 
 ### Install the toolchain
 
-The preferred setup uses [mise](https://mise.jdx.dev/) to install the versions
-of Node.js, pnpm, and Just declared in `.mise/config.toml`:
+The preferred setup uses [mise](https://mise.jdx.dev/) to install the versions of Node.js, pnpm, and Just declared in `.mise/config.toml`:
 
 ```bash
 mise install
 pnpm install
 ```
 
-The Vite+ CLI (`vp`) comes from the project-local `vite-plus` dev dependency;
-mise puts `node_modules/.bin` on the `PATH`. Do not run `npm install` in the
-repository root.
+The Vite+ CLI (`vp`) comes from the project-local `vite-plus` dev dependency; mise puts `node_modules/.bin` on the `PATH`. Do not run `npm install` in the repository root.
 
-If you do not use mise, install [Node.js](https://nodejs.org/en/), pnpm, and
-Just, then run `pnpm install` and invoke the CLI as `pnpm exec vp`.
+If you do not use mise, install [Node.js](https://nodejs.org/en/), pnpm, and Just, then run `pnpm install` and invoke the CLI as `pnpm exec vp`.
 
 ### Run the development server
 
@@ -32,8 +28,7 @@ vp install
 vp run dev
 ```
 
-This will start the Vite dev server and run the app on localhost:5173. The app
-will be connecting to the production database.
+This will start the Vite dev server and run the app on localhost:5173. The app will be connecting to the production database.
 
 ## Production build
 
@@ -52,14 +47,11 @@ vp run build
 vp run deploy:all
 ```
 
-The Cloud Functions project under `functions/` intentionally retains its own npm
-package and lockfile. The root deployment scripts install those dependencies
-with npm before deploying.
+The Cloud Functions project under `functions/` intentionally retains its own npm package and lockfile. The root deployment scripts install those dependencies with npm before deploying.
 
 ## Validate changes
 
-Run the same formatting, linting, type-checking, build, and test checks used
-before committing:
+Run the same formatting, linting, type-checking, build, and test checks used before committing:
 
 ```bash
 just precommit
@@ -67,8 +59,7 @@ just precommit
 
 ## View Firebase data
 
-The Firebase CLI is installed with the root development dependencies and can be
-run through Vite+:
+The Firebase CLI is installed with the root development dependencies and can be run through Vite+:
 
 ```bash
 just firebase-login
@@ -83,16 +74,9 @@ vp exec firebase login
 vp exec firebase database:get / > factorio-blueprints-export.json
 ```
 
-Alternatively, install the
-[Firebase CLI](https://firebase.google.com/docs/cli/) globally with
-`npm install --global firebase-tools` and run the corresponding `firebase`
-commands directly.
+Alternatively, install the [Firebase CLI](https://firebase.google.com/docs/cli/) globally with `npm install --global firebase-tools` and run the corresponding `firebase` commands directly.
 
-The firebase database is essentially one big JSON document, and asking to
-download "/" is asking to download the whole thing. It will only download public
-info, which means you might not have access to other users' favorites. If you
-need the whole database to read and understand, @FactorioBlueprints can share a
-copy. Here's some sample data.
+The firebase database is essentially one big JSON document, and asking to download "/" is asking to download the whole thing. It will only download public info, which means you might not have access to other users' favorites. If you need the whole database to read and understand, @FactorioBlueprints can share a copy. Here's some sample data.
 
 ```json
 {

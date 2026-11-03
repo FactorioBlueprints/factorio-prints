@@ -4,9 +4,9 @@
   trip to look the sha up.
 */
 export async function sha1Hex(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(value));
+	const digest = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(value));
 
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
+	return Array.from(new Uint8Array(digest))
+		.map((byte) => byte.toString(16).padStart(2, "0"))
+		.join("");
 }

@@ -1,5 +1,5 @@
-import { type Database, getDatabase } from "firebase/database";
-import { app } from "../base";
+import {type Database, getDatabase} from "firebase/database";
+import {app} from "../base";
 
 let databaseInstance: Database | null = null;
 let databaseError: Error | null = null;
@@ -11,28 +11,27 @@ let databaseError: Error | null = null;
  * @throws {Error} If the database cannot be initialized
  */
 export const getFirebaseDatabase = (): Database => {
-  if (databaseError) {
-    throw databaseError;
-  }
+	if (databaseError) {
+		throw databaseError;
+	}
 
-  if (databaseInstance) {
-    return databaseInstance;
-  }
+	if (databaseInstance) {
+		return databaseInstance;
+	}
 
-  try {
-    databaseInstance = getDatabase(app);
-    return databaseInstance;
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to initialize Firebase Database";
+	try {
+		databaseInstance = getDatabase(app);
+		return databaseInstance;
+	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : "Failed to initialize Firebase Database";
 
-    databaseError = new Error(
-      `Firebase Database initialization failed: ${errorMessage}. ` +
-        `This may be due to network issues, ad blockers, or browser privacy settings.`,
-    );
+		databaseError = new Error(
+			`Firebase Database initialization failed: ${errorMessage}. ` +
+				`This may be due to network issues, ad blockers, or browser privacy settings.`,
+		);
 
-    throw databaseError;
-  }
+		throw databaseError;
+	}
 };
 
 /**
@@ -40,6 +39,6 @@ export const getFirebaseDatabase = (): Database => {
  * Useful for retrying after a failure.
  */
 const resetDatabaseCache = (): void => {
-  databaseInstance = null;
-  databaseError = null;
+	databaseInstance = null;
+	databaseError = null;
 };

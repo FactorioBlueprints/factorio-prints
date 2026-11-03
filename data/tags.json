@@ -17,16 +17,7 @@
 		"marathon",
 		"storage"
 	],
-	"mods": [
-		"angels",
-		"bobs",
-		"creative",
-		"factorissimo",
-		"warehousing",
-		"lighted-electric-poles",
-		"other",
-		"vanilla"
-	],
+	"mods": ["angels", "bobs", "creative", "factorissimo", "warehousing", "lighted-electric-poles", "other", "vanilla"],
 	"power": ["nuclear", "kovarex enrichment", "solar", "steam", "accumulator"],
 	"production": [
 		"oil processing",

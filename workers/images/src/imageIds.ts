@@ -10,12 +10,12 @@ export const fallbackIdLength = 20;
 export const isFallbackImageId = (id: string): boolean => id.length >= fallbackIdThreshold;
 
 export const newFallbackImageId = (): string => {
-  // 248 is the largest multiple of 62 below 256; rejecting bytes above it keeps every letter equally likely.
-  const letters: string[] = [];
-  while (letters.length < fallbackIdLength) {
-    for (const byte of crypto.getRandomValues(new Uint8Array(fallbackIdLength))) {
-      if (byte < 248 && letters.length < fallbackIdLength) letters.push(alphabet.charAt(byte % 62));
-    }
-  }
-  return letters.join("");
+	// 248 is the largest multiple of 62 below 256; rejecting bytes above it keeps every letter equally likely.
+	const letters: string[] = [];
+	while (letters.length < fallbackIdLength) {
+		for (const byte of crypto.getRandomValues(new Uint8Array(fallbackIdLength))) {
+			if (byte < 248 && letters.length < fallbackIdLength) letters.push(alphabet.charAt(byte % 62));
+		}
+	}
+	return letters.join("");
 };

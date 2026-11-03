@@ -1,5 +1,5 @@
-import { captureMessage } from "@sentry/react";
-import { z } from "zod";
+import {captureMessage} from "@sentry/react";
+import {z} from "zod";
 
 const MAX_REPORTED_SCHEMA_ISSUES = 20;
 const MAX_REPORTED_DATA_KEYS = 20;
@@ -9,117 +9,117 @@ const MAX_BLUEPRINT_CONTEXT_LENGTH = 1_000;
 const MAX_PAYLOAD_EXCERPT_LENGTH = 5_000;
 
 const dateToTimestamp = z.preprocess((val) => {
-  if (typeof val === "number") return val;
-  if (typeof val === "string") {
-    const date = new Date(val);
-    return isNaN(date.getTime()) ? val : date.getTime();
-  }
-  return val;
+	if (typeof val === "number") return val;
+	if (typeof val === "string") {
+		const date = new Date(val);
+		return isNaN(date.getTime()) ? val : date.getTime();
+	}
+	return val;
 }, z.number());
 
 export const blueprintIdSchema = z
-  .string()
-  .length(20)
-  .regex(/^[-_0-9A-Za-z]+$/)
-  .brand<"BlueprintId">();
+	.string()
+	.length(20)
+	.regex(/^[-_0-9A-Za-z]+$/)
+	.brand<"BlueprintId">();
 
 const imgurImageSchema = z
-  .object({
-    id: z.string(),
-    type: z.string(),
-    deletehash: z.string().optional(),
-    height: z.number().optional(),
-    width: z.number().optional(),
-  })
-  .strict();
+	.object({
+		id: z.string(),
+		type: z.string(),
+		deletehash: z.string().optional(),
+		height: z.number().optional(),
+		width: z.number().optional(),
+	})
+	.strict();
 
 const blueprintAuthorSchema = z
-  .object({
-    displayName: z.string().optional(),
-    userId: z.string(),
-  })
-  .strict();
+	.object({
+		displayName: z.string().optional(),
+		userId: z.string(),
+	})
+	.strict();
 
 export const rawBlueprintSummarySchema = z
-  .object({
-    title: z.string(),
-    imgurId: z.string(),
-    imgurType: z.string(),
-    numberOfFavorites: z.number(),
-    lastUpdatedDate: dateToTimestamp.optional(),
-    height: z.number().optional(),
-    width: z.number().optional(),
-  })
-  .strict();
+	.object({
+		title: z.string(),
+		imgurId: z.string(),
+		imgurType: z.string(),
+		numberOfFavorites: z.number(),
+		lastUpdatedDate: dateToTimestamp.optional(),
+		height: z.number().optional(),
+		width: z.number().optional(),
+	})
+	.strict();
 
 export const rawBlueprintSchema = z
-  .object({
-    title: z.string(),
-    blueprintString: z.string(),
-    createdDate: dateToTimestamp,
-    descriptionMarkdown: z.string(),
-    imageUrl: z.string().optional(),
-    lastUpdatedDate: dateToTimestamp,
-    numberOfFavorites: z.number().optional().default(0),
-    tags: z.array(z.string()).optional().default([]),
-    authorId: z.string().optional(),
-    author: blueprintAuthorSchema,
-    image: imgurImageSchema,
-    favorites: z.record(z.string(), z.boolean()).optional().default({}),
-    fileName: z.string().optional(),
-  })
-  .strict();
+	.object({
+		title: z.string(),
+		blueprintString: z.string(),
+		createdDate: dateToTimestamp,
+		descriptionMarkdown: z.string(),
+		imageUrl: z.string().optional(),
+		lastUpdatedDate: dateToTimestamp,
+		numberOfFavorites: z.number().optional().default(0),
+		tags: z.array(z.string()).optional().default([]),
+		authorId: z.string().optional(),
+		author: blueprintAuthorSchema,
+		image: imgurImageSchema,
+		favorites: z.record(z.string(), z.boolean()).optional().default({}),
+		fileName: z.string().optional(),
+	})
+	.strict();
 
 export const enrichedBlueprintSummarySchema = rawBlueprintSummarySchema
-  .extend({
-    key: z.string(),
-    thumbnail: z.string().nullable(),
-  })
-  .strict();
+	.extend({
+		key: z.string(),
+		thumbnail: z.string().nullable(),
+	})
+	.strict();
 
 const enrichedBlueprintSchema = rawBlueprintSchema
-  .extend({
-    key: z.string(),
-    thumbnail: z.string().nullable(),
-    renderedDescription: z.string(),
-    parsedData: z.any().nullable(),
-    tags: z.record(z.string(), z.boolean()),
-  })
-  .strict();
+	.extend({
+		key: z.string(),
+		thumbnail: z.string().nullable(),
+		renderedDescription: z.string(),
+		parsedData: z.any().nullable(),
+		tags: z.record(z.string(), z.boolean()),
+	})
+	.strict();
 
 const enrichedBlueprintSummariesSchema = z.array(enrichedBlueprintSummarySchema);
 
 export const rawBlueprintSummaryPageSchema = z
-  .object({
-    data: z.record(z.string(), rawBlueprintSummarySchema),
-    lastKey: z.string().nullable(),
-    lastValue: z.number().nullable(),
-    hasMore: z.boolean(),
-  })
-  .strict();
+	.object({
+		data: z.record(z.string(), rawBlueprintSummarySchema),
+		lastKey: z.string().nullable(),
+		lastValue: z.number().nullable(),
+		hasMore: z.boolean(),
+	})
+	.strict();
 
 export const rawPaginatedBlueprintSummariesSchema = z
-  .object({
-    pages: z.array(rawBlueprintSummaryPageSchema),
-    pageParams: z.array(z.any()).optional(),
-  })
-  .strict();
+	.object({
+		pages: z.array(rawBlueprintSummaryPageSchema),
+		pageParams: z.array(z.any()).optional(),
+	})
+	.strict();
 
 const enrichedBlueprintSummaryPageSchema = z
-  .object({
-    data: z.array(enrichedBlueprintSummarySchema),
-    lastKey: z.string().nullable(),
-    lastValue: z.number().nullable(),
-    hasMore: z.boolean(),
-  })
-  .strict();
+	.object({
+		data: z.array(enrichedBlueprintSummarySchema),
+		lastKey: z.string().nullable(),
+		lastValue: z.number().nullable(),
+		hasMore: z.boolean(),
+	})
+	.strict();
 
 const enrichedPaginatedBlueprintSummariesSchema = z
-  .object({
-    pages: z.array(enrichedBlueprintSummaryPageSchema),
-    pageParams: z.array(z.any()).optional(),
-  })
-  .strict();
+	.object({
+		pages: z.array(enrichedBlueprintSummaryPageSchema),
+		pageParams: z.array(z.any()).optional(),
+	})
+	.strict();
 
 export type ImgurImage = z.infer<typeof imgurImageSchema>;
 export type RawBlueprintSummary = z.infer<typeof rawBlueprintSummarySchema>;
@@ -130,9 +130,7 @@ export type EnrichedBlueprintSummaries = z.infer<typeof enrichedBlueprintSummari
 export type RawBlueprintSummaryPage = z.infer<typeof rawBlueprintSummaryPageSchema>;
 export type RawPaginatedBlueprintSummaries = z.infer<typeof rawPaginatedBlueprintSummariesSchema>;
 export type EnrichedBlueprintSummaryPage = z.infer<typeof enrichedBlueprintSummaryPageSchema>;
-export type EnrichedPaginatedBlueprintSummaries = z.infer<
-  typeof enrichedPaginatedBlueprintSummariesSchema
->;
+export type EnrichedPaginatedBlueprintSummaries = z.infer<typeof enrichedPaginatedBlueprintSummariesSchema>;
 
 // Raw tag schemas - matching Firebase data structure
 export const rawTagsSchema = z.record(z.string(), z.array(z.string()));
@@ -141,13 +139,13 @@ const rawTagIndexSchema = z.record(z.string(), z.boolean());
 
 // Enriched tag schemas - transformed for UI consumption
 export const enrichedTagSchema = z
-  .object({
-    path: z.string(), // Full tag path with slashes (e.g., "/belt/balancer/")
-    category: z.string(), // Category name (e.g., "belt")
-    name: z.string(), // Tag name (e.g., "balancer")
-    label: z.string(), // Display-friendly label (e.g., "Balancer")
-  })
-  .strict();
+	.object({
+		path: z.string(), // Full tag path with slashes (e.g., "/belt/balancer/")
+		category: z.string(), // Category name (e.g., "belt")
+		name: z.string(), // Tag name (e.g., "balancer")
+		label: z.string(), // Display-friendly label (e.g., "Balancer")
+	})
+	.strict();
 
 export const enrichedTagsSchema = z.array(enrichedTagSchema);
 
@@ -156,284 +154,264 @@ export type EnrichedTag = z.infer<typeof enrichedTagSchema>;
 export type EnrichedTags = z.infer<typeof enrichedTagsSchema>;
 
 const getValueAtPath = (obj: unknown, path: string[]): unknown => {
-  let current = obj;
-  for (const key of path) {
-    if (current && typeof current === "object" && key in current) {
-      current = (current as Record<string, unknown>)[key];
-    } else {
-      return undefined;
-    }
-  }
-  return current;
+	let current = obj;
+	for (const key of path) {
+		if (current && typeof current === "object" && key in current) {
+			current = (current as Record<string, unknown>)[key];
+		} else {
+			return undefined;
+		}
+	}
+	return current;
 };
 
 const extractBlueprintContext = (data: unknown, path: string[]): unknown => {
-  // Look for blueprint-related path segments and extract the nearest blueprint object
-  const pathString = path.join(".");
+	// Look for blueprint-related path segments and extract the nearest blueprint object
+	const pathString = path.join(".");
 
-  // Find patterns like blueprint_book.blueprints.X.blueprint or blueprint_book.blueprints.X.blueprint_book.blueprints.Y.blueprint
-  const blueprintPattern = /^(.*?\.blueprint)(?:\.|$)/;
-  const match = pathString.match(blueprintPattern);
+	// Find patterns like blueprint_book.blueprints.X.blueprint or blueprint_book.blueprints.X.blueprint_book.blueprints.Y.blueprint
+	const blueprintPattern = /^(.*?\.blueprint)(?:\.|$)/;
+	const match = pathString.match(blueprintPattern);
 
-  if (match) {
-    const blueprintPath = match[1].split(".");
-    return getValueAtPath(data, blueprintPath);
-  }
+	if (match) {
+		const blueprintPath = match[1].split(".");
+		return getValueAtPath(data, blueprintPath);
+	}
 
-  // Also check for blueprint_book at any level
-  const bookPattern = /^(.*?\.blueprint_book)(?:\.|$)/;
-  const bookMatch = pathString.match(bookPattern);
+	// Also check for blueprint_book at any level
+	const bookPattern = /^(.*?\.blueprint_book)(?:\.|$)/;
+	const bookMatch = pathString.match(bookPattern);
 
-  if (bookMatch) {
-    const bookPath = bookMatch[1].split(".");
-    return getValueAtPath(data, bookPath);
-  }
+	if (bookMatch) {
+		const bookPath = bookMatch[1].split(".");
+		return getValueAtPath(data, bookPath);
+	}
 
-  return undefined;
+	return undefined;
 };
 
 const serializeValue = (value: unknown): string => {
-  if (value === null) return "null";
-  if (value === undefined) return "undefined";
-  if (typeof value === "string") return `"${value}"`;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "[]";
-    if (value.length <= 3) return `[${value.map(serializeValue).join(", ")}]`;
-    return `[${value.slice(0, 3).map(serializeValue).join(", ")}, ...${value.length - 3} more]`;
-  }
-  if (typeof value === "object") {
-    const keys = Object.keys(value);
-    if (keys.length === 0) return "{}";
-    if (keys.length <= 3) {
-      const entries = keys.map(
-        (k) => `${k}: ${serializeValue((value as Record<string, unknown>)[k])}`,
-      );
-      return `{${entries.join(", ")}}`;
-    }
-    const firstThree = keys
-      .slice(0, 3)
-      .map((k) => `${k}: ${serializeValue((value as Record<string, unknown>)[k])}`);
-    return `{${firstThree.join(", ")}, ...${keys.length - 3} more}`;
-  }
-  return String(value);
+	if (value === null) return "null";
+	if (value === undefined) return "undefined";
+	if (typeof value === "string") return `"${value}"`;
+	if (typeof value === "number" || typeof value === "boolean") return String(value);
+	if (Array.isArray(value)) {
+		if (value.length === 0) return "[]";
+		if (value.length <= 3) return `[${value.map(serializeValue).join(", ")}]`;
+		return `[${value.slice(0, 3).map(serializeValue).join(", ")}, ...${value.length - 3} more]`;
+	}
+	if (typeof value === "object") {
+		const keys = Object.keys(value);
+		if (keys.length === 0) return "{}";
+		if (keys.length <= 3) {
+			const entries = keys.map((k) => `${k}: ${serializeValue((value as Record<string, unknown>)[k])}`);
+			return `{${entries.join(", ")}}`;
+		}
+		const firstThree = keys
+			.slice(0, 3)
+			.map((k) => `${k}: ${serializeValue((value as Record<string, unknown>)[k])}`);
+		return `{${firstThree.join(", ")}, ...${keys.length - 3} more}`;
+	}
+	return String(value);
 };
 
 const truncate = (value: string, maximumLength: number): string => {
-  if (value.length <= maximumLength) return value;
-  return `${value.slice(0, maximumLength)}... (truncated)`;
+	if (value.length <= maximumLength) return value;
+	return `${value.slice(0, maximumLength)}... (truncated)`;
 };
 
 const serializeJsonExcerpt = (value: unknown, maximumLength: number): string => {
-  try {
-    const serialized = JSON.stringify(value);
-    return truncate(serialized ?? String(value), maximumLength);
-  } catch (error) {
-    return truncate(`[unable to serialize: ${String(error)}]`, maximumLength);
-  }
+	try {
+		const serialized = JSON.stringify(value);
+		return truncate(serialized ?? String(value), maximumLength);
+	} catch (error) {
+		return truncate(`[unable to serialize: ${String(error)}]`, maximumLength);
+	}
 };
 
-const getBlueprintContexts = (
-  data: unknown,
-  issues: z.core.$ZodIssue[],
-): Array<{ path: string; excerpt: string }> => {
-  const blueprintContexts = new Map<string, unknown>();
+const getBlueprintContexts = (data: unknown, issues: z.core.$ZodIssue[]): Array<{path: string; excerpt: string}> => {
+	const blueprintContexts = new Map<string, unknown>();
 
-  for (const issue of issues) {
-    const blueprintContext = extractBlueprintContext(data, issue.path.map(String));
-    if (blueprintContext === undefined || blueprintContext === null) continue;
+	for (const issue of issues) {
+		const blueprintContext = extractBlueprintContext(data, issue.path.map(String));
+		if (blueprintContext === undefined || blueprintContext === null) continue;
 
-    const contextPath = issue.path.join(".");
-    const blueprintPath =
-      contextPath.match(/^(.*?\.blueprint(?:_book)?)(?:\.|$)/)?.[1] ?? contextPath;
-    if (!blueprintContexts.has(blueprintPath)) {
-      blueprintContexts.set(blueprintPath, blueprintContext);
-    }
-  }
+		const contextPath = issue.path.join(".");
+		const blueprintPath = contextPath.match(/^(.*?\.blueprint(?:_book)?)(?:\.|$)/)?.[1] ?? contextPath;
+		if (!blueprintContexts.has(blueprintPath)) {
+			blueprintContexts.set(blueprintPath, blueprintContext);
+		}
+	}
 
-  return Array.from(blueprintContexts.entries())
-    .slice(0, MAX_REPORTED_BLUEPRINT_CONTEXTS)
-    .map(([path, blueprintContext]) => ({
-      path,
-      excerpt: serializeJsonExcerpt(blueprintContext, MAX_BLUEPRINT_CONTEXT_LENGTH),
-    }));
+	return Array.from(blueprintContexts.entries())
+		.slice(0, MAX_REPORTED_BLUEPRINT_CONTEXTS)
+		.map(([path, blueprintContext]) => ({
+			path,
+			excerpt: serializeJsonExcerpt(blueprintContext, MAX_BLUEPRINT_CONTEXT_LENGTH),
+		}));
 };
 
 export const validate = <T>(
-  data: unknown,
-  schema: z.ZodSchema<T>,
-  description: string,
-  context?: { blueprintId?: string },
+	data: unknown,
+	schema: z.ZodSchema<T>,
+	description: string,
+	context?: {blueprintId?: string},
 ): T => {
-  try {
-    return schema.parse(data);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const reportedIssues = error.issues.slice(0, MAX_REPORTED_SCHEMA_ISSUES);
-      const errorDetails = reportedIssues.map((issue) => {
-        const actualValue = getValueAtPath(data, issue.path.map(String));
-        return {
-          path: issue.path.join("."),
-          message: issue.message,
-          code: issue.code,
-          actualValue: truncate(serializeValue(actualValue), MAX_ACTUAL_VALUE_LENGTH),
-          actualType: typeof actualValue,
-        };
-      });
-      captureMessage("Schema validation failed", {
-        level: "error",
-        fingerprint: ["schema-validation", description],
-        tags: {
-          component: "schema-validation",
-          ...(context?.blueprintId && { blueprintId: context.blueprintId }),
-        },
-        extra: {
-          description,
-          errorCount: error.issues.length,
-          reportedErrorCount: reportedIssues.length,
-          errors: errorDetails,
-          dataType: typeof data,
-          dataKeys:
-            data && typeof data === "object"
-              ? Object.keys(data).slice(0, MAX_REPORTED_DATA_KEYS)
-              : [],
-          blueprintContexts: getBlueprintContexts(data, reportedIssues),
-          payloadExcerpt: serializeJsonExcerpt(data, MAX_PAYLOAD_EXCERPT_LENGTH),
-        },
-      });
+	try {
+		return schema.parse(data);
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			const reportedIssues = error.issues.slice(0, MAX_REPORTED_SCHEMA_ISSUES);
+			const errorDetails = reportedIssues.map((issue) => {
+				const actualValue = getValueAtPath(data, issue.path.map(String));
+				return {
+					path: issue.path.join("."),
+					message: issue.message,
+					code: issue.code,
+					actualValue: truncate(serializeValue(actualValue), MAX_ACTUAL_VALUE_LENGTH),
+					actualType: typeof actualValue,
+				};
+			});
+			captureMessage("Schema validation failed", {
+				level: "error",
+				fingerprint: ["schema-validation", description],
+				tags: {
+					component: "schema-validation",
+					...(context?.blueprintId && {blueprintId: context.blueprintId}),
+				},
+				extra: {
+					description,
+					errorCount: error.issues.length,
+					reportedErrorCount: reportedIssues.length,
+					errors: errorDetails,
+					dataType: typeof data,
+					dataKeys:
+						data && typeof data === "object" ? Object.keys(data).slice(0, MAX_REPORTED_DATA_KEYS) : [],
+					blueprintContexts: getBlueprintContexts(data, reportedIssues),
+					payloadExcerpt: serializeJsonExcerpt(data, MAX_PAYLOAD_EXCERPT_LENGTH),
+				},
+			});
 
-      const errorMessage = error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join(", ");
-      throw new Error(`Invalid ${description}: ${errorMessage}`);
-    }
-    captureMessage("Schema validation failed with unexpected error", {
-      level: "error",
-      fingerprint: ["schema-validation", description, "unexpected-error"],
-      tags: {
-        component: "schema-validation",
-        ...(context?.blueprintId && { blueprintId: context.blueprintId }),
-      },
-      extra: {
-        description,
-        error: truncate(String(error), MAX_ACTUAL_VALUE_LENGTH),
-        payloadExcerpt: serializeJsonExcerpt(data, MAX_PAYLOAD_EXCERPT_LENGTH),
-      },
-    });
-    throw new Error(
-      `Invalid ${description}: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
-  }
+			const errorMessage = error.issues.map((e) => `${e.path.join(".")}: ${e.message}`).join(", ");
+			throw new Error(`Invalid ${description}: ${errorMessage}`);
+		}
+		captureMessage("Schema validation failed with unexpected error", {
+			level: "error",
+			fingerprint: ["schema-validation", description, "unexpected-error"],
+			tags: {
+				component: "schema-validation",
+				...(context?.blueprintId && {blueprintId: context.blueprintId}),
+			},
+			extra: {
+				description,
+				error: truncate(String(error), MAX_ACTUAL_VALUE_LENGTH),
+				payloadExcerpt: serializeJsonExcerpt(data, MAX_PAYLOAD_EXCERPT_LENGTH),
+			},
+		});
+		throw new Error(`Invalid ${description}: ${error instanceof Error ? error.message : "Unknown error"}`);
+	}
 };
 
 export const validateRawBlueprintSummary = (data: unknown): RawBlueprintSummary => {
-  return validate(data, rawBlueprintSummarySchema, "raw blueprint summary");
+	return validate(data, rawBlueprintSummarySchema, "raw blueprint summary");
 };
 
 export const validateRawBlueprint = (data: unknown): RawBlueprint => {
-  const parsed = validate(data, rawBlueprintSchema, "raw blueprint");
-  return {
-    ...parsed,
-    numberOfFavorites: parsed.numberOfFavorites ?? 0,
-    tags: parsed.tags ?? [],
-    favorites: parsed.favorites ?? {},
-  };
+	const parsed = validate(data, rawBlueprintSchema, "raw blueprint");
+	return {
+		...parsed,
+		numberOfFavorites: parsed.numberOfFavorites ?? 0,
+		tags: parsed.tags ?? [],
+		favorites: parsed.favorites ?? {},
+	};
 };
 
 export const validateEnrichedBlueprintSummary = (data: unknown): EnrichedBlueprintSummary => {
-  return validate(data, enrichedBlueprintSummarySchema, "enriched blueprint summary");
+	return validate(data, enrichedBlueprintSummarySchema, "enriched blueprint summary");
 };
 
 export const validateEnrichedBlueprintSummaries = (data: unknown): EnrichedBlueprintSummaries => {
-  return validate(data, enrichedBlueprintSummariesSchema, "enriched blueprint summaries array");
+	return validate(data, enrichedBlueprintSummariesSchema, "enriched blueprint summaries array");
 };
 
 export const validateEnrichedBlueprint = (data: unknown): EnrichedBlueprint => {
-  const parsed = validate(data, enrichedBlueprintSchema, "enriched blueprint");
-  return {
-    ...parsed,
-    numberOfFavorites: parsed.numberOfFavorites ?? 0,
-    tags: parsed.tags ?? {},
-    favorites: parsed.favorites ?? {},
-  };
+	const parsed = validate(data, enrichedBlueprintSchema, "enriched blueprint");
+	return {
+		...parsed,
+		numberOfFavorites: parsed.numberOfFavorites ?? 0,
+		tags: parsed.tags ?? {},
+		favorites: parsed.favorites ?? {},
+	};
 };
 
 export const validateRawBlueprintSummaryPage = (data: unknown): RawBlueprintSummaryPage => {
-  return validate(data, rawBlueprintSummaryPageSchema, "raw blueprint summary page");
+	return validate(data, rawBlueprintSummaryPageSchema, "raw blueprint summary page");
 };
 
-export const validateRawPaginatedBlueprintSummaries = (
-  data: unknown,
-): RawPaginatedBlueprintSummaries => {
-  return validate(data, rawPaginatedBlueprintSummariesSchema, "raw paginated blueprint summaries");
+export const validateRawPaginatedBlueprintSummaries = (data: unknown): RawPaginatedBlueprintSummaries => {
+	return validate(data, rawPaginatedBlueprintSummariesSchema, "raw paginated blueprint summaries");
 };
 
 // TODO: Remove this deprecated alias after verifying no usage
 const validateRawBlueprintSummaryPages = validateRawPaginatedBlueprintSummaries;
 
-export const validateEnrichedBlueprintSummaryPage = (
-  data: unknown,
-): EnrichedBlueprintSummaryPage => {
-  return validate(data, enrichedBlueprintSummaryPageSchema, "enriched blueprint summary page");
+export const validateEnrichedBlueprintSummaryPage = (data: unknown): EnrichedBlueprintSummaryPage => {
+	return validate(data, enrichedBlueprintSummaryPageSchema, "enriched blueprint summary page");
 };
 
-export const validateEnrichedPaginatedBlueprintSummaries = (
-  data: unknown,
-): EnrichedPaginatedBlueprintSummaries => {
-  return validate(
-    data,
-    enrichedPaginatedBlueprintSummariesSchema,
-    "enriched paginated blueprint summaries",
-  );
+export const validateEnrichedPaginatedBlueprintSummaries = (data: unknown): EnrichedPaginatedBlueprintSummaries => {
+	return validate(data, enrichedPaginatedBlueprintSummariesSchema, "enriched paginated blueprint summaries");
 };
 
 export const validateRawTags = (data: unknown): RawTags => {
-  return validate(data, rawTagsSchema, "raw tags");
+	return validate(data, rawTagsSchema, "raw tags");
 };
 
 export const validateEnrichedTags = (data: unknown): EnrichedTags => {
-  return validate(data, enrichedTagsSchema, "enriched tags");
+	return validate(data, enrichedTagsSchema, "enriched tags");
 };
 
 // Raw user schemas - matching Firebase data structure
 const rawUserSchema = z
-  .object({
-    id: z.string(),
-    displayName: z.string().optional(),
-    email: z.string().optional(),
-    favorites: z.record(z.string(), z.boolean()).optional().default({}),
-    collection: z.record(z.string(), z.boolean()).optional().default({}),
-    blueprints: z.record(z.string(), z.boolean()).optional().default({}),
-  })
-  .strict();
+	.object({
+		id: z.string(),
+		displayName: z.string().optional(),
+		email: z.string().optional(),
+		favorites: z.record(z.string(), z.boolean()).optional().default({}),
+		collection: z.record(z.string(), z.boolean()).optional().default({}),
+		blueprints: z.record(z.string(), z.boolean()).optional().default({}),
+	})
+	.strict();
 
 // Enriched user schemas - transformed for UI consumption
 const enrichedUserSchema = rawUserSchema
-  .extend({
-    favoritesCount: z.number(),
-    blueprintsCount: z.number(),
-  })
-  .strict();
+	.extend({
+		favoritesCount: z.number(),
+		blueprintsCount: z.number(),
+	})
+	.strict();
 
 export type RawUser = z.output<typeof rawUserSchema>;
 export type EnrichedUser = z.output<typeof enrichedUserSchema>;
 
 export const validateRawUser = (data: unknown): RawUser => {
-  const parsed = validate(data, rawUserSchema, "raw user");
-  return {
-    ...parsed,
-    favorites: parsed.favorites ?? {},
-    collection: parsed.collection ?? {},
-    blueprints: parsed.blueprints ?? {},
-  };
+	const parsed = validate(data, rawUserSchema, "raw user");
+	return {
+		...parsed,
+		favorites: parsed.favorites ?? {},
+		collection: parsed.collection ?? {},
+		blueprints: parsed.blueprints ?? {},
+	};
 };
 
 export const validateEnrichedUser = (data: unknown): EnrichedUser => {
-  const parsed = validate(data, enrichedUserSchema, "enriched user");
-  return {
-    ...parsed,
-    favorites: parsed.favorites ?? {},
-    collection: parsed.collection ?? {},
-    blueprints: parsed.blueprints ?? {},
-  };
+	const parsed = validate(data, enrichedUserSchema, "enriched user");
+	return {
+		...parsed,
+		favorites: parsed.favorites ?? {},
+		collection: parsed.collection ?? {},
+		blueprints: parsed.blueprints ?? {},
+	};
 };
 
 // Raw user blueprints schema - matching Firebase data structure
@@ -441,33 +419,33 @@ const rawUserBlueprintsSchema = z.record(z.string(), z.boolean());
 
 // Enriched user blueprints schema - transformed for UI consumption
 const enrichedUserBlueprintsSchema = z
-  .object({
-    blueprintIds: z.record(z.string(), z.boolean()),
-    count: z.number(),
-  })
-  .strict();
+	.object({
+		blueprintIds: z.record(z.string(), z.boolean()),
+		count: z.number(),
+	})
+	.strict();
 
 // Raw user favorites schema - matching Firebase data structure
 const rawUserFavoritesSchema = z.record(z.string(), z.boolean());
 
 // Enriched user favorites schema - transformed for UI consumption
 const enrichedUserFavoritesSchema = z
-  .object({
-    favoriteIds: z.record(z.string(), z.boolean()),
-    count: z.number(),
-  })
-  .strict();
+	.object({
+		favoriteIds: z.record(z.string(), z.boolean()),
+		count: z.number(),
+	})
+	.strict();
 
 // Raw user collection schema - matching Firebase data structure
 const rawUserCollectionSchema = z.record(z.string(), z.boolean());
 
 // Enriched user collection schema - transformed for UI consumption
 const enrichedUserCollectionSchema = z
-  .object({
-    collectionIds: z.record(z.string(), z.boolean()),
-    count: z.number(),
-  })
-  .strict();
+	.object({
+		collectionIds: z.record(z.string(), z.boolean()),
+		count: z.number(),
+	})
+	.strict();
 
 export type RawUserBlueprints = z.infer<typeof rawUserBlueprintsSchema>;
 export type EnrichedUserBlueprints = z.infer<typeof enrichedUserBlueprintsSchema>;
@@ -477,131 +455,131 @@ export type RawUserCollection = z.infer<typeof rawUserCollectionSchema>;
 export type EnrichedUserCollection = z.infer<typeof enrichedUserCollectionSchema>;
 
 export const validateRawUserBlueprints = (data: unknown): RawUserBlueprints => {
-  return validate(data, rawUserBlueprintsSchema, "raw user blueprints");
+	return validate(data, rawUserBlueprintsSchema, "raw user blueprints");
 };
 
 export const validateEnrichedUserBlueprints = (data: unknown): EnrichedUserBlueprints => {
-  return validate(data, enrichedUserBlueprintsSchema, "enriched user blueprints");
+	return validate(data, enrichedUserBlueprintsSchema, "enriched user blueprints");
 };
 
 export const validateRawUserFavorites = (data: unknown): RawUserFavorites => {
-  return validate(data, rawUserFavoritesSchema, "raw user favorites");
+	return validate(data, rawUserFavoritesSchema, "raw user favorites");
 };
 
 export const validateEnrichedUserFavorites = (data: unknown): EnrichedUserFavorites => {
-  return validate(data, enrichedUserFavoritesSchema, "enriched user favorites");
+	return validate(data, enrichedUserFavoritesSchema, "enriched user favorites");
 };
 
 export const validateRawUserCollection = (data: unknown): RawUserCollection => {
-  return validate(data, rawUserCollectionSchema, "raw user collection");
+	return validate(data, rawUserCollectionSchema, "raw user collection");
 };
 
 export const validateEnrichedUserCollection = (data: unknown): EnrichedUserCollection => {
-  return validate(data, enrichedUserCollectionSchema, "enriched user collection");
+	return validate(data, enrichedUserCollectionSchema, "enriched user collection");
 };
 
 // Raw blueprint parsing schemas - for parsed blueprint data from game files
 const blueprintIconSchema = z
-  .object({
-    signal: z
-      .object({
-        name: z.string().optional(),
-        type: z.string().optional(),
-        quality: z.string().optional(),
-        backup: z.string().optional(),
-      })
-      .strict(),
-    index: z.number(),
-  })
-  .strict();
+	.object({
+		signal: z
+			.object({
+				name: z.string().optional(),
+				type: z.string().optional(),
+				quality: z.string().optional(),
+				backup: z.string().optional(),
+			})
+			.strict(),
+		index: z.number(),
+	})
+	.strict();
 
 const blueprintEntitySchema = z
-  .object({
-    entity_number: z.number(),
-    name: z.string(),
-    position: z
-      .object({
-        x: z.number(),
-        y: z.number(),
-      })
-      .strict(),
-  })
-  .passthrough(); // Allow additional properties
+	.object({
+		entity_number: z.number(),
+		name: z.string(),
+		position: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.strict(),
+	})
+	.passthrough(); // Allow additional properties
 
 const blueprintTileSchema = z
-  .object({
-    name: z.string(),
-    position: z
-      .object({
-        x: z.number(),
-        y: z.number(),
-      })
-      .strict(),
-  })
-  .passthrough(); // Allow additional properties
+	.object({
+		name: z.string(),
+		position: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.strict(),
+	})
+	.passthrough(); // Allow additional properties
 
 const blueprintContentSchema = z
-  .object({
-    label: z.string().optional(),
-    description: z.string().optional(),
-    version: z.number().optional(),
-    icons: z.array(blueprintIconSchema).optional(),
-    entities: z.array(blueprintEntitySchema).optional(),
-    tiles: z.array(blueprintTileSchema).optional(),
-    item: z.string().optional(),
-    parameters: z.array(z.any()).optional(),
-  })
-  .passthrough(); // Allow additional properties
+	.object({
+		label: z.string().optional(),
+		description: z.string().optional(),
+		version: z.number().optional(),
+		icons: z.array(blueprintIconSchema).optional(),
+		entities: z.array(blueprintEntitySchema).optional(),
+		tiles: z.array(blueprintTileSchema).optional(),
+		item: z.string().optional(),
+		parameters: z.array(z.any()).optional(),
+	})
+	.passthrough(); // Allow additional properties
 
 const blueprintBookEntrySchema: z.ZodSchema<any> = z.lazy(() =>
-  z
-    .object({
-      blueprint: blueprintContentSchema.optional(),
-      blueprint_book: blueprintBookSchema.optional(),
-      upgrade_planner: upgradePlannerSchema.optional(),
-      deconstruction_planner: deconstructionPlannerSchema.optional(),
-      index: z.number(),
-    })
-    .strict(),
+	z
+		.object({
+			blueprint: blueprintContentSchema.optional(),
+			blueprint_book: blueprintBookSchema.optional(),
+			upgrade_planner: upgradePlannerSchema.optional(),
+			deconstruction_planner: deconstructionPlannerSchema.optional(),
+			index: z.number(),
+		})
+		.strict(),
 );
 
 export const blueprintBookSchema = z
-  .object({
-    blueprints: z.array(blueprintBookEntrySchema).optional().default([]),
-    item: z.string().optional(),
-    label: z.string().optional(),
-    description: z.string().optional(),
-    active_index: z.number().optional(),
-    version: z.number().optional(),
-  })
-  .passthrough(); // Allow additional properties
+	.object({
+		blueprints: z.array(blueprintBookEntrySchema).optional().default([]),
+		item: z.string().optional(),
+		label: z.string().optional(),
+		description: z.string().optional(),
+		active_index: z.number().optional(),
+		version: z.number().optional(),
+	})
+	.passthrough(); // Allow additional properties
 
 const upgradePlannerSchema = z
-  .object({
-    settings: z.unknown().optional(),
-    item: z.string().optional(),
-    label: z.string().optional(),
-    version: z.number().optional(),
-  })
-  .passthrough();
+	.object({
+		settings: z.unknown().optional(),
+		item: z.string().optional(),
+		label: z.string().optional(),
+		version: z.number().optional(),
+	})
+	.passthrough();
 
 const deconstructionPlannerSchema = z
-  .object({
-    settings: z.unknown().optional(),
-    item: z.string().optional(),
-    label: z.string().optional(),
-    version: z.number().optional(),
-  })
-  .passthrough();
+	.object({
+		settings: z.unknown().optional(),
+		item: z.string().optional(),
+		label: z.string().optional(),
+		version: z.number().optional(),
+	})
+	.passthrough();
 
 const rawBlueprintDataSchema = z
-  .object({
-    blueprint: blueprintContentSchema.optional(),
-    blueprint_book: blueprintBookSchema.optional(),
-    upgrade_planner: upgradePlannerSchema.optional(),
-    deconstruction_planner: deconstructionPlannerSchema.optional(),
-  })
-  .passthrough(); // Allow additional properties
+	.object({
+		blueprint: blueprintContentSchema.optional(),
+		blueprint_book: blueprintBookSchema.optional(),
+		upgrade_planner: upgradePlannerSchema.optional(),
+		deconstruction_planner: deconstructionPlannerSchema.optional(),
+	})
+	.passthrough(); // Allow additional properties
 
 export type BlueprintIcon = z.infer<typeof blueprintIconSchema>;
 export type BlueprintEntity = z.infer<typeof blueprintEntitySchema>;
@@ -613,9 +591,6 @@ export type UpgradePlanner = z.infer<typeof upgradePlannerSchema>;
 export type DeconstructionPlanner = z.infer<typeof deconstructionPlannerSchema>;
 export type RawBlueprintData = z.infer<typeof rawBlueprintDataSchema>;
 
-export const validateRawBlueprintData = (
-  data: unknown,
-  context?: { blueprintId?: string },
-): RawBlueprintData => {
-  return validate(data, rawBlueprintDataSchema, "raw blueprint data", context);
+export const validateRawBlueprintData = (data: unknown, context?: {blueprintId?: string}): RawBlueprintData => {
+	return validate(data, rawBlueprintDataSchema, "raw blueprint data", context);
 };

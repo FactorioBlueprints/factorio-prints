@@ -1,297 +1,281 @@
-import { verifyFirebaseIdToken } from "./firebaseAuth.ts";
-import { createGooglePublicKeyProvider } from "./googlePublicKeys.ts";
-import { isFallbackImageId, newFallbackImageId } from "./imageIds.ts";
-import { deleteThroughImgurUploader, uploadThroughImgurUploader } from "./imgurUploader.ts";
-import { createModeratorCheck } from "./moderators.ts";
-import { runThroughRecentImageCopier } from "./recentImageCopy.ts";
-import { consumeThroughUploadQuota } from "./uploadQuota.ts";
-import { scheduleThroughUploadExpiry } from "./uploadExpiry.ts";
-import { handleUploadRequest, type UploadDependencies, uploadPathname } from "./uploads.ts";
+import {verifyFirebaseIdToken} from "./firebaseAuth.ts";
+import {createGooglePublicKeyProvider} from "./googlePublicKeys.ts";
+import {isFallbackImageId, newFallbackImageId} from "./imageIds.ts";
+import {deleteThroughImgurUploader, uploadThroughImgurUploader} from "./imgurUploader.ts";
+import {createModeratorCheck} from "./moderators.ts";
+import {runThroughRecentImageCopier} from "./recentImageCopy.ts";
+import {consumeThroughUploadQuota} from "./uploadQuota.ts";
+import {scheduleThroughUploadExpiry} from "./uploadExpiry.ts";
+import {handleUploadRequest, type UploadDependencies, uploadPathname} from "./uploads.ts";
 
-const imagePathPattern =
-  /^\/legacy-imgur\/([A-Za-z0-9]+)\/(original|thumbnail|large)\.(png|jpe?g|gif)$/;
+const imagePathPattern = /^\/legacy-imgur\/([A-Za-z0-9]+)\/(original|thumbnail|large)\.(png|jpe?g|gif)$/;
 const r2ObjectPrefix = "legacy-imgur";
 const immutableCacheControl = "public, max-age=31536000, immutable";
 const fallbackCacheControl = "public, max-age=300";
 
 enum ImageVariant {
-  Large = "large",
-  Original = "original",
-  Thumbnail = "thumbnail",
+	Large = "large",
+	Original = "original",
+	Thumbnail = "thumbnail",
 }
 
 enum GatewayMetric {
-  Error = "error",
-  Fallback = "fallback",
-  Hit = "hit",
-  Invalid = "invalid",
+	Error = "error",
+	Fallback = "fallback",
+	Hit = "hit",
+	Invalid = "invalid",
 }
 
 enum GatewaySource {
-  Fallback = "fallback",
-  LegacyImgur = "legacy-imgur",
-  Unknown = "unknown",
+	Fallback = "fallback",
+	LegacyImgur = "legacy-imgur",
+	Unknown = "unknown",
 }
 
 enum GatewayDetail {
-  R2 = "r2",
-  R2Error = "r2-error",
-  R2Miss = "r2-miss",
-  R2Original = "r2-original",
-  Rollback = "rollback",
-  Validation = "validation",
+	R2 = "r2",
+	R2Error = "r2-error",
+	R2Miss = "r2-miss",
+	R2Original = "r2-original",
+	Rollback = "rollback",
+	Validation = "validation",
 }
 
 interface ImageRequestPath {
-  extension: string;
-  imgurId: string;
-  variant: ImageVariant;
+	extension: string;
+	imgurId: string;
+	variant: ImageVariant;
 }
 
 const imgurVariantSuffixes: Record<ImageVariant, string> = {
-  [ImageVariant.Large]: "l",
-  [ImageVariant.Original]: "",
-  [ImageVariant.Thumbnail]: "b",
+	[ImageVariant.Large]: "l",
+	[ImageVariant.Original]: "",
+	[ImageVariant.Thumbnail]: "b",
 };
 
 const parseImageRequestPath = (pathname: string): ImageRequestPath | null => {
-  const match = imagePathPattern.exec(pathname);
-  if (!match) return null;
+	const match = imagePathPattern.exec(pathname);
+	if (!match) return null;
 
-  return {
-    imgurId: match[1]!,
-    variant: match[2]! as ImageVariant,
-    extension: match[3]!,
-  };
+	return {
+		imgurId: match[1]!,
+		variant: match[2]! as ImageVariant,
+		extension: match[3]!,
+	};
 };
 
 const recordMetric = (
-  metrics: AnalyticsEngineDataset,
-  metric: GatewayMetric,
-  variant: ImageVariant | "none",
-  source: GatewaySource,
-  detail: GatewayDetail,
+	metrics: AnalyticsEngineDataset,
+	metric: GatewayMetric,
+	variant: ImageVariant | "none",
+	source: GatewaySource,
+	detail: GatewayDetail,
 ) => {
-  metrics.writeDataPoint({
-    indexes: ["factorio-prints-image-gateway"],
-    blobs: [metric, variant, source, detail],
-    doubles: [1],
-  });
+	metrics.writeDataPoint({
+		indexes: ["factorio-prints-image-gateway"],
+		blobs: [metric, variant, source, detail],
+		doubles: [1],
+	});
 };
 
 const invalidResponse = (environment: Env, status: number, message: string): Response => {
-  recordMetric(
-    environment.IMAGE_GATEWAY_METRICS,
-    GatewayMetric.Invalid,
-    "none",
-    GatewaySource.Unknown,
-    GatewayDetail.Validation,
-  );
-  return new Response(message, {
-    status,
-    headers: {
-      "cache-control": "no-store",
-      "content-type": "text/plain; charset=UTF-8",
-    },
-  });
+	recordMetric(
+		environment.IMAGE_GATEWAY_METRICS,
+		GatewayMetric.Invalid,
+		"none",
+		GatewaySource.Unknown,
+		GatewayDetail.Validation,
+	);
+	return new Response(message, {
+		status,
+		headers: {
+			"cache-control": "no-store",
+			"content-type": "text/plain; charset=UTF-8",
+		},
+	});
 };
 
-const fallbackResponse = (
-  environment: Env,
-  path: ImageRequestPath,
-  detail: GatewayDetail,
-): Response => {
-  recordMetric(
-    environment.IMAGE_GATEWAY_METRICS,
-    GatewayMetric.Fallback,
-    path.variant,
-    GatewaySource.LegacyImgur,
-    detail,
-  );
-  const suffix = imgurVariantSuffixes[path.variant];
-  const location = `https://i.imgur.com/${path.imgurId}${suffix}.${path.extension}`;
-  return new Response(null, {
-    status: 307,
-    headers: {
-      "cache-control": fallbackCacheControl,
-      location,
-    },
-  });
+const fallbackResponse = (environment: Env, path: ImageRequestPath, detail: GatewayDetail): Response => {
+	recordMetric(
+		environment.IMAGE_GATEWAY_METRICS,
+		GatewayMetric.Fallback,
+		path.variant,
+		GatewaySource.LegacyImgur,
+		detail,
+	);
+	const suffix = imgurVariantSuffixes[path.variant];
+	const location = `https://i.imgur.com/${path.imgurId}${suffix}.${path.extension}`;
+	return new Response(null, {
+		status: 307,
+		headers: {
+			"cache-control": fallbackCacheControl,
+			location,
+		},
+	});
 };
 
 const hitResponse = (
-  environment: Env,
-  object: R2Object,
-  path: ImageRequestPath,
-  body: ReadableStream | null,
-  source: GatewaySource,
-  detail: GatewayDetail = GatewayDetail.R2,
+	environment: Env,
+	object: R2Object,
+	path: ImageRequestPath,
+	body: ReadableStream | null,
+	source: GatewaySource,
+	detail: GatewayDetail = GatewayDetail.R2,
 ): Response => {
-  recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Hit, path.variant, source, detail);
-  const headers = new Headers();
-  object.writeHttpMetadata(headers);
-  headers.set("etag", object.httpEtag);
-  headers.set(
-    "cache-control",
-    detail === GatewayDetail.R2Original
-      ? fallbackCacheControl
-      : (headers.get("cache-control") ?? immutableCacheControl),
-  );
-  headers.set("x-content-type-options", "nosniff");
-  return new Response(body, { headers });
+	recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Hit, path.variant, source, detail);
+	const headers = new Headers();
+	object.writeHttpMetadata(headers);
+	headers.set("etag", object.httpEtag);
+	headers.set(
+		"cache-control",
+		detail === GatewayDetail.R2Original
+			? fallbackCacheControl
+			: (headers.get("cache-control") ?? immutableCacheControl),
+	);
+	headers.set("x-content-type-options", "nosniff");
+	return new Response(body, {headers});
 };
 
 const r2ErrorResponse = (
-  environment: Env,
-  path: ImageRequestPath,
-  error: unknown,
-  source: GatewaySource = GatewaySource.LegacyImgur,
+	environment: Env,
+	path: ImageRequestPath,
+	error: unknown,
+	source: GatewaySource = GatewaySource.LegacyImgur,
 ): Response => {
-  recordMetric(
-    environment.IMAGE_GATEWAY_METRICS,
-    GatewayMetric.Error,
-    path.variant,
-    source,
-    GatewayDetail.R2Error,
-  );
-  console.error({
-    event: "image_gateway_r2_error",
-    imgurId: path.imgurId,
-    variant: path.variant,
-    message: error instanceof Error ? error.message : String(error),
-  });
-  return new Response("Image storage is temporarily unavailable", {
-    status: 503,
-    headers: {
-      "cache-control": "no-store",
-      "content-type": "text/plain; charset=UTF-8",
-      "retry-after": "60",
-    },
-  });
+	recordMetric(environment.IMAGE_GATEWAY_METRICS, GatewayMetric.Error, path.variant, source, GatewayDetail.R2Error);
+	console.error({
+		event: "image_gateway_r2_error",
+		imgurId: path.imgurId,
+		variant: path.variant,
+		message: error instanceof Error ? error.message : String(error),
+	});
+	return new Response("Image storage is temporarily unavailable", {
+		status: 503,
+		headers: {
+			"cache-control": "no-store",
+			"content-type": "text/plain; charset=UTF-8",
+			"retry-after": "60",
+		},
+	});
 };
 
 // Fallback ids were assigned when Imgur failed, so Imgur has never seen them: they are served from
 // R2 whatever the Imgur switches say, a missing resized version falls back to the original, and a
 // miss is a 404 rather than a redirect to a guaranteed Imgur miss.
 const handleFallbackIdRequest = async (
-  request: Request,
-  environment: Env,
-  path: ImageRequestPath,
+	request: Request,
+	environment: Env,
+	path: ImageRequestPath,
 ): Promise<Response> => {
-  const base = `${r2ObjectPrefix}/${path.imgurId}`;
-  const candidateKeys =
-    path.variant === ImageVariant.Original
-      ? [`${base}/original`]
-      : [`${base}/${path.variant}`, `${base}/original`];
+	const base = `${r2ObjectPrefix}/${path.imgurId}`;
+	const candidateKeys =
+		path.variant === ImageVariant.Original ? [`${base}/original`] : [`${base}/${path.variant}`, `${base}/original`];
 
-  try {
-    for (const key of candidateKeys) {
-      if (request.method === "HEAD") {
-        const object = await environment.IMAGES.head(key);
-        if (object) return hitResponse(environment, object, path, null, GatewaySource.Fallback);
-        continue;
-      }
-      const object = await environment.IMAGES.get(key);
-      if (object)
-        return hitResponse(environment, object, path, object.body, GatewaySource.Fallback);
-    }
-    return invalidResponse(environment, 404, "Image not found");
-  } catch (error) {
-    return r2ErrorResponse(environment, path, error, GatewaySource.Fallback);
-  }
+	try {
+		for (const key of candidateKeys) {
+			if (request.method === "HEAD") {
+				const object = await environment.IMAGES.head(key);
+				if (object) return hitResponse(environment, object, path, null, GatewaySource.Fallback);
+				continue;
+			}
+			const object = await environment.IMAGES.get(key);
+			if (object) return hitResponse(environment, object, path, object.body, GatewaySource.Fallback);
+		}
+		return invalidResponse(environment, 404, "Image not found");
+	} catch (error) {
+		return r2ErrorResponse(environment, path, error, GatewaySource.Fallback);
+	}
 };
 
 const handleImageRequest = async (request: Request, environment: Env): Promise<Response> => {
-  if (request.method !== "GET" && request.method !== "HEAD") {
-    const response = invalidResponse(environment, 405, "Method not allowed");
-    response.headers.set("allow", "GET, HEAD");
-    return response;
-  }
+	if (request.method !== "GET" && request.method !== "HEAD") {
+		const response = invalidResponse(environment, 405, "Method not allowed");
+		response.headers.set("allow", "GET, HEAD");
+		return response;
+	}
 
-  const path = parseImageRequestPath(new URL(request.url).pathname);
-  if (!path) return invalidResponse(environment, 404, "Image not found");
-  if (isFallbackImageId(path.imgurId)) return handleFallbackIdRequest(request, environment, path);
-  if (String(environment.LEGACY_R2_READS_ENABLED) !== "true") {
-    return fallbackResponse(environment, path, GatewayDetail.Rollback);
-  }
+	const path = parseImageRequestPath(new URL(request.url).pathname);
+	if (!path) return invalidResponse(environment, 404, "Image not found");
+	if (isFallbackImageId(path.imgurId)) return handleFallbackIdRequest(request, environment, path);
+	if (String(environment.LEGACY_R2_READS_ENABLED) !== "true") {
+		return fallbackResponse(environment, path, GatewayDetail.Rollback);
+	}
 
-  const base = `${r2ObjectPrefix}/${path.imgurId}`;
-  const read = (key: string) =>
-    request.method === "HEAD" ? environment.IMAGES.head(key) : environment.IMAGES.get(key);
-  const bodyOf = (object: R2Object) =>
-    request.method === "HEAD" ? null : (object as R2ObjectBody).body;
-  try {
-    const object = await read(`${base}/${path.variant}`);
-    if (object) {
-      return hitResponse(environment, object, path, bodyOf(object), GatewaySource.LegacyImgur);
-    }
-    if (path.variant === ImageVariant.Original) {
-      return fallbackResponse(environment, path, GatewayDetail.R2Miss);
-    }
+	const base = `${r2ObjectPrefix}/${path.imgurId}`;
+	const read = (key: string) =>
+		request.method === "HEAD" ? environment.IMAGES.head(key) : environment.IMAGES.get(key);
+	const bodyOf = (object: R2Object) => (request.method === "HEAD" ? null : (object as R2ObjectBody).body);
+	try {
+		const object = await read(`${base}/${path.variant}`);
+		if (object) {
+			return hitResponse(environment, object, path, bodyOf(object), GatewaySource.LegacyImgur);
+		}
+		if (path.variant === ImageVariant.Original) {
+			return fallbackResponse(environment, path, GatewayDetail.R2Miss);
+		}
 
-    // An upload's resized versions reach R2 only when the recent image copier next runs, so until
-    // then its original stands in, briefly cached, rather than sending the browser to Imgur.
-    const original = await read(`${base}/original`);
-    if (original?.customMetadata?.origin !== "upload") {
-      return fallbackResponse(environment, path, GatewayDetail.R2Miss);
-    }
-    return hitResponse(
-      environment,
-      original,
-      path,
-      bodyOf(original),
-      GatewaySource.LegacyImgur,
-      GatewayDetail.R2Original,
-    );
-  } catch (error) {
-    return r2ErrorResponse(environment, path, error);
-  }
+		// An upload's resized versions reach R2 only when the recent image copier next runs, so until
+		// then its original stands in, briefly cached, rather than sending the browser to Imgur.
+		const original = await read(`${base}/original`);
+		if (original?.customMetadata?.origin !== "upload") {
+			return fallbackResponse(environment, path, GatewayDetail.R2Miss);
+		}
+		return hitResponse(
+			environment,
+			original,
+			path,
+			bodyOf(original),
+			GatewaySource.LegacyImgur,
+			GatewayDetail.R2Original,
+		);
+	} catch (error) {
+		return r2ErrorResponse(environment, path, error);
+	}
 };
 
 let cachedPublicKeyProvider: ((keyId: string) => Promise<CryptoKey | null>) | null = null;
 
 const buildUploadDependencies = (environment: Env): UploadDependencies => {
-  cachedPublicKeyProvider ??= createGooglePublicKeyProvider({
-    fetch: (url) => fetch(url),
-    now: () => Math.floor(Date.now() / 1000),
-  });
-  const publicKey = cachedPublicKeyProvider;
+	cachedPublicKeyProvider ??= createGooglePublicKeyProvider({
+		fetch: (url) => fetch(url),
+		now: () => Math.floor(Date.now() / 1000),
+	});
+	const publicKey = cachedPublicKeyProvider;
 
-  return {
-    consumeUploadQuota: (userId) => consumeThroughUploadQuota(environment.UPLOAD_QUOTA, userId),
-    deleteFromImgur: (deletehash) =>
-      deleteThroughImgurUploader(environment.IMGUR_UPLOADER, deletehash),
-    isModerator: createModeratorCheck((url) => fetch(url), environment.FIREBASE_DATABASE_URL),
-    newFallbackId: newFallbackImageId,
-    now: () => Date.now(),
-    scheduleExpiry: (imageId, imgurDeletehash) =>
-      scheduleThroughUploadExpiry(environment.UPLOAD_EXPIRY, imageId, imgurDeletehash),
-    uploadToImgur: (bytes, contentType) =>
-      uploadThroughImgurUploader(environment.IMGUR_UPLOADER, bytes, contentType),
-    verifyIdToken: (token) =>
-      verifyFirebaseIdToken(token, {
-        now: () => Math.floor(Date.now() / 1000),
-        projectId: environment.FIREBASE_PROJECT_ID,
-        publicKey,
-      }),
-  };
+	return {
+		consumeUploadQuota: (userId) => consumeThroughUploadQuota(environment.UPLOAD_QUOTA, userId),
+		deleteFromImgur: (deletehash) => deleteThroughImgurUploader(environment.IMGUR_UPLOADER, deletehash),
+		isModerator: createModeratorCheck((url) => fetch(url), environment.FIREBASE_DATABASE_URL),
+		newFallbackId: newFallbackImageId,
+		now: () => Date.now(),
+		scheduleExpiry: (imageId, imgurDeletehash) =>
+			scheduleThroughUploadExpiry(environment.UPLOAD_EXPIRY, imageId, imgurDeletehash),
+		uploadToImgur: (bytes, contentType) =>
+			uploadThroughImgurUploader(environment.IMGUR_UPLOADER, bytes, contentType),
+		verifyIdToken: (token) =>
+			verifyFirebaseIdToken(token, {
+				now: () => Math.floor(Date.now() / 1000),
+				projectId: environment.FIREBASE_PROJECT_ID,
+				publicKey,
+			}),
+	};
 };
 
 const handleRequest = async (request: Request, environment: Env): Promise<Response> => {
-  if (new URL(request.url).pathname === uploadPathname) {
-    return handleUploadRequest(request, environment, buildUploadDependencies(environment));
-  }
-  return handleImageRequest(request, environment);
+	if (new URL(request.url).pathname === uploadPathname) {
+		return handleUploadRequest(request, environment, buildUploadDependencies(environment));
+	}
+	return handleImageRequest(request, environment);
 };
 
 export default {
-  fetch: handleRequest,
-  scheduled: async (_controller, environment, context) => {
-    context.waitUntil(runThroughRecentImageCopier(environment.RECENT_IMAGE_COPIER));
-  },
+	fetch: handleRequest,
+	scheduled: async (_controller, environment, context) => {
+		context.waitUntil(runThroughRecentImageCopier(environment.RECENT_IMAGE_COPIER));
+	},
 } satisfies ExportedHandler<Env>;
 
-export { ImgurUploader } from "./imgurUploader.ts";
-export { RecentImageCopier } from "./recentImageCopy.ts";
-export { UploadExpiry } from "./uploadExpiry.ts";
-export { UploadQuota } from "./uploadQuota.ts";
+export {ImgurUploader} from "./imgurUploader.ts";
+export {RecentImageCopier} from "./recentImageCopy.ts";
+export {UploadExpiry} from "./uploadExpiry.ts";
+export {UploadQuota} from "./uploadQuota.ts";
