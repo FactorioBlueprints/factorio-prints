@@ -21,6 +21,24 @@ confirm() {
     [[ "$response" =~ ^[Yy]$ ]]
 }
 
+# Helper to prompt for a boolean setting that is not already at its desired value.
+# Succeeds only when the value differs and the user agrees to change it.
+confirm_toggle() {
+    local current="$1"
+    local desired="$2"
+    local description="$3"
+
+    if [[ "$current" == "$desired" ]]; then
+        return 1
+    fi
+
+    if [[ "$desired" == "true" ]]; then
+        confirm "Enable $description? (currently disabled)"
+    else
+        confirm "Disable $description? (currently enabled)"
+    fi
+}
+
 # Helper to check and prompt for a boolean repo setting
 check_repo_setting() {
     local setting="$1"
@@ -29,20 +47,7 @@ check_repo_setting() {
     local current
     current=$(echo "$CURRENT_SETTINGS" | jq -r ".$setting")
 
-    if [[ "$current" == "$desired" ]]; then
-        return
-    fi
-
-    local action current_desc
-    if [[ "$desired" == "true" ]]; then
-        action="Enable"
-        current_desc="currently disabled"
-    else
-        action="Disable"
-        current_desc="currently enabled"
-    fi
-
-    if confirm "$action $description? ($current_desc)"; then
+    if confirm_toggle "$current" "$desired" "$description"; then
         gh api "repos/${REPO}" --method PATCH --field "$setting=$desired" > /dev/null
         echo "  Updated."
     fi
@@ -90,22 +95,8 @@ check_protection_bool() {
     local var_name="$1"
     local desired="$2"
     local description="$3"
-    local current="${!var_name}"
 
-    if [[ "$current" == "$desired" ]]; then
-        return
-    fi
-
-    local action current_desc
-    if [[ "$desired" == "true" ]]; then
-        action="Enable"
-        current_desc="currently disabled"
-    else
-        action="Disable"
-        current_desc="currently enabled"
-    fi
-
-    if confirm "$action $description? ($current_desc)"; then
+    if confirm_toggle "${!var_name}" "$desired" "$description"; then
         UPDATE_PROTECTION=true
         printf -v "$var_name" '%s' "$desired"
     fi
@@ -133,7 +124,9 @@ if [[ "$UPDATE_PROTECTION" == "true" ]]; then
     BP_REVIEWS=$(echo "$CURRENT_PROTECTION" | jq -c '.required_pull_request_reviews // null')
     BP_RESTRICTIONS=$(echo "$CURRENT_PROTECTION" | jq -c '.restrictions // null')
 
-    cat << EOF | gh api "repos/${REPO}/branches/${BRANCH}/protection" --method PUT --input -
+    # A 403 means a private repo without GitHub Pro/Team, where branch protection is a paid
+    # feature. Warn and continue so the remaining settings still apply.
+    if PROTECTION_ERROR=$(gh api "repos/${REPO}/branches/${BRANCH}/protection" --method PUT --input - 2>&1 > /dev/null << EOF
 {
   "required_status_checks": {"strict": $BP_STRICT, "contexts": $BP_CONTEXTS},
   "enforce_admins": $BP_ENFORCE_ADMINS,
@@ -143,7 +136,14 @@ if [[ "$UPDATE_PROTECTION" == "true" ]]; then
   "allow_force_pushes": $BP_ALLOW_FORCE_PUSHES
 }
 EOF
-    echo "  Branch protection updated."
+    ); then
+        echo "  Branch protection updated."
+    elif [[ "$PROTECTION_ERROR" == *"HTTP 403"* ]]; then
+        echo "  WARNING: branch protection returned 403 (private repo without GitHub Pro/Team?). Skipping."
+    else
+        echo "$PROTECTION_ERROR" >&2
+        exit 1
+    fi
 fi
 
 echo ""
@@ -158,10 +158,14 @@ echo ""
 check_security_setting() {
     local endpoint="$1"
     local description="$2"
-    local current
-    current=$(gh api "repos/${REPO}/$endpoint" --silent && echo "true" || echo "false")
+    local jq_filter="${3:-}"
 
-    if [[ "$current" == "true" ]]; then
+    if [[ -n "$jq_filter" ]]; then
+        if [[ "$(gh api "repos/${REPO}/$endpoint" --jq "$jq_filter" 2>/dev/null)" == "true" ]]; then
+            return
+        fi
+    # A 404 means the setting is disabled; its error output is expected, not a failure.
+    elif gh api "repos/${REPO}/$endpoint" --silent 2>/dev/null; then
         return
     fi
 
@@ -171,8 +175,10 @@ check_security_setting() {
     fi
 }
 
+# vulnerability-alerts returns 204 when enabled and 404 when disabled;
+# automated-security-fixes always returns 200 with an "enabled" field.
 check_security_setting "vulnerability-alerts"      "vulnerability alerts"
-check_security_setting "automated-security-fixes"  "automated security fixes (Dependabot)"
+check_security_setting "automated-security-fixes"  "automated security fixes (Dependabot)" ".enabled"
 
 echo ""
 
