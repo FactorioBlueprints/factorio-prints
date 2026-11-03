@@ -1,20 +1,29 @@
-# Jobs that run on push to main, after pull requests are merged. Jobs here can be a subset of the jobs that run on merge_group. These jobs should never fail since the jobs in merge_group already passed.
+# Jobs that run on push to factorio-prints.com, after pull requests are merged. Jobs here can be a subset of the jobs that run on merge_group. These jobs should never fail since the jobs in merge_group already passed.
 
 on:
   push:
     branches:
-      - main
+      - factorio-prints.com
+
+permissions:
+  contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   install-and-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5.2.3
-
-      - run: just install
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
       - run: just build-ci
