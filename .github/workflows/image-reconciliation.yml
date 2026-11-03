@@ -24,10 +24,7 @@ jobs:
       - run: just install-ci
       - name: Copy missing Imgur images to R2
         run: >-
-          node scripts/reconcileImages.ts
-          --execute
-          --checkpoint-object-key=operations/reconciliation/checkpoint-v1.json
-          --report-object-key=operations/reconciliation/reports/${{ github.run_id }}-${{ github.run_attempt }}.json
+          node scripts/reconcileImages.ts --execute --checkpoint-object-key=operations/reconciliation/checkpoint-v1.json --report-object-key=operations/reconciliation/reports/${{ github.run_id }}-${{ github.run_attempt }}.json
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}

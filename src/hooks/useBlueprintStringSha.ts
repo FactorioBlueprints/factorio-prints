@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { sha1Hex } from "../utils/sha1";
+import {useEffect, useState} from "react";
+import {sha1Hex} from "../utils/sha1";
 
 /*
   The sha of the blueprint string, which is how the blueprint API addresses a
@@ -7,26 +7,26 @@ import { sha1Hex } from "../utils/sha1";
   the first render and again whenever the string changes.
 */
 export function useBlueprintStringSha(blueprintString?: string): string | undefined {
-  const [sha, setSha] = useState<string | undefined>(undefined);
+	const [sha, setSha] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    if (!blueprintString) {
-      setSha(undefined);
-      return;
-    }
+	useEffect(() => {
+		if (!blueprintString) {
+			setSha(undefined);
+			return;
+		}
 
-    let current = true;
-    setSha(undefined);
-    sha1Hex(blueprintString).then((hashed) => {
-      if (current) {
-        setSha(hashed);
-      }
-    });
+		let current = true;
+		setSha(undefined);
+		sha1Hex(blueprintString).then((hashed) => {
+			if (current) {
+				setSha(hashed);
+			}
+		});
 
-    return () => {
-      current = false;
-    };
-  }, [blueprintString]);
+		return () => {
+			current = false;
+		};
+	}, [blueprintString]);
 
-  return sha;
+	return sha;
 }

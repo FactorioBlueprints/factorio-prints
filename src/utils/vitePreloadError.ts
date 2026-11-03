@@ -4,8 +4,8 @@ export const vitePreloadReloadCooldownMs = 10 * 60 * 1000;
 type ReloadStorage = Pick<Storage, "getItem" | "setItem">;
 
 interface VitePreloadErrorHandlerOptions {
-  getStorage?: () => ReloadStorage;
-  now?: () => number;
+	getStorage?: () => ReloadStorage;
+	now?: () => number;
 }
 
 /**
@@ -14,21 +14,21 @@ interface VitePreloadErrorHandlerOptions {
  * be ruled out), the rejected import is left alone so the error still reaches Sentry.
  */
 export function createVitePreloadErrorHandler(
-  reloadPage: () => void,
-  { getStorage = () => window.sessionStorage, now = Date.now }: VitePreloadErrorHandlerOptions = {},
+	reloadPage: () => void,
+	{getStorage = () => window.sessionStorage, now = Date.now}: VitePreloadErrorHandlerOptions = {},
 ): (event: VitePreloadErrorEvent) => void {
-  return () => {
-    const currentTime = now();
-    try {
-      const storage = getStorage();
-      const lastReloadAt = Number(storage.getItem(vitePreloadReloadStorageKey));
-      if (lastReloadAt && currentTime - lastReloadAt < vitePreloadReloadCooldownMs) {
-        return;
-      }
-      storage.setItem(vitePreloadReloadStorageKey, String(currentTime));
-    } catch {
-      return;
-    }
-    reloadPage();
-  };
+	return () => {
+		const currentTime = now();
+		try {
+			const storage = getStorage();
+			const lastReloadAt = Number(storage.getItem(vitePreloadReloadStorageKey));
+			if (lastReloadAt && currentTime - lastReloadAt < vitePreloadReloadCooldownMs) {
+				return;
+			}
+			storage.setItem(vitePreloadReloadStorageKey, String(currentTime));
+		} catch {
+			return;
+		}
+		reloadPage();
+	};
 }
