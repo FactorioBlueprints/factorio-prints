@@ -1,5 +1,12 @@
 import {useQuery} from "@tanstack/react-query";
-import {fetchUserBlueprints, fetchUserCollection, fetchUserDisplayName, fetchUserFavorites} from "../api/firebase";
+import
+{
+	fetchUserBlueprints,
+	fetchUserCollection,
+	fetchUserDisplayName,
+	fetchUserFavorites,
+	fetchUserNeedsDisplayName,
+} from "../api/firebase";
 
 export const userDisplayNameQueryKey = (userId: string | undefined) =>
 	["users", "userId", userId, "displayName"] as const;
@@ -15,6 +22,22 @@ export const useUserDisplayName = (userId: string | undefined) =>
 			staleTime: 24 * 60 * 60 * 1000,
 			// 7 days
 			gcTime: 7 * 24 * 60 * 60 * 1000,
+		},
+	);
+};
+
+export const userNeedsDisplayNameQueryKey = (userId: string | undefined) =>
+	["users", "userId", userId, "needsDisplayName"] as const;
+
+// True for new accounts that still have the neutral default name and haven't chosen one
+export const useUserNeedsDisplayName = (userId: string | undefined) =>
+{
+	return useQuery<boolean>(
+		{
+			queryKey: userNeedsDisplayNameQueryKey(userId),
+			queryFn: () => fetchUserNeedsDisplayName(userId!),
+			enabled: !!userId,
+			staleTime: Number.POSITIVE_INFINITY,
 		},
 	);
 };

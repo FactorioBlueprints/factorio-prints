@@ -307,9 +307,11 @@ export const initializeUserProfile = functionsV1.auth.user().onCreate(async (use
 		return null;
 	}
 
+	// Default to the sign-in provider's real name; the user is prompted to confirm or change it on /account
 	await userRef.set(
 		{
 			displayName: user.displayName || "Anonymous",
+			needsDisplayName: true,
 			email: user.email || null,
 			favorites: {},
 			collection: {},

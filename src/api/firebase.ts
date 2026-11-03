@@ -458,6 +458,23 @@ export const fetchModerator = async (userId: string): Promise<boolean> =>
 	}
 };
 
+export const fetchUserNeedsDisplayName = async (userId: string): Promise<boolean> =>
+{
+	try
+	{
+		const snapshot = await get(ref(getFirebaseDatabase(), `/users/${userId}/needsDisplayName`));
+		return snapshot.val() === true;
+	}
+	catch (error)
+	{
+		if (isNetworkError(error))
+		{
+			return false;
+		}
+		throw error;
+	}
+};
+
 export const fetchUserDisplayName = async (userId: string): Promise<string | null> =>
 {
 	try
