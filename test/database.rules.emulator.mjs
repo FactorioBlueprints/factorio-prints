@@ -474,3 +474,112 @@ describe("byTag index rules", () =>
 		);
 	});
 });
+
+describe("blueprint deletion rules", () =>
+{
+	const deleteUpdates =
+	{
+		[`/blueprints/${blueprintId}`]: null,
+		[`/users/${ownerId}/blueprints/${blueprintId}`]: null,
+		[`/users/${ownerId}/collection/${blueprintId}`]: null,
+		[`/blueprintSummaries/${blueprintId}`]: null,
+		[`/byTag/category1/tag1/${blueprintId}`]: null,
+	};
+
+	beforeEach(async () =>
+	{
+		await testEnvironment.withSecurityRulesDisabled(async (context) =>
+		{
+			await update(
+				ref(context.database()),
+				{
+					[`/blueprints/${blueprintId}/blueprintString`]: "0eNq-original",
+					[`/users/${ownerId}/blueprints/${blueprintId}`]: true,
+					[`/users/${ownerId}/collection/${blueprintId}`]: true,
+				},
+			);
+		});
+	});
+
+	test("allow the owner to delete their blueprint and its index entries through the delete flow", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(ownerId).database();
+
+		await assertSucceeds(
+			update(
+				ref(database),
+				{
+					[`/blueprints/${blueprintId}/blueprintString`]: null,
+				},
+			),
+		);
+		await assertSucceeds(update(ref(database), deleteUpdates));
+
+		await testEnvironment.withSecurityRulesDisabled(async (context) =>
+		{
+			const snapshot = await get(ref(context.database()));
+			assert.deepStrictEqual(
+				snapshot.val(),
+				{
+					blueprintsPrivate:
+					{
+						[blueprintId]:
+						{
+							imageUrl: "https://i.imgur.com/image100.png",
+						},
+					},
+					moderators:
+					{
+						[moderatorId]: true,
+					},
+					tags:
+					{
+						"tag-100": "/category1/tag1/",
+					},
+				},
+			);
+		});
+	});
+
+	test("reject a non-owner deleting someone else's blueprint", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(userId).database();
+
+		await assertFails(set(ref(database, `blueprints/${blueprintId}`), null));
+	});
+
+	test("reject a non-owner deleting someone else's blueprint through the delete flow", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(userId).database();
+
+		await assertFails(update(ref(database), deleteUpdates));
+	});
+
+	test("reject an unauthenticated visitor deleting a blueprint", async () =>
+	{
+		const database = testEnvironment.unauthenticatedContext().database();
+
+		await assertFails(set(ref(database, `blueprints/${blueprintId}`), null));
+	});
+
+	test("reject the owner reassigning their blueprint to another user", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(ownerId).database();
+
+		await assertFails(set(ref(database, `blueprints/${blueprintId}/author/userId`), userId));
+	});
+
+	test("reject the owner removing the author from a blueprint that still exists", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(ownerId).database();
+
+		await assertFails(set(ref(database, `blueprints/${blueprintId}/author`), null));
+	});
+
+	test("allow a moderator to delete someone else's blueprint", async () =>
+	{
+		const database = testEnvironment.authenticatedContext(moderatorId).database();
+
+		await assertSucceeds(update(ref(database), deleteUpdates));
+	});
+});

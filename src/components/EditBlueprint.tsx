@@ -1026,7 +1026,7 @@ function EditBlueprintWrapper()
 										<FontAwesomeIcon icon={faSave} size="lg" />
 										{updateBlueprintMutation.isPending ? " Saving..." : " Save"}
 									</Button>
-									{isModerator && (
+									{(ownedByCurrentUser || isModerator) && (
 										<Button
 											variant="danger"
 											size="lg"
