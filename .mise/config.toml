@@ -4,8 +4,9 @@ just = "1.58.0"
 node = "26.5.1"
 pnpm = "12.12.1"
 pre-commit = "4.6.2"
+# pre-commit and its pre-commit-hooks and yamllint hooks run on Python. Pin it
+# here, since mise refuses a python3 shim that resolves back to itself.
 python = "3.12.11"
-uv = "0.8.4"
 
 [env]
 _.path = ["{{config_root}}/node_modules/.bin"]
