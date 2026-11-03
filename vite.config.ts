@@ -5,6 +5,8 @@ import {sentryVitePlugin} from "@sentry/vite-plugin";
 import {execSync} from "child_process";
 import type {UserConfig} from "vite-plus";
 
+process.title = "factorio-blueprints";
+
 type SentryUploadEnvironment = {
 	SENTRY_AUTH_TOKEN?: string;
 	SENTRY_ENVIRONMENT?: string;
