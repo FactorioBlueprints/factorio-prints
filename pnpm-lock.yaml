@@ -298,8 +298,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@aws-sdk/client-s3':
-        specifier: 3.1157.0
-        version: 3.1157.0
+        specifier: 3.1158.0
+        version: 3.1158.0
       '@firebase/rules-unit-testing':
         specifier: 6.0.0
         version: 6.0.0(firebase@13.1.0)
@@ -396,8 +396,8 @@ packages:
     resolution: {integrity: sha512-DSo+EqLq2PkS8gjit311LliRrYzydneP6vRhxMzDh9c8P3wWGzHf4fjmQN3d8sl4qh+aMqzn9+o+gZZo4+uqIQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1157.0':
-    resolution: {integrity: sha512-fbZIxqZVzK/PMLj9az3+ieAcYdZhzpTrfIVAnrE4PnRc1C6SokMDnaxAJycKTNmzLlY1fvmlItZWBDPUEFlGLQ==}
+  '@aws-sdk/client-s3@3.1158.0':
+    resolution: {integrity: sha512-ytaS0QeydANmiLo20kXtAKHKxEriqVgtIC7WnRXfjYEgH3yfjxaxJvYEWQKLU0g8Fpb1Um287KfBIO/eg6aqXA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.978.6':
@@ -6195,7 +6195,7 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-s3@3.1157.0':
+  '@aws-sdk/client-s3@3.1158.0':
     dependencies:
       '@aws-sdk/checksums': 3.1001.6
       '@aws-sdk/core': 3.978.6
