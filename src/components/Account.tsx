@@ -1,4 +1,4 @@
-import {faBan, faSave} from "@fortawesome/free-solid-svg-icons";
+import {faBan, faSave, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useNavigate} from "@tanstack/react-router";
@@ -6,15 +6,19 @@ import {getAuth, updateProfile} from "firebase/auth";
 import {ref, update} from "firebase/database";
 import type React from "react";
 import {useState} from "react";
+import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
+import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import {useAuthState} from "react-firebase-hooks/auth";
 
+import {isRequiresRecentLoginError} from "../api/accountDeletion";
 import {app} from "../base";
+import {type BlueprintDeletionChoice, useDeleteAccount} from "../hooks/useDeleteAccount";
 import
 {
 	useUserDisplayName,
@@ -76,6 +80,40 @@ const Account = () =>
 			},
 		},
 	);
+
+	const {deleteAccount, reauthenticateAndDelete} = useDeleteAccount();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [blueprintChoice, setBlueprintChoice] = useState<BlueprintDeletionChoice>();
+	const needsReauthentication = isRequiresRecentLoginError(deleteAccount.error);
+	const deletionPending = deleteAccount.isPending || reauthenticateAndDelete.isPending;
+	const deletionError = needsReauthentication
+		? reauthenticateAndDelete.error
+		: (deleteAccount.error ?? reauthenticateAndDelete.error);
+
+	const handleHideDeleteModal = () =>
+	{
+		if (deletionPending)
+		{
+			return;
+		}
+		setShowDeleteModal(false);
+		setBlueprintChoice(undefined);
+		deleteAccount.reset();
+		reauthenticateAndDelete.reset();
+	};
+
+	const handleDeleteAccount = () =>
+	{
+		if (blueprintChoice)
+		{
+			deleteAccount.mutate(
+				{
+					user: user!,
+					blueprints: blueprintChoice,
+				},
+			);
+		}
+	};
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
 	{
@@ -167,6 +205,76 @@ const Account = () =>
 					</Form.Group>
 				</Form>
 			</Row>
+
+			<Row className="mt-5">
+				<Col>
+					<h2 className="h4">{"Delete account"}</h2>
+					<p>{"Permanently delete your account. This cannot be undone."}</p>
+					<Button type="button" variant="danger" onClick={() => setShowDeleteModal(true)}>
+						<FontAwesomeIcon icon={faTrash} />
+						{" Delete account..."}
+					</Button>
+				</Col>
+			</Row>
+
+			<Modal show={showDeleteModal} onHide={handleHideDeleteModal}>
+				<Modal.Header closeButton>
+					<Modal.Title>{"Delete your account?"}</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<p>{"What should happen to the blueprints you've posted?"}</p>
+					<Form.Check
+						type="radio"
+						id="delete-account-keep-blueprints"
+						name="blueprintChoice"
+						label={'Keep my blueprints, without my name (shown as "Deleted user")'}
+						checked={blueprintChoice === "keep"}
+						onChange={() => setBlueprintChoice("keep")}
+						disabled={deletionPending || needsReauthentication}
+					/>
+					<Form.Check
+						type="radio"
+						id="delete-account-delete-blueprints"
+						name="blueprintChoice"
+						label={"Delete my blueprints"}
+						checked={blueprintChoice === "delete"}
+						onChange={() => setBlueprintChoice("delete")}
+						disabled={deletionPending || needsReauthentication}
+					/>
+					{needsReauthentication && (
+						<Alert variant="warning" className="mt-3 mb-0">
+							{"For your security, please sign in again to confirm deleting your account."}
+						</Alert>
+					)}
+					{deletionError && (
+						<Alert variant="danger" className="mt-3 mb-0">
+							{deletionError.message}
+						</Alert>
+					)}
+				</Modal.Body>
+				<Modal.Footer>
+					{needsReauthentication ? (
+						<Button
+							variant="danger"
+							onClick={() => reauthenticateAndDelete.mutate(user)}
+							disabled={deletionPending}
+						>
+							{reauthenticateAndDelete.isPending ? "Deleting..." : "Sign in again and delete"}
+						</Button>
+					) : (
+						<Button
+							variant="danger"
+							onClick={handleDeleteAccount}
+							disabled={!blueprintChoice || deletionPending}
+						>
+							{deleteAccount.isPending ? "Deleting..." : "Delete my account"}
+						</Button>
+					)}
+					<Button onClick={handleHideDeleteModal} disabled={deletionPending}>
+						{"Cancel"}
+					</Button>
+				</Modal.Footer>
+			</Modal>
 		</Container>
 	);
 };

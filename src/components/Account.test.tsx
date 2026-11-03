@@ -1,10 +1,11 @@
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {useNavigate} from "@tanstack/react-router";
 import {fireEvent, render, screen, waitFor} from "@testing-library/react";
-import {updateProfile} from "firebase/auth";
+import {deleteUser, updateProfile} from "firebase/auth";
 import {update} from "firebase/database";
 import {useAuthState} from "react-firebase-hooks/auth";
 import {beforeEach, describe, expect, it, vi} from "vite-plus/test";
+import {anonymiseUserBlueprints, deleteUserBlueprints, reauthenticateAndDeleteUser} from "../api/accountDeletion";
 import Account from "./Account";
 
 vi.mock("@fortawesome/react-fontawesome", () => (
@@ -21,6 +22,15 @@ vi.mock("firebase/auth", () => (
 {
 	getAuth: vi.fn(() => ({})),
 	updateProfile: vi.fn(),
+	deleteUser: vi.fn(),
+}));
+
+vi.mock("../api/accountDeletion", async (importOriginal) => (
+{
+	...(await importOriginal<typeof import("../api/accountDeletion")>()),
+	anonymiseUserBlueprints: vi.fn(),
+	deleteUserBlueprints: vi.fn(),
+	reauthenticateAndDeleteUser: vi.fn(),
 }));
 
 vi.mock("firebase/database", () => (
@@ -198,5 +208,188 @@ describe("Account", () =>
 		renderAccount();
 
 		expect(screen.getByPlaceholderText("DisplayName")).toHaveProperty("value", "alice-gh");
+	});
+
+	describe("account deletion", () =>
+	{
+		const user =
+		{
+			uid: "alice",
+			displayName: "Alice",
+			providerData: [],
+		};
+
+		beforeEach(() =>
+		{
+			vi.mocked(useAuthState).mockReturnValue([user, false, undefined] as unknown as ReturnType<
+				typeof useAuthState
+			>);
+			queryClient.setQueryData(["users", "userId", "alice", "displayName"], "Alice");
+			queryClient.setQueryData(["users", "userId", "alice", "needsDisplayName"], false);
+			vi.mocked(anonymiseUserBlueprints).mockResolvedValue(undefined);
+			vi.mocked(deleteUserBlueprints).mockResolvedValue(undefined);
+			vi.mocked(deleteUser).mockResolvedValue(undefined);
+			vi.mocked(reauthenticateAndDeleteUser).mockResolvedValue(undefined);
+		});
+
+		const confirmDeletion = (choiceLabel: RegExp) =>
+		{
+			fireEvent.click(
+				screen.getByRole(
+					"button",
+					{
+						name: "Delete account...",
+					},
+				),
+			);
+			fireEvent.click(screen.getByLabelText(choiceLabel));
+			fireEvent.click(
+				screen.getByRole(
+					"button",
+					{
+						name: "Delete my account",
+					},
+				),
+			);
+		};
+
+		it("cannot confirm deletion before choosing what happens to the blueprints", () =>
+		{
+			renderAccount();
+
+			fireEvent.click(
+				screen.getByRole(
+					"button",
+					{
+						name: "Delete account...",
+					},
+				),
+			);
+
+			expect(
+				screen.getByRole(
+					"button",
+					{
+						name: "Delete my account",
+					},
+				),
+			).toHaveProperty("disabled", true);
+		});
+
+		it("anonymises the blueprints and then deletes the account when keeping blueprints", async () =>
+		{
+			renderAccount();
+
+			confirmDeletion(/Keep my blueprints/);
+
+			await waitFor(() => expect(navigateMock).toHaveBeenCalled());
+
+			expect(
+				{
+					anonymise: vi.mocked(anonymiseUserBlueprints).mock.calls,
+					deleteBlueprints: vi.mocked(deleteUserBlueprints).mock.calls,
+					deleteUser: vi.mocked(deleteUser).mock.calls,
+					anonymisedBeforeDeletingUser:
+						vi.mocked(anonymiseUserBlueprints).mock.invocationCallOrder[0] <
+						vi.mocked(deleteUser).mock.invocationCallOrder[0],
+					navigate: navigateMock.mock.calls,
+				},
+			).toStrictEqual(
+				{
+					anonymise: [["alice"]],
+					deleteBlueprints: [],
+					deleteUser: [[user]],
+					anonymisedBeforeDeletingUser: true,
+					navigate: [
+						[
+							{
+								to: "/",
+							},
+						],
+					],
+				},
+			);
+		});
+
+		it("deletes the blueprints and then deletes the account when deleting blueprints", async () =>
+		{
+			renderAccount();
+
+			confirmDeletion(/Delete my blueprints/);
+
+			await waitFor(() => expect(navigateMock).toHaveBeenCalled());
+
+			expect(
+				{
+					anonymise: vi.mocked(anonymiseUserBlueprints).mock.calls,
+					deleteBlueprints: vi.mocked(deleteUserBlueprints).mock.calls,
+					deleteUser: vi.mocked(deleteUser).mock.calls,
+					blueprintsDeletedBeforeDeletingUser:
+						vi.mocked(deleteUserBlueprints).mock.invocationCallOrder[0] <
+						vi.mocked(deleteUser).mock.invocationCallOrder[0],
+					navigate: navigateMock.mock.calls,
+				},
+			).toStrictEqual(
+				{
+					anonymise: [],
+					deleteBlueprints: [["alice"]],
+					deleteUser: [[user]],
+					blueprintsDeletedBeforeDeletingUser: true,
+					navigate: [
+						[
+							{
+								to: "/",
+							},
+						],
+					],
+				},
+			);
+		});
+
+		it("asks the user to sign in again when deletion requires a recent login, then retries", async () =>
+		{
+			vi.mocked(deleteUser).mockRejectedValue(
+				Object.assign(
+					new Error("requires recent login"),
+					{
+						code: "auth/requires-recent-login",
+					},
+				),
+			);
+			renderAccount();
+
+			confirmDeletion(/Keep my blueprints/);
+
+			fireEvent.click(
+				await screen.findByRole(
+					"button",
+					{
+						name: "Sign in again and delete",
+					},
+				),
+			);
+
+			await waitFor(() => expect(navigateMock).toHaveBeenCalled());
+
+			expect(
+				{
+					deleteUser: vi.mocked(deleteUser).mock.calls,
+					reauthenticateAndDelete: vi.mocked(reauthenticateAndDeleteUser).mock.calls,
+					navigate: navigateMock.mock.calls,
+				},
+			).toStrictEqual(
+				{
+					deleteUser: [[user]],
+					reauthenticateAndDelete: [[user]],
+					navigate: [
+						[
+							{
+								to: "/",
+							},
+						],
+					],
+				},
+			);
+		});
 	});
 });
