@@ -7,7 +7,6 @@
 		"build": "tsc",
 		"verify": "npm run build && node scripts/verify-runtime.cjs",
 		"build:watch": "tsc --watch",
-		"lint": "eslint .",
 		"serve": "npm run build && firebase emulators:start --only functions",
 		"shell": "npm run build && firebase functions:shell",
 		"start": "npm run shell",
@@ -20,7 +19,6 @@
 		"firebase-functions": "^7.4.0"
 	},
 	"devDependencies": {
-		"eslint": "^10.13.0",
 		"typescript": "^7.0.2"
 	},
 	"engines": {
