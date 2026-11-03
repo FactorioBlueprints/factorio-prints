@@ -27,5 +27,3 @@ export const enrichUserBlueprints = (
 
   return validateEnrichedUserBlueprints(enrichedUserBlueprints);
 };
-
-export default enrichUserBlueprints;

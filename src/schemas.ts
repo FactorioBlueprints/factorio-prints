@@ -23,8 +23,6 @@ export const blueprintIdSchema = z
   .regex(/^[-_0-9A-Za-z]+$/)
   .brand<"BlueprintId">();
 
-export type BlueprintId = z.infer<typeof blueprintIdSchema>;
-
 const imgurImageSchema = z
   .object({
     id: z.string(),
@@ -124,7 +122,6 @@ const enrichedPaginatedBlueprintSummariesSchema = z
   .strict();
 
 export type ImgurImage = z.infer<typeof imgurImageSchema>;
-export type BlueprintAuthor = z.infer<typeof blueprintAuthorSchema>;
 export type RawBlueprintSummary = z.infer<typeof rawBlueprintSummarySchema>;
 export type RawBlueprint = z.output<typeof rawBlueprintSchema>;
 export type EnrichedBlueprintSummary = z.infer<typeof enrichedBlueprintSummarySchema>;
@@ -155,7 +152,6 @@ export const enrichedTagSchema = z
 export const enrichedTagsSchema = z.array(enrichedTagSchema);
 
 export type RawTags = z.infer<typeof rawTagsSchema>;
-export type RawTagIndex = z.infer<typeof rawTagIndexSchema>;
 export type EnrichedTag = z.infer<typeof enrichedTagSchema>;
 export type EnrichedTags = z.infer<typeof enrichedTagsSchema>;
 

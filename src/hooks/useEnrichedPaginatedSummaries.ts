@@ -35,5 +35,3 @@ export const useEnrichedPaginatedSummaries = (pageSize = 60, orderByField = "las
     data: enrichedData,
   };
 };
-
-export default useEnrichedPaginatedSummaries;

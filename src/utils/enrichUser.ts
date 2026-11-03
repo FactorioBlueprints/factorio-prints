@@ -23,5 +23,3 @@ export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null => {
 
   return validateEnrichedUser(enrichedUser);
 };
-
-export default enrichUser;

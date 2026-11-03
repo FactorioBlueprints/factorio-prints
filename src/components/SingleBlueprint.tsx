@@ -21,7 +21,6 @@ import useReconcileFavoritesMutation from "../hooks/useReconcileFavorites";
 import useToggleFavoriteMutation from "../hooks/useToggleFavoriteMutation";
 import { useUserCollection } from "../hooks/useUser";
 import { BlueprintWrapper } from "../parsing/BlueprintWrapper";
-import { Route as ViewBlueprintIdRoute } from "../routes/view.$blueprintId";
 import BlueprintImage from "./BlueprintImage";
 import BlueprintTitle from "./BlueprintTitle";
 import { BasicInfoPanel } from "./blueprint/panels/info/BasicInfoPanel";

@@ -159,15 +159,6 @@ class Blueprint {
     return false;
   };
 
-  isUpgradePlanner = (): boolean => {
-    if (this.isV15()) {
-      const decoded = this.decodedObject as V15DecodedObject;
-      return decoded?.upgrade_planner !== undefined;
-    }
-
-    return false;
-  };
-
   getV15Decoded = (): V15DecodedObject | null => {
     try {
       if (this.isV15()) {

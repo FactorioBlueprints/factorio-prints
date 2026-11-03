@@ -61,5 +61,3 @@ export const useRawPaginatedBlueprintSummaries = (
 
   return query;
 };
-
-export default useRawPaginatedBlueprintSummaries;

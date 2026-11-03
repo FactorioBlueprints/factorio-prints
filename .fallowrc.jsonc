@@ -1,7 +1,21 @@
 {
 	"$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-	"entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
-	"ignoreDependencies": ["@firebase/app", "less"],
+	// test/database.rules.emulator.mjs runs via the test:database-rules script, but
+	// nested inside a quoted `firebase emulators:exec "node --test ..."` command
+	// that fallow's package.json script parser does not look into.
+	"entry": [
+		"src/index.{ts,tsx,js,jsx}",
+		"src/main.{ts,tsx,js,jsx}",
+		"test/database.rules.emulator.mjs",
+	],
+	// public/ is copied verbatim into the build and served by URL (the
+	// service-worker tombstones in firebase.json and public/_headers); nothing
+	// imports it.
+	"ignorePatterns": ["public/**"],
+	"ignoreDependencies": ["@firebase/app"],
+	// workerd calls a Durable Object's fetch() and alarm() at runtime; no project
+	// code does.
+	"usedClassMembers": [{ "implements": "DurableObject", "members": ["fetch", "alarm"] }],
 	"rules": {
 		"unused-dependencies": "warn",
 	},

@@ -20,5 +20,3 @@ export const useEnrichedBlueprintSummary = (blueprintId: string) => {
     }, [rawBlueprintSummaryQuery.data, blueprintId]),
   };
 };
-
-export default useEnrichedBlueprintSummary;

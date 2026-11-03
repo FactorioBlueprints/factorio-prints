@@ -32,5 +32,3 @@ export const enrichBlueprintSummary = (
 
   return validateEnrichedBlueprintSummary(enrichedBlueprintSummary);
 };
-
-export default enrichBlueprintSummary;

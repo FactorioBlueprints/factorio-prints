@@ -82,5 +82,3 @@ export const useRawPaginatedSummaries = (pageSize = 60, orderByField = "lastUpda
 
   return result;
 };
-
-export default useRawPaginatedSummaries;

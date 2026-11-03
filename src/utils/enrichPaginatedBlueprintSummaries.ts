@@ -53,5 +53,3 @@ export const enrichPaginatedBlueprintSummaries = (
 
   return validateEnrichedPaginatedBlueprintSummaries(enrichedPaginated);
 };
-
-export default enrichPaginatedBlueprintSummaries;

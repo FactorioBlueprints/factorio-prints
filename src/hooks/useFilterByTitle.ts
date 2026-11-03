@@ -23,5 +23,3 @@ export const useFilterByTitle = (
     return blueprintSummary.title.toLowerCase().includes(titleFilter.toLowerCase());
   });
 };
-
-export default useFilterByTitle;

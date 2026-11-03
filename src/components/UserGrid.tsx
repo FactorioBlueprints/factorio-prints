@@ -6,7 +6,6 @@ import Row from "react-bootstrap/Row";
 import useEnrichedBlueprintSummaries from "../hooks/useEnrichedBlueprintSummaries";
 import useFilteredBlueprintSummaries from "../hooks/useFilteredBlueprintSummaries";
 import { useUserBlueprints } from "../hooks/useUser";
-import { Route as UserUserIdRoute } from "../routes/user.$userId";
 import type { EnrichedBlueprintSummary } from "../schemas";
 import { searchParamsStore } from "../store/searchParamsStore";
 
@@ -20,7 +19,7 @@ import SearchForm from "./SearchForm";
 import TagForm from "./TagForm";
 
 const UserGrid: React.FC = () => {
-  const { userId } = useParams({ from: UserUserIdRoute.id });
+  const { userId } = useParams({ from: "/user/$userId" });
   const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
 
   const { data, isLoading, isSuccess, error } = useUserBlueprints(userId);

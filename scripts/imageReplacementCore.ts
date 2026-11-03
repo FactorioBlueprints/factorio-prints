@@ -34,8 +34,6 @@ export const ReplacementStatus = {
   Uploaded: "uploaded",
 } as const;
 
-export type ReplacementStatus = (typeof ReplacementStatus)[keyof typeof ReplacementStatus];
-
 const uploadRecordSchema = z.object({
   imageId: z.string().min(1),
   type: z.string().min(1),
@@ -58,7 +56,7 @@ export const replacementLedgerSchema = z.object({
 });
 
 export type ReplacementLedger = z.infer<typeof replacementLedgerSchema>;
-export type LedgerEntry = z.infer<typeof ledgerEntrySchema>;
+type LedgerEntry = z.infer<typeof ledgerEntrySchema>;
 export type UploadRecord = z.infer<typeof uploadRecordSchema>;
 
 export const emptyReplacementLedger = (): ReplacementLedger => ({
