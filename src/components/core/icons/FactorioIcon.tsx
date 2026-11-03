@@ -3,7 +3,7 @@ import styles from "./FactorioIcon.module.css";
 
 export type IconSize = "tiny" | "small" | "large";
 
-function getUrlType(type: SignalType | string) {
+function getUrlType(type: SignalType) {
 	if (type === "virtual" || type === "virtual-signal") {
 		return "virtual-signal";
 	} else if (type === "planet") {
@@ -15,7 +15,7 @@ function getUrlType(type: SignalType | string) {
 interface FactorioIconProps {
 	id?: string;
 	icon?: SignalID;
-	type?: SignalType | string;
+	type?: SignalType;
 	name?: string;
 	quality?: Quality | string;
 	size: IconSize;

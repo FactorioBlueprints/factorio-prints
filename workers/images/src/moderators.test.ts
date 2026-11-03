@@ -1,4 +1,4 @@
-import {describe, expect, it, vi} from "vitest";
+import {describe, expect, it, vi} from "vite-plus/test";
 import {createModeratorCheck} from "./moderators.ts";
 
 const databaseUrl = "https://facorio-blueprints.firebaseio.com";
