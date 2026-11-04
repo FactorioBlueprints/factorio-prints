@@ -1,4 +1,4 @@
-import {render} from "@testing-library/react";
+import {fireEvent, render} from "@testing-library/react";
 import type React from "react";
 import {describe, expect, it, vi} from "vite-plus/test";
 import {useAuthState} from "react-firebase-hooks/auth";
@@ -90,5 +90,34 @@ describe("Header", () => {
 				"Donate",
 			],
 		});
+	});
+
+	it("right-aligns the signed-in account menu so it stays on screen", () => {
+		vi.mocked(useAuthState).mockReturnValue([{uid: "alice", displayName: "Alice"}, false, undefined] as ReturnType<
+			typeof useAuthState
+		>);
+
+		const {container} = render(<Header />);
+		const accountToggle = container.querySelector(".account-navigation .dropdown-toggle");
+		if (!accountToggle) throw new Error("account toggle missing");
+		fireEvent.click(accountToggle);
+		const menu = container.querySelector(".account-navigation .dropdown-menu");
+
+		expect({
+			end: menu?.classList.contains("dropdown-menu-end"),
+			legacyRight: menu?.classList.contains("dropdown-menu-right"),
+		}).toStrictEqual({end: true, legacyRight: false});
+	});
+
+	it("right-aligns the sign-in menu so it stays on screen", () => {
+		vi.mocked(useAuthState).mockReturnValue([null, false, undefined] as unknown as ReturnType<typeof useAuthState>);
+
+		const {container} = render(<Header />);
+		const signInToggle = container.querySelector(".account-navigation .dropdown-toggle");
+		if (!signInToggle) throw new Error("sign-in toggle missing");
+		fireEvent.click(signInToggle);
+		const menu = container.querySelector(".account-navigation .dropdown-menu");
+
+		expect(menu?.classList.contains("dropdown-menu-end")).toBe(true);
 	});
 });
