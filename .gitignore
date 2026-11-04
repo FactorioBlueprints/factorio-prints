@@ -41,6 +41,7 @@ firebase-debug.log
 
 # TanStack Router generated files
 src/routeTree.gen.*
+/.tanstack/
 
 # Firebase export data
 factorio-blueprints-export.json
