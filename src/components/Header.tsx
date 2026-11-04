@@ -62,7 +62,7 @@ const Header: React.FC = () => {
 					onToggle={(isOpen) => setShowAccountDropdown(isOpen)}
 				>
 					<Dropdown.Toggle variant="link">Account</Dropdown.Toggle>
-					<Dropdown.Menu className="dropdown-menu-right text-left">
+					<Dropdown.Menu align="end" className="text-left">
 						<Dropdown.Item as="div" className="user-photo-container">
 							{getDisplayName()}
 						</Dropdown.Item>
@@ -141,7 +141,7 @@ const Header: React.FC = () => {
 		);
 
 		return (
-			<NavDropdown title={title} style={{minWidth: "210px"}}>
+			<NavDropdown title={title} align="end" style={{minWidth: "210px"}}>
 				<div className="p-2">
 					<AuthenticationForm showDivider={false} />
 				</div>
