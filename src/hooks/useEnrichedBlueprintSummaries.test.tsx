@@ -10,21 +10,28 @@ import useRawBlueprintSummaries from "./useRawBlueprintSummaries";
 vi.mock("./useRawBlueprintSummaries");
 vi.mock("../utils/enrichBlueprintSummary");
 
-const createWrapper = () => {
-	const queryClient = new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
+const createWrapper = () =>
+{
+	const queryClient = new QueryClient(
+		{
+			defaultOptions:
+			{
+				queries:
+				{
+					retry: false,
+				},
 			},
 		},
-	});
+	);
 	return ({children}: {children: React.ReactNode}) => (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 };
 
-describe("useEnrichedBlueprintSummaries", () => {
-	const mockBlueprintsData = {
+describe("useEnrichedBlueprintSummaries", () =>
+{
+	const mockBlueprintsData =
+	{
 		"blueprint-1": true,
 		"blueprint-2": true,
 	};
@@ -63,46 +70,63 @@ describe("useEnrichedBlueprintSummaries", () => {
 		},
 	];
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		// Set up mock implementations
-		vi.mocked(useRawBlueprintSummaries).mockReturnValue({
-			queriesByKey: {
-				"blueprint-1": {
-					data: mockRawSummaries[0],
-					isSuccess: true,
+		vi.mocked(useRawBlueprintSummaries).mockReturnValue(
+			{
+				queriesByKey:
+				{
+					"blueprint-1":
+					{
+						data: mockRawSummaries[0],
+						isSuccess: true,
+					},
+					"blueprint-2":
+					{
+						data: mockRawSummaries[1],
+						isSuccess: true,
+					},
 				},
-				"blueprint-2": {
-					data: mockRawSummaries[1],
-					isSuccess: true,
-				},
-			},
-			rawBlueprintSummaries: mockRawSummaries,
-		} as any);
+				rawBlueprintSummaries: mockRawSummaries,
+			} as any,
+		);
 
-		vi.mocked(enrichBlueprintSummary).mockImplementation((rawSummary: any, blueprintId: any) => {
-			if (blueprintId === "blueprint-1") {
+		vi.mocked(enrichBlueprintSummary).mockImplementation((rawSummary: any, blueprintId: any) =>
+		{
+			if (blueprintId === "blueprint-1")
+			{
 				return mockEnrichedSummaries[0];
 			}
 			return mockEnrichedSummaries[1];
 		});
 	});
 
-	afterEach(() => {
+	afterEach(() =>
+	{
 		vi.resetAllMocks();
 	});
 
-	it("should use useRawBlueprintSummaries to get raw data", () => {
-		renderHook(() => useEnrichedBlueprintSummaries(mockBlueprintsData, true), {
-			wrapper: createWrapper(),
-		});
+	it("should use useRawBlueprintSummaries to get raw data", () =>
+	{
+		renderHook(
+			() => useEnrichedBlueprintSummaries(mockBlueprintsData, true),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		expect(useRawBlueprintSummaries).toHaveBeenCalledWith(mockBlueprintsData, true);
 	});
 
-	it("should call enrichBlueprintSummary for each raw blueprint summary", () => {
-		const {result} = renderHook(() => useEnrichedBlueprintSummaries(mockBlueprintsData, true), {
-			wrapper: createWrapper(),
-		});
+	it("should call enrichBlueprintSummary for each raw blueprint summary", () =>
+	{
+		const {result} = renderHook(
+			() => useEnrichedBlueprintSummaries(mockBlueprintsData, true),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		expect(enrichBlueprintSummary).toHaveBeenCalledTimes(2);
 		expect(enrichBlueprintSummary).toHaveBeenCalledWith(mockRawSummaries[0], "blueprint-1");
@@ -113,51 +137,72 @@ describe("useEnrichedBlueprintSummaries", () => {
 		expect(result.current.blueprintSummaries).toContain(mockEnrichedSummaries[1]);
 	});
 
-	it("should return queriesByKey from useRawBlueprintSummaries", () => {
-		const {result} = renderHook(() => useEnrichedBlueprintSummaries(mockBlueprintsData, true), {
-			wrapper: createWrapper(),
-		});
+	it("should return queriesByKey from useRawBlueprintSummaries", () =>
+	{
+		const {result} = renderHook(
+			() => useEnrichedBlueprintSummaries(mockBlueprintsData, true),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
-		expect(result.current.queriesByKey).toEqual({
-			"blueprint-1": {
-				data: mockRawSummaries[0],
-				isSuccess: true,
+		expect(result.current.queriesByKey).toEqual(
+			{
+				"blueprint-1":
+				{
+					data: mockRawSummaries[0],
+					isSuccess: true,
+				},
+				"blueprint-2":
+				{
+					data: mockRawSummaries[1],
+					isSuccess: true,
+				},
 			},
-			"blueprint-2": {
-				data: mockRawSummaries[1],
-				isSuccess: true,
-			},
-		});
+		);
 	});
 
-	it("should return rawBlueprintSummaries from useRawBlueprintSummaries", () => {
-		const {result} = renderHook(() => useEnrichedBlueprintSummaries(mockBlueprintsData, true), {
-			wrapper: createWrapper(),
-		});
+	it("should return rawBlueprintSummaries from useRawBlueprintSummaries", () =>
+	{
+		const {result} = renderHook(
+			() => useEnrichedBlueprintSummaries(mockBlueprintsData, true),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		expect(result.current.rawBlueprintSummaries).toEqual(mockRawSummaries);
 	});
 
-	it("should handle unsuccessful queries", () => {
+	it("should handle unsuccessful queries", () =>
+	{
 		// Mock one unsuccessful query
-		vi.mocked(useRawBlueprintSummaries).mockReturnValue({
-			queriesByKey: {
-				"blueprint-1": {
-					data: mockRawSummaries[0],
-					isSuccess: true,
-				} as any,
-				"blueprint-2": {
-					error: new Error("Query failed"),
-					isSuccess: false,
-					isError: true,
-				} as any,
+		vi.mocked(useRawBlueprintSummaries).mockReturnValue(
+			{
+				queriesByKey:
+				{
+					"blueprint-1":
+					{
+						data: mockRawSummaries[0],
+						isSuccess: true,
+					} as any,
+					"blueprint-2":
+					{
+						error: new Error("Query failed"),
+						isSuccess: false,
+						isError: true,
+					} as any,
+				},
+				rawBlueprintSummaries: [mockRawSummaries[0]],
 			},
-			rawBlueprintSummaries: [mockRawSummaries[0]],
-		});
+		);
 
-		const {result} = renderHook(() => useEnrichedBlueprintSummaries(mockBlueprintsData, true), {
-			wrapper: createWrapper(),
-		});
+		const {result} = renderHook(
+			() => useEnrichedBlueprintSummaries(mockBlueprintsData, true),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		// Should only enrich successful queries
 		expect(enrichBlueprintSummary).toHaveBeenCalledTimes(1);

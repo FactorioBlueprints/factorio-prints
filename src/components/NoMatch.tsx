@@ -1,7 +1,8 @@
 import {useRouter} from "@tanstack/react-router";
 import type React from "react";
 
-const NoMatch: React.FC = () => {
+const NoMatch: React.FC = () =>
+{
 	const router = useRouter();
 	const pathname = router.state.location.pathname;
 

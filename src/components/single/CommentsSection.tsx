@@ -4,32 +4,39 @@ import Row from "react-bootstrap/Row";
 import DisqusErrorBoundary from "../DisqusErrorBoundary";
 import DOMIsolation from "../DOMIsolation";
 
-interface DisqusConfig {
+interface DisqusConfig
+{
 	url: string;
 	identifier: string;
 	title?: string;
 }
 
-interface CommentsSectionProps {
+interface CommentsSectionProps
+{
 	blueprintId: string;
 	blueprintTitle?: string;
 }
 
-export function CommentsSection({blueprintId, blueprintTitle}: CommentsSectionProps) {
+export function CommentsSection({blueprintId, blueprintTitle}: CommentsSectionProps)
+{
 	const [shouldRenderDisqus, setShouldRenderDisqus] = useState(false);
 
-	const disqusConfig: DisqusConfig = {
+	const disqusConfig: DisqusConfig =
+	{
 		url: `https://factorioprints.com/view/${blueprintId}`,
 		identifier: blueprintId,
 		title: blueprintTitle,
 	};
 
-	useEffect(() => {
-		const timeoutId = setTimeout(() => {
+	useEffect(() =>
+	{
+		const timeoutId = setTimeout(() =>
+		{
 			setShouldRenderDisqus(true);
 		}, 100);
 
-		return () => {
+		return () =>
+		{
 			clearTimeout(timeoutId);
 		};
 	}, [blueprintId]);
@@ -37,7 +44,13 @@ export function CommentsSection({blueprintId, blueprintTitle}: CommentsSectionPr
 	return (
 		<Row className="w-100">
 			<DisqusErrorBoundary>
-				<DOMIsolation style={{minHeight: "100px", width: "100%"}}>
+				<DOMIsolation
+					style={
+					{
+						minHeight: "100px",
+						width: "100%",
+					}}
+				>
 					<div id="disqus_thread">
 						{shouldRenderDisqus && (
 							<Disqus.DiscussionEmbed shortname="factorio-blueprints" config={disqusConfig} />

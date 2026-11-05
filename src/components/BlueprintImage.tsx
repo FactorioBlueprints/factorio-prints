@@ -4,8 +4,10 @@ import React from "react";
 import Image from "react-bootstrap/Image";
 import buildImageUrl, {ImageVariant} from "../helpers/buildImageUrl";
 
-interface BlueprintImageProps {
-	image?: {
+interface BlueprintImageProps
+{
+	image?:
+	{
 		id: string;
 		type: string;
 	};
@@ -13,8 +15,10 @@ interface BlueprintImageProps {
 	isLoading: boolean;
 }
 
-const BlueprintImage: React.FC<BlueprintImageProps> = ({image, thumbnail, isLoading}) => {
-	if (isLoading) {
+const BlueprintImage: React.FC<BlueprintImageProps> = ({image, thumbnail, isLoading}) =>
+{
+	if (isLoading)
+	{
 		return (
 			<div className="d-flex justify-content-center">
 				<FontAwesomeIcon icon={faCog} spin size="3x" className="my-4" />
@@ -22,7 +26,8 @@ const BlueprintImage: React.FC<BlueprintImageProps> = ({image, thumbnail, isLoad
 		);
 	}
 
-	if (!image || !thumbnail) {
+	if (!image || !thumbnail)
+	{
 		return null;
 	}
 

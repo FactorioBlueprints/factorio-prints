@@ -7,25 +7,36 @@ import Select, {type SingleValue} from "react-select";
 import {useEntityOptions} from "../../hooks/useEntityOptions";
 import {advancedSearchStore, setEntity} from "../../store/advancedSearchStore";
 
-interface EntityOption {
+interface EntityOption
+{
 	value: string;
 	label: string;
 }
 
-const EntityFilterSelect: React.FC = () => {
+const EntityFilterSelect: React.FC = () =>
+{
 	const {data: entities, isLoading} = useEntityOptions();
 	const entity = useStore(advancedSearchStore, (state) => state.entity);
 
-	const options = useMemo(() => {
-		return (entities ?? []).map((value) => ({
+	const options = useMemo(() =>
+	{
+		return (entities ?? []).map((value) => (
+		{
 			value,
 			label: value,
 		}));
 	}, [entities]);
 
-	const selectedOption = entity ? {value: entity, label: entity} : null;
+	const selectedOption = entity
+		?
+			{
+				value: entity,
+				label: entity,
+			}
+		: null;
 
-	const handleChange = (selected: SingleValue<EntityOption>): void => {
+	const handleChange = (selected: SingleValue<EntityOption>): void =>
+	{
 		setEntity(selected?.value ?? null);
 	};
 

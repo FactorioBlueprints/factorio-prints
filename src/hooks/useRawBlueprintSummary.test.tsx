@@ -8,22 +8,29 @@ import {useRawBlueprintSummary} from "./useRawBlueprintSummary";
 // Mock dependencies
 vi.mock("../api/firebase");
 
-const createWrapper = () => {
-	const queryClient = new QueryClient({
-		defaultOptions: {
-			queries: {
-				retry: false,
+const createWrapper = () =>
+{
+	const queryClient = new QueryClient(
+		{
+			defaultOptions:
+			{
+				queries:
+				{
+					retry: false,
+				},
 			},
 		},
-	});
+	);
 	return ({children}: {children: React.ReactNode}) => (
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 };
 
-describe("useRawBlueprintSummary", () => {
+describe("useRawBlueprintSummary", () =>
+{
 	const mockBlueprintId = "test-blueprint-123";
-	const mockBlueprintSummary = {
+	const mockBlueprintSummary =
+	{
 		title: "Test Blueprint",
 		imgurId: "img123",
 		imgurType: "image/png",
@@ -31,18 +38,24 @@ describe("useRawBlueprintSummary", () => {
 		lastUpdatedDate: 1625097600000,
 	};
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		vi.mocked(fetchBlueprintSummary).mockResolvedValue(mockBlueprintSummary);
 	});
 
-	afterEach(() => {
+	afterEach(() =>
+	{
 		vi.resetAllMocks();
 	});
 
-	it("should fetch and validate the blueprint summary data", async () => {
-		const {result} = renderHook(() => useRawBlueprintSummary(mockBlueprintId), {
-			wrapper: createWrapper(),
-		});
+	it("should fetch and validate the blueprint summary data", async () =>
+	{
+		const {result} = renderHook(
+			() => useRawBlueprintSummary(mockBlueprintId),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		// Initial state should be loading
 		expect(result.current.isLoading).toBe(true);
@@ -54,10 +67,14 @@ describe("useRawBlueprintSummary", () => {
 		expect(result.current.data).toEqual(mockBlueprintSummary);
 	});
 
-	it("should not fetch data if blueprintId is falsy", async () => {
-		const {result} = renderHook(() => useRawBlueprintSummary(null as any), {
-			wrapper: createWrapper(),
-		});
+	it("should not fetch data if blueprintId is falsy", async () =>
+	{
+		const {result} = renderHook(
+			() => useRawBlueprintSummary(null as any),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		// Should not be loading since the query is disabled
 		expect(result.current.fetchStatus).toBe("idle");
@@ -65,13 +82,17 @@ describe("useRawBlueprintSummary", () => {
 		expect(fetchBlueprintSummary).not.toHaveBeenCalled();
 	});
 
-	it("should handle API errors", async () => {
+	it("should handle API errors", async () =>
+	{
 		const mockError = new Error("API error");
 		vi.mocked(fetchBlueprintSummary).mockRejectedValue(mockError);
 
-		const {result} = renderHook(() => useRawBlueprintSummary(mockBlueprintId), {
-			wrapper: createWrapper(),
-		});
+		const {result} = renderHook(
+			() => useRawBlueprintSummary(mockBlueprintId),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		// Wait for query to error
 		await waitFor(() => expect(result.current.isError).toBe(true));
@@ -79,13 +100,17 @@ describe("useRawBlueprintSummary", () => {
 		expect(result.current.error).toBe(mockError);
 	});
 
-	it("should handle validation errors", async () => {
+	it("should handle validation errors", async () =>
+	{
 		const mockValidationError = new Error("Invalid raw blueprint summary: Validation error");
 		vi.mocked(fetchBlueprintSummary).mockRejectedValue(mockValidationError);
 
-		const {result} = renderHook(() => useRawBlueprintSummary(mockBlueprintId), {
-			wrapper: createWrapper(),
-		});
+		const {result} = renderHook(
+			() => useRawBlueprintSummary(mockBlueprintId),
+			{
+				wrapper: createWrapper(),
+			},
+		);
 
 		// Wait for query to error
 		await waitFor(() => expect(result.current.isError).toBe(true));

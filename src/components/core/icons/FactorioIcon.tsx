@@ -3,16 +3,21 @@ import styles from "./FactorioIcon.module.css";
 
 export type IconSize = "tiny" | "small" | "large";
 
-function getUrlType(type: SignalType) {
-	if (type === "virtual" || type === "virtual-signal") {
+function getUrlType(type: SignalType)
+{
+	if (type === "virtual" || type === "virtual-signal")
+	{
 		return "virtual-signal";
-	} else if (type === "planet") {
+	}
+	else if (type === "planet")
+	{
 		return "space-location";
 	}
 	return type;
 }
 
-interface FactorioIconProps {
+interface FactorioIconProps
+{
 	id?: string;
 	icon?: SignalID;
 	type?: SignalType;
@@ -22,8 +27,10 @@ interface FactorioIconProps {
 	inline?: boolean;
 }
 
-function getQualityNode(quality: Quality | string | undefined, inline?: boolean) {
-	if (!quality || quality === "normal") {
+function getQualityNode(quality: Quality | string | undefined, inline?: boolean)
+{
+	if (!quality || quality === "normal")
+	{
 		return null;
 	}
 
@@ -35,20 +42,23 @@ function getQualityNode(quality: Quality | string | undefined, inline?: boolean)
 			alt={quality}
 			title={`Quality: ${quality}`}
 			data-testid="quality"
-			onError={(e) => {
+			onError={(e) =>
+			{
 				e.currentTarget.style.display = "none";
 			}}
 		/>
 	);
 }
 
-export const FactorioIcon = ({id, icon, type, name, quality, size, inline}: FactorioIconProps) => {
+export const FactorioIcon = ({id, icon, type, name, quality, size, inline}: FactorioIconProps) =>
+{
 	// Support both icon object and separate type/name props
 	const iconType = type ?? icon?.type ?? "item";
 	const iconName = name ?? icon?.name;
 	const iconQuality = quality ?? icon?.quality;
 
-	if (!iconName) {
+	if (!iconName)
+	{
 		return null;
 	}
 
@@ -70,7 +80,8 @@ export const FactorioIcon = ({id, icon, type, name, quality, size, inline}: Fact
 				src={`https://factorio-icon-cdn.pages.dev/${urlType}/${iconName}.webp`}
 				alt={iconName}
 				title={`${iconType}: ${iconName}`}
-				onError={(e) => {
+				onError={(e) =>
+				{
 					e.currentTarget.style.display = "none";
 				}}
 			/>
@@ -79,12 +90,14 @@ export const FactorioIcon = ({id, icon, type, name, quality, size, inline}: Fact
 	);
 };
 
-interface PlaceholderProps {
+interface PlaceholderProps
+{
 	size: IconSize;
 	inline?: boolean;
 }
 
-export const Placeholder = ({size, inline}: PlaceholderProps) => {
+export const Placeholder = ({size, inline}: PlaceholderProps) =>
+{
 	const sizeClass = getSizeClass(size);
 	const inlineClass = inline ? styles.inline : "";
 	const Container = inline ? "span" : "div";
@@ -96,16 +109,20 @@ export const Placeholder = ({size, inline}: PlaceholderProps) => {
 	);
 };
 
-function getSizeClass(size: IconSize): string {
-	if (size === "tiny") {
+function getSizeClass(size: IconSize): string
+{
+	if (size === "tiny")
+	{
 		return styles.tiny;
 	}
 
-	if (size === "small") {
+	if (size === "small")
+	{
 		return styles.small;
 	}
 
-	if (size === "large") {
+	if (size === "large")
+	{
 		return styles.large;
 	}
 

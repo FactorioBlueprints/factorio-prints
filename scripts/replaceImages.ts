@@ -5,7 +5,8 @@ import {setTimeout as sleep} from "node:timers/promises";
 import {pathToFileURL} from "node:url";
 import {parseArgs} from "node:util";
 import {type BrowserContext, chromium, type Page} from "playwright-core";
-import {
+import
+{
 	acquireRoundLock,
 	auditReplacement,
 	buildReplacementQueue,
@@ -52,7 +53,8 @@ const siteOrigin = "https://factorioprints.com";
 const gatewayOrigin = "https://images.factorioprints.com";
 const uploadUrl = `${gatewayOrigin}/uploads`;
 
-interface CommandOptions {
+interface CommandOptions
+{
 	audit: boolean;
 	execute: boolean;
 	limit?: number;
@@ -61,23 +63,47 @@ interface CommandOptions {
 	round: string;
 }
 
-const parseCommandOptions = (): CommandOptions => {
-	const {values} = parseArgs({
-		options: {
-			"audit-only": {default: false, type: "boolean"},
-			execute: {default: false, type: "boolean"},
-			limit: {type: "string"},
-			login: {default: false, type: "boolean"},
-			profile: {
-				default: join(homedir(), ".cache", "factorio-prints-image-replacement", "profile"),
-				type: "string",
+const parseCommandOptions = (): CommandOptions =>
+{
+	const {values} = parseArgs(
+		{
+			options:
+			{
+				"audit-only":
+				{
+					default: false,
+					type: "boolean",
+				},
+				execute:
+				{
+					default: false,
+					type: "boolean",
+				},
+				limit:
+				{
+					type: "string",
+				},
+				login:
+				{
+					default: false,
+					type: "boolean",
+				},
+				profile:
+				{
+					default: join(homedir(), ".cache", "factorio-prints-image-replacement", "profile"),
+					type: "string",
+				},
+				round:
+				{
+					type: "string",
+				},
 			},
-			round: {type: "string"},
 		},
-	});
+	);
 	if (!values.round) throw new Error("--round <directory> is required");
 	const limit = values.limit === undefined ? undefined : Number(values.limit);
-	if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+	if (limit !== undefined && (!Number.isInteger(limit) || limit < 1))
+	{
 		throw new Error("--limit must be a positive integer");
 	}
 	return {
@@ -92,22 +118,28 @@ const parseCommandOptions = (): CommandOptions => {
 
 const readJson = async (path: string): Promise<unknown> => JSON.parse(await readFile(path, "utf8"));
 
-const readOptional = async (path: string): Promise<string | undefined> => {
-	try {
+const readOptional = async (path: string): Promise<string | undefined> =>
+{
+	try
+	{
 		return await readFile(path, "utf8");
-	} catch (error) {
+	}
+	catch (error)
+	{
 		if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
 		throw error;
 	}
 };
 
-const writeJsonAtomically = async (path: string, value: unknown): Promise<void> => {
+const writeJsonAtomically = async (path: string, value: unknown): Promise<void> =>
+{
 	const temporaryPath = `${path}.tmp`;
 	await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`);
 	await rename(temporaryPath, path);
 };
 
-const loadRound = async (round: string) => {
+const loadRound = async (round: string) =>
+{
 	const ledgerText = await readOptional(join(round, "replacement-ledger.json"));
 	const holdText = await readOptional(join(round, "hold-keys.txt"));
 	return {
@@ -120,11 +152,19 @@ const loadRound = async (round: string) => {
 };
 
 const openBrowser = (profile: string): Promise<BrowserContext> =>
-	chromium.launchPersistentContext(profile, {channel: "chrome", headless: false, viewport: null});
+	chromium.launchPersistentContext(
+		profile,
+		{
+			channel: "chrome",
+			headless: false,
+			viewport: null,
+		},
+	);
 
 const dropZone = (page: Page) => page.locator('[data-testid="image-drop-zone"]');
 
-const corsHeaders = {
+const corsHeaders =
+{
 	"access-control-allow-headers": "authorization, content-type",
 	"access-control-allow-methods": "POST, OPTIONS",
 	"access-control-allow-origin": siteOrigin,
@@ -135,12 +175,28 @@ const corsHeaders = {
 const answerUploadsWith = (page: Page, reuse: UploadRecord) =>
 	page.route(uploadUrl, (route) =>
 		route.request().method() === "OPTIONS"
-			? route.fulfill({headers: corsHeaders, status: 204})
-			: route.fulfill({
-					body: JSON.stringify({id: reuse.imageId, type: reuse.type}),
-					headers: {...corsHeaders, "content-type": "application/json"},
-					status: 201,
-				}),
+			? route.fulfill(
+					{
+						headers: corsHeaders,
+						status: 204,
+					},
+				)
+			: route.fulfill(
+					{
+						body: JSON.stringify(
+							{
+								id: reuse.imageId,
+								type: reuse.type,
+							},
+						),
+						headers:
+						{
+							...corsHeaders,
+							"content-type": "application/json",
+						},
+						status: 201,
+					},
+				),
 	);
 
 const uploadThroughEditForm = async (
@@ -148,13 +204,30 @@ const uploadThroughEditForm = async (
 	key: string,
 	file: string,
 	reuse?: UploadRecord,
-): Promise<UploadState> => {
-	await page.unrouteAll({behavior: "ignoreErrors"});
+): Promise<UploadState> =>
+{
+	await page.unrouteAll(
+		{
+			behavior: "ignoreErrors",
+		},
+	);
 	if (reuse) await answerUploadsWith(page, reuse);
-	await page.goto(`${siteOrigin}/edit/${key}`, {waitUntil: "domcontentloaded"});
-	try {
-		await dropZone(page).waitFor({timeout: 45_000});
-	} catch {
+	await page.goto(
+		`${siteOrigin}/edit/${key}`,
+		{
+			waitUntil: "domcontentloaded",
+		},
+	);
+	try
+	{
+		await dropZone(page).waitFor(
+			{
+				timeout: 45_000,
+			},
+		);
+	}
+	catch
+	{
 		const signedOut = await page
 			.getByText(/sign in/i)
 			.first()
@@ -170,80 +243,165 @@ const uploadThroughEditForm = async (
 
 	const responded = page.waitForResponse(
 		(response) => response.url() === uploadUrl && response.request().method() === "POST",
-		{timeout: 120_000},
+		{
+			timeout: 120_000,
+		},
 	);
 	await dropZone(page).locator('input[type="file"]').setInputFiles(file);
 	let state: UploadState;
-	try {
+	try
+	{
 		const response = await responded;
-		state = parseUploadResponse({
-			body: await response.text(),
-			retryAfter: (await response.headerValue("retry-after")) ?? null,
-			status: response.status(),
-		});
-	} catch {
+		state = parseUploadResponse(
+			{
+				body: await response.text(),
+				retryAfter: (await response.headerValue("retry-after")) ?? null,
+				status: response.status(),
+			},
+		);
+	}
+	catch
+	{
 		// The form checks type and size before sending, and shows why it refused.
 		const refused = await page
 			.locator(".text-danger")
 			.first()
-			.textContent({timeout: 1_000})
+			.textContent(
+				{
+					timeout: 1_000,
+				},
+			)
 			.catch(() => null);
 		return refused
-			? {kind: "failed", reason: `the form refused the file: ${refused}`}
-			: {kind: "ambiguous", reason: "the form never sent the upload"};
+			?
+				{
+					kind: "failed",
+					reason: `the form refused the file: ${refused}`,
+				}
+			:
+				{
+					kind: "ambiguous",
+					reason: "the form never sent the upload",
+				};
 	}
 	if (state.kind !== "uploaded") return state;
 
 	const preview = page.locator(`img[alt="New screenshot"][src*="/${state.imageId}/"]`);
-	try {
-		await preview.waitFor({timeout: 30_000});
-	} catch {
+	try
+	{
+		await preview.waitFor(
+			{
+				timeout: 30_000,
+			},
+		);
+	}
+	catch
+	{
 		return {
 			kind: "ambiguous",
 			reason: `uploaded ${state.imageId} but the form shows no preview`,
-			upload: {imageId: state.imageId, type: state.type},
+			upload:
+			{
+				imageId: state.imageId,
+				type: state.type,
+			},
 		};
 	}
 	return state;
 };
 
-const saveEditForm = async (page: Page, key: string, imageId: string): Promise<SaveOutcome> => {
-	try {
-		if (!(await page.locator(`img[alt="New screenshot"][src*="/${imageId}/"]`).isVisible())) {
-			return {detail: `the edit form does not hold ${imageId}`, outcome: "failed"};
+const saveEditForm = async (page: Page, key: string, imageId: string): Promise<SaveOutcome> =>
+{
+	try
+	{
+		if (!(await page.locator(`img[alt="New screenshot"][src*="/${imageId}/"]`).isVisible()))
+		{
+			return {
+				detail: `the edit form does not hold ${imageId}`,
+				outcome: "failed",
+			};
 		}
-		await page.getByRole("button", {exact: true, name: "Save"}).first().click();
+		await page
+			.getByRole(
+				"button",
+				{
+					exact: true,
+					name: "Save",
+				},
+			)
+			.first()
+			.click();
 		// Pre-existing problems such as "Blueprint has no name" open a "Submission warnings" dialog
 		// whose own Save forces the edit through, unless a warning is one never to force past.
-		const warnings = page.getByRole("dialog").filter({hasText: "Submission warnings"});
+		const warnings = page.getByRole("dialog").filter(
+			{
+				hasText: "Submission warnings",
+			},
+		);
 		let forced = false;
-		for (let attempt = 0; attempt < 60; attempt += 1) {
+		for (let attempt = 0; attempt < 60; attempt += 1)
+		{
 			await sleep(1_000);
-			if (new URL(page.url()).pathname === `/view/${key}`) return {outcome: "saved"};
-			if (!forced && (await warnings.isVisible())) {
+			if (new URL(page.url()).pathname === `/view/${key}`)
+				return {
+					outcome: "saved",
+				};
+			if (!forced && (await warnings.isVisible()))
+			{
 				const refusal = forceSaveRefusal(await warnings.locator("li").allTextContents());
-				if (refusal) {
-					await warnings.getByRole("button", {name: "Go back"}).click();
-					return {detail: refusal, outcome: "needsReview"};
+				if (refusal)
+				{
+					await warnings
+						.getByRole(
+							"button",
+							{
+								name: "Go back",
+							},
+						)
+						.click();
+					return {
+						detail: refusal,
+						outcome: "needsReview",
+					};
 				}
-				await warnings.getByRole("button", {exact: true, name: "Save"}).click();
+				await warnings
+					.getByRole(
+						"button",
+						{
+							exact: true,
+							name: "Save",
+						},
+					)
+					.click();
 				forced = true;
 			}
 		}
-		return {detail: `save never reached /view/${key}`, outcome: "failed"};
-	} finally {
-		await page.unrouteAll({behavior: "ignoreErrors"});
+		return {
+			detail: `save never reached /view/${key}`,
+			outcome: "failed",
+		};
+	}
+	finally
+	{
+		await page.unrouteAll(
+			{
+				behavior: "ignoreErrors",
+			},
+		);
 	}
 };
 
-const firebaseImageId = async (key: string): Promise<string | null> => {
+const firebaseImageId = async (key: string): Promise<string | null> =>
+{
 	const response = await fetch(`${databaseUrl}/blueprints/${encodeURIComponent(key)}/image/id.json`);
 	if (!response.ok) throw new Error(`Firebase returned ${response.status} for ${key}`);
 	return (await response.json()) as string | null;
 };
 
-const confirmInFirebase = async (key: string, imageId: string): Promise<boolean> => {
-	for (let attempt = 0; attempt < 10; attempt += 1) {
+const confirmInFirebase = async (key: string, imageId: string): Promise<boolean> =>
+{
+	for (let attempt = 0; attempt < 10; attempt += 1)
+	{
 		if ((await firebaseImageId(key)) === imageId) return true;
 		await sleep(3_000);
 	}
@@ -251,33 +409,50 @@ const confirmInFirebase = async (key: string, imageId: string): Promise<boolean>
 };
 
 const gatewayStatus = async (url: string): Promise<number> =>
-	(await fetch(url, {method: "HEAD", redirect: "manual"})).status;
+	(
+		await fetch(
+			url,
+			{
+				method: "HEAD",
+				redirect: "manual",
+			},
+		)
+	).status;
 
-const auditLedger = async (ledger: ReplacementLedger): Promise<Record<string, string[]>> => {
+const auditLedger = async (ledger: ReplacementLedger): Promise<Record<string, string[]>> =>
+{
 	const problems: Record<string, string[]> = {};
-	for (const [key, entry] of Object.entries(ledger.entries)) {
+	for (const [key, entry] of Object.entries(ledger.entries))
+	{
 		if (entry.status !== ReplacementStatus.Saved || !entry.upload) continue;
 		const {imageId, type} = entry.upload;
-		const found = auditReplacement(entry.upload, gatewayOrigin, {
-			firebaseImageId: await firebaseImageId(key),
-			originalStatus: await gatewayStatus(gatewayImageUrl(gatewayOrigin, imageId, type, "original")),
-			thumbnailStatus: await gatewayStatus(gatewayImageUrl(gatewayOrigin, imageId, type, "thumbnail")),
-		});
+		const found = auditReplacement(
+			entry.upload,
+			gatewayOrigin,
+			{
+				firebaseImageId: await firebaseImageId(key),
+				originalStatus: await gatewayStatus(gatewayImageUrl(gatewayOrigin, imageId, type, "original")),
+				thumbnailStatus: await gatewayStatus(gatewayImageUrl(gatewayOrigin, imageId, type, "thumbnail")),
+			},
+		);
 		if (found.length > 0) problems[key] = found;
 	}
 	return problems;
 };
 
-const countStatuses = (ledger: ReplacementLedger): Record<string, number> => {
+const countStatuses = (ledger: ReplacementLedger): Record<string, number> =>
+{
 	const counts: Record<string, number> = {};
 	for (const entry of Object.values(ledger.entries)) counts[entry.status] = (counts[entry.status] ?? 0) + 1;
 	return counts;
 };
 
-const main = async (): Promise<void> => {
+const main = async (): Promise<void> =>
+{
 	const options = parseCommandOptions();
 
-	if (options.login) {
+	if (options.login)
+	{
 		const context = await openBrowser(options.profile);
 		const page = context.pages()[0] ?? (await context.newPage());
 		await page.goto(siteOrigin);
@@ -286,11 +461,14 @@ const main = async (): Promise<void> => {
 		return;
 	}
 
-	if (options.execute || options.audit) {
+	if (options.execute || options.audit)
+	{
 		const release = await acquireRoundLock(options.round, `pid ${process.pid} at ${new Date().toISOString()}`);
 		process.once("exit", release);
-		for (const signal of ["SIGINT", "SIGTERM"] as const) {
-			process.once(signal, () => {
+		for (const signal of ["SIGINT", "SIGTERM"] as const)
+		{
+			process.once(signal, () =>
+			{
 				release();
 				process.exit(130);
 			});
@@ -299,7 +477,12 @@ const main = async (): Promise<void> => {
 
 	const round = await loadRound(options.round);
 	const ledgerPath = join(options.round, "replacement-ledger.json");
-	const {blocked, queue} = buildReplacementQueue({...round, now: new Date()});
+	const {blocked, queue} = buildReplacementQueue(
+		{
+			...round,
+			now: new Date(),
+		},
+	);
 	const selected = options.limit ? queue.slice(0, options.limit) : queue;
 	console.log(
 		JSON.stringify(
@@ -319,9 +502,11 @@ const main = async (): Promise<void> => {
 
 	let ledger = round.ledger;
 	let stoppedReason: string | undefined;
-	if (options.execute && !options.audit && selected.length > 0) {
+	if (options.execute && !options.audit && selected.length > 0)
+	{
 		const context = await openBrowser(options.profile);
-		try {
+		try
+		{
 			const page = context.pages()[0] ?? (await context.newPage());
 			const result = await runReplacementLoop(
 				selected,
@@ -345,14 +530,17 @@ const main = async (): Promise<void> => {
 			);
 			ledger = result.ledger;
 			stoppedReason = result.stoppedReason;
-		} finally {
+		}
+		finally
+		{
 			await context.close();
 		}
 	}
 
 	if (!options.execute && !options.audit) return;
 	const problems = await auditLedger(ledger);
-	const report = {
+	const report =
+	{
 		finishedAt: new Date().toISOString(),
 		ledger: countStatuses(ledger),
 		notLive: problems,
@@ -364,6 +552,7 @@ const main = async (): Promise<void> => {
 };
 
 const invokedModuleUrl = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : "";
-if (import.meta.url === invokedModuleUrl) {
+if (import.meta.url === invokedModuleUrl)
+{
 	await main();
 }

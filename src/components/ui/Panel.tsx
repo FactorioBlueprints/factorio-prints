@@ -1,6 +1,7 @@
 import type React from "react";
 
-export interface PanelProps {
+export interface PanelProps
+{
 	children: React.ReactNode;
 	title?: string;
 }

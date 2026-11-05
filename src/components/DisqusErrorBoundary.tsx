@@ -2,12 +2,14 @@ import {captureException} from "@sentry/react";
 import type React from "react";
 import {Component, type ReactNode} from "react";
 
-interface Props {
+interface Props
+{
 	children: ReactNode;
 	fallback?: ReactNode;
 }
 
-interface State {
+interface State
+{
 	hasError: boolean;
 }
 
@@ -15,16 +17,19 @@ interface State {
  * 🛡️ Check if an error should be suppressed (DOM manipulation or cross-origin errors).
  * These are benign errors caused by Disqus modifying the DOM or cross-origin iframe issues.
  */
-function shouldSuppressError(error: Error): boolean {
+function shouldSuppressError(error: Error): boolean
+{
 	const message = error.message || "";
 
 	// Cross-origin errors from Disqus
-	if (message.includes("cross-origin frame") || message.includes("Blocked a frame")) {
+	if (message.includes("cross-origin frame") || message.includes("Blocked a frame"))
+	{
 		return true;
 	}
 
 	// DOM manipulation errors (DOMException with code 8 = NOT_FOUND_ERR)
-	if (error instanceof DOMException) {
+	if (error instanceof DOMException)
+	{
 		return (
 			error.code === 8 ||
 			error.name === "NotFoundError" ||
@@ -44,44 +49,66 @@ function shouldSuppressError(error: Error): boolean {
 	);
 }
 
-class DisqusErrorBoundary extends Component<Props, State> {
-	constructor(props: Props) {
+class DisqusErrorBoundary extends Component<Props, State>
+{
+	constructor(props: Props)
+	{
 		super(props);
-		this.state = {hasError: false};
+		this.state =
+		{
+			hasError: false,
+		};
 	}
 
-	static getDerivedStateFromError(error: Error): State {
+	static getDerivedStateFromError(error: Error): State
+	{
 		// 🛡️ Don't show error UI for suppressed errors
-		if (shouldSuppressError(error)) {
-			return {hasError: false};
+		if (shouldSuppressError(error))
+		{
+			return {
+				hasError: false,
+			};
 		}
-		return {hasError: true};
+		return {
+			hasError: true,
+		};
 	}
 
-	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+	componentDidCatch(error: Error, errorInfo: React.ErrorInfo)
+	{
 		// 🛡️ Silently suppress DOM manipulation and cross-origin errors
-		if (shouldSuppressError(error)) {
-			if (import.meta.env.DEV) {
+		if (shouldSuppressError(error))
+		{
+			if (import.meta.env.DEV)
+			{
 				console.warn("🛡️ Disqus error suppressed:", error.message);
 			}
 			return;
 		}
 
 		// Log other errors to Sentry
-		captureException(error, {
-			contexts: {
-				react: {
-					componentStack: errorInfo.componentStack,
+		captureException(
+			error,
+			{
+				contexts:
+				{
+					react:
+					{
+						componentStack: errorInfo.componentStack,
+					},
+				},
+				tags:
+				{
+					component: "DisqusErrorBoundary",
 				},
 			},
-			tags: {
-				component: "DisqusErrorBoundary",
-			},
-		});
+		);
 	}
 
-	render() {
-		if (this.state.hasError) {
+	render()
+	{
+		if (this.state.hasError)
+		{
 			return (
 				this.props.fallback || (
 					<div className="alert alert-info">

@@ -8,7 +8,8 @@ import {ParametersPanel} from "./blueprint/panels/parameters/ParametersPanel";
 import {RequirementsCard} from "./single/RequirementsCard";
 import BlueprintTitles from "./single/BlueprintTitles";
 
-interface BlueprintPreviewProps {
+interface BlueprintPreviewProps
+{
 	blueprintWrapper: BlueprintWrapper | null;
 	decodedBlueprint: RawBlueprintData | null;
 	blueprintKey?: string;
@@ -18,10 +19,12 @@ const BlueprintPreview: React.FC<BlueprintPreviewProps> = ({
 	blueprintWrapper,
 	decodedBlueprint,
 	blueprintKey = "preview",
-}) => {
+}) =>
+{
 	const {entityHistogram, itemHistogram} = useBlueprintHistograms(decodedBlueprint);
 
-	if (!blueprintWrapper || !decodedBlueprint) {
+	if (!blueprintWrapper || !decodedBlueprint)
+	{
 		return null;
 	}
 

@@ -4,15 +4,18 @@ import type {RawBlueprintData} from "../../schemas";
 import LoadingIndicator from "../grid/LoadingIndicator";
 import BlueprintContentHeader from "./BlueprintContentHeader";
 
-interface BlueprintTitlesProps {
+interface BlueprintTitlesProps
+{
 	blueprintKey: string;
 	parsedData: RawBlueprintData | null | undefined;
 	blueprintStringSha?: string;
 	isLoading?: boolean;
 }
 
-function BlueprintTitles({blueprintKey, parsedData, blueprintStringSha, isLoading = false}: BlueprintTitlesProps) {
-	if (isLoading) {
+function BlueprintTitles({blueprintKey, parsedData, blueprintStringSha, isLoading = false}: BlueprintTitlesProps)
+{
+	if (isLoading)
+	{
 		return (
 			<Card>
 				<LoadingIndicator isLoading={isLoading} message="Loading blueprint titles" />
@@ -20,7 +23,8 @@ function BlueprintTitles({blueprintKey, parsedData, blueprintStringSha, isLoadin
 		);
 	}
 
-	if (!parsedData) {
+	if (!parsedData)
+	{
 		return null;
 	}
 

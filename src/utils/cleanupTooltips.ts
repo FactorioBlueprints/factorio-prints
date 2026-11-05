@@ -2,20 +2,26 @@
  * Utility to safely clean up any orphaned Bootstrap tooltips
  * This helps prevent React DOM errors when tooltips are left behind
  */
-const cleanupOrphanedTooltips = (): void => {
-	try {
+const cleanupOrphanedTooltips = (): void =>
+{
+	try
+	{
 		const tooltips = document.querySelectorAll(
 			".tooltip, .bs-tooltip-top, .bs-tooltip-bottom, .bs-tooltip-start, .bs-tooltip-end",
 		);
 
-		tooltips.forEach((tooltip) => {
-			try {
-				if (!tooltip || !tooltip.parentNode) {
+		tooltips.forEach((tooltip) =>
+		{
+			try
+			{
+				if (!tooltip || !tooltip.parentNode)
+				{
 					return;
 				}
 
 				const parentExists = document.body.contains(tooltip);
-				if (!parentExists) {
+				if (!parentExists)
+				{
 					return;
 				}
 
@@ -25,51 +31,68 @@ const cleanupOrphanedTooltips = (): void => {
 					(rect.width === 0 && rect.height === 0) ||
 					!document.body.contains(tooltip);
 
-				if (isOrphaned) {
+				if (isOrphaned)
+				{
 					tooltip.classList.remove("show");
 					(tooltip as HTMLElement).style.display = "none";
 					(tooltip as HTMLElement).style.visibility = "hidden";
 					(tooltip as HTMLElement).setAttribute("aria-hidden", "true");
 
-					requestAnimationFrame(() => {
-						try {
-							if (tooltip.parentNode && document.body.contains(tooltip)) {
+					requestAnimationFrame(() =>
+					{
+						try
+						{
+							if (tooltip.parentNode && document.body.contains(tooltip))
+							{
 								const parent = tooltip.parentNode;
-								if (parent && Array.from(parent.childNodes).includes(tooltip)) {
+								if (parent && Array.from(parent.childNodes).includes(tooltip))
+								{
 									parent.removeChild(tooltip);
 								}
 							}
-						} catch (error) {
+						}
+						catch (error)
+						{
 							if (
 								error instanceof Error &&
 								!error.message.includes("insertBefore") &&
 								!error.message.includes("removeChild")
-							) {
+							)
+							{
 								console.warn("Tooltip cleanup error:", error.message);
 							}
 						}
 					});
 				}
-			} catch {}
+			}
+			catch
+			{
+			}
 		});
-	} catch {}
+	}
+	catch
+	{
+	}
 };
 
 /**
  * Setup a periodic cleanup of orphaned tooltips
  * This can help prevent accumulation of DOM nodes
  */
-export const setupTooltipCleanup = (): (() => void) => {
+export const setupTooltipCleanup = (): (() => void) =>
+{
 	const intervalId = setInterval(cleanupOrphanedTooltips, 5000);
 
-	const handleNavigation = () => {
+	const handleNavigation = () =>
+	{
 		setTimeout(cleanupOrphanedTooltips, 100);
 	};
 
 	window.addEventListener("popstate", handleNavigation);
 	window.addEventListener("hashchange", handleNavigation);
 
-	return () => {
+	return () =>
+	{
 		clearInterval(intervalId);
 		window.removeEventListener("popstate", handleNavigation);
 		window.removeEventListener("hashchange", handleNavigation);

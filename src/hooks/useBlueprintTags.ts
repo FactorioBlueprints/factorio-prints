@@ -2,7 +2,8 @@ import {type UseQueryOptions, type UseQueryResult, useQueries} from "@tanstack/r
 import {fetchBlueprintTags} from "../api/firebase";
 import {QUERY_CACHE_RETENTION_MILLISECONDS} from "../providers/queryClient";
 
-export const getBlueprintTagsOptions = (blueprintId: string, enabled = true): UseQueryOptions<string[], Error> => ({
+export const getBlueprintTagsOptions = (blueprintId: string, enabled = true): UseQueryOptions<string[], Error> => (
+{
 	queryKey: ["blueprints", "blueprintId", blueprintId, "tags"],
 	queryFn: () => fetchBlueprintTags(blueprintId),
 	enabled: (enabled !== undefined ? enabled : true) && !!blueprintId,
@@ -14,14 +15,18 @@ export const getBlueprintTagsOptions = (blueprintId: string, enabled = true): Us
 export const useBlueprintsTags = (
 	blueprintIds: string[] = [],
 	enabled = true,
-): Record<string, UseQueryResult<string[], Error>> => {
-	const queryResults = useQueries({
-		queries: blueprintIds.map((blueprintId) => getBlueprintTagsOptions(blueprintId, enabled)),
-	});
+): Record<string, UseQueryResult<string[], Error>> =>
+{
+	const queryResults = useQueries(
+		{
+			queries: blueprintIds.map((blueprintId) => getBlueprintTagsOptions(blueprintId, enabled)),
+		},
+	);
 
 	const queriesByKey: Record<string, UseQueryResult<string[], Error>> = {};
 
-	for (let i = 0; i < blueprintIds.length; i++) {
+	for (let i = 0; i < blueprintIds.length; i++)
+	{
 		queriesByKey[blueprintIds[i]] = queryResults[i];
 	}
 

@@ -11,25 +11,41 @@ const firebaseConfigurationPath = resolve(process.cwd(), "..", ".firebaserc");
 const firebaseConfiguration = JSON.parse(readFileSync(firebaseConfigurationPath, "utf8"));
 const projectId = firebaseConfiguration.projects?.default;
 
-if (typeof projectId !== "string" || projectId.length === 0) {
+if (typeof projectId !== "string" || projectId.length === 0)
+{
 	throw new Error("Firebase configuration must define a default project ID");
 }
 
-try {
-	execFileSync(process.execPath, [functionsRuntimeBinary, "."], {
-		env: {
-			...process.env,
-			FUNCTIONS_MANIFEST_OUTPUT_PATH: manifestPath,
-			GCLOUD_PROJECT: projectId,
+try
+{
+	execFileSync(
+		process.execPath,
+		[functionsRuntimeBinary, "."],
+		{
+			env:
+			{
+				...process.env,
+				FUNCTIONS_MANIFEST_OUTPUT_PATH: manifestPath,
+				GCLOUD_PROJECT: projectId,
+			},
+			stdio: "inherit",
 		},
-		stdio: "inherit",
-	});
+	);
 
 	const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 
-	if (Object.keys(manifest.endpoints).length === 0) {
+	if (Object.keys(manifest.endpoints).length === 0)
+	{
 		throw new Error("Firebase Functions manifest contains no endpoints");
 	}
-} finally {
-	rmSync(manifestDirectory, {force: true, recursive: true});
+}
+finally
+{
+	rmSync(
+		manifestDirectory,
+		{
+			force: true,
+			recursive: true,
+		},
+	);
 }

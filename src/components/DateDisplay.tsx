@@ -3,13 +3,16 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import moment from "moment";
 import React from "react";
 
-interface DateDisplayProps {
+interface DateDisplayProps
+{
 	date?: number;
 	isLoading: boolean;
 }
 
-const DateDisplay: React.FC<DateDisplayProps> = ({date, isLoading}) => {
-	if (isLoading) {
+const DateDisplay: React.FC<DateDisplayProps> = ({date, isLoading}) =>
+{
+	if (isLoading)
+	{
 		return <FontAwesomeIcon icon={faCog} spin />;
 	}
 

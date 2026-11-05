@@ -18,45 +18,77 @@ import {app} from "../base";
 import {getFirebaseDatabase} from "../utils/firebaseDatabase";
 import PageHeader from "./PageHeader";
 
-const Account = () => {
+const Account = () =>
+{
 	const [user] = useAuthState(getAuth(app));
 	const navigate = useNavigate();
 	const [displayName, setDisplayName] = useState(user?.displayName || "");
 	const queryClient = useQueryClient();
 
-	const updateDisplayNameMutation = useMutation({
-		mutationFn: async (newDisplayName: string) => {
-			await updateProfile(user!, {
-				displayName: newDisplayName,
-			});
+	const updateDisplayNameMutation = useMutation(
+		{
+			mutationFn: async (newDisplayName: string) =>
+			{
+				await updateProfile(
+					user!,
+					{
+						displayName: newDisplayName,
+					},
+				);
 
-			const userRef = ref(getFirebaseDatabase(), `/users/${user!.uid}/displayName/`);
-			await set(userRef, newDisplayName);
+				const userRef = ref(getFirebaseDatabase(), `/users/${user!.uid}/displayName/`);
+				await set(userRef, newDisplayName);
 
-			return newDisplayName;
+				return newDisplayName;
+			},
+			onSuccess: () =>
+			{
+				queryClient.invalidateQueries(
+					{
+						queryKey: ["userDisplayName", user!.uid],
+					},
+				);
+				navigate(
+					{
+						to: "/user/$userId",
+						params:
+						{
+							userId: user!.uid,
+						},
+					},
+				);
+			},
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({queryKey: ["userDisplayName", user!.uid]});
-			navigate({to: "/user/$userId", params: {userId: user!.uid}});
-		},
-	});
+	);
 
-	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) =>
+	{
 		event.preventDefault();
 		setDisplayName(event.target.value);
 	};
 
-	const handleSaveAccount = (event: React.MouseEvent<HTMLButtonElement>) => {
+	const handleSaveAccount = (event: React.MouseEvent<HTMLButtonElement>) =>
+	{
 		event.preventDefault();
 		updateDisplayNameMutation.mutate(displayName);
 	};
 
-	const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
+	const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) =>
+	{
 		event.preventDefault();
-		navigate({to: "/user/$userId", params: {userId: user!.uid}});
+		navigate(
+			{
+				to: "/user/$userId",
+				params:
+				{
+					userId: user!.uid,
+				},
+			},
+		);
 	};
 
-	if (!user) {
+	if (!user)
+	{
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">{"Account Settings"}</h1>
@@ -89,7 +121,13 @@ const Account = () => {
 					</Form.Group>
 
 					<Form.Group as={Row} className="mb-3">
-						<Col sm={{span: 10, offset: 2}}>
+						<Col
+							sm={
+							{
+								span: 10,
+								offset: 2,
+							}}
+						>
 							<Button
 								type="button"
 								variant="warning"

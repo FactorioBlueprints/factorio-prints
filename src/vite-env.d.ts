@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 
-interface ImportMetaEnv {
+interface ImportMetaEnv
+{
 	readonly VITE_APP_VERSION: string;
 	readonly VITE_GIT_BRANCH: string;
 	readonly VITE_BUILD_TIME: string;
@@ -10,6 +11,7 @@ interface ImportMetaEnv {
 	readonly MODE: string;
 }
 
-interface ImportMeta {
+interface ImportMeta
+{
 	readonly env: ImportMetaEnv;
 }

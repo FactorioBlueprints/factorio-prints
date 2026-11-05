@@ -3,11 +3,14 @@ import React from "react";
 import Account from "../components/Account";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-export const Route = createFileRoute("/account")({
-	component: AccountComponent,
-});
+export const Route = createFileRoute("/account")(
+	{
+		component: AccountComponent,
+	},
+);
 
-function AccountComponent() {
+function AccountComponent()
+{
 	return (
 		<ErrorBoundary>
 			<Account />

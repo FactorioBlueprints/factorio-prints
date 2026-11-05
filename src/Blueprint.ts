@@ -1,35 +1,49 @@
 import {deserializeBlueprintNoThrow} from "./parsing/blueprintParser";
 
-interface BlueprintIcon {
-	signal: {
+interface BlueprintIcon
+{
+	signal:
+	{
 		name: string;
 		type: string;
 	};
 	index: number;
 }
 
-interface BlueprintEntity {
+interface BlueprintEntity
+{
 	entity_number: number;
 	name: string;
-	position: {
+	position:
+	{
 		x: number;
 		y: number;
 	};
-	items?: Record<string, number>[] | {item: string; count: number}[];
+	items?:
+		| Record<string, number>[]
+		|
+		  {
+				item: string;
+				count: number;
+		  }[];
 	[key: string]: unknown;
 }
 
-interface BlueprintTile {
+interface BlueprintTile
+{
 	name: string;
-	position: {
+	position:
+	{
 		x: number;
 		y: number;
 	};
 	[key: string]: unknown;
 }
 
-interface SingleBlueprint {
-	blueprint: {
+interface SingleBlueprint
+{
+	blueprint:
+	{
 		icons?: BlueprintIcon[];
 		entities?: BlueprintEntity[];
 		tiles?: BlueprintTile[];
@@ -41,8 +55,10 @@ interface SingleBlueprint {
 	};
 }
 
-interface BlueprintBookEntry {
-	blueprint?: {
+interface BlueprintBookEntry
+{
+	blueprint?:
+	{
 		icons?: BlueprintIcon[];
 		entities?: BlueprintEntity[];
 		tiles?: BlueprintTile[];
@@ -55,8 +71,10 @@ interface BlueprintBookEntry {
 	index: number;
 }
 
-interface BlueprintBook {
-	blueprint_book: {
+interface BlueprintBook
+{
+	blueprint_book:
+	{
 		blueprints: BlueprintBookEntry[];
 		item: string;
 		label?: string;
@@ -67,8 +85,10 @@ interface BlueprintBook {
 	};
 }
 
-interface UpgradePlanner {
-	upgrade_planner: {
+interface UpgradePlanner
+{
+	upgrade_planner:
+	{
 		settings?: unknown;
 		item: string;
 		label?: string;
@@ -77,8 +97,10 @@ interface UpgradePlanner {
 	};
 }
 
-interface V15DecodedObject {
-	blueprint?: {
+interface V15DecodedObject
+{
+	blueprint?:
+	{
 		icons?: BlueprintIcon[];
 		entities?: BlueprintEntity[];
 		tiles?: BlueprintTile[];
@@ -88,7 +110,8 @@ interface V15DecodedObject {
 		version?: number;
 		[key: string]: unknown;
 	};
-	blueprint_book?: {
+	blueprint_book?:
+	{
 		blueprints: BlueprintBookEntry[];
 		item?: string;
 		label?: string;
@@ -97,7 +120,8 @@ interface V15DecodedObject {
 		version?: number;
 		[key: string]: unknown;
 	};
-	upgrade_planner?: {
+	upgrade_planner?:
+	{
 		settings?: unknown;
 		item?: string;
 		label?: string;
@@ -111,13 +135,25 @@ type DecodedObject = V15DecodedObject | undefined;
 
 type ConvertedBlueprint = SingleBlueprint | BlueprintBook;
 
-class Blueprint {
+class Blueprint
+{
 	private encodedText: string;
 	private cachedDecodedObject: DecodedObject = undefined;
-	private context?: {blueprintId?: string};
+	private context?:
+	{
+		blueprintId?: string;
+	};
 
-	constructor(encodedText: string, context?: {blueprintId?: string}) {
-		if (!encodedText) {
+	constructor(
+		encodedText: string,
+		context?:
+		{
+			blueprintId?: string;
+		},
+	)
+	{
+		if (!encodedText)
+		{
 			throw new Error("Blueprint encodedText must be a non-empty string");
 		}
 		this.encodedText = encodedText;
@@ -126,23 +162,29 @@ class Blueprint {
 
 	isV15 = (): boolean => this.encodedText.startsWith("0");
 
-	get decodedObject(): DecodedObject {
-		if (this.cachedDecodedObject == null) {
+	get decodedObject(): DecodedObject
+	{
+		if (this.cachedDecodedObject == null)
+		{
 			this.cachedDecodedObject = this.convertEncodedTextToObject();
 		}
 		return this.cachedDecodedObject;
 	}
 
-	private convertEncodedTextToObject = (): DecodedObject => {
-		if (this.isV15()) {
+	private convertEncodedTextToObject = (): DecodedObject =>
+	{
+		if (this.isV15())
+		{
 			return deserializeBlueprintNoThrow(this.encodedText, this.context) as V15DecodedObject;
 		}
 
 		return undefined;
 	};
 
-	isBook = (): boolean => {
-		if (this.isV15()) {
+	isBook = (): boolean =>
+	{
+		if (this.isV15())
+		{
 			const decoded = this.decodedObject as V15DecodedObject;
 			return decoded?.blueprint_book !== undefined;
 		}
@@ -150,8 +192,10 @@ class Blueprint {
 		return false;
 	};
 
-	isBlueprint = (): boolean => {
-		if (this.isV15()) {
+	isBlueprint = (): boolean =>
+	{
+		if (this.isV15())
+		{
 			const decoded = this.decodedObject as V15DecodedObject;
 			return decoded?.blueprint !== undefined;
 		}
@@ -159,14 +203,19 @@ class Blueprint {
 		return false;
 	};
 
-	getV15Decoded = (): V15DecodedObject | null => {
-		try {
-			if (this.isV15()) {
+	getV15Decoded = (): V15DecodedObject | null =>
+	{
+		try
+		{
+			if (this.isV15())
+			{
 				return this.decodedObject as V15DecodedObject;
 			}
 
 			return null;
-		} catch {
+		}
+		catch
+		{
 			return null;
 		}
 	};

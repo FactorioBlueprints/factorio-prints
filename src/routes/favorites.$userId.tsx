@@ -3,11 +3,14 @@ import React from "react";
 import ErrorBoundary from "../components/ErrorBoundary";
 import UserFavoritesGrid from "../components/UserFavoritesGrid";
 
-export const Route = createFileRoute("/favorites/$userId")({
-	component: UserFavoritesComponent,
-});
+export const Route = createFileRoute("/favorites/$userId")(
+	{
+		component: UserFavoritesComponent,
+	},
+);
 
-function UserFavoritesComponent() {
+function UserFavoritesComponent()
+{
 	return (
 		<ErrorBoundary>
 			<UserFavoritesGrid />

@@ -4,7 +4,8 @@ import {useFilterByTitle} from "./useFilterByTitle";
 
 const useFilteredBlueprintSummaries = (
 	blueprintSummaries: EnrichedBlueprintSummary[] = [],
-): EnrichedBlueprintSummary[] => {
+): EnrichedBlueprintSummary[] =>
+{
 	// Filter by title first (usually faster)
 	const titleFiltered = useFilterByTitle(blueprintSummaries);
 

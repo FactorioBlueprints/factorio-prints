@@ -13,14 +13,17 @@ import useRawBlueprintSummaries from "./useRawBlueprintSummaries";
 const useEnrichedBlueprintSummaries = (
 	blueprintsData: Record<string, boolean> | null | undefined,
 	blueprintsSuccess: boolean,
-): {
+):
+{
 	queriesByKey: Record<string, UseQueryResult<RawBlueprintSummary | null, Error>>;
 	blueprintSummaries: (EnrichedBlueprintSummary | null)[];
 	rawBlueprintSummaries: RawBlueprintSummary[];
-} => {
+} =>
+{
 	const {queriesByKey, rawBlueprintSummaries} = useRawBlueprintSummaries(blueprintsData, blueprintsSuccess);
 
-	const blueprintSummaries = useMemo(() => {
+	const blueprintSummaries = useMemo(() =>
+	{
 		// Create an array of enriched blueprint summaries
 		return Object.entries(queriesByKey)
 			.filter(([, query]) => query.isSuccess && query.data)

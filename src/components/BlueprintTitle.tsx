@@ -3,13 +3,16 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import {RichText} from "./core/text/RichText";
 
-interface BlueprintTitleProps {
+interface BlueprintTitleProps
+{
 	title?: string;
 	isLoading: boolean;
 }
 
-const BlueprintTitle: React.FC<BlueprintTitleProps> = ({title, isLoading}) => {
-	if (isLoading) {
+const BlueprintTitle: React.FC<BlueprintTitleProps> = ({title, isLoading}) =>
+{
+	if (isLoading)
+	{
 		return (
 			<h1>
 				<FontAwesomeIcon icon={faCog} spin />

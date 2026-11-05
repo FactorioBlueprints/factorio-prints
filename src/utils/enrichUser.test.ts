@@ -2,18 +2,23 @@ import {describe, expect, it} from "vite-plus/test";
 import type {RawUser} from "../schemas";
 import {enrichUser} from "./enrichUser";
 
-describe("enrichUser", () => {
-	it("should enrich user data with counts", () => {
-		const rawUser: RawUser = {
+describe("enrichUser", () =>
+{
+	it("should enrich user data with counts", () =>
+	{
+		const rawUser: RawUser =
+		{
 			id: "user123",
 			displayName: "John Doe",
 			email: "john@example.com",
-			favorites: {
+			favorites:
+			{
 				"blueprint-1": true,
 				"blueprint-2": false,
 				"blueprint-3": true,
 			},
-			blueprints: {
+			blueprints:
+			{
 				"blueprint-4": true,
 				"blueprint-5": true,
 				"blueprint-6": false,
@@ -23,32 +28,39 @@ describe("enrichUser", () => {
 
 		const result = enrichUser(rawUser);
 
-		expect(result).toEqual({
-			id: "user123",
-			displayName: "John Doe",
-			email: "john@example.com",
-			favorites: {
-				"blueprint-1": true,
-				"blueprint-2": false,
-				"blueprint-3": true,
+		expect(result).toEqual(
+			{
+				id: "user123",
+				displayName: "John Doe",
+				email: "john@example.com",
+				favorites:
+				{
+					"blueprint-1": true,
+					"blueprint-2": false,
+					"blueprint-3": true,
+				},
+				blueprints:
+				{
+					"blueprint-4": true,
+					"blueprint-5": true,
+					"blueprint-6": false,
+				},
+				collection: {},
+				favoritesCount: 2, // Only true values
+				blueprintsCount: 2, // Only true values
 			},
-			blueprints: {
-				"blueprint-4": true,
-				"blueprint-5": true,
-				"blueprint-6": false,
-			},
-			collection: {},
-			favoritesCount: 2, // Only true values
-			blueprintsCount: 2, // Only true values
-		});
+		);
 	});
 
-	it("should handle null input", () => {
+	it("should handle null input", () =>
+	{
 		expect(enrichUser(null)).toBeNull();
 	});
 
-	it("should handle user with minimal data", () => {
-		const rawUser: RawUser = {
+	it("should handle user with minimal data", () =>
+	{
+		const rawUser: RawUser =
+		{
 			id: "user123",
 			favorites: {},
 			collection: {},
@@ -57,18 +69,22 @@ describe("enrichUser", () => {
 
 		const result = enrichUser(rawUser);
 
-		expect(result).toEqual({
-			id: "user123",
-			favorites: {},
-			collection: {},
-			blueprints: {},
-			favoritesCount: 0,
-			blueprintsCount: 0,
-		});
+		expect(result).toEqual(
+			{
+				id: "user123",
+				favorites: {},
+				collection: {},
+				blueprints: {},
+				favoritesCount: 0,
+				blueprintsCount: 0,
+			},
+		);
 	});
 
-	it("should handle user with empty favorites and blueprints", () => {
-		const rawUser: RawUser = {
+	it("should handle user with empty favorites and blueprints", () =>
+	{
+		const rawUser: RawUser =
+		{
 			id: "user123",
 			favorites: {},
 			collection: {},
@@ -77,27 +93,33 @@ describe("enrichUser", () => {
 
 		const result = enrichUser(rawUser);
 
-		expect(result).toEqual({
-			id: "user123",
-			favorites: {},
-			collection: {},
-			blueprints: {},
-			favoritesCount: 0,
-			blueprintsCount: 0,
-		});
+		expect(result).toEqual(
+			{
+				id: "user123",
+				favorites: {},
+				collection: {},
+				blueprints: {},
+				favoritesCount: 0,
+				blueprintsCount: 0,
+			},
+		);
 	});
 
-	it("should count only true values in favorites and blueprints", () => {
-		const rawUser: RawUser = {
+	it("should count only true values in favorites and blueprints", () =>
+	{
+		const rawUser: RawUser =
+		{
 			id: "user123",
-			favorites: {
+			favorites:
+			{
 				"blueprint-1": true,
 				"blueprint-2": false,
 				"blueprint-3": true,
 				"blueprint-4": false,
 				"blueprint-5": true,
 			},
-			blueprints: {
+			blueprints:
+			{
 				"blueprint-a": false,
 				"blueprint-b": true,
 				"blueprint-c": false,

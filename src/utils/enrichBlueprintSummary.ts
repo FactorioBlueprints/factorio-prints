@@ -1,5 +1,6 @@
 import buildImageUrl, {ImageVariant} from "../helpers/buildImageUrl";
-import {
+import
+{
 	type EnrichedBlueprintSummary,
 	type RawBlueprintSummary,
 	validateEnrichedBlueprintSummary,
@@ -12,19 +13,22 @@ import {
 export const enrichBlueprintSummary = (
 	rawBlueprintSummary: RawBlueprintSummary | null,
 	blueprintId: string,
-): EnrichedBlueprintSummary | null => {
+): EnrichedBlueprintSummary | null =>
+{
 	if (!rawBlueprintSummary) return null;
 
 	validateRawBlueprintSummary(rawBlueprintSummary);
 
 	let thumbnail: string | null = null;
-	if (rawBlueprintSummary.imgurId) {
+	if (rawBlueprintSummary.imgurId)
+	{
 		const imgurId = rawBlueprintSummary.imgurId;
 		const imgurType = rawBlueprintSummary.imgurType || "image/png";
 		thumbnail = buildImageUrl(imgurId, imgurType, ImageVariant.Thumbnail);
 	}
 
-	const enrichedBlueprintSummary = {
+	const enrichedBlueprintSummary =
+	{
 		...rawBlueprintSummary,
 		key: blueprintId,
 		thumbnail,

@@ -18,7 +18,8 @@ import {deserializeBlueprintNoThrow, serializeBlueprint} from "../parsing/bluepr
 import {blueprintQuery} from "../queries/blueprintQueries";
 import type {EnrichedBlueprintSummary, RawBlueprintData} from "../schemas";
 import {searchParamsStore} from "../store/searchParamsStore";
-import {
+import
+{
 	ClipboardCopyStatus,
 	copyBlueprintStringToClipboard,
 	createSyntheticBlueprintBook,
@@ -33,15 +34,21 @@ import PageHeader from "./PageHeader";
 import SearchForm from "./SearchForm";
 import TagForm from "./TagForm";
 
-type StatusState = {variant: "success" | "warning" | "danger"; message: string} | null;
+type StatusState =
+{
+	variant: "success" | "warning" | "danger";
+	message: string;
+} | null;
 
-const sortByLastUpdatedDesc = (a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) => {
+const sortByLastUpdatedDesc = (a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) =>
+{
 	const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 	const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
 	return dateB.getTime() - dateA.getTime();
 };
 
-const MyCollectionGrid: React.FC = () => {
+const MyCollectionGrid: React.FC = () =>
+{
 	const [user] = useAuthState(getAuth(app));
 	const userId = user?.uid;
 	const queryClient = useQueryClient();
@@ -53,30 +60,42 @@ const MyCollectionGrid: React.FC = () => {
 	const {data, isLoading, isSuccess, error} = useUserCollection(userId);
 	const {queriesByKey: blueprintQueriesById, blueprintSummaries} = useEnrichedBlueprintSummaries(data, isSuccess);
 
-	React.useEffect(() => {
-		if (isSuccess && userId && Object.keys(blueprintQueriesById).length > 0) {
-			Object.entries(blueprintQueriesById).forEach(([blueprintId, query]) => {
-				if (query.isError && query.error?.message?.includes("not found")) {
+	React.useEffect(() =>
+	{
+		if (isSuccess && userId && Object.keys(blueprintQueriesById).length > 0)
+		{
+			Object.entries(blueprintQueriesById).forEach(([blueprintId, query]) =>
+			{
+				if (query.isError && query.error?.message?.includes("not found"))
+				{
 					cleanupInvalidUserCollection(userId, blueprintId)
-						.then((didCleanup: boolean) => {
-							if (!didCleanup) {
+						.then((didCleanup: boolean) =>
+						{
+							if (!didCleanup)
+							{
 								return;
 							}
 
 							queryClient.setQueryData(
 								["users", "userId", userId, "collection"],
-								(oldData: Record<string, boolean> | undefined) => {
+								(oldData: Record<string, boolean> | undefined) =>
+								{
 									if (!oldData) return oldData;
 
-									const newData = {...oldData};
+									const newData =
+									{
+										...oldData,
+									};
 									delete newData[blueprintId];
 									return newData;
 								},
 							);
 
-							queryClient.removeQueries({
-								queryKey: ["users", "userId", userId, "collection", "blueprintId", blueprintId],
-							});
+							queryClient.removeQueries(
+								{
+									queryKey: ["users", "userId", userId, "collection", "blueprintId", blueprintId],
+								},
+							);
 						})
 						.catch(() => {});
 				}
@@ -100,37 +119,47 @@ const MyCollectionGrid: React.FC = () => {
 		[validBlueprintSummaries],
 	);
 
-	const handleCopyCollection = React.useCallback(async () => {
-		if (!userId) {
+	const handleCopyCollection = React.useCallback(async () =>
+	{
+		if (!userId)
+		{
 			return;
 		}
 
 		setStatus(null);
 		setIsCopying(true);
 
-		try {
-			if (sortedCollectionForExport.length === 0) {
+		try
+		{
+			if (sortedCollectionForExport.length === 0)
+			{
 				throw new Error("Your collection is empty. Add at least one blueprint before exporting.");
 			}
 
 			const decodedBlueprints: RawBlueprintData[] = [];
 			let skippedCount = 0;
 
-			for (const blueprintSummary of sortedCollectionForExport) {
+			for (const blueprintSummary of sortedCollectionForExport)
+			{
 				const rawBlueprint = await queryClient.fetchQuery(
 					blueprintQuery(blueprintSummary.key, blueprintSummary),
 				);
 
-				if (!rawBlueprint?.blueprintString) {
+				if (!rawBlueprint?.blueprintString)
+				{
 					skippedCount += 1;
 					continue;
 				}
 
-				const decoded = deserializeBlueprintNoThrow(rawBlueprint.blueprintString, {
-					blueprintId: blueprintSummary.key,
-				});
+				const decoded = deserializeBlueprintNoThrow(
+					rawBlueprint.blueprintString,
+					{
+						blueprintId: blueprintSummary.key,
+					},
+				);
 
-				if (!decoded) {
+				if (!decoded)
+				{
 					skippedCount += 1;
 					continue;
 				}
@@ -138,46 +167,65 @@ const MyCollectionGrid: React.FC = () => {
 				decodedBlueprints.push(decoded);
 			}
 
-			if (decodedBlueprints.length === 0) {
+			if (decodedBlueprints.length === 0)
+			{
 				throw new Error("None of your collection blueprints could be exported.");
 			}
 
-			const syntheticBook = createSyntheticBlueprintBook(decodedBlueprints, {
-				label: user?.displayName ? `${user.displayName}'s Collection` : "Blueprint Collection",
-				description: "Exported from https://factorioprints.com",
-			});
+			const syntheticBook = createSyntheticBlueprintBook(
+				decodedBlueprints,
+				{
+					label: user?.displayName ? `${user.displayName}'s Collection` : "Blueprint Collection",
+					description: "Exported from https://factorioprints.com",
+				},
+			);
 
 			const syntheticBookString = serializeBlueprint(syntheticBook);
 			const clipboardResult = await copyBlueprintStringToClipboard(syntheticBookString);
-			if (clipboardResult.status !== ClipboardCopyStatus.Copied) {
+			if (clipboardResult.status !== ClipboardCopyStatus.Copied)
+			{
 				throw new Error(clipboardResult.errorMessage);
 			}
 
-			if (skippedCount > 0) {
-				setStatus({
-					variant: "warning",
-					message: `Copied a blueprint book with ${decodedBlueprints.length} entries to clipboard. Skipped ${skippedCount} invalid entries.`,
-				});
-			} else {
-				setStatus({
-					variant: "success",
-					message: `Copied a blueprint book with ${decodedBlueprints.length} entries to clipboard.`,
-				});
+			if (skippedCount > 0)
+			{
+				setStatus(
+					{
+						variant: "warning",
+						message: `Copied a blueprint book with ${decodedBlueprints.length} entries to clipboard. Skipped ${skippedCount} invalid entries.`,
+					},
+				);
 			}
-		} catch (copyError) {
-			setStatus({
-				variant: "danger",
-				message:
-					copyError instanceof Error
-						? copyError.message
-						: "Failed to copy collection blueprint book to clipboard.",
-			});
-		} finally {
+			else
+			{
+				setStatus(
+					{
+						variant: "success",
+						message: `Copied a blueprint book with ${decodedBlueprints.length} entries to clipboard.`,
+					},
+				);
+			}
+		}
+		catch (copyError)
+		{
+			setStatus(
+				{
+					variant: "danger",
+					message:
+						copyError instanceof Error
+							? copyError.message
+							: "Failed to copy collection blueprint book to clipboard.",
+				},
+			);
+		}
+		finally
+		{
 			setIsCopying(false);
 		}
 	}, [queryClient, sortedCollectionForExport, user, userId]);
 
-	if (!user) {
+	if (!user)
+	{
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">My Collection</h1>
@@ -242,7 +290,13 @@ const MyCollectionGrid: React.FC = () => {
 					<ErrorBoundary
 						key={blueprintSummary.key}
 						fallback={
-							<div className="blueprint-thumbnail col-auto" style={{width: "11rem"}}>
+							<div
+								className="blueprint-thumbnail col-auto"
+								style={
+								{
+									width: "11rem",
+								}}
+							>
 								<div className="text-danger p-3">Failed to load blueprint</div>
 							</div>
 						}

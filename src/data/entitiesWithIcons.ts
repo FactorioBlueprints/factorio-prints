@@ -1,4 +1,5 @@
-const entitiesWithIcons: Record<string, boolean> = {
+const entitiesWithIcons: Record<string, boolean> =
+{
 	"1x2-remnants": true,
 	"accumulator-explosion": true,
 	"accumulator-recycling": true,

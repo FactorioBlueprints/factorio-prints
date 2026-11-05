@@ -7,25 +7,36 @@ import Select, {type SingleValue} from "react-select";
 import {useRestTags} from "../../hooks/useRestTags";
 import {advancedSearchStore, setTag} from "../../store/advancedSearchStore";
 
-interface TagOption {
+interface TagOption
+{
 	value: string;
 	label: string;
 }
 
-const TagFilterSelect: React.FC = () => {
+const TagFilterSelect: React.FC = () =>
+{
 	const {tagStrings, isLoading} = useRestTags();
 	const tag = useStore(advancedSearchStore, (state) => state.tag);
 
-	const options = useMemo(() => {
-		return tagStrings.map((value) => ({
+	const options = useMemo(() =>
+	{
+		return tagStrings.map((value) => (
+		{
 			value,
 			label: value,
 		}));
 	}, [tagStrings]);
 
-	const selectedOption = tag ? {value: tag, label: tag} : null;
+	const selectedOption = tag
+		?
+			{
+				value: tag,
+				label: tag,
+			}
+		: null;
 
-	const handleChange = (selected: SingleValue<TagOption>): void => {
+	const handleChange = (selected: SingleValue<TagOption>): void =>
+	{
 		setTag(selected?.value ?? null);
 	};
 

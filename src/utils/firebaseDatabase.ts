@@ -10,19 +10,25 @@ let databaseError: Error | null = null;
  *
  * @throws {Error} If the database cannot be initialized
  */
-export const getFirebaseDatabase = (): Database => {
-	if (databaseError) {
+export const getFirebaseDatabase = (): Database =>
+{
+	if (databaseError)
+	{
 		throw databaseError;
 	}
 
-	if (databaseInstance) {
+	if (databaseInstance)
+	{
 		return databaseInstance;
 	}
 
-	try {
+	try
+	{
 		databaseInstance = getDatabase(app);
 		return databaseInstance;
-	} catch (error) {
+	}
+	catch (error)
+	{
 		const errorMessage = error instanceof Error ? error.message : "Failed to initialize Firebase Database";
 
 		databaseError = new Error(

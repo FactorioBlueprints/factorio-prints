@@ -3,11 +3,14 @@ import React from "react";
 import ErrorBoundary from "../components/ErrorBoundary";
 import SingleTagGrid from "../components/SingleTagGrid";
 
-export const Route = createFileRoute("/tag/$tag")({
-	component: TagComponent,
-});
+export const Route = createFileRoute("/tag/$tag")(
+	{
+		component: TagComponent,
+	},
+);
 
-function TagComponent() {
+function TagComponent()
+{
 	return (
 		<ErrorBoundary>
 			<SingleTagGrid />

@@ -20,7 +20,8 @@ const contributors = [
 	"Thomas",
 ];
 
-const Contributors: React.FC = () => {
+const Contributors: React.FC = () =>
+{
 	return (
 		<Container>
 			<div className="p-5 rounded-lg jumbotron">

@@ -1,7 +1,8 @@
 import type React from "react";
 import Row from "react-bootstrap/Row";
 
-interface PageHeaderProps {
+interface PageHeaderProps
+{
 	title: React.ReactNode;
 }
 

@@ -1,9 +1,12 @@
 import {describe, expect, it} from "vite-plus/test";
 import {enrichUserBlueprints} from "./enrichUserBlueprints";
 
-describe("enrichUserBlueprints", () => {
-	it("should enrich user blueprints data with count", () => {
-		const rawUserBlueprints = {
+describe("enrichUserBlueprints", () =>
+{
+	it("should enrich user blueprints data with count", () =>
+	{
+		const rawUserBlueprints =
+		{
 			"blueprint-1": true,
 			"blueprint-2": false,
 			"blueprint-3": true,
@@ -12,39 +15,50 @@ describe("enrichUserBlueprints", () => {
 
 		const result = enrichUserBlueprints(rawUserBlueprints);
 
-		expect(result).toEqual({
-			blueprintIds: {
-				"blueprint-1": true,
-				"blueprint-2": false,
-				"blueprint-3": true,
-				"blueprint-4": true,
+		expect(result).toEqual(
+			{
+				blueprintIds:
+				{
+					"blueprint-1": true,
+					"blueprint-2": false,
+					"blueprint-3": true,
+					"blueprint-4": true,
+				},
+				count: 3, // Only true values
 			},
-			count: 3, // Only true values
-		});
+		);
 	});
 
-	it("should handle null input", () => {
+	it("should handle null input", () =>
+	{
 		const result = enrichUserBlueprints(null);
 
-		expect(result).toEqual({
-			blueprintIds: {},
-			count: 0,
-		});
+		expect(result).toEqual(
+			{
+				blueprintIds: {},
+				count: 0,
+			},
+		);
 	});
 
-	it("should handle empty blueprints object", () => {
+	it("should handle empty blueprints object", () =>
+	{
 		const rawUserBlueprints = {};
 
 		const result = enrichUserBlueprints(rawUserBlueprints);
 
-		expect(result).toEqual({
-			blueprintIds: {},
-			count: 0,
-		});
+		expect(result).toEqual(
+			{
+				blueprintIds: {},
+				count: 0,
+			},
+		);
 	});
 
-	it("should count only true values", () => {
-		const rawUserBlueprints = {
+	it("should count only true values", () =>
+	{
+		const rawUserBlueprints =
+		{
 			"blueprint-1": true,
 			"blueprint-2": false,
 			"blueprint-3": false,
@@ -59,8 +73,10 @@ describe("enrichUserBlueprints", () => {
 		expect(result?.blueprintIds).toEqual(rawUserBlueprints);
 	});
 
-	it("should handle all false values", () => {
-		const rawUserBlueprints = {
+	it("should handle all false values", () =>
+	{
+		const rawUserBlueprints =
+		{
 			"blueprint-1": false,
 			"blueprint-2": false,
 			"blueprint-3": false,
@@ -68,18 +84,23 @@ describe("enrichUserBlueprints", () => {
 
 		const result = enrichUserBlueprints(rawUserBlueprints);
 
-		expect(result).toEqual({
-			blueprintIds: {
-				"blueprint-1": false,
-				"blueprint-2": false,
-				"blueprint-3": false,
+		expect(result).toEqual(
+			{
+				blueprintIds:
+				{
+					"blueprint-1": false,
+					"blueprint-2": false,
+					"blueprint-3": false,
+				},
+				count: 0,
 			},
-			count: 0,
-		});
+		);
 	});
 
-	it("should handle real-world blueprint IDs", () => {
-		const rawUserBlueprints = {
+	it("should handle real-world blueprint IDs", () =>
+	{
+		const rawUserBlueprints =
+		{
 			"-KnQ865j-qQ21WoUPbd3": true,
 			"-L_jADWYOzVoz7tNRFf0": true,
 			"-MhFKv_xHyTpGxP5ABCD": false,
@@ -87,13 +108,16 @@ describe("enrichUserBlueprints", () => {
 
 		const result = enrichUserBlueprints(rawUserBlueprints);
 
-		expect(result).toEqual({
-			blueprintIds: {
-				"-KnQ865j-qQ21WoUPbd3": true,
-				"-L_jADWYOzVoz7tNRFf0": true,
-				"-MhFKv_xHyTpGxP5ABCD": false,
+		expect(result).toEqual(
+			{
+				blueprintIds:
+				{
+					"-KnQ865j-qQ21WoUPbd3": true,
+					"-L_jADWYOzVoz7tNRFf0": true,
+					"-MhFKv_xHyTpGxP5ABCD": false,
+				},
+				count: 2,
 			},
-			count: 2,
-		});
+		);
 	});
 });

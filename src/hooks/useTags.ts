@@ -7,35 +7,46 @@ const tagCategorySchema = z.record(z.string(), z.array(z.string()));
 
 type TagHierarchy = z.infer<typeof tagCategorySchema>;
 
-const buildTagOptions = (tagHierarchy: TagHierarchy): string[] => {
+const buildTagOptions = (tagHierarchy: TagHierarchy): string[] =>
+{
 	const result: string[] = [];
 
-	try {
+	try
+	{
 		tagCategorySchema.parse(tagHierarchy);
 
-		Object.entries(tagHierarchy).forEach(([category, tags]) => {
-			tags.forEach((tag) => {
+		Object.entries(tagHierarchy).forEach(([category, tags]) =>
+		{
+			tags.forEach((tag) =>
+			{
 				result.push(`/${category}/${tag}/`);
 			});
 		});
-	} catch {
+	}
+	catch
+	{
 		throw new Error("Tag hierarchy has unexpected format");
 	}
 
 	return result;
 };
 
-export const useTags = () => {
-	const tagsQuery = useQuery<TagHierarchy>({
-		queryKey: ["tags"],
-		queryFn: fetchTags,
-		placeholderData: {},
-	});
+export const useTags = () =>
+{
+	const tagsQuery = useQuery<TagHierarchy>(
+		{
+			queryKey: ["tags"],
+			queryFn: fetchTags,
+			placeholderData: {},
+		},
+	);
 
 	const {data} = tagsQuery;
 
-	const processedData = useMemo(() => {
-		if (!data) {
+	const processedData = useMemo(() =>
+	{
+		if (!data)
+		{
 			return {
 				tagHierarchy: {},
 				tags: [],

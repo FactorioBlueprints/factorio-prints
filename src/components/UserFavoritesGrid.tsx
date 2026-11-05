@@ -27,9 +27,14 @@ import PageHeader from "./PageHeader";
 import SearchForm from "./SearchForm";
 import TagForm from "./TagForm";
 
-const UserFavoritesGrid: React.FC = () => {
+const UserFavoritesGrid: React.FC = () =>
+{
 	const [currentUser] = useAuthState(getAuth(app));
-	const {userId} = useParams({from: "/favorites/$userId"});
+	const {userId} = useParams(
+		{
+			from: "/favorites/$userId",
+		},
+	);
 	const queryClient = useQueryClient();
 
 	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
@@ -41,54 +46,80 @@ const UserFavoritesGrid: React.FC = () => {
 	const {queriesByKey: blueprintQueriesById, blueprintSummaries} = useEnrichedBlueprintSummaries(data, isSuccess);
 
 	// Check for failed queries and clean up invalid favorites
-	React.useEffect(() => {
-		if (isSuccess && userId && Object.keys(blueprintQueriesById).length > 0) {
-			Object.entries(blueprintQueriesById).forEach(([blueprintId, query]) => {
+	React.useEffect(() =>
+	{
+		if (isSuccess && userId && Object.keys(blueprintQueriesById).length > 0)
+		{
+			Object.entries(blueprintQueriesById).forEach(([blueprintId, query]) =>
+			{
 				// If the query has an error about "not found", clean up the invalid favorite
-				if (query.isError && query.error?.message?.includes("not found")) {
+				if (query.isError && query.error?.message?.includes("not found"))
+				{
 					cleanupInvalidUserFavorite(userId, blueprintId)
-						.then((success: boolean) => {
-							if (success) {
+						.then((success: boolean) =>
+						{
+							if (success)
+							{
 								// Update all related query caches to remove this favorite
 
 								// 1. Update user favorites list
 								queryClient.setQueryData(
 									["users", "userId", userId, "favorites"],
-									(oldData: Record<string, boolean> | undefined) => {
+									(oldData: Record<string, boolean> | undefined) =>
+									{
 										if (!oldData) return oldData;
 
 										// Create a new object without the deleted blueprint
-										const newData = {...oldData};
+										const newData =
+										{
+											...oldData,
+										};
 										delete newData[blueprintId];
 										return newData;
 									},
 								);
 
 								// 2. Remove the specific user favorite query
-								queryClient.removeQueries({
-									queryKey: ["users", "userId", userId, "favorites", "blueprintId", blueprintId],
-								});
+								queryClient.removeQueries(
+									{
+										queryKey: ["users", "userId", userId, "favorites", "blueprintId", blueprintId],
+									},
+								);
 
 								// 3. Remove the specific blueprint favorite query
-								queryClient.removeQueries({
-									queryKey: ["blueprints", "blueprintId", blueprintId, "favorites", "userId", userId],
-								});
+								queryClient.removeQueries(
+									{
+										queryKey: [
+											"blueprints",
+											"blueprintId",
+											blueprintId,
+											"favorites",
+											"userId",
+											userId,
+										],
+									},
+								);
 
 								// 4. Update any blueprint favorites cache if it exists
 								queryClient.setQueryData(
 									["blueprints", "blueprintId", blueprintId, "favorites"],
-									(oldData: Record<string, boolean> | undefined) => {
+									(oldData: Record<string, boolean> | undefined) =>
+									{
 										if (!oldData) return oldData;
 
 										// Create a new object without the user
-										const newData = {...oldData};
+										const newData =
+										{
+											...oldData,
+										};
 										delete newData[userId];
 										return newData;
 									},
 								);
 
 								// 5. Update blueprint favorite count if it exists
-								queryClient.setQueryData(["blueprints", "blueprintId", blueprintId], (oldData: any) => {
+								queryClient.setQueryData(["blueprints", "blueprintId", blueprintId], (oldData: any) =>
+								{
 									if (!oldData || !oldData.numberOfFavorites) return oldData;
 
 									return {
@@ -100,7 +131,8 @@ const UserFavoritesGrid: React.FC = () => {
 								// 6. Update blueprint summary favorite count if it exists
 								queryClient.setQueryData(
 									["blueprintSummaries", "blueprintId", blueprintId],
-									(oldData: any) => {
+									(oldData: any) =>
+									{
 										if (!oldData || !oldData.numberOfFavorites) return oldData;
 
 										return {
@@ -122,15 +154,15 @@ const UserFavoritesGrid: React.FC = () => {
 	);
 
 	// Sort newest first
-	const sortedBlueprints = [...filteredBlueprints].sort(
-		(a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) => {
-			const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
-			const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-			return dateB.getTime() - dateA.getTime();
-		},
-	);
+	const sortedBlueprints = [...filteredBlueprints].sort((a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) =>
+	{
+		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
+		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
+		return dateB.getTime() - dateA.getTime();
+	});
 
-	if (!currentUser) {
+	if (!currentUser)
+	{
 		return (
 			<Container fluid>
 				<PageHeader
@@ -152,11 +184,13 @@ const UserFavoritesGrid: React.FC = () => {
 		);
 	}
 
-	if (moderatorQuery.isLoading) {
+	if (moderatorQuery.isLoading)
+	{
 		return <LoadingIndicator isLoading={true} message="Checking permissions..." />;
 	}
 
-	if (moderatorQuery.error) {
+	if (moderatorQuery.error)
+	{
 		return (
 			<ErrorDisplay
 				error={moderatorQuery.error}
@@ -165,7 +199,8 @@ const UserFavoritesGrid: React.FC = () => {
 		);
 	}
 
-	if (!isModerator) {
+	if (!isModerator)
+	{
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">Access Denied</h1>
@@ -204,7 +239,13 @@ const UserFavoritesGrid: React.FC = () => {
 					<ErrorBoundary
 						key={blueprintSummary.key}
 						fallback={
-							<div className="blueprint-thumbnail col-auto" style={{width: "11rem"}}>
+							<div
+								className="blueprint-thumbnail col-auto"
+								style={
+								{
+									width: "11rem",
+								}}
+							>
 								<div className="text-danger p-3">Failed to load blueprint</div>
 							</div>
 						}

@@ -1,6 +1,7 @@
 import {type EnrichedUser, type RawUser, validateEnrichedUser, validateRawUser} from "../schemas";
 
-export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null => {
+export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null =>
+{
 	if (!rawUser) return null;
 
 	validateRawUser(rawUser);
@@ -11,7 +12,8 @@ export const enrichUser = (rawUser: RawUser | null): EnrichedUser | null => {
 	// Count blueprints (only true values)
 	const blueprintsCount = rawUser.blueprints ? Object.values(rawUser.blueprints).filter(Boolean).length : 0;
 
-	const enrichedUser: EnrichedUser = {
+	const enrichedUser: EnrichedUser =
+	{
 		...rawUser,
 		favoritesCount,
 		blueprintsCount,

@@ -7,25 +7,36 @@ import Select, {type SingleValue} from "react-select";
 import {useRecipeOptions} from "../../hooks/useRecipeOptions";
 import {advancedSearchStore, setRecipe} from "../../store/advancedSearchStore";
 
-interface RecipeOption {
+interface RecipeOption
+{
 	value: string;
 	label: string;
 }
 
-const RecipeFilterSelect: React.FC = () => {
+const RecipeFilterSelect: React.FC = () =>
+{
 	const {data: recipes, isLoading} = useRecipeOptions();
 	const recipe = useStore(advancedSearchStore, (state) => state.recipe);
 
-	const options = useMemo(() => {
-		return (recipes ?? []).map((value) => ({
+	const options = useMemo(() =>
+	{
+		return (recipes ?? []).map((value) => (
+		{
 			value,
 			label: value,
 		}));
 	}, [recipes]);
 
-	const selectedOption = recipe ? {value: recipe, label: recipe} : null;
+	const selectedOption = recipe
+		?
+			{
+				value: recipe,
+				label: recipe,
+			}
+		: null;
 
-	const handleChange = (selected: SingleValue<RecipeOption>): void => {
+	const handleChange = (selected: SingleValue<RecipeOption>): void =>
+	{
 		setRecipe(selected?.value ?? null);
 	};
 

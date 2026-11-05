@@ -1,10 +1,13 @@
-self.addEventListener("install", () => {
+self.addEventListener("install", () =>
+{
 	self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
+self.addEventListener("activate", (event) =>
+{
 	event.waitUntil(
-		(async () => {
+		(async () =>
+		{
 			const cacheNames = await caches.keys();
 			await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
 

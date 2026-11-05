@@ -7,35 +7,49 @@ import {beforeEach, describe, expect, it, vi} from "vite-plus/test";
 import {useDeleteBlueprint} from "./useUpdateBlueprint";
 
 // Mock Firebase
-vi.mock("firebase/database", () => ({
+vi.mock("firebase/database", () => (
+{
 	getDatabase: vi.fn(),
 	ref: vi.fn(),
 	update: vi.fn(),
 }));
 
 // Mock router
-vi.mock("@tanstack/react-router", () => ({
+vi.mock("@tanstack/react-router", () => (
+{
 	useNavigate: vi.fn(),
 }));
 
 // Mock base
-vi.mock("../base", () => ({
+vi.mock("../base", () => (
+{
 	app: {},
 }));
 
-describe("useDeleteBlueprint user page cache invalidation", () => {
+describe("useDeleteBlueprint user page cache invalidation", () =>
+{
 	let queryClient: QueryClient;
 	let wrapper: ({children}: {children: React.ReactNode}) => React.JSX.Element;
 	let navigateMock: any;
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		vi.clearAllMocks();
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: {retry: false},
-				mutations: {retry: false},
+		queryClient = new QueryClient(
+			{
+				defaultOptions:
+				{
+					queries:
+					{
+						retry: false,
+					},
+					mutations:
+					{
+						retry: false,
+					},
+				},
 			},
-		});
+		);
 		wrapper = ({children}: {children: React.ReactNode}) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
@@ -44,7 +58,8 @@ describe("useDeleteBlueprint user page cache invalidation", () => {
 		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
-	it("should invalidate user blueprint queries when a blueprint is deleted", async () => {
+	it("should invalidate user blueprint queries when a blueprint is deleted", async () =>
+	{
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = "test-blueprint-id";
@@ -56,36 +71,51 @@ describe("useDeleteBlueprint user page cache invalidation", () => {
 
 		// Set up user blueprints cache
 		const userBlueprintsKey = ["users", "userId", authorId, "blueprints"];
-		queryClient.setQueryData(userBlueprintsKey, {
-			"other-blueprint-1": true,
-			[blueprintId]: true,
-			"other-blueprint-2": true,
-		});
+		queryClient.setQueryData(
+			userBlueprintsKey,
+			{
+				"other-blueprint-1": true,
+				[blueprintId]: true,
+				"other-blueprint-2": true,
+			},
+		);
 
 		// Execute deletion
-		const {result} = renderHook(() => useDeleteBlueprint(), {wrapper});
+		const {result} = renderHook(
+			() => useDeleteBlueprint(),
+			{
+				wrapper,
+			},
+		);
 
-		result.current.mutate({
-			id: blueprintId,
-			authorId,
-			tags,
-		});
+		result.current.mutate(
+			{
+				id: blueprintId,
+				authorId,
+				tags,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify that user blueprint queries are invalidated
 		// This is what's currently missing in the implementation
-		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-			queryKey: ["users", "userId", authorId, "blueprints"],
-		});
+		expect(invalidateQueriesSpy).toHaveBeenCalledWith(
+			{
+				queryKey: ["users", "userId", authorId, "blueprints"],
+			},
+		);
 
 		// Should also invalidate the general blueprintSummaries query
-		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-			queryKey: ["blueprintSummaries", "orderByField", "lastUpdatedDate"],
-		});
+		expect(invalidateQueriesSpy).toHaveBeenCalledWith(
+			{
+				queryKey: ["blueprintSummaries", "orderByField", "lastUpdatedDate"],
+			},
+		);
 	});
 
-	it("should ensure UserGrid component refreshes data after blueprint deletion", async () => {
+	it("should ensure UserGrid component refreshes data after blueprint deletion", async () =>
+	{
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = "grid-test-blueprint";
@@ -96,48 +126,70 @@ describe("useDeleteBlueprint user page cache invalidation", () => {
 		const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
 
 		// Simulate UserGrid having loaded data
-		queryClient.setQueryData(["users", "userId", authorId, "blueprints"], {
-			[blueprintId]: true,
-			"blueprint-1": true,
-			"blueprint-2": true,
-		});
+		queryClient.setQueryData(
+			["users", "userId", authorId, "blueprints"],
+			{
+				[blueprintId]: true,
+				"blueprint-1": true,
+				"blueprint-2": true,
+			},
+		);
 
 		// Simulate individual blueprint summaries being cached
-		queryClient.setQueryData(["blueprintSummaries", "blueprintId", blueprintId], {
-			title: "To Be Deleted",
-			imgurId: "test",
-		});
-		queryClient.setQueryData(["blueprintSummaries", "blueprintId", "blueprint-1"], {
-			title: "Blueprint 1",
-			imgurId: "test1",
-		});
-		queryClient.setQueryData(["blueprintSummaries", "blueprintId", "blueprint-2"], {
-			title: "Blueprint 2",
-			imgurId: "test2",
-		});
+		queryClient.setQueryData(
+			["blueprintSummaries", "blueprintId", blueprintId],
+			{
+				title: "To Be Deleted",
+				imgurId: "test",
+			},
+		);
+		queryClient.setQueryData(
+			["blueprintSummaries", "blueprintId", "blueprint-1"],
+			{
+				title: "Blueprint 1",
+				imgurId: "test1",
+			},
+		);
+		queryClient.setQueryData(
+			["blueprintSummaries", "blueprintId", "blueprint-2"],
+			{
+				title: "Blueprint 2",
+				imgurId: "test2",
+			},
+		);
 
 		// Execute deletion
-		const {result} = renderHook(() => useDeleteBlueprint(), {wrapper});
+		const {result} = renderHook(
+			() => useDeleteBlueprint(),
+			{
+				wrapper,
+			},
+		);
 
-		result.current.mutate({
-			id: blueprintId,
-			authorId,
-			tags,
-		});
+		result.current.mutate(
+			{
+				id: blueprintId,
+				authorId,
+				tags,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Verify user blueprint list query is invalidated
 		// This ensures UserGrid will refetch the updated list
-		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-			queryKey: ["users", "userId", authorId, "blueprints"],
-		});
+		expect(invalidateQueriesSpy).toHaveBeenCalledWith(
+			{
+				queryKey: ["users", "userId", authorId, "blueprints"],
+			},
+		);
 
 		// Verify the deleted blueprint's individual queries are cleaned up
 		expect(queryClient.getQueryData(["blueprintSummaries", "blueprintId", blueprintId])).toBeUndefined();
 	});
 
-	it("should handle cross-user blueprint display consistency", async () => {
+	it("should handle cross-user blueprint display consistency", async () =>
+	{
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
 		const blueprintId = "shared-blueprint";
@@ -148,33 +200,48 @@ describe("useDeleteBlueprint user page cache invalidation", () => {
 		const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
 
 		// Original author has the blueprint
-		queryClient.setQueryData(["users", "userId", authorId, "blueprints"], {
-			[blueprintId]: true,
-			"other-blueprint": true,
-		});
+		queryClient.setQueryData(
+			["users", "userId", authorId, "blueprints"],
+			{
+				[blueprintId]: true,
+				"other-blueprint": true,
+			},
+		);
 
 		// Viewer is looking at author's page
 		// This simulates the UserGrid component having fetched the author's blueprints
-		queryClient.setQueryData(["users", "userId", authorId, "blueprints"], {
-			[blueprintId]: true,
-			"other-blueprint": true,
-		});
+		queryClient.setQueryData(
+			["users", "userId", authorId, "blueprints"],
+			{
+				[blueprintId]: true,
+				"other-blueprint": true,
+			},
+		);
 
 		// Execute deletion
-		const {result} = renderHook(() => useDeleteBlueprint(), {wrapper});
+		const {result} = renderHook(
+			() => useDeleteBlueprint(),
+			{
+				wrapper,
+			},
+		);
 
-		result.current.mutate({
-			id: blueprintId,
-			authorId,
-			tags,
-		});
+		result.current.mutate(
+			{
+				id: blueprintId,
+				authorId,
+				tags,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		// Should invalidate the author's blueprint list
 		// This ensures any viewer of the author's page sees the updated list
-		expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-			queryKey: ["users", "userId", authorId, "blueprints"],
-		});
+		expect(invalidateQueriesSpy).toHaveBeenCalledWith(
+			{
+				queryKey: ["users", "userId", authorId, "blueprints"],
+			},
+		);
 	});
 });

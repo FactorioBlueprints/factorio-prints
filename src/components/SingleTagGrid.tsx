@@ -17,8 +17,13 @@ import PageHeader from "./PageHeader";
 import SearchForm from "./SearchForm";
 import SingleTagSelector from "./SingleTagSelector";
 
-const SingleTagGrid: React.FC = () => {
-	const {tag} = useParams({strict: false});
+const SingleTagGrid: React.FC = () =>
+{
+	const {tag} = useParams(
+		{
+			strict: false,
+		},
+	);
 	const tagId = tag || "";
 
 	const {tagQuery, blueprintQueries, isLoading, isError} = useEnrichedTagBlueprintSummaries(tagId);
@@ -31,7 +36,8 @@ const SingleTagGrid: React.FC = () => {
 	const filteredBlueprints = useFilterByTitle(blueprintSummaries);
 
 	const sortedBlueprints = [...filteredBlueprints].sort(
-		(a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary): number => {
+		(a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary): number =>
+		{
 			const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 			const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
 			return dateB.getTime() - dateA.getTime();

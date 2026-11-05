@@ -5,15 +5,19 @@ import InputGroup from "react-bootstrap/InputGroup";
 
 import {advancedSearchStore, setSearchText} from "../../store/advancedSearchStore";
 
-const SearchTextInput: React.FC = () => {
+const SearchTextInput: React.FC = () =>
+{
 	const text = useStore(advancedSearchStore, (state) => state.text);
 
-	const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+	const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void =>
+	{
 		setSearchText(event.target.value);
 	};
 
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-		if (event.key === "Escape") {
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void =>
+	{
+		if (event.key === "Escape")
+		{
 			event.currentTarget.select();
 		}
 	};

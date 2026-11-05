@@ -35,21 +35,28 @@ import {RequirementsCard} from "./single/RequirementsCard";
 import {TagsCard} from "./single/TagsCard";
 import {UpgradePlannerCard} from "./single/UpgradePlannerCard";
 
-function SingleBlueprint() {
-	const {blueprintId} = useParams({from: "/view/$blueprintId"});
+function SingleBlueprint()
+{
+	const {blueprintId} = useParams(
+		{
+			from: "/view/$blueprintId",
+		},
+	);
 	const navigate = useNavigate();
 
 	const [user] = useAuthState(getAuth(app));
 
 	// First fetch the blueprint summary
-	const {
+	const
+	{
 		data: blueprintSummary,
 		error: summaryError,
 		isSuccess: summaryIsSuccess,
 	} = useEnrichedBlueprintSummary(blueprintId);
 
 	// Then fetch the full blueprint, passing the summary
-	const {
+	const
+	{
 		data: blueprintData,
 		isSuccess: blueprintIsSuccess,
 		isLoading: blueprintIsLoading,
@@ -72,8 +79,19 @@ function SingleBlueprint() {
 	const isInCollection = collectionIsSuccess && userCollection[blueprintId] === true;
 
 	const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(
-		{isFavorite: isFavorite || false, count: blueprintData?.numberOfFavorites || 0},
-		(state, action: {type: "toggle"; numberOfFavorites: number}) => ({
+		{
+			isFavorite: isFavorite || false,
+			count: blueprintData?.numberOfFavorites || 0,
+		},
+		(
+			state,
+			action:
+			{
+				type: "toggle";
+				numberOfFavorites: number;
+			},
+		) => (
+		{
 			isFavorite: !state.isFavorite,
 			count: action.numberOfFavorites + (state.isFavorite ? -1 : 1),
 		}),
@@ -82,8 +100,10 @@ function SingleBlueprint() {
 	const initialLoadRef = React.useRef(true);
 
 	// Scroll to top on initial data load
-	useEffect(() => {
-		if (blueprintIsSuccess && initialLoadRef.current) {
+	useEffect(() =>
+	{
+		if (blueprintIsSuccess && initialLoadRef.current)
+		{
 			window.scrollTo(0, 0);
 			initialLoadRef.current = false;
 		}
@@ -93,7 +113,8 @@ function SingleBlueprint() {
 	const collectionMutation = useToggleCollectionMutation();
 	const reconcileFavoritesMutation = useReconcileFavoritesMutation();
 
-	const handleFavorite = useCallback(async () => {
+	const handleFavorite = useCallback(async () =>
+	{
 		if (!user) return;
 		if (!favoriteIsSuccess) return;
 		if (!blueprintData) return;
@@ -101,14 +122,21 @@ function SingleBlueprint() {
 		const {uid} = user;
 		const numberOfFavorites = blueprintData.numberOfFavorites || 0;
 
-		setOptimisticFavorite({type: "toggle", numberOfFavorites});
+		setOptimisticFavorite(
+			{
+				type: "toggle",
+				numberOfFavorites,
+			},
+		);
 
-		favoriteBlueprintMutation.mutate({
-			blueprintId,
-			userId: uid,
-			isFavorite,
-			numberOfFavorites,
-		});
+		favoriteBlueprintMutation.mutate(
+			{
+				blueprintId,
+				userId: uid,
+				isFavorite,
+				numberOfFavorites,
+			},
+		);
 	}, [
 		user,
 		isFavorite,
@@ -119,28 +147,42 @@ function SingleBlueprint() {
 		setOptimisticFavorite,
 	]);
 
-	const handleTransitionToEdit = useCallback(() => {
-		navigate({to: "/edit/$blueprintId", params: {blueprintId}});
+	const handleTransitionToEdit = useCallback(() =>
+	{
+		navigate(
+			{
+				to: "/edit/$blueprintId",
+				params:
+				{
+					blueprintId,
+				},
+			},
+		);
 	}, [navigate, blueprintId]);
 
-	const handleCollection = useCallback(() => {
+	const handleCollection = useCallback(() =>
+	{
 		if (!user) return;
 
-		collectionMutation.mutate({
-			blueprintId,
-			userId: user.uid,
-			isInCollection,
-		});
+		collectionMutation.mutate(
+			{
+				blueprintId,
+				userId: user.uid,
+				isInCollection,
+			},
+		);
 	}, [user, collectionMutation, blueprintId, isInCollection]);
 
-	const handleReconcileFavorites = useCallback(() => {
+	const handleReconcileFavorites = useCallback(() =>
+	{
 		reconcileFavoritesMutation.mutate(blueprintId);
 	}, [blueprintId, reconcileFavoritesMutation]);
 
 	// Use the custom hook for histograms
 	const {entityHistogram, itemHistogram} = useBlueprintHistograms(blueprintData?.parsedData);
 
-	const renderPlaygroundButton = useCallback(() => {
+	const renderPlaygroundButton = useCallback(() =>
+	{
 		const currentUrl = `https://factorioprints.com/view/${blueprintId}`;
 		const playgroundUrl = `https://factorio-blueprint-playground.pages.dev/?pasted=${encodeURIComponent(currentUrl)}`;
 
@@ -162,7 +204,8 @@ function SingleBlueprint() {
 	const error = summaryError || blueprintError;
 	const isDeleted = summaryIsSuccess && !blueprintSummary;
 
-	if (error || isDeleted) {
+	if (error || isDeleted)
+	{
 		return <BlueprintNotFound error={error} isDeleted={isDeleted} />;
 	}
 

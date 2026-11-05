@@ -1,6 +1,7 @@
 type DataRecord = Record<string, unknown>;
 
-export type CollectorBackfill = {
+export type CollectorBackfill =
+{
 	updates: Record<string, true>;
 	users: number;
 	entries: number;
@@ -15,11 +16,14 @@ const getTrueKeys = (value: unknown): string[] =>
 		.filter(([, isPresent]) => isPresent === true)
 		.map(([key]) => key);
 
-export const getCollectedBlueprintIds = (users: unknown): Set<string> => {
+export const getCollectedBlueprintIds = (users: unknown): Set<string> =>
+{
 	const blueprintIds = new Set<string>();
 
-	for (const user of Object.values(asRecord(users))) {
-		for (const blueprintId of getTrueKeys(asRecord(user).collection)) {
+	for (const user of Object.values(asRecord(users)))
+	{
+		for (const blueprintId of getTrueKeys(asRecord(user).collection))
+		{
 			blueprintIds.add(blueprintId);
 		}
 	}
@@ -27,18 +31,19 @@ export const getCollectedBlueprintIds = (users: unknown): Set<string> => {
 	return blueprintIds;
 };
 
-export const buildCollectorBackfill = (
-	users: unknown,
-	existingBlueprintIds: ReadonlySet<string>,
-): CollectorBackfill => {
+export const buildCollectorBackfill = (users: unknown, existingBlueprintIds: ReadonlySet<string>): CollectorBackfill =>
+{
 	const updates: Record<string, true> = {};
 	const backfilledUserIds = new Set<string>();
 	let entries = 0;
 	let skippedEntries = 0;
 
-	for (const [userId, user] of Object.entries(asRecord(users))) {
-		for (const blueprintId of getTrueKeys(asRecord(user).collection)) {
-			if (!existingBlueprintIds.has(blueprintId)) {
+	for (const [userId, user] of Object.entries(asRecord(users)))
+	{
+		for (const blueprintId of getTrueKeys(asRecord(user).collection))
+		{
+			if (!existingBlueprintIds.has(blueprintId))
+			{
 				skippedEntries++;
 				continue;
 			}

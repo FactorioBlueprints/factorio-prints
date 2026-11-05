@@ -3,23 +3,27 @@ import type {EnrichedBlueprintSummary} from "../schemas";
 import {searchParamsStore} from "../store/searchParamsStore";
 import {useBlueprintsTags} from "./useBlueprintTags";
 
-export const useFilterByTags = (blueprintSummaries: EnrichedBlueprintSummary[] = []): EnrichedBlueprintSummary[] => {
+export const useFilterByTags = (blueprintSummaries: EnrichedBlueprintSummary[] = []): EnrichedBlueprintSummary[] =>
+{
 	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
 	const tagFilterExists = filteredTags.length > 0;
 
 	const blueprintIds = blueprintSummaries.map((summary) => summary.key);
 	const blueprintTagQueriesById = useBlueprintsTags(blueprintIds, tagFilterExists);
 
-	if (!tagFilterExists) {
+	if (!tagFilterExists)
+	{
 		return blueprintSummaries;
 	}
 
-	return blueprintSummaries.filter((blueprintSummary) => {
+	return blueprintSummaries.filter((blueprintSummary) =>
+	{
 		const blueprintId = blueprintSummary.key;
 		const blueprintTagQuery = blueprintTagQueriesById[blueprintId];
 		const {data: blueprintTagData, isSuccess: blueprintTagIsSuccess} = blueprintTagQuery;
 
-		if (!blueprintTagIsSuccess) {
+		if (!blueprintTagIsSuccess)
+		{
 			return false;
 		}
 

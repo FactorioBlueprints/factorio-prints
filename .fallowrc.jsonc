@@ -12,7 +12,8 @@
 	// workerd calls a Durable Object's fetch() and alarm() at runtime; no project
 	// code does.
 	"usedClassMembers": [{"implements": "DurableObject", "members": ["fetch", "alarm"]}],
-	"rules": {
+	"rules":
+	{
 		"unused-dependencies": "error",
 	},
 }

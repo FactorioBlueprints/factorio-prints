@@ -10,7 +10,8 @@ import {useRawTagBlueprintSummaries} from "./useRawTagBlueprintSummaries";
 
 // Helper function to create a partial UseQueryResult with defaults
 const createMockQueryResult = <T>(overrides: Partial<UseQueryResult<T, Error>>): UseQueryResult<T, Error> =>
-	({
+	(
+	{
 		data: undefined,
 		error: null,
 		isError: false,
@@ -32,7 +33,8 @@ const createMockQueryResult = <T>(overrides: Partial<UseQueryResult<T, Error>>):
 vi.mock("./useRawTagBlueprintSummaries");
 vi.mock("../utils/enrichBlueprintSummary");
 
-const mockRawBlueprintSummary1: RawBlueprintSummary = {
+const mockRawBlueprintSummary1: RawBlueprintSummary =
+{
 	title: "Test Blueprint 1",
 	imgurId: "img1",
 	imgurType: "image/png",
@@ -40,7 +42,8 @@ const mockRawBlueprintSummary1: RawBlueprintSummary = {
 	lastUpdatedDate: 1000,
 };
 
-const mockRawBlueprintSummary2: RawBlueprintSummary = {
+const mockRawBlueprintSummary2: RawBlueprintSummary =
+{
 	title: "Test Blueprint 2",
 	imgurId: "img2",
 	imgurType: "image/jpeg",
@@ -48,44 +51,62 @@ const mockRawBlueprintSummary2: RawBlueprintSummary = {
 	lastUpdatedDate: 2000,
 };
 
-const mockEnrichedBlueprintSummary1: EnrichedBlueprintSummary = {
+const mockEnrichedBlueprintSummary1: EnrichedBlueprintSummary =
+{
 	...mockRawBlueprintSummary1,
 	key: "blueprint1",
 	thumbnail: "https://i.imgur.com/img1b.png",
 };
 
-const mockEnrichedBlueprintSummary2: EnrichedBlueprintSummary = {
+const mockEnrichedBlueprintSummary2: EnrichedBlueprintSummary =
+{
 	...mockRawBlueprintSummary2,
 	key: "blueprint2",
 	thumbnail: "https://i.imgur.com/img2b.jpeg",
 };
 
-describe("useEnrichedTagBlueprintSummaries", () => {
+describe("useEnrichedTagBlueprintSummaries", () =>
+{
 	let queryClient: QueryClient;
 
-	beforeEach(() => {
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: {
-					retry: false,
+	beforeEach(() =>
+	{
+		queryClient = new QueryClient(
+			{
+				defaultOptions:
+				{
+					queries:
+					{
+						retry: false,
+					},
 				},
 			},
-		});
+		);
 
 		vi.clearAllMocks();
 	});
 
 	const wrapper = ({children}: {children: React.ReactNode}) =>
-		React.createElement(QueryClientProvider, {client: queryClient}, children);
+		React.createElement(
+			QueryClientProvider,
+			{
+				client: queryClient,
+			},
+			children,
+		);
 
-	it("should use useRawTagBlueprintSummaries with the correct tagId", () => {
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {},
-				isLoading: false,
-				isSuccess: true,
-				isError: false,
-			}),
+	it("should use useRawTagBlueprintSummaries with the correct tagId", () =>
+	{
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data: {},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
 			blueprintQueries: {},
 			blueprintIds: [],
 			isLoading: false,
@@ -95,36 +116,54 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 
-		renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {wrapper});
+		renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		expect(useRawTagBlueprintSummaries).toHaveBeenCalledWith("test-tag");
 	});
 
-	it("should enrich blueprint summaries when raw data is available", () => {
-		const mockRawBlueprintQuery1 = createMockQueryResult<RawBlueprintSummary>({
-			data: mockRawBlueprintSummary1,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-		});
-
-		const mockRawBlueprintQuery2 = createMockQueryResult<RawBlueprintSummary>({
-			data: mockRawBlueprintSummary2,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-		});
-
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {blueprint1: true, blueprint2: true},
+	it("should enrich blueprint summaries when raw data is available", () =>
+	{
+		const mockRawBlueprintQuery1 = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: mockRawBlueprintSummary1,
 				isLoading: false,
 				isSuccess: true,
 				isError: false,
-			}),
-			blueprintQueries: {
+				error: null,
+			},
+		);
+
+		const mockRawBlueprintQuery2 = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: mockRawBlueprintSummary2,
+				isLoading: false,
+				isSuccess: true,
+				isError: false,
+				error: null,
+			},
+		);
+
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data:
+					{
+						blueprint1: true,
+						blueprint2: true,
+					},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
+			blueprintQueries:
+			{
 				blueprint1: mockRawBlueprintQuery1,
 				blueprint2: mockRawBlueprintQuery2 as UseQueryResult<RawBlueprintSummary | null, Error>,
 			},
@@ -139,7 +178,12 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 			.mockReturnValueOnce(mockEnrichedBlueprintSummary1)
 			.mockReturnValueOnce(mockEnrichedBlueprintSummary2);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		expect(enrichBlueprintSummary).toHaveBeenCalledWith(mockRawBlueprintSummary1, "blueprint1");
 		expect(enrichBlueprintSummary).toHaveBeenCalledWith(mockRawBlueprintSummary2, "blueprint2");
@@ -148,31 +192,44 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		expect(result.current.blueprintQueries.blueprint2.data).toEqual(mockEnrichedBlueprintSummary2);
 	});
 
-	it("should not enrich when raw blueprint data is null or undefined", () => {
-		const mockRawBlueprintQuery1 = createMockQueryResult<RawBlueprintSummary | null>({
-			data: undefined,
-			isLoading: false,
-			isSuccess: false,
-			isError: true,
-			error: new Error("No data"),
-		});
-
-		const mockRawBlueprintQuery2 = createMockQueryResult<RawBlueprintSummary | null>({
-			data: null,
-			isLoading: false,
-			isSuccess: false,
-			isError: true,
-			error: new Error("No data"),
-		});
-
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {blueprint1: true, blueprint2: true},
+	it("should not enrich when raw blueprint data is null or undefined", () =>
+	{
+		const mockRawBlueprintQuery1 = createMockQueryResult<RawBlueprintSummary | null>(
+			{
+				data: undefined,
 				isLoading: false,
-				isSuccess: true,
-				isError: false,
-			}),
-			blueprintQueries: {
+				isSuccess: false,
+				isError: true,
+				error: new Error("No data"),
+			},
+		);
+
+		const mockRawBlueprintQuery2 = createMockQueryResult<RawBlueprintSummary | null>(
+			{
+				data: null,
+				isLoading: false,
+				isSuccess: false,
+				isError: true,
+				error: new Error("No data"),
+			},
+		);
+
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data:
+					{
+						blueprint1: true,
+						blueprint2: true,
+					},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
+			blueprintQueries:
+			{
 				blueprint1: mockRawBlueprintQuery1,
 				blueprint2: mockRawBlueprintQuery2 as UseQueryResult<RawBlueprintSummary | null, Error>,
 			},
@@ -184,36 +241,51 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		expect(enrichBlueprintSummary).not.toHaveBeenCalled();
 		expect(result.current.blueprintQueries.blueprint1.data).toBeUndefined();
 		expect(result.current.blueprintQueries.blueprint2.data).toBeUndefined();
 	});
 
-	it("should preserve all query properties from raw blueprint queries", () => {
+	it("should preserve all query properties from raw blueprint queries", () =>
+	{
 		const mockRefetch = vi.fn();
-		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: mockRawBlueprintSummary1,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-			refetch: mockRefetch,
-			fetchStatus: "idle",
-			isFetching: false,
-			isStale: false,
-			isRefetching: false,
-		});
-
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {blueprint1: true},
+		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: mockRawBlueprintSummary1,
 				isLoading: false,
 				isSuccess: true,
 				isError: false,
-			}),
-			blueprintQueries: {
+				error: null,
+				refetch: mockRefetch,
+				fetchStatus: "idle",
+				isFetching: false,
+				isStale: false,
+				isRefetching: false,
+			},
+		);
+
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data:
+					{
+						blueprint1: true,
+					},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
+			blueprintQueries:
+			{
 				blueprint1: mockRawBlueprintQuery,
 			},
 			blueprintIds: ["blueprint1"],
@@ -225,7 +297,12 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 		vi.mocked(enrichBlueprintSummary).mockReturnValue(mockEnrichedBlueprintSummary1);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		const enrichedQuery = result.current.blueprintQueries.blueprint1;
 
@@ -240,24 +317,34 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		expect(enrichedQuery.isRefetching).toBe(false);
 	});
 
-	it("should preserve top-level properties from raw result", () => {
-		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: mockRawBlueprintSummary1,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-		});
+	it("should preserve top-level properties from raw result", () =>
+	{
+		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: mockRawBlueprintSummary1,
+				isLoading: false,
+				isSuccess: true,
+				isError: false,
+				error: null,
+			},
+		);
 
-		const mockTagQuery = createMockQueryResult({
-			data: {blueprint1: true},
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-		});
-		const mockRawResult = {
+		const mockTagQuery = createMockQueryResult(
+			{
+				data:
+				{
+					blueprint1: true,
+				},
+				isLoading: false,
+				isSuccess: true,
+				isError: false,
+			},
+		);
+		const mockRawResult =
+		{
 			tagQuery: mockTagQuery,
-			blueprintQueries: {
+			blueprintQueries:
+			{
 				blueprint1: mockRawBlueprintQuery,
 			},
 			blueprintIds: ["blueprint1"],
@@ -269,7 +356,12 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 		vi.mocked(enrichBlueprintSummary).mockReturnValue(mockEnrichedBlueprintSummary1);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		expect(result.current.tagQuery).toBe(mockTagQuery);
 		expect(result.current.blueprintIds).toEqual(["blueprint1"]);
@@ -278,14 +370,18 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		expect(result.current.isError).toBe(false);
 	});
 
-	it("should handle empty blueprint list", () => {
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {},
-				isLoading: false,
-				isSuccess: true,
-				isError: false,
-			}),
+	it("should handle empty blueprint list", () =>
+	{
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data: {},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
 			blueprintQueries: {},
 			blueprintIds: [],
 			isLoading: false,
@@ -295,31 +391,46 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("empty-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("empty-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		expect(enrichBlueprintSummary).not.toHaveBeenCalled();
 		expect(result.current.blueprintQueries).toEqual({});
 		expect(result.current.blueprintIds).toEqual([]);
 	});
 
-	it("should handle error states from raw queries", () => {
+	it("should handle error states from raw queries", () =>
+	{
 		const mockError = new Error("Test error");
-		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: undefined,
-			isLoading: false,
-			isSuccess: false,
-			isError: true,
-			error: mockError,
-		});
-
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {blueprint1: true},
+		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: undefined,
 				isLoading: false,
-				isSuccess: true,
-				isError: false,
-			}),
-			blueprintQueries: {
+				isSuccess: false,
+				isError: true,
+				error: mockError,
+			},
+		);
+
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data:
+					{
+						blueprint1: true,
+					},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
+			blueprintQueries:
+			{
 				blueprint1: mockRawBlueprintQuery,
 			},
 			blueprintIds: ["blueprint1"],
@@ -330,7 +441,12 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("error-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("error-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		expect(enrichBlueprintSummary).not.toHaveBeenCalled();
 		expect(result.current.blueprintQueries.blueprint1.isError).toBe(true);
@@ -339,23 +455,33 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		expect(result.current.isError).toBe(true);
 	});
 
-	it("should memoize enriched queries properly", () => {
-		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: mockRawBlueprintSummary1,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-		});
-
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {blueprint1: true},
+	it("should memoize enriched queries properly", () =>
+	{
+		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: mockRawBlueprintSummary1,
 				isLoading: false,
 				isSuccess: true,
 				isError: false,
-			}),
-			blueprintQueries: {
+				error: null,
+			},
+		);
+
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data:
+					{
+						blueprint1: true,
+					},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
+			blueprintQueries:
+			{
 				blueprint1: mockRawBlueprintQuery,
 			},
 			blueprintIds: ["blueprint1"],
@@ -367,9 +493,12 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 		vi.mocked(enrichBlueprintSummary).mockReturnValue(mockEnrichedBlueprintSummary1);
 
-		const {result, rerender} = renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {
-			wrapper,
-		});
+		const {result, rerender} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		const firstEnrichedQueries = result.current.blueprintQueries;
 
@@ -380,23 +509,33 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		expect(enrichBlueprintSummary).toHaveBeenCalledTimes(1);
 	});
 
-	it("should re-enrich when raw data changes", () => {
-		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: mockRawBlueprintSummary1,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-		});
-
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {blueprint1: true},
+	it("should re-enrich when raw data changes", () =>
+	{
+		const mockRawBlueprintQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: mockRawBlueprintSummary1,
 				isLoading: false,
 				isSuccess: true,
 				isError: false,
-			}),
-			blueprintQueries: {
+				error: null,
+			},
+		);
+
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data:
+					{
+						blueprint1: true,
+					},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
+			blueprintQueries:
+			{
 				blueprint1: mockRawBlueprintQuery,
 			},
 			blueprintIds: ["blueprint1"],
@@ -408,68 +547,97 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 		vi.mocked(enrichBlueprintSummary).mockReturnValue(mockEnrichedBlueprintSummary1);
 
-		const {rerender} = renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {
-			wrapper,
-		});
+		const {rerender} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		expect(enrichBlueprintSummary).toHaveBeenCalledTimes(1);
 
 		// Update raw data
-		const updatedRawQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: {...mockRawBlueprintSummary1, title: "Updated Blueprint"},
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-		});
+		const updatedRawQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data:
+				{
+					...mockRawBlueprintSummary1,
+					title: "Updated Blueprint",
+				},
+				isLoading: false,
+				isSuccess: true,
+				isError: false,
+				error: null,
+			},
+		);
 
-		const updatedRawResult = {
+		const updatedRawResult =
+		{
 			...mockRawResult,
-			blueprintQueries: {
+			blueprintQueries:
+			{
 				blueprint1: updatedRawQuery,
 			},
 		};
 
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(updatedRawResult);
-		vi.mocked(enrichBlueprintSummary).mockReturnValue({
-			...mockEnrichedBlueprintSummary1,
-			title: "Updated Blueprint",
-		});
+		vi.mocked(enrichBlueprintSummary).mockReturnValue(
+			{
+				...mockEnrichedBlueprintSummary1,
+				title: "Updated Blueprint",
+			},
+		);
 
 		rerender();
 
 		expect(enrichBlueprintSummary).toHaveBeenCalledTimes(2);
 		expect(enrichBlueprintSummary).toHaveBeenLastCalledWith(
-			{...mockRawBlueprintSummary1, title: "Updated Blueprint"},
+			{
+				...mockRawBlueprintSummary1,
+				title: "Updated Blueprint",
+			},
 			"blueprint1",
 		);
 	});
 
-	it("should handle mixed success and error states", () => {
-		const mockSuccessQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: mockRawBlueprintSummary1,
-			isLoading: false,
-			isSuccess: true,
-			isError: false,
-			error: null,
-		});
-
-		const mockErrorQuery = createMockQueryResult<RawBlueprintSummary>({
-			data: undefined,
-			isLoading: false,
-			isSuccess: false,
-			isError: true,
-			error: new Error("Failed to fetch"),
-		});
-
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {blueprint1: true, blueprint2: true},
+	it("should handle mixed success and error states", () =>
+	{
+		const mockSuccessQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: mockRawBlueprintSummary1,
 				isLoading: false,
 				isSuccess: true,
 				isError: false,
-			}),
-			blueprintQueries: {
+				error: null,
+			},
+		);
+
+		const mockErrorQuery = createMockQueryResult<RawBlueprintSummary>(
+			{
+				data: undefined,
+				isLoading: false,
+				isSuccess: false,
+				isError: true,
+				error: new Error("Failed to fetch"),
+			},
+		);
+
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data:
+					{
+						blueprint1: true,
+						blueprint2: true,
+					},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
+			blueprintQueries:
+			{
 				blueprint1: mockSuccessQuery,
 				blueprint2: mockErrorQuery,
 			},
@@ -482,7 +650,12 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 		vi.mocked(enrichBlueprintSummary).mockReturnValue(mockEnrichedBlueprintSummary1);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("mixed-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("mixed-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		// Should enrich successful queries
 		expect(enrichBlueprintSummary).toHaveBeenCalledWith(mockRawBlueprintSummary1, "blueprint1");
@@ -497,14 +670,18 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 		expect(result.current.isSuccess).toBe(false);
 	});
 
-	it("should return correct structure with all expected properties", () => {
-		const mockRawResult = {
-			tagQuery: createMockQueryResult({
-				data: {},
-				isLoading: false,
-				isSuccess: true,
-				isError: false,
-			}),
+	it("should return correct structure with all expected properties", () =>
+	{
+		const mockRawResult =
+		{
+			tagQuery: createMockQueryResult(
+				{
+					data: {},
+					isLoading: false,
+					isSuccess: true,
+					isError: false,
+				},
+			),
 			blueprintQueries: {},
 			blueprintIds: [],
 			isLoading: false,
@@ -514,7 +691,12 @@ describe("useEnrichedTagBlueprintSummaries", () => {
 
 		vi.mocked(useRawTagBlueprintSummaries).mockReturnValue(mockRawResult);
 
-		const {result} = renderHook(() => useEnrichedTagBlueprintSummaries("test-tag"), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedTagBlueprintSummaries("test-tag"),
+			{
+				wrapper,
+			},
+		);
 
 		// Check that all expected properties are present
 		expect(result.current).toHaveProperty("tagQuery");

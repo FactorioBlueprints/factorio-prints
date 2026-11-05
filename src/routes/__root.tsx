@@ -9,7 +9,8 @@ import ErrorBoundary from "../components/ErrorBoundary";
 import Header from "../components/Header";
 import {useSentryUser} from "../hooks/useSentryUser";
 
-function NotFoundComponent() {
+function NotFoundComponent()
+{
 	const router = useRouter();
 	const pathname = router.state.location.pathname;
 
@@ -23,18 +24,23 @@ function NotFoundComponent() {
 	);
 }
 
-export const Route = createRootRoute({
-	component: Root,
-	notFoundComponent: NotFoundComponent,
-});
+export const Route = createRootRoute(
+	{
+		component: Root,
+		notFoundComponent: NotFoundComponent,
+	},
+);
 
-function Root() {
+function Root()
+{
 	const [user] = useAuthState(getAuth(app));
 
 	useSentryUser(user);
 
-	useEffect(() => {
-		if (user) {
+	useEffect(() =>
+	{
+		if (user)
+		{
 			const {uid, email, photoURL, emailVerified, providerData, displayName: userDisplayName} = user;
 
 			const providerId = providerData && providerData.length && providerData[0].providerId;
@@ -42,9 +48,11 @@ function Root() {
 			// Fallback chain: provider -> user -> email prefix
 			const effectiveDisplayName = providerDisplayName || userDisplayName || email?.split("@")[0];
 
-			const buildUserInformation = (existingUser: any) => {
+			const buildUserInformation = (existingUser: any) =>
+			{
 				// Firebase transactions pass null when no data exists
-				if (existingUser === null) {
+				if (existingUser === null)
+				{
 					return {
 						displayName: effectiveDisplayName,
 						providerDisplayName,
@@ -67,13 +75,17 @@ function Root() {
 				};
 			};
 
-			try {
+			try
+			{
 				const userRef = ref(getFirebaseDatabase(), `/users/${uid}/`);
-				runTransaction(userRef, buildUserInformation).catch((error) => {
+				runTransaction(userRef, buildUserInformation).catch((error) =>
+				{
 					// Silently ignore transaction errors - user data will be updated on next sign-in
 					console.log("User data update skipped:", error?.message || "Transaction failed");
 				});
-			} catch (error) {
+			}
+			catch (error)
+			{
 				// Database initialization failed - likely due to network issues or browser privacy settings
 				console.log("Database connection skipped:", error instanceof Error ? error.message : "Unknown error");
 			}

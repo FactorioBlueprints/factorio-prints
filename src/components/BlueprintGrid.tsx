@@ -17,7 +17,8 @@ import TagForm from "./TagForm";
 
 const pageSize = 60;
 
-const BlueprintGrid: React.FC = () => {
+const BlueprintGrid: React.FC = () =>
+{
 	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData} =
 		useEnrichedPaginatedSummaries(pageSize, "lastUpdatedDate");
 
@@ -27,7 +28,8 @@ const BlueprintGrid: React.FC = () => {
 
 	const blueprintSummaries = filteredSummaries;
 
-	if (isLoading) {
+	if (isLoading)
+	{
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">
@@ -50,7 +52,13 @@ const BlueprintGrid: React.FC = () => {
 					<ErrorBoundary
 						key={blueprintSummary.key}
 						fallback={
-							<div className="blueprint-thumbnail col-auto" style={{width: "11rem"}}>
+							<div
+								className="blueprint-thumbnail col-auto"
+								style={
+								{
+									width: "11rem",
+								}}
+							>
 								<div className="text-danger p-3">Failed to load blueprint</div>
 							</div>
 						}

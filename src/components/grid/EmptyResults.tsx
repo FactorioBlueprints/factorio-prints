@@ -1,13 +1,15 @@
 import type React from "react";
 import Row from "react-bootstrap/Row";
 
-interface EmptyResultsProps {
+interface EmptyResultsProps
+{
 	isEmpty: boolean;
 	children?: React.ReactNode;
 	filteredTags?: string[];
 }
 
-const EmptyResults = ({isEmpty, children, filteredTags = []}: EmptyResultsProps) => {
+const EmptyResults = ({isEmpty, children, filteredTags = []}: EmptyResultsProps) =>
+{
 	if (!isEmpty) return null;
 
 	// TODO 2025-04-12: Make the text more generic to more Grids. Possibly pass in the text, rather than filteredTags

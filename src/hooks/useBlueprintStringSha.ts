@@ -6,24 +6,30 @@ import {sha1Hex} from "../utils/sha1";
   stored blueprint. Hashing is async (crypto.subtle), so this is undefined for
   the first render and again whenever the string changes.
 */
-export function useBlueprintStringSha(blueprintString?: string): string | undefined {
+export function useBlueprintStringSha(blueprintString?: string): string | undefined
+{
 	const [sha, setSha] = useState<string | undefined>(undefined);
 
-	useEffect(() => {
-		if (!blueprintString) {
+	useEffect(() =>
+	{
+		if (!blueprintString)
+		{
 			setSha(undefined);
 			return;
 		}
 
 		let current = true;
 		setSha(undefined);
-		sha1Hex(blueprintString).then((hashed) => {
-			if (current) {
+		sha1Hex(blueprintString).then((hashed) =>
+		{
+			if (current)
+			{
 				setSha(hashed);
 			}
 		});
 
-		return () => {
+		return () =>
+		{
 			current = false;
 		};
 	}, [blueprintString]);

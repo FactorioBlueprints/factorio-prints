@@ -16,7 +16,8 @@ import {type EnrichedBlueprintSummary, validateEnrichedBlueprintSummary} from ".
 import {RichText} from "./core/text/RichText";
 import SafeOverlayTrigger from "./SafeOverlayTrigger";
 
-interface BlueprintThumbnailProps {
+interface BlueprintThumbnailProps
+{
 	blueprintSummary: EnrichedBlueprintSummary;
 	prioritizeImage?: boolean;
 }
@@ -24,7 +25,8 @@ interface BlueprintThumbnailProps {
 const auth = getAuth(app);
 const thumbnailSize = 170;
 
-const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary, prioritizeImage = false}) => {
+const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary, prioritizeImage = false}) =>
+{
 	const [user] = useAuthState(auth);
 	const [isCollectionHovering, setIsCollectionHovering] = useState(false);
 	const {data: userFavoritesData, isSuccess: userFavoritesIsSuccess} = useUserFavorites(user?.uid);
@@ -33,11 +35,21 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 	const favoriteBlueprintMutation = useToggleFavoriteMutation();
 	const collectionMutation = useToggleCollectionMutation();
 
-	try {
+	try
+	{
 		validateEnrichedBlueprintSummary(blueprintSummary);
-	} catch {
+	}
+	catch
+	{
 		return (
-			<Card className="blueprint-thumbnail col-auto" style={{width: "11rem", backgroundColor: "#1c1e22"}}>
+			<Card
+				className="blueprint-thumbnail col-auto"
+				style={
+				{
+					width: "11rem",
+					backgroundColor: "#1c1e22",
+				}}
+			>
 				<Card.Img
 					variant="top"
 					src="/icons/entity-unknown.png"
@@ -66,13 +78,19 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 	);
 
 	let imageUrl;
-	try {
-		if (!imgurId || !imgurType) {
+	try
+	{
+		if (!imgurId || !imgurType)
+		{
 			imageUrl = "/icons/entity-unknown.png";
-		} else {
+		}
+		else
+		{
 			imageUrl = buildImageUrl(imgurId, imgurType, ImageVariant.Thumbnail);
 		}
-	} catch {
+	}
+	catch
+	{
 		imageUrl = "/icons/entity-unknown.png";
 	}
 
@@ -82,8 +100,23 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 	const collectionIcon = isInCollection ? (isCollectionHovering ? faXmark : faCheck) : faPlusSquare;
 
 	return (
-		<Card className="blueprint-thumbnail col-auto" style={{width: "11rem", backgroundColor: "#1c1e22"}}>
-			<Link to="/view/$blueprintId" params={{blueprintId: key}} from="/" preload={false}>
+		<Card
+			className="blueprint-thumbnail col-auto"
+			style={
+			{
+				width: "11rem",
+				backgroundColor: "#1c1e22",
+			}}
+		>
+			<Link
+				to="/view/$blueprintId"
+				params={
+				{
+					blueprintId: key,
+				}}
+				from="/"
+				preload={false}
+			>
 				<Card.Img
 					variant="top"
 					src={imageUrl}
@@ -94,12 +127,17 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 					fetchPriority={prioritizeImage ? "high" : "auto"}
 					decoding="async"
 					referrerPolicy="no-referrer"
-					onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+					onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) =>
+					{
 						const target = e.target as HTMLImageElement;
-						try {
+						try
+						{
 							target.onerror = null;
 							target.src = "/icons/entity-unknown.png";
-						} catch {}
+						}
+						catch
+						{
+						}
 					}}
 				/>
 			</Link>
@@ -110,33 +148,42 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				{/* TODO 2025-04-10: Extract this as a component, the FavoriteIcon */}
 				<span
 					className={`${favoriteStyle} ${!user || favoriteBlueprintMutation.isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-					onClick={() => {
-						if (!user || favoriteBlueprintMutation.isPending) {
+					onClick={() =>
+					{
+						if (!user || favoriteBlueprintMutation.isPending)
+						{
 							return;
 						}
-						favoriteBlueprintMutation.mutate({
-							blueprintId: key,
-							userId: user.uid,
-							isFavorite,
-							numberOfFavorites: numberOfFavorites || 0,
-						});
-					}}
-					role="button"
-					tabIndex={0}
-					onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
-						// Allow triggering with Enter or Space key for accessibility
-						if (!user || favoriteBlueprintMutation.isPending) {
-							return;
-						}
-						if (e.key === "Enter" || e.key === " ") {
-							// Prevent space bar scrolling page
-							e.preventDefault();
-							favoriteBlueprintMutation.mutate({
+						favoriteBlueprintMutation.mutate(
+							{
 								blueprintId: key,
 								userId: user.uid,
 								isFavorite,
 								numberOfFavorites: numberOfFavorites || 0,
-							});
+							},
+						);
+					}}
+					role="button"
+					tabIndex={0}
+					onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) =>
+					{
+						// Allow triggering with Enter or Space key for accessibility
+						if (!user || favoriteBlueprintMutation.isPending)
+						{
+							return;
+						}
+						if (e.key === "Enter" || e.key === " ")
+						{
+							// Prevent space bar scrolling page
+							e.preventDefault();
+							favoriteBlueprintMutation.mutate(
+								{
+									blueprintId: key,
+									userId: user.uid,
+									isFavorite,
+									numberOfFavorites: numberOfFavorites || 0,
+								},
+							);
 						}
 					}}
 					aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -149,30 +196,39 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 					className={`${collectionStyle} ${!user || collectionMutation.isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
 					onMouseEnter={() => setIsCollectionHovering(true)}
 					onMouseLeave={() => setIsCollectionHovering(false)}
-					onClick={() => {
-						if (!user || collectionMutation.isPending) {
+					onClick={() =>
+					{
+						if (!user || collectionMutation.isPending)
+						{
 							return;
 						}
 
-						collectionMutation.mutate({
-							blueprintId: key,
-							userId: user.uid,
-							isInCollection,
-						});
-					}}
-					role="button"
-					tabIndex={0}
-					onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) => {
-						if (!user || collectionMutation.isPending) {
-							return;
-						}
-						if (e.key === "Enter" || e.key === " ") {
-							e.preventDefault();
-							collectionMutation.mutate({
+						collectionMutation.mutate(
+							{
 								blueprintId: key,
 								userId: user.uid,
 								isInCollection,
-							});
+							},
+						);
+					}}
+					role="button"
+					tabIndex={0}
+					onKeyDown={(e: React.KeyboardEvent<HTMLSpanElement>) =>
+					{
+						if (!user || collectionMutation.isPending)
+						{
+							return;
+						}
+						if (e.key === "Enter" || e.key === " ")
+						{
+							e.preventDefault();
+							collectionMutation.mutate(
+								{
+									blueprintId: key,
+									userId: user.uid,
+									isInCollection,
+								},
+							);
 						}
 					}}
 					onFocus={() => setIsCollectionHovering(true)}
@@ -184,7 +240,15 @@ const BlueprintThumbnail: React.FC<BlueprintThumbnailProps> = ({blueprintSummary
 				</span>
 				{"  "}
 				<SafeOverlayTrigger placement="bottom" overlay={tooltip}>
-					<Link to="/view/$blueprintId" params={{blueprintId: key}} from="/" preload={false}>
+					<Link
+						to="/view/$blueprintId"
+						params={
+						{
+							blueprintId: key,
+						}}
+						from="/"
+						preload={false}
+					>
 						<span className={mineStyle}>
 							<RichText text={title} inline />
 						</span>

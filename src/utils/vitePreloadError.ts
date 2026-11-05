@@ -3,7 +3,8 @@ export const vitePreloadReloadCooldownMs = 10 * 60 * 1000;
 
 type ReloadStorage = Pick<Storage, "getItem" | "setItem">;
 
-interface VitePreloadErrorHandlerOptions {
+interface VitePreloadErrorHandlerOptions
+{
 	getStorage?: () => ReloadStorage;
 	now?: () => number;
 }
@@ -16,17 +17,23 @@ interface VitePreloadErrorHandlerOptions {
 export function createVitePreloadErrorHandler(
 	reloadPage: () => void,
 	{getStorage = () => window.sessionStorage, now = Date.now}: VitePreloadErrorHandlerOptions = {},
-): (event: VitePreloadErrorEvent) => void {
-	return () => {
+): (event: VitePreloadErrorEvent) => void
+{
+	return () =>
+	{
 		const currentTime = now();
-		try {
+		try
+		{
 			const storage = getStorage();
 			const lastReloadAt = Number(storage.getItem(vitePreloadReloadStorageKey));
-			if (lastReloadAt && currentTime - lastReloadAt < vitePreloadReloadCooldownMs) {
+			if (lastReloadAt && currentTime - lastReloadAt < vitePreloadReloadCooldownMs)
+			{
 				return;
 			}
 			storage.setItem(vitePreloadReloadStorageKey, String(currentTime));
-		} catch {
+		}
+		catch
+		{
 			return;
 		}
 		reloadPage();

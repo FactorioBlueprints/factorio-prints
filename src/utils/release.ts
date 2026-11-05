@@ -1,4 +1,5 @@
-interface ReleaseInfo {
+interface ReleaseInfo
+{
 	version: string;
 	gitCommit: string;
 	gitBranch: string;
@@ -9,22 +10,41 @@ interface ReleaseInfo {
 	isPreview: boolean;
 }
 
-const parseGitDescribe = (gitDescribe: string): {tag: string; commitsSince: number; commitHash: string} => {
+const parseGitDescribe = (
+	gitDescribe: string,
+):
+{
+	tag: string;
+	commitsSince: number;
+	commitHash: string;
+} =>
+{
 	const parts = gitDescribe.split("-");
-	if (parts.length === 1) {
-		return {tag: parts[0], commitsSince: 0, commitHash: parts[0]};
+	if (parts.length === 1)
+	{
+		return {
+			tag: parts[0],
+			commitsSince: 0,
+			commitHash: parts[0],
+		};
 	}
-	if (parts.length === 3) {
+	if (parts.length === 3)
+	{
 		return {
 			tag: parts[0],
 			commitsSince: Number.parseInt(parts[1], 10),
 			commitHash: parts[2].replace("g", ""),
 		};
 	}
-	return {tag: gitDescribe, commitsSince: 0, commitHash: gitDescribe};
+	return {
+		tag: gitDescribe,
+		commitsSince: 0,
+		commitHash: gitDescribe,
+	};
 };
 
-export const getReleaseInfo = (): ReleaseInfo => {
+export const getReleaseInfo = (): ReleaseInfo =>
+{
 	const gitDescribe = import.meta.env.VITE_APP_VERSION || "0.0.0-unknown";
 	const {tag, commitsSince, commitHash} = parseGitDescribe(gitDescribe);
 
@@ -33,13 +53,20 @@ export const getReleaseInfo = (): ReleaseInfo => {
 	const isPreview = import.meta.env.MODE === "preview";
 
 	let environment = "development";
-	if (isProduction && window.location.hostname === "factorioprints.com") {
+	if (isProduction && window.location.hostname === "factorioprints.com")
+	{
 		environment = "production";
-	} else if (isProduction && window.location.hostname.includes("cloudflare")) {
+	}
+	else if (isProduction && window.location.hostname.includes("cloudflare"))
+	{
 		environment = "preview";
-	} else if (isPreview) {
+	}
+	else if (isPreview)
+	{
 		environment = "preview";
-	} else if (window.location.hostname === "localhost") {
+	}
+	else if (window.location.hostname === "localhost")
+	{
 		environment = "development";
 	}
 
@@ -57,7 +84,8 @@ export const getReleaseInfo = (): ReleaseInfo => {
 	};
 };
 
-export const getReleaseMetadata = (): Record<string, string | boolean | number> => {
+export const getReleaseMetadata = (): Record<string, string | boolean | number> =>
+{
 	const info = getReleaseInfo();
 	return {
 		version: info.version,

@@ -1,16 +1,33 @@
 import {describe, expect, it} from "vite-plus/test";
 import buildImageUrl, {ImageVariant, resolveImageGatewayOrigin} from "./buildImageUrl";
 
-describe("resolveImageGatewayOrigin", () => {
-	it("uses configured, local-development, production, and explicit same-origin gateways", () => {
+describe("resolveImageGatewayOrigin", () =>
+{
+	it("uses configured, local-development, production, and explicit same-origin gateways", () =>
+	{
 		expect([
-			resolveImageGatewayOrigin({
-				DEV: false,
-				VITE_IMAGE_GATEWAY_ORIGIN: "https://images.example.com/",
-			}),
-			resolveImageGatewayOrigin({DEV: true}),
-			resolveImageGatewayOrigin({DEV: false}),
-			resolveImageGatewayOrigin({DEV: true, VITE_IMAGE_GATEWAY_ORIGIN: ""}),
+			resolveImageGatewayOrigin(
+				{
+					DEV: false,
+					VITE_IMAGE_GATEWAY_ORIGIN: "https://images.example.com/",
+				},
+			),
+			resolveImageGatewayOrigin(
+				{
+					DEV: true,
+				},
+			),
+			resolveImageGatewayOrigin(
+				{
+					DEV: false,
+				},
+			),
+			resolveImageGatewayOrigin(
+				{
+					DEV: true,
+					VITE_IMAGE_GATEWAY_ORIGIN: "",
+				},
+			),
 		]).toStrictEqual([
 			"https://images.example.com",
 			"http://localhost:8787",
@@ -21,16 +38,24 @@ describe("resolveImageGatewayOrigin", () => {
 
 	it.each(["ftp://images.example.com", "https://images.example.com/prefix"])(
 		"rejects invalid gateway origin %s",
-		(VITE_IMAGE_GATEWAY_ORIGIN) => {
-			expect(() => resolveImageGatewayOrigin({DEV: false, VITE_IMAGE_GATEWAY_ORIGIN})).toThrow(
-				new TypeError("VITE_IMAGE_GATEWAY_ORIGIN must contain only an HTTP origin"),
-			);
+		(VITE_IMAGE_GATEWAY_ORIGIN) =>
+		{
+			expect(() =>
+				resolveImageGatewayOrigin(
+					{
+						DEV: false,
+						VITE_IMAGE_GATEWAY_ORIGIN,
+					},
+				),
+			).toThrow(new TypeError("VITE_IMAGE_GATEWAY_ORIGIN must contain only an HTTP origin"));
 		},
 	);
 });
 
-describe("buildImageUrl", () => {
-	it("builds the gateway contract for every image variant and supported extension", () => {
+describe("buildImageUrl", () =>
+{
+	it("builds the gateway contract for every image variant and supported extension", () =>
+	{
 		const gatewayOrigin = "https://images.example.com";
 
 		expect([
@@ -46,7 +71,8 @@ describe("buildImageUrl", () => {
 		]);
 	});
 
-	it("preserves placeholder and legacy PNG defaults", () => {
+	it("preserves placeholder and legacy PNG defaults", () =>
+	{
 		expect([
 			buildImageUrl("", "image/png", ImageVariant.Thumbnail, ""),
 			buildImageUrl("alice100", "", ImageVariant.Thumbnail, ""),

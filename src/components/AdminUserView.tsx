@@ -27,8 +27,13 @@ import PageHeader from "./PageHeader";
 import SearchForm from "./SearchForm";
 import TagForm from "./TagForm";
 
-const AdminUserView: React.FC = () => {
-	const {userId} = useParams({from: "/admin/user/$userId"});
+const AdminUserView: React.FC = () =>
+{
+	const {userId} = useParams(
+		{
+			from: "/admin/user/$userId",
+		},
+	);
 	const [currentUser] = useAuthState(getAuth(app));
 	const moderatorQuery = useIsModerator(currentUser?.uid);
 	const isModerator = moderatorQuery.data ?? false;
@@ -36,20 +41,23 @@ const AdminUserView: React.FC = () => {
 
 	const reconcileFavoritesMutation = useReconcileUserFavorites();
 
-	const handleReconcileFavorites = useCallback(() => {
+	const handleReconcileFavorites = useCallback(() =>
+	{
 		reconcileFavoritesMutation.mutate(userId);
 	}, [reconcileFavoritesMutation, userId]);
 
 	const {data: displayName, isLoading: displayNameLoading} = useUserDisplayName(userId);
 
-	const {
+	const
+	{
 		data: userBlueprintsData,
 		isLoading: userBlueprintsLoading,
 		isSuccess: userBlueprintsSuccess,
 		error: userBlueprintsError,
 	} = useUserBlueprints(userId);
 
-	const {
+	const
+	{
 		data: userFavoritesData,
 		isLoading: userFavoritesLoading,
 		isSuccess: userFavoritesSuccess,
@@ -61,7 +69,14 @@ const AdminUserView: React.FC = () => {
 		userFavoritesData
 			? Object.entries(userFavoritesData)
 					.filter(([, value]) => value === true)
-					.reduce((acc, [key]) => ({...acc, [key]: true}), {})
+					.reduce(
+						(acc, [key]) => (
+						{
+							...acc,
+							[key]: true,
+						}),
+						{},
+					)
 			: {},
 		userFavoritesSuccess,
 	);
@@ -74,13 +89,15 @@ const AdminUserView: React.FC = () => {
 	);
 
 	// Sort newest first
-	const sortedBlueprints = [...filteredBlueprints].sort((a, b) => {
+	const sortedBlueprints = [...filteredBlueprints].sort((a, b) =>
+	{
 		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
 		return dateB.getTime() - dateA.getTime();
 	});
 
-	const sortedFavorites = [...filteredFavorites].sort((a, b) => {
+	const sortedFavorites = [...filteredFavorites].sort((a, b) =>
+	{
 		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
 		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
 		return dateB.getTime() - dateA.getTime();
@@ -89,7 +106,8 @@ const AdminUserView: React.FC = () => {
 	const isLoading = displayNameLoading || userBlueprintsLoading || userFavoritesLoading;
 	const exists = !userBlueprintsError;
 
-	const renderReconcileButton = useCallback(() => {
+	const renderReconcileButton = useCallback(() =>
+	{
 		const {data: reconcileResult, isPending, isSuccess} = reconcileFavoritesMutation;
 		const buttonText = isPending
 			? " Reconciling..."
@@ -115,13 +133,15 @@ const AdminUserView: React.FC = () => {
 		);
 	}, [handleReconcileFavorites, reconcileFavoritesMutation]);
 
-	if (currentUser && !isModerator) {
+	if (currentUser && !isModerator)
+	{
 		// TODO 2025-04-19: Instead, show information explaining that this user is not an administrator.
 		return null;
 	}
 
 	// If not logged in, show message
-	if (!currentUser) {
+	if (!currentUser)
+	{
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">Admin Access Required</h1>
@@ -130,7 +150,8 @@ const AdminUserView: React.FC = () => {
 		);
 	}
 
-	if (isLoading) {
+	if (isLoading)
+	{
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">
@@ -141,7 +162,8 @@ const AdminUserView: React.FC = () => {
 		);
 	}
 
-	if (!exists) {
+	if (!exists)
+	{
 		return <NoMatch />;
 	}
 

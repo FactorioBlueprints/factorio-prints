@@ -15,7 +15,8 @@ import {deserializeBlueprintNoThrow} from "../parsing/blueprintParser";
 import {saveToStorage, STORAGE_KEYS} from "../localStorage";
 import PageHeader from "./PageHeader";
 
-interface ImportState {
+interface ImportState
+{
 	url: string;
 	isLoading: boolean;
 	error: string | null;
@@ -23,48 +24,65 @@ interface ImportState {
 
 const CORS_PROXY_URL = "https://factorio-blueprint-playground.pages.dev/proxy";
 
-const ImportFromFactorioBin: React.FC = () => {
+const ImportFromFactorioBin: React.FC = () =>
+{
 	const navigate = useNavigate();
-	const [state, setState] = useState<ImportState>({
-		url: "",
-		isLoading: false,
-		error: null,
-	});
+	const [state, setState] = useState<ImportState>(
+		{
+			url: "",
+			isLoading: false,
+			error: null,
+		},
+	);
 
-	const extractFactorioBinUrl = useCallback((input: string): string | null => {
-		try {
+	const extractFactorioBinUrl = useCallback((input: string): string | null =>
+	{
+		try
+		{
 			const trimmed = input.trim();
 
 			const url = new URL(trimmed);
 			const hostname = url.hostname.toLowerCase();
 
-			if (hostname === "factoriobin.com" || hostname === "www.factoriobin.com") {
+			if (hostname === "factoriobin.com" || hostname === "www.factoriobin.com")
+			{
 				return url.href;
-			} else if (hostname === "cdn.factoriobin.com") {
+			}
+			else if (hostname === "cdn.factoriobin.com")
+			{
 				return url.href;
 			}
 
 			return null;
-		} catch {
+		}
+		catch
+		{
 			const urlRegex = /(?:https?:\/\/)?(?:www\.)?(?:cdn\.)?factoriobin\.com\/[^\s]*/i;
 			const match = input.match(urlRegex);
 			return match ? match[0] : null;
 		}
 	}, []);
 
-	const fetchBlueprintFromFactorioBin = useCallback(async (url: string): Promise<string> => {
+	const fetchBlueprintFromFactorioBin = useCallback(async (url: string): Promise<string> =>
+	{
 		let blueprintUrl = url;
 
-		if (url.includes("factoriobin.com/post/") && !url.endsWith("/blueprint.txt")) {
+		if (url.includes("factoriobin.com/post/") && !url.endsWith("/blueprint.txt"))
+		{
 			blueprintUrl = `${url}/blueprint.txt`;
-		} else if (url.includes("cdn.factoriobin.com")) {
+		}
+		else if (url.includes("cdn.factoriobin.com"))
+		{
 			blueprintUrl = url;
 		}
 
-		console.log("URL transformation:", {
-			originalUrl: url,
-			blueprintUrl,
-		});
+		console.log(
+			"URL transformation:",
+			{
+				originalUrl: url,
+				blueprintUrl,
+			},
+		);
 
 		console.log("Using CORS proxy for:", blueprintUrl);
 		const proxyUrl = `${CORS_PROXY_URL}?${encodeURIComponent(blueprintUrl)}`;
@@ -73,15 +91,19 @@ const ImportFromFactorioBin: React.FC = () => {
 
 		const response = await fetch(proxyUrl);
 
-		console.log("Response details:", {
-			status: response.status,
-			statusText: response.statusText,
-			headers: Object.fromEntries(response.headers.entries()),
-			url: response.url,
-			type: response.type,
-		});
+		console.log(
+			"Response details:",
+			{
+				status: response.status,
+				statusText: response.statusText,
+				headers: Object.fromEntries(response.headers.entries()),
+				url: response.url,
+				type: response.type,
+			},
+		);
 
-		if (!response.ok) {
+		if (!response.ok)
+		{
 			const errorText = await response.text();
 			console.error("CORS proxy error:", errorText);
 			throw new Error(`Failed to fetch blueprint: ${response.statusText}`);
@@ -89,23 +111,35 @@ const ImportFromFactorioBin: React.FC = () => {
 
 		const blueprintString = await response.text();
 
-		console.log("Response from Factorio Bin:", {
-			url: blueprintUrl,
-			proxyUrl,
-			responseLength: blueprintString.length,
-			firstChars: blueprintString.substring(0, 100),
-			startsWithZero: blueprintString.startsWith("0"),
-			contentType: response.headers.get("content-type"),
-		});
+		console.log(
+			"Response from Factorio Bin:",
+			{
+				url: blueprintUrl,
+				proxyUrl,
+				responseLength: blueprintString.length,
+				firstChars: blueprintString.substring(0, 100),
+				startsWithZero: blueprintString.startsWith("0"),
+				contentType: response.headers.get("content-type"),
+			},
+		);
 
-		if (blueprintString.startsWith("<!doctype html>") || blueprintString.startsWith("<html")) {
+		if (blueprintString.startsWith("<!doctype html>") || blueprintString.startsWith("<html"))
+		{
 			console.error("Received HTML instead of blueprint. Full response:", blueprintString);
 			console.log("Attempting no-cors fetch to:", blueprintUrl);
-			try {
-				const noCorsResponse = await fetch(blueprintUrl, {mode: "no-cors"});
+			try
+			{
+				const noCorsResponse = await fetch(
+					blueprintUrl,
+					{
+						mode: "no-cors",
+					},
+				);
 				console.log("No-cors response:", noCorsResponse);
 				throw new Error("CORS proxy returned HTML. Factorio Bin may be blocking proxy requests.");
-			} catch (e) {
+			}
+			catch (e)
+			{
 				console.error("No-cors fetch also failed:", e);
 				throw new Error(
 					"Unable to fetch blueprint from Factorio Bin. The site may be blocking automated requests.",
@@ -114,7 +148,8 @@ const ImportFromFactorioBin: React.FC = () => {
 		}
 
 		const parsed = deserializeBlueprintNoThrow(blueprintString);
-		if (!parsed) {
+		if (!parsed)
+		{
 			console.error("Failed to parse blueprint:", blueprintString.substring(0, 200));
 			throw new Error("Invalid blueprint format received from Factorio Bin");
 		}
@@ -122,52 +157,71 @@ const ImportFromFactorioBin: React.FC = () => {
 		return blueprintString;
 	}, []);
 
-	const handleImport = useCallback(async () => {
+	const handleImport = useCallback(async () =>
+	{
 		const extractedUrl = extractFactorioBinUrl(state.url);
 
-		if (!extractedUrl) {
-			setState((prev) => ({
+		if (!extractedUrl)
+		{
+			setState((prev) => (
+			{
 				...prev,
 				error: "Please enter a valid Factorio Bin URL",
 			}));
 			return;
 		}
 
-		setState((prev) => ({
+		setState((prev) => (
+		{
 			...prev,
 			isLoading: true,
 			error: null,
 		}));
 
-		try {
+		try
+		{
 			const blueprintString = await fetchBlueprintFromFactorioBin(extractedUrl);
 
 			const parsed = deserializeBlueprintNoThrow(blueprintString);
-			if (parsed) {
+			if (parsed)
+			{
 				const blueprintData = parsed;
 				let title = "";
 				let description = "";
 
-				if ("blueprint" in blueprintData && blueprintData.blueprint) {
+				if ("blueprint" in blueprintData && blueprintData.blueprint)
+				{
 					title = blueprintData.blueprint.label || "";
 					description = blueprintData.blueprint.description || "";
-				} else if ("blueprint_book" in blueprintData && blueprintData.blueprint_book) {
+				}
+				else if ("blueprint_book" in blueprintData && blueprintData.blueprint_book)
+				{
 					title = blueprintData.blueprint_book.label || "";
 					description = blueprintData.blueprint_book.description || "";
 				}
 
-				saveToStorage(STORAGE_KEYS.CREATE_FORM, {
-					title: title || `Imported from Factorio Bin`,
-					descriptionMarkdown: description || `Blueprint imported from: ${extractedUrl}`,
-					blueprintString,
-					imageUrl: "",
-					tags: [],
-				});
+				saveToStorage(
+					STORAGE_KEYS.CREATE_FORM,
+					{
+						title: title || `Imported from Factorio Bin`,
+						descriptionMarkdown: description || `Blueprint imported from: ${extractedUrl}`,
+						blueprintString,
+						imageUrl: "",
+						tags: [],
+					},
+				);
 			}
 
-			navigate({to: "/create"});
-		} catch (error) {
-			setState((prev) => ({
+			navigate(
+				{
+					to: "/create",
+				},
+			);
+		}
+		catch (error)
+		{
+			setState((prev) => (
+			{
 				...prev,
 				isLoading: false,
 				error: error instanceof Error ? error.message : "Failed to import blueprint",
@@ -175,8 +229,10 @@ const ImportFromFactorioBin: React.FC = () => {
 		}
 	}, [state.url, extractFactorioBinUrl, fetchBlueprintFromFactorioBin, navigate]);
 
-	const handleUrlChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-		setState((prev) => ({
+	const handleUrlChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) =>
+	{
+		setState((prev) => (
+		{
 			...prev,
 			url: event.target.value,
 			error: null,
@@ -201,7 +257,8 @@ const ImportFromFactorioBin: React.FC = () => {
 							</ul>
 
 							<Form
-								onSubmit={(e) => {
+								onSubmit={(e) =>
+								{
 									e.preventDefault();
 									handleImport();
 								}}
@@ -222,7 +279,13 @@ const ImportFromFactorioBin: React.FC = () => {
 									<Alert
 										variant="danger"
 										dismissible
-										onClose={() => setState((prev) => ({...prev, error: null}))}
+										onClose={() =>
+											setState((prev) => (
+											{
+												...prev,
+												error: null,
+											}))
+										}
 									>
 										{state.error}
 									</Alert>

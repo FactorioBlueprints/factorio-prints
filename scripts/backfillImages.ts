@@ -4,7 +4,8 @@ import {dirname, resolve} from "node:path";
 import {pathToFileURL} from "node:url";
 import {parseArgs} from "node:util";
 import {z} from "zod";
-import {
+import
+{
 	type BackfillImage,
 	buildImageInventory,
 	buildImgurSourceUrls,
@@ -21,14 +22,17 @@ const DEFAULT_REPORT_PATH = ".llm/image-backfill-report.json";
 
 const unknownRecordSchema = z.record(z.string(), z.unknown());
 const shallowRecordSchema = z.record(z.string(), z.boolean());
-export const imageR2EnvironmentSchema = z.object({
-	R2_ACCESS_KEY_ID: z.string().min(1),
-	R2_ACCOUNT_ID: z.string().min(1),
-	R2_BUCKET: z.string().min(1),
-	R2_SECRET_ACCESS_KEY: z.string().min(1),
-});
+export const imageR2EnvironmentSchema = z.object(
+	{
+		R2_ACCESS_KEY_ID: z.string().min(1),
+		R2_ACCOUNT_ID: z.string().min(1),
+		R2_BUCKET: z.string().min(1),
+		R2_SECRET_ACCESS_KEY: z.string().min(1),
+	},
+);
 
-interface CommandOptions {
+interface CommandOptions
+{
 	concurrency: number;
 	databaseUrl: string;
 	execute: boolean;
@@ -38,13 +42,15 @@ interface CommandOptions {
 	reportPath: string;
 }
 
-interface ExistingVariantReport {
+interface ExistingVariantReport
+{
 	key: string;
 	status: "existing";
 	variant: (typeof imageVariants)[number];
 }
 
-interface MigratedVariantReport {
+interface MigratedVariantReport
+{
 	bytes: number;
 	key: string;
 	mediaType: string;
@@ -54,14 +60,16 @@ interface MigratedVariantReport {
 	variant: (typeof imageVariants)[number];
 }
 
-interface MissingVariantReport {
+interface MissingVariantReport
+{
 	error: string;
 	key: string;
 	status: "sourceMissing";
 	variant: (typeof imageVariants)[number];
 }
 
-interface FailedVariantReport {
+interface FailedVariantReport
+{
 	error: string;
 	key: string;
 	status: "failed";
@@ -70,33 +78,67 @@ interface FailedVariantReport {
 
 type VariantReport = ExistingVariantReport | FailedVariantReport | MigratedVariantReport | MissingVariantReport;
 
-interface ImageReport {
+interface ImageReport
+{
 	blueprintIds: string[];
 	imgurId: string;
 	variants: VariantReport[];
 }
 
-const parsePositiveInteger = (value: string, optionName: string): number => {
+const parsePositiveInteger = (value: string, optionName: string): number =>
+{
 	const parsed = Number(value);
-	if (!Number.isInteger(parsed) || parsed < 1) {
+	if (!Number.isInteger(parsed) || parsed < 1)
+	{
 		throw new Error(`${optionName} must be a positive integer`);
 	}
 	return parsed;
 };
 
-const parseCommandOptions = (): CommandOptions => {
-	const {values} = parseArgs({
-		options: {
-			concurrency: {type: "string", default: "8"},
-			"database-url": {type: "string", default: DEFAULT_DATABASE_URL},
-			execute: {type: "boolean", default: false},
-			limit: {type: "string"},
-			"maximum-megabytes": {type: "string", default: "20"},
-			prefix: {type: "string", default: DEFAULT_OBJECT_PREFIX},
-			report: {type: "string", default: DEFAULT_REPORT_PATH},
+const parseCommandOptions = (): CommandOptions =>
+{
+	const {values} = parseArgs(
+		{
+			options:
+			{
+				concurrency:
+				{
+					type: "string",
+					default: "8",
+				},
+				"database-url":
+				{
+					type: "string",
+					default: DEFAULT_DATABASE_URL,
+				},
+				execute:
+				{
+					type: "boolean",
+					default: false,
+				},
+				limit:
+				{
+					type: "string",
+				},
+				"maximum-megabytes":
+				{
+					type: "string",
+					default: "20",
+				},
+				prefix:
+				{
+					type: "string",
+					default: DEFAULT_OBJECT_PREFIX,
+				},
+				report:
+				{
+					type: "string",
+					default: DEFAULT_REPORT_PATH,
+				},
+			},
+			strict: true,
 		},
-		strict: true,
-	});
+	);
 
 	return {
 		concurrency: parsePositiveInteger(values.concurrency, "--concurrency"),
@@ -109,15 +151,18 @@ const parseCommandOptions = (): CommandOptions => {
 	};
 };
 
-const getJson = async (requestUrl: string): Promise<unknown> => {
+const getJson = async (requestUrl: string): Promise<unknown> =>
+{
 	const response = await fetch(requestUrl);
-	if (!response.ok) {
+	if (!response.ok)
+	{
 		throw new Error(`Firebase request failed with HTTP ${response.status}: ${requestUrl}`);
 	}
 	return response.json();
 };
 
-export const loadImageInventory = async (databaseUrl: string, concurrency: number) => {
+export const loadImageInventory = async (databaseUrl: string, concurrency: number) =>
+{
 	const [blueprintSummariesValue, rawBlueprintKeysValue] = await Promise.all([
 		getJson(`${databaseUrl}/blueprintSummaries.json`),
 		getJson(`${databaseUrl}/blueprints.json?shallow=true`),
@@ -143,23 +188,29 @@ export const listExistingImageObjectKeys = async (
 	client: S3Client,
 	bucket: string,
 	prefix: string,
-): Promise<Set<string>> => {
+): Promise<Set<string>> =>
+{
 	const keys = new Set<string>();
 	let continuationToken: string | undefined;
 
-	do {
+	do
+	{
 		const response = await client.send(
-			new ListObjectsV2Command({
-				Bucket: bucket,
-				ContinuationToken: continuationToken,
-				Prefix: `${prefix}/`,
-			}),
+			new ListObjectsV2Command(
+				{
+					Bucket: bucket,
+					ContinuationToken: continuationToken,
+					Prefix: `${prefix}/`,
+				},
+			),
 		);
-		for (const object of response.Contents ?? []) {
+		for (const object of response.Contents ?? [])
+		{
 			if (object.Key) keys.add(object.Key);
 		}
 		continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
-	} while (continuationToken);
+	}
+	while (continuationToken);
 
 	return keys;
 };
@@ -170,32 +221,44 @@ export const putAndVerifyImageObject = async (
 	key: string,
 	image: BackfillImage,
 	downloadedImage: Awaited<ReturnType<typeof downloadImageVariant>>,
-) => {
+) =>
+{
 	const fetchedAt = new Date().toISOString();
 	await client.send(
-		new PutObjectCommand({
-			Body: downloadedImage.bytes,
-			Bucket: bucket,
-			CacheControl: "public, max-age=31536000, immutable",
-			ContentLength: downloadedImage.bytes.length,
-			ContentType: downloadedImage.mediaType,
-			Key: key,
-			Metadata: {
-				"fetched-at": fetchedAt,
-				sha256: downloadedImage.sha256,
-				"source-id": image.imgurId,
-				"source-provider": "imgur",
-				"source-url": downloadedImage.sourceUrl,
+		new PutObjectCommand(
+			{
+				Body: downloadedImage.bytes,
+				Bucket: bucket,
+				CacheControl: "public, max-age=31536000, immutable",
+				ContentLength: downloadedImage.bytes.length,
+				ContentType: downloadedImage.mediaType,
+				Key: key,
+				Metadata:
+				{
+					"fetched-at": fetchedAt,
+					sha256: downloadedImage.sha256,
+					"source-id": image.imgurId,
+					"source-provider": "imgur",
+					"source-url": downloadedImage.sourceUrl,
+				},
 			},
-		}),
+		),
 	);
 
-	const storedObject = await client.send(new HeadObjectCommand({Bucket: bucket, Key: key}));
+	const storedObject = await client.send(
+		new HeadObjectCommand(
+			{
+				Bucket: bucket,
+				Key: key,
+			},
+		),
+	);
 	if (
 		storedObject.ContentLength !== downloadedImage.bytes.length ||
 		storedObject.ContentType !== downloadedImage.mediaType ||
 		storedObject.Metadata?.sha256 !== downloadedImage.sha256
-	) {
+	)
+	{
 		throw new Error(`R2 verification failed for ${key}`);
 	}
 };
@@ -206,61 +269,104 @@ const migrateImage = async (
 	existingObjectKeys: Set<string>,
 	image: BackfillImage,
 	options: CommandOptions,
-): Promise<ImageReport> => {
+): Promise<ImageReport> =>
+{
 	const variants: VariantReport[] = [];
 
-	for (const variant of imageVariants) {
+	for (const variant of imageVariants)
+	{
 		const key = buildR2ObjectKey(options.objectPrefix, image.imgurId, variant);
-		if (existingObjectKeys.has(key)) {
-			variants.push({key, status: "existing", variant});
+		if (existingObjectKeys.has(key))
+		{
+			variants.push(
+				{
+					key,
+					status: "existing",
+					variant,
+				},
+			);
 			continue;
 		}
 
-		try {
-			const downloadedImage = await downloadImageVariant(buildImgurSourceUrls(image, variant), {
-				delay: async (milliseconds) => new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds)),
-				fetcher: fetch,
-				maximumAttempts: 3,
-				maximumBytes: options.maximumBytes,
-				requestTimeoutMilliseconds: 20_000,
-			});
+		try
+		{
+			const downloadedImage = await downloadImageVariant(
+				buildImgurSourceUrls(image, variant),
+				{
+					delay: async (milliseconds) =>
+						new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds)),
+					fetcher: fetch,
+					maximumAttempts: 3,
+					maximumBytes: options.maximumBytes,
+					requestTimeoutMilliseconds: 20_000,
+				},
+			);
 			await putAndVerifyImageObject(client, bucket, key, image, downloadedImage);
 			existingObjectKeys.add(key);
-			variants.push({
-				bytes: downloadedImage.bytes.length,
-				key,
-				mediaType: downloadedImage.mediaType,
-				sha256: downloadedImage.sha256,
-				sourceUrl: downloadedImage.sourceUrl,
-				status: "migrated",
-				variant,
-			});
-		} catch (error) {
-			if (error instanceof SourceImageMissingError) {
-				variants.push({error: error.message, key, status: "sourceMissing", variant});
-			} else {
-				variants.push({
-					error: error instanceof Error ? error.message : String(error),
+			variants.push(
+				{
+					bytes: downloadedImage.bytes.length,
 					key,
-					status: "failed",
+					mediaType: downloadedImage.mediaType,
+					sha256: downloadedImage.sha256,
+					sourceUrl: downloadedImage.sourceUrl,
+					status: "migrated",
 					variant,
-				});
+				},
+			);
+		}
+		catch (error)
+		{
+			if (error instanceof SourceImageMissingError)
+			{
+				variants.push(
+					{
+						error: error.message,
+						key,
+						status: "sourceMissing",
+						variant,
+					},
+				);
+			}
+			else
+			{
+				variants.push(
+					{
+						error: error instanceof Error ? error.message : String(error),
+						key,
+						status: "failed",
+						variant,
+					},
+				);
 			}
 		}
 	}
 
-	return {blueprintIds: image.blueprintIds, imgurId: image.imgurId, variants};
+	return {
+		blueprintIds: image.blueprintIds,
+		imgurId: image.imgurId,
+		variants,
+	};
 };
 
-const countVariantStatuses = (images: ImageReport[]) => {
-	const counts = {existing: 0, failed: 0, migrated: 0, sourceMissing: 0};
-	for (const image of images) {
+const countVariantStatuses = (images: ImageReport[]) =>
+{
+	const counts =
+	{
+		existing: 0,
+		failed: 0,
+		migrated: 0,
+		sourceMissing: 0,
+	};
+	for (const image of images)
+	{
 		for (const variant of image.variants) counts[variant.status] += 1;
 	}
 	return counts;
 };
 
-const main = async () => {
+const main = async () =>
+{
 	const options = parseCommandOptions();
 	const startedAt = new Date().toISOString();
 	const inventory = await loadImageInventory(options.databaseUrl, options.concurrency);
@@ -284,34 +390,41 @@ const main = async () => {
 	);
 
 	let images: ImageReport[] = [];
-	if (options.execute) {
+	if (options.execute)
+	{
 		const environment = imageR2EnvironmentSchema.parse(process.env);
-		const client = new S3Client({
-			credentials: {
-				accessKeyId: environment.R2_ACCESS_KEY_ID,
-				secretAccessKey: environment.R2_SECRET_ACCESS_KEY,
+		const client = new S3Client(
+			{
+				credentials:
+				{
+					accessKeyId: environment.R2_ACCESS_KEY_ID,
+					secretAccessKey: environment.R2_SECRET_ACCESS_KEY,
+				},
+				endpoint: `https://${environment.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+				region: "auto",
 			},
-			endpoint: `https://${environment.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-			region: "auto",
-		});
+		);
 		const existingObjectKeys = await listExistingImageObjectKeys(
 			client,
 			environment.R2_BUCKET,
 			options.objectPrefix,
 		);
-		images = await mapWithConcurrency(selectedImages, options.concurrency, async (image, index) => {
+		images = await mapWithConcurrency(selectedImages, options.concurrency, async (image, index) =>
+		{
 			const report = await migrateImage(client, environment.R2_BUCKET, existingObjectKeys, image, options);
 			console.log(`${index + 1}/${selectedImages.length} ${image.imgurId}`);
 			return report;
 		});
 	}
 
-	const report = {
+	const report =
+	{
 		dryRun: !options.execute,
 		finishedAt: new Date().toISOString(),
 		images,
 		inventory,
-		options: {
+		options:
+		{
 			concurrency: options.concurrency,
 			databaseUrl: options.databaseUrl,
 			limit: options.limit,
@@ -321,7 +434,12 @@ const main = async () => {
 		startedAt,
 		variantStatuses: countVariantStatuses(images),
 	};
-	await mkdir(dirname(options.reportPath), {recursive: true});
+	await mkdir(
+		dirname(options.reportPath),
+		{
+			recursive: true,
+		},
+	);
 	await writeFile(options.reportPath, `${JSON.stringify(report, null, 2)}\n`);
 	console.log(`Report written to ${options.reportPath}`);
 
@@ -329,6 +447,7 @@ const main = async () => {
 };
 
 const invokedModuleUrl = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : "";
-if (import.meta.url === invokedModuleUrl) {
+if (import.meta.url === invokedModuleUrl)
+{
 	await main();
 }

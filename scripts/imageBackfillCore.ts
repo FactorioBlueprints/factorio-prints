@@ -11,28 +11,35 @@ const imgurIdSchema = z
 	.min(1)
 	.regex(/^[A-Za-z0-9]+$/);
 const supportedMediaTypeSchema = z.enum(["image/gif", "image/jpeg", "image/png"]);
-const blueprintSummarySchema = z.object({
-	imgurId: imgurIdSchema,
-	imgurType: supportedMediaTypeSchema,
-});
-const rawBlueprintImageSchema = z.object({
-	id: imgurIdSchema,
-	type: supportedMediaTypeSchema,
-});
+const blueprintSummarySchema = z.object(
+	{
+		imgurId: imgurIdSchema,
+		imgurType: supportedMediaTypeSchema,
+	},
+);
+const rawBlueprintImageSchema = z.object(
+	{
+		id: imgurIdSchema,
+		type: supportedMediaTypeSchema,
+	},
+);
 
-export interface BackfillImage {
+export interface BackfillImage
+{
 	imgurId: string;
 	blueprintIds: string[];
 	mediaTypes: Array<z.infer<typeof supportedMediaTypeSchema>>;
 }
 
-export interface InvalidBlueprintImage {
+export interface InvalidBlueprintImage
+{
 	blueprintId: string;
 	reason: string;
 	source: "blueprint" | "blueprintSummary";
 }
 
-export interface ImageInventory {
+export interface ImageInventory
+{
 	fallbackImageCount: number;
 	images: BackfillImage[];
 	invalidBlueprintImages: InvalidBlueprintImage[];
@@ -41,7 +48,8 @@ export interface ImageInventory {
 	summaryCount: number;
 }
 
-interface MutableBackfillImage {
+interface MutableBackfillImage
+{
 	blueprintIds: Set<string>;
 	mediaTypes: Set<z.infer<typeof supportedMediaTypeSchema>>;
 }
@@ -54,8 +62,10 @@ const addImage = (
 	blueprintId: string,
 	imgurId: string,
 	mediaType: z.infer<typeof supportedMediaTypeSchema>,
-) => {
-	const image = images.get(imgurId) ?? {
+) =>
+{
+	const image = images.get(imgurId) ??
+	{
 		blueprintIds: new Set<string>(),
 		mediaTypes: new Set<z.infer<typeof supportedMediaTypeSchema>>(),
 	};
@@ -68,7 +78,8 @@ export const buildImageInventory = (
 	blueprintSummaries: Record<string, unknown>,
 	rawBlueprintImages: Record<string, unknown>,
 	rawBlueprintCount: number,
-): ImageInventory => {
+): ImageInventory =>
+{
 	const images = new Map<string, MutableBackfillImage>();
 	const invalidBlueprintImages: InvalidBlueprintImage[] = [];
 	// Fallback ids were assigned when Imgur failed: the image exists only in R2 already.
@@ -77,32 +88,41 @@ export const buildImageInventory = (
 		blueprintId: string,
 		imgurId: string,
 		mediaType: z.infer<typeof supportedMediaTypeSchema>,
-	) => {
+	) =>
+	{
 		if (isFallbackImageId(imgurId)) fallbackImageIds.add(imgurId);
 		else addImage(images, blueprintId, imgurId, mediaType);
 	};
 
-	for (const [blueprintId, value] of Object.entries(blueprintSummaries)) {
+	for (const [blueprintId, value] of Object.entries(blueprintSummaries))
+	{
 		const result = blueprintSummarySchema.safeParse(value);
-		if (!result.success) {
-			invalidBlueprintImages.push({
-				blueprintId,
-				reason: formatSchemaIssues(result.error),
-				source: "blueprintSummary",
-			});
+		if (!result.success)
+		{
+			invalidBlueprintImages.push(
+				{
+					blueprintId,
+					reason: formatSchemaIssues(result.error),
+					source: "blueprintSummary",
+				},
+			);
 			continue;
 		}
 		addImgurImage(blueprintId, result.data.imgurId, result.data.imgurType);
 	}
 
-	for (const [blueprintId, value] of Object.entries(rawBlueprintImages)) {
+	for (const [blueprintId, value] of Object.entries(rawBlueprintImages))
+	{
 		const result = rawBlueprintImageSchema.safeParse(value);
-		if (!result.success) {
-			invalidBlueprintImages.push({
-				blueprintId,
-				reason: formatSchemaIssues(result.error),
-				source: "blueprint",
-			});
+		if (!result.success)
+		{
+			invalidBlueprintImages.push(
+				{
+					blueprintId,
+					reason: formatSchemaIssues(result.error),
+					source: "blueprint",
+				},
+			);
 			continue;
 		}
 		addImgurImage(blueprintId, result.data.id, result.data.type);
@@ -110,7 +130,8 @@ export const buildImageInventory = (
 
 	return {
 		images: [...images.entries()]
-			.map(([imgurId, image]) => ({
+			.map(([imgurId, image]) => (
+			{
 				imgurId,
 				blueprintIds: [...image.blueprintIds].sort(),
 				mediaTypes: [...image.mediaTypes].sort(),
@@ -126,19 +147,22 @@ export const buildImageInventory = (
 	};
 };
 
-const variantSuffixes: Record<ImageVariant, string> = {
+const variantSuffixes: Record<ImageVariant, string> =
+{
 	original: "",
 	thumbnail: "b",
 	large: "l",
 };
 
-const mediaTypeExtensions: Record<z.infer<typeof supportedMediaTypeSchema>, string[]> = {
+const mediaTypeExtensions: Record<z.infer<typeof supportedMediaTypeSchema>, string[]> =
+{
 	"image/gif": ["gif"],
 	"image/jpeg": ["jpeg", "jpg"],
 	"image/png": ["png"],
 };
 
-export const buildImgurSourceUrls = (image: BackfillImage, variant: ImageVariant): string[] => {
+export const buildImgurSourceUrls = (image: BackfillImage, variant: ImageVariant): string[] =>
+{
 	const extensions = [...new Set(image.mediaTypes.flatMap((mediaType) => mediaTypeExtensions[mediaType]))];
 	const suffix = variantSuffixes[variant];
 	return extensions.map((extension) => `https://i.imgur.com/${image.imgurId}${suffix}.${extension}`);
@@ -147,7 +171,8 @@ export const buildImgurSourceUrls = (image: BackfillImage, variant: ImageVariant
 export const buildR2ObjectKey = (prefix: string, imgurId: string, variant: ImageVariant): string =>
 	`${prefix.replace(/\/+$/, "")}/${imgurId}/${variant}`;
 
-export const detectImageMediaType = (bytes: Uint8Array): string => {
+export const detectImageMediaType = (bytes: Uint8Array): string =>
+{
 	if (
 		bytes.length >= 8 &&
 		bytes[0] === 0x89 &&
@@ -158,15 +183,19 @@ export const detectImageMediaType = (bytes: Uint8Array): string => {
 		bytes[5] === 0x0a &&
 		bytes[6] === 0x1a &&
 		bytes[7] === 0x0a
-	) {
+	)
+	{
 		return "image/png";
 	}
-	if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+	if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)
+	{
 		return "image/jpeg";
 	}
-	if (bytes.length >= 6) {
+	if (bytes.length >= 6)
+	{
 		const signature = new TextDecoder().decode(bytes.subarray(0, 6));
-		if (signature === "GIF87a" || signature === "GIF89a") {
+		if (signature === "GIF87a" || signature === "GIF89a")
+		{
 			return "image/gif";
 		}
 	}
@@ -174,26 +203,30 @@ export const detectImageMediaType = (bytes: Uint8Array): string => {
 		bytes.length >= 12 &&
 		new TextDecoder().decode(bytes.subarray(0, 4)) === "RIFF" &&
 		new TextDecoder().decode(bytes.subarray(8, 12)) === "WEBP"
-	) {
+	)
+	{
 		return "image/webp";
 	}
 	throw new Error("Downloaded content is not a supported image format");
 };
 
-const normalizeResponseMediaType = (contentType: string | null): string | null => {
+const normalizeResponseMediaType = (contentType: string | null): string | null =>
+{
 	if (!contentType) return null;
 	const mediaType = contentType.split(";", 1)[0]?.trim().toLowerCase();
 	return mediaType === "image/jpg" ? "image/jpeg" : (mediaType ?? null);
 };
 
-export interface DownloadedImage {
+export interface DownloadedImage
+{
 	bytes: Uint8Array;
 	mediaType: string;
 	sha256: string;
 	sourceUrl: string;
 }
 
-export interface DownloadOptions {
+export interface DownloadOptions
+{
 	delay: (milliseconds: number) => Promise<void>;
 	fetcher: typeof fetch;
 	maximumAttempts: number;
@@ -211,20 +244,29 @@ const isMissingStatus = (status: number): boolean =>
 	status === 422 ||
 	status === 404;
 
-const fetchWithRetry = async (sourceUrl: string, options: DownloadOptions): Promise<Response> => {
+const fetchWithRetry = async (sourceUrl: string, options: DownloadOptions): Promise<Response> =>
+{
 	let lastError: Error | undefined;
-	for (let attempt = 1; attempt <= options.maximumAttempts; attempt += 1) {
-		try {
-			const response = await options.fetcher(sourceUrl, {
-				redirect: "manual",
-				signal: AbortSignal.timeout(options.requestTimeoutMilliseconds),
-			});
-			if (!shouldRetryStatus(response.status) || attempt === options.maximumAttempts) {
+	for (let attempt = 1; attempt <= options.maximumAttempts; attempt += 1)
+	{
+		try
+		{
+			const response = await options.fetcher(
+				sourceUrl,
+				{
+					redirect: "manual",
+					signal: AbortSignal.timeout(options.requestTimeoutMilliseconds),
+				},
+			);
+			if (!shouldRetryStatus(response.status) || attempt === options.maximumAttempts)
+			{
 				return response;
 			}
 			await response.body?.cancel();
 			await options.delay(250 * 2 ** (attempt - 1));
-		} catch (error) {
+		}
+		catch (error)
+		{
 			lastError = error instanceof Error ? error : new Error(String(error));
 			if (attempt === options.maximumAttempts) throw lastError;
 			await options.delay(250 * 2 ** (attempt - 1));
@@ -233,50 +275,56 @@ const fetchWithRetry = async (sourceUrl: string, options: DownloadOptions): Prom
 	throw lastError ?? new Error(`Failed to download ${sourceUrl}`);
 };
 
-export class SourceImageMissingError extends Error {
+export class SourceImageMissingError extends Error
+{
 	public readonly sourceUrls: string[];
 
-	constructor(sourceUrls: string[]) {
+	constructor(sourceUrls: string[])
+	{
 		super(`Imgur returned no image for ${sourceUrls.join(", ")}`);
 		this.name = "SourceImageMissingError";
 		this.sourceUrls = sourceUrls;
 	}
 }
 
-export const downloadImageVariant = async (
-	sourceUrls: string[],
-	options: DownloadOptions,
-): Promise<DownloadedImage> => {
+export const downloadImageVariant = async (sourceUrls: string[], options: DownloadOptions): Promise<DownloadedImage> =>
+{
 	const failures: string[] = [];
 
-	for (const sourceUrl of sourceUrls) {
+	for (const sourceUrl of sourceUrls)
+	{
 		const response = await fetchWithRetry(sourceUrl, options);
-		if (isMissingStatus(response.status)) {
+		if (isMissingStatus(response.status))
+		{
 			await response.body?.cancel();
 			continue;
 		}
-		if (!response.ok) {
+		if (!response.ok)
+		{
 			await response.body?.cancel();
 			failures.push(`${sourceUrl}: HTTP ${response.status}`);
 			continue;
 		}
 
 		const declaredLength = Number(response.headers.get("content-length"));
-		if (Number.isFinite(declaredLength) && declaredLength > options.maximumBytes) {
+		if (Number.isFinite(declaredLength) && declaredLength > options.maximumBytes)
+		{
 			await response.body?.cancel();
 			failures.push(`${sourceUrl}: content length ${declaredLength} exceeds the configured limit`);
 			continue;
 		}
 
 		const bytes = new Uint8Array(await response.arrayBuffer());
-		if (bytes.length > options.maximumBytes) {
+		if (bytes.length > options.maximumBytes)
+		{
 			failures.push(`${sourceUrl}: downloaded ${bytes.length} bytes, exceeding the configured limit`);
 			continue;
 		}
 
 		const detectedMediaType = detectImageMediaType(bytes);
 		const responseMediaType = normalizeResponseMediaType(response.headers.get("content-type"));
-		if (responseMediaType !== detectedMediaType) {
+		if (responseMediaType !== detectedMediaType)
+		{
 			failures.push(
 				`${sourceUrl}: response type ${responseMediaType ?? "missing"} does not match ${detectedMediaType}`,
 			);
@@ -291,7 +339,8 @@ export const downloadImageVariant = async (
 		};
 	}
 
-	if (failures.length > 0) {
+	if (failures.length > 0)
+	{
 		throw new Error(failures.join("; "));
 	}
 	throw new SourceImageMissingError(sourceUrls);
@@ -301,21 +350,32 @@ export const mapWithConcurrency = async <Input, Output>(
 	inputs: Input[],
 	concurrency: number,
 	operation: (input: Input, index: number) => Promise<Output>,
-): Promise<Output[]> => {
-	if (!Number.isInteger(concurrency) || concurrency < 1) {
+): Promise<Output[]> =>
+{
+	if (!Number.isInteger(concurrency) || concurrency < 1)
+	{
 		throw new Error("Concurrency must be a positive integer");
 	}
 	const outputs: Output[] = [];
 	let nextIndex = 0;
 
-	const worker = async () => {
-		while (nextIndex < inputs.length) {
+	const worker = async () =>
+	{
+		while (nextIndex < inputs.length)
+		{
 			const index = nextIndex;
 			nextIndex += 1;
 			outputs[index] = await operation(inputs[index]!, index);
 		}
 	};
 
-	await Promise.all(Array.from({length: Math.min(concurrency, inputs.length)}, async () => worker()));
+	await Promise.all(
+		Array.from(
+			{
+				length: Math.min(concurrency, inputs.length),
+			},
+			async () => worker(),
+		),
+	);
 	return outputs;
 };

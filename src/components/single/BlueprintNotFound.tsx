@@ -1,11 +1,13 @@
 import {Link} from "@tanstack/react-router";
 
-interface BlueprintNotFoundProps {
+interface BlueprintNotFoundProps
+{
 	error?: Error | null;
 	isDeleted?: boolean;
 }
 
-export function BlueprintNotFound({error, isDeleted}: BlueprintNotFoundProps) {
+export function BlueprintNotFound({error, isDeleted}: BlueprintNotFoundProps)
+{
 	return (
 		<div className="p-5 rounded-lg jumbotron">
 			<title>Factorio Prints: Blueprint Not Found</title>

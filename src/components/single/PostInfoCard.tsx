@@ -6,7 +6,8 @@ import DateDisplay from "../DateDisplay";
 import DisplayName from "../DisplayName";
 import FavoriteCount from "../FavoriteCount";
 
-interface PostInfoCardProps {
+interface PostInfoCardProps
+{
 	authorUserId?: string;
 	createdDate?: number;
 	lastUpdatedDate?: number;
@@ -20,7 +21,8 @@ export function PostInfoCard({
 	lastUpdatedDate,
 	numberOfFavorites,
 	isLoading,
-}: PostInfoCardProps) {
+}: PostInfoCardProps)
+{
 	return (
 		<Card>
 			<Card.Header>Post Info</Card.Header>

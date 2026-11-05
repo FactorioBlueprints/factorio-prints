@@ -20,50 +20,65 @@ export const modFilterSchema = z.enum([
 ]);
 export type ModFilter = z.infer<typeof modFilterSchema>;
 
-export const restBlueprintSummarySchema = z.object({
-	key: z.string(),
-	title: z.string(),
-	voteSummary: z.object({
-		numberOfUpvotes: z.number(),
-	}),
-	imgurImage: z.object({
-		imgurId: z.string(),
-		imgurType: z.string(),
-	}),
-});
+export const restBlueprintSummarySchema = z.object(
+	{
+		key: z.string(),
+		title: z.string(),
+		voteSummary: z.object(
+			{
+				numberOfUpvotes: z.number(),
+			},
+		),
+		imgurImage: z.object(
+			{
+				imgurId: z.string(),
+				imgurType: z.string(),
+			},
+		),
+	},
+);
 
 export type RestBlueprintSummary = z.infer<typeof restBlueprintSummarySchema>;
 
-const restPaginationMetadataSchema = z.object({
-	pagination: z.object({
-		numberOfPages: z.number(),
-		pageNumber: z.number(),
-		pageSize: z.number(),
-	}),
-	criteria: z.string().optional(),
-	orderBy: z.string().optional(),
-	multiplicity: z.string().optional(),
-	projection: z.string().optional(),
-	transactionTimestamp: z.string().optional(),
-});
+const restPaginationMetadataSchema = z.object(
+	{
+		pagination: z.object(
+			{
+				numberOfPages: z.number(),
+				pageNumber: z.number(),
+				pageSize: z.number(),
+			},
+		),
+		criteria: z.string().optional(),
+		orderBy: z.string().optional(),
+		multiplicity: z.string().optional(),
+		projection: z.string().optional(),
+		transactionTimestamp: z.string().optional(),
+	},
+);
 
-export const restPaginatedResponseSchema = z.object({
-	_data: z.array(restBlueprintSummarySchema),
-	_metadata: restPaginationMetadataSchema,
-});
+export const restPaginatedResponseSchema = z.object(
+	{
+		_data: z.array(restBlueprintSummarySchema),
+		_metadata: restPaginationMetadataSchema,
+	},
+);
 
 export type RestPaginatedResponse = z.infer<typeof restPaginatedResponseSchema>;
 
 export const restTagSchema = z
-	.object({
-		category: z.string(),
-		name: z.string(),
-	})
+	.object(
+		{
+			category: z.string(),
+			name: z.string(),
+		},
+	)
 	.strict();
 
 export type RestTag = z.infer<typeof restTagSchema>;
 
-export interface AdvancedSearchParams {
+export interface AdvancedSearchParams
+{
 	page: number;
 	pageSize: number;
 	text?: string;

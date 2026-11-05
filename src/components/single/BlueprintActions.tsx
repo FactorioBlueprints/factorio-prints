@@ -8,7 +8,8 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import type {ReconcileResult} from "../../api/firebase";
 
-interface BlueprintActionsProps {
+interface BlueprintActionsProps
+{
 	isOwner: boolean;
 	isModerator: boolean;
 	user: any;
@@ -38,7 +39,8 @@ export function BlueprintActions({
 	collectionMutation,
 	reconcileMutation,
 	renderPlaygroundButton,
-}: BlueprintActionsProps) {
+}: BlueprintActionsProps)
+{
 	const renderEditButton = useCallback(
 		() => (
 			<Button size="lg" onClick={onEdit}>
@@ -49,8 +51,10 @@ export function BlueprintActions({
 		[onEdit],
 	);
 
-	const renderFavoriteButton = useCallback(() => {
-		if (!user) {
+	const renderFavoriteButton = useCallback(() =>
+	{
+		if (!user)
+		{
 			return <div />;
 		}
 
@@ -65,8 +69,10 @@ export function BlueprintActions({
 		);
 	}, [user, isFavorite, onFavorite, favoriteMutation.isPending]);
 
-	const renderCollectionButton = useCallback(() => {
-		if (!user) {
+	const renderCollectionButton = useCallback(() =>
+	{
+		if (!user)
+		{
 			return <div />;
 		}
 
@@ -82,7 +88,8 @@ export function BlueprintActions({
 		);
 	}, [user, isInCollection, onCollection, collectionMutation.isPending]);
 
-	const renderReconcileButton = useCallback(() => {
+	const renderReconcileButton = useCallback(() =>
+	{
 		const {data: reconcileResult, isPending, isSuccess} = reconcileMutation;
 		const typedResult = reconcileResult as ReconcileResult | undefined;
 		const buttonText = isPending
@@ -110,7 +117,15 @@ export function BlueprintActions({
 	}, [onReconcile, reconcileMutation]);
 
 	return (
-		<Col xs={12} md={{span: 8, offset: 4}} className="mt-3">
+		<Col
+			xs={12}
+			md={
+			{
+				span: 8,
+				offset: 4,
+			}}
+			className="mt-3"
+		>
 			<div className="d-flex gap-2 flex-wrap">
 				{renderPlaygroundButton()}
 				{(isOwner || isModerator) && renderEditButton()}

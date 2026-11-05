@@ -3,7 +3,8 @@ import {memo} from "react";
 import type {RawBlueprintData} from "../../../../schemas";
 import {Panel} from "../../../ui";
 
-const ParametersPanelComponent = ({blueprintString}: {blueprintString?: RawBlueprintData}) => {
+const ParametersPanelComponent = ({blueprintString}: {blueprintString?: RawBlueprintData}) =>
+{
 	if (!blueprintString?.blueprint?.parameters?.length) return null;
 
 	return (

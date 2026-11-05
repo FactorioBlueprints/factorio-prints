@@ -1,5 +1,6 @@
 import {faDiscord, faGithub, faPatreon} from "@fortawesome/free-brands-svg-icons";
-import {
+import
+{
 	faClock,
 	faCogs,
 	faDonate,
@@ -30,18 +31,22 @@ import {app} from "../base";
 import {useIsModerator} from "../hooks/useModerators";
 import {AuthenticationForm} from "./auth/AuthenticationForm";
 
-const Header: React.FC = () => {
+const Header: React.FC = () =>
+{
 	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const moderatorQuery = useIsModerator(user?.uid);
 	const isModerator = moderatorQuery.data ?? false;
 	const [showAccountDropdown, setShowAccountDropdown] = useState<boolean>(false);
 
-	const handleLogout = (): void => {
+	const handleLogout = (): void =>
+	{
 		signOut(getAuth(app));
 	};
 
-	const getDisplayName = (): React.ReactElement | false => {
-		if (user && user.displayName) {
+	const getDisplayName = (): React.ReactElement | false =>
+	{
+		if (user && user.displayName)
+		{
 			return (
 				<div className="h4">
 					<b>{user.displayName}</b>
@@ -51,8 +56,10 @@ const Header: React.FC = () => {
 		return false;
 	};
 
-	const renderAuthentication = (): React.ReactElement => {
-		if (user) {
+	const renderAuthentication = (): React.ReactElement =>
+	{
+		if (user)
+		{
 			const closeDropdown = () => setShowAccountDropdown(false);
 
 			return (
@@ -87,7 +94,10 @@ const Header: React.FC = () => {
 						<Dropdown.Item as="div" onClick={closeDropdown} className="text-light text-left p-0">
 							<Link
 								to="/user/$userId"
-								params={{userId: user!.uid}}
+								params={
+								{
+									userId: user!.uid,
+								}}
 								className="dropdown-item text-light text-left"
 							>
 								<FontAwesomeIcon icon={faUser} size="lg" fixedWidth />
@@ -95,7 +105,15 @@ const Header: React.FC = () => {
 							</Link>
 						</Dropdown.Item>
 						<Dropdown.Item as={Link} to="/account" onClick={closeDropdown} className="text-light text-left">
-							<FontAwesomeIcon icon={faWrench} size="lg" fixedWidth style={{color: "var(--bs-orange)"}} />
+							<FontAwesomeIcon
+								icon={faWrench}
+								size="lg"
+								fixedWidth
+								style={
+								{
+									color: "var(--bs-orange)",
+								}}
+							/>
 							{" My Display Name"}
 						</Dropdown.Item>
 						{isModerator && (
@@ -109,7 +127,10 @@ const Header: React.FC = () => {
 									icon={faShieldAlt}
 									size="lg"
 									fixedWidth
-									style={{color: "var(--bs-purple)"}}
+									style={
+									{
+										color: "var(--bs-purple)",
+									}}
 								/>
 								{" Admin: Users"}
 							</Dropdown.Item>
@@ -119,7 +140,8 @@ const Header: React.FC = () => {
 								className="w-100"
 								variant="warning"
 								size="lg"
-								onClick={() => {
+								onClick={() =>
+								{
 									handleLogout();
 									closeDropdown();
 								}}
@@ -141,7 +163,14 @@ const Header: React.FC = () => {
 		);
 
 		return (
-			<NavDropdown title={title} align="end" style={{minWidth: "210px"}}>
+			<NavDropdown
+				title={title}
+				align="end"
+				style={
+				{
+					minWidth: "210px",
+				}}
+			>
 				<div className="p-2">
 					<AuthenticationForm showDivider={false} />
 				</div>

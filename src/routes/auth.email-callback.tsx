@@ -8,46 +8,64 @@ import {app} from "../base";
 import PageHeader from "../components/PageHeader";
 import {loadFromStorage, removeFromStorage} from "../localStorage";
 
-export const Route = createFileRoute("/auth/email-callback")({
-	component: EmailCallback,
-});
+export const Route = createFileRoute("/auth/email-callback")(
+	{
+		component: EmailCallback,
+	},
+);
 
-function EmailCallback() {
+function EmailCallback()
+{
 	const navigate = useNavigate();
 	const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 	const [errorMessage, setErrorMessage] = useState<string>("");
 
-	useEffect(() => {
-		const handleEmailSignIn = async () => {
+	useEffect(() =>
+	{
+		const handleEmailSignIn = async () =>
+		{
 			const auth = getAuth(app);
 			const currentUrl = window.location.href;
 
-			if (isSignInWithEmailLink(auth, currentUrl)) {
+			if (isSignInWithEmailLink(auth, currentUrl))
+			{
 				let email = loadFromStorage<string>("emailForSignIn");
 
-				if (!email) {
+				if (!email)
+				{
 					email = window.prompt("Please provide your email for confirmation");
 				}
 
-				if (!email) {
+				if (!email)
+				{
 					setStatus("error");
 					setErrorMessage("Email address is required to complete sign-in.");
 					return;
 				}
 
-				try {
+				try
+				{
 					await signInWithEmailLink(auth, email, currentUrl);
 					removeFromStorage("emailForSignIn");
 					setStatus("success");
 
-					setTimeout(() => {
-						navigate({to: "/"});
+					setTimeout(() =>
+					{
+						navigate(
+							{
+								to: "/",
+							},
+						);
 					}, 2000);
-				} catch {
+				}
+				catch
+				{
 					setStatus("error");
 					setErrorMessage("Failed to sign in. The link may be invalid or expired.");
 				}
-			} else {
+			}
+			else
+			{
 				setStatus("error");
 				setErrorMessage("Invalid sign-in link.");
 			}
@@ -56,7 +74,8 @@ function EmailCallback() {
 		handleEmailSignIn();
 	}, [navigate]);
 
-	if (status === "loading") {
+	if (status === "loading")
+	{
 		return (
 			<Container className="text-center py-5">
 				<PageHeader title="Signing you in..." />
@@ -66,7 +85,8 @@ function EmailCallback() {
 		);
 	}
 
-	if (status === "success") {
+	if (status === "success")
+	{
 		return (
 			<Container className="text-center py-5">
 				<PageHeader title="Sign-in successful!" />

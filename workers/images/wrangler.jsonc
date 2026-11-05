@@ -4,7 +4,8 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-08-23",
 	"compatibility_flags": ["nodejs_compat"],
-	"vars": {
+	"vars":
+	{
 		"FIREBASE_DATABASE_URL": "https://facorio-blueprints.firebaseio.com",
 		"FIREBASE_PROJECT_ID": "facorio-blueprints",
 		"LEGACY_R2_READS_ENABLED": "true",
@@ -30,7 +31,8 @@
 			"dataset": "factorio_prints_image_gateway",
 		},
 	],
-	"durable_objects": {
+	"durable_objects":
+	{
 		"bindings": [
 			{
 				"name": "IMGUR_UPLOADER",
@@ -69,22 +71,28 @@
 		},
 	],
 	// Copies images of recently saved blueprints into R2. Production only: preview shares the bucket.
-	"triggers": {
+	"triggers":
+	{
 		"crons": ["*/10 * * * *"],
 	},
-	"observability": {
+	"observability":
+	{
 		"enabled": true,
 		"head_sampling_rate": 1,
 	},
-	"env": {
-		"preview": {
+	"env":
+	{
+		"preview":
+		{
 			"name": "factorio-prints-images-preview",
-			"triggers": {
+			"triggers":
+			{
 				"crons": [],
 			},
 			"workers_dev": true,
 			"routes": [],
-			"vars": {
+			"vars":
+			{
 				"FIREBASE_DATABASE_URL": "https://facorio-blueprints.firebaseio.com",
 				"FIREBASE_PROJECT_ID": "facorio-blueprints",
 				"LEGACY_R2_READS_ENABLED": "true",
@@ -103,7 +111,8 @@
 					"dataset": "factorio_prints_image_gateway_preview",
 				},
 			],
-			"durable_objects": {
+			"durable_objects":
+			{
 				"bindings": [
 					{
 						"name": "IMGUR_UPLOADER",
@@ -123,7 +132,8 @@
 					},
 				],
 			},
-			"observability": {
+			"observability":
+			{
 				"enabled": true,
 				"head_sampling_rate": 1,
 			},

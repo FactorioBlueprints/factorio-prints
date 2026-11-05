@@ -7,12 +7,15 @@ import type {RawBlueprint, RawBlueprintSummary} from "../schemas";
  * Watches for changes to blueprint summaries and invalidates the corresponding blueprint entry
  * when actual data changes are detected by comparing lastUpdatedDate
  */
-const useBlueprintCacheSync = (): void => {
+const useBlueprintCacheSync = (): void =>
+{
 	const queryClient = useQueryClient();
 
-	useEffect(() => {
+	useEffect(() =>
+	{
 		// Set up a subscription to the query cache
-		const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+		const unsubscribe = queryClient.getQueryCache().subscribe((event) =>
+		{
 			const queryKey = event.query.queryKey;
 
 			// We're only interested in successful updates to blueprint summaries
@@ -23,31 +26,37 @@ const useBlueprintCacheSync = (): void => {
 				queryKey[0] === "blueprintSummaries" &&
 				queryKey[1] === "blueprintId" &&
 				typeof queryKey[2] === "string"
-			) {
+			)
+			{
 				// Get the blueprint ID from the query key
 				const blueprintId = queryKey[2];
 				const newData = event.query.state.data as RawBlueprintSummary | undefined;
 
 				// If we don't have new data or it's not a summary with lastUpdatedDate, skip
-				if (!newData || !newData.lastUpdatedDate) {
+				if (!newData || !newData.lastUpdatedDate)
+				{
 					return;
 				}
 
 				const existingData = queryClient.getQueryData<RawBlueprint>(["blueprints", "blueprintId", blueprintId]);
 
-				if (!existingData || existingData.lastUpdatedDate !== newData.lastUpdatedDate) {
+				if (!existingData || existingData.lastUpdatedDate !== newData.lastUpdatedDate)
+				{
 					// Invalidate only the specific blueprint query
-					queryClient.invalidateQueries({
-						queryKey: ["blueprints", "blueprintId", blueprintId],
-						exact: true,
-						refetchType: "none", // Just mark as stale, don't automatically refetch
-					});
+					queryClient.invalidateQueries(
+						{
+							queryKey: ["blueprints", "blueprintId", blueprintId],
+							exact: true,
+							refetchType: "none", // Just mark as stale, don't automatically refetch
+						},
+					);
 				}
 			}
 		});
 
 		// Clean up the subscription when the component unmounts
-		return () => {
+		return () =>
+		{
 			unsubscribe();
 		};
 	}, [queryClient]);

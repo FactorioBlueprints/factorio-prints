@@ -2,17 +2,21 @@ import React, {Component, type ReactNode, useEffect, useRef} from "react";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import type {OverlayTriggerProps} from "react-bootstrap/OverlayTrigger";
 
-interface SafeOverlayTriggerProps extends Omit<OverlayTriggerProps, "children"> {
+interface SafeOverlayTriggerProps extends Omit<OverlayTriggerProps, "children">
+{
 	children: React.ReactElement;
 }
 
-interface ErrorBoundaryState {
+interface ErrorBoundaryState
+{
 	hasError: boolean;
 }
 
 /** 🛡️ Check if error is a DOM manipulation error from tooltip operations. */
-function isDOMManipulationError(error: Error): boolean {
-	if (error instanceof DOMException) {
+function isDOMManipulationError(error: Error): boolean
+{
+	if (error instanceof DOMException)
+	{
 		return (
 			error.code === 8 ||
 			error.name === "NotFoundError" ||
@@ -31,76 +35,117 @@ function isDOMManipulationError(error: Error): boolean {
 	);
 }
 
-class OverlayErrorBoundary extends Component<{children: ReactNode}, ErrorBoundaryState> {
-	constructor(props: {children: ReactNode}) {
+class OverlayErrorBoundary extends Component<
+	{
+		children: ReactNode;
+	},
+	ErrorBoundaryState
+>
+{
+	constructor(props: {children: ReactNode})
+	{
 		super(props);
-		this.state = {hasError: false};
+		this.state =
+		{
+			hasError: false,
+		};
 	}
 
-	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+	static getDerivedStateFromError(error: Error): ErrorBoundaryState
+	{
 		// 🛡️ Don't show error state for DOM manipulation errors
-		if (isDOMManipulationError(error)) {
-			return {hasError: false};
+		if (isDOMManipulationError(error))
+		{
+			return {
+				hasError: false,
+			};
 		}
-		return {hasError: true};
+		return {
+			hasError: true,
+		};
 	}
 
-	componentDidCatch(error: Error): void {
-		if (isDOMManipulationError(error)) {
-			if (import.meta.env.DEV) {
+	componentDidCatch(error: Error): void
+	{
+		if (isDOMManipulationError(error))
+		{
+			if (import.meta.env.DEV)
+			{
 				console.warn("🛡️ Tooltip DOM manipulation error suppressed:", error.message);
 			}
 		}
 	}
 
-	render(): ReactNode {
-		if (this.state.hasError) {
+	render(): ReactNode
+	{
+		if (this.state.hasError)
+		{
 			return this.props.children;
 		}
 		return this.props.children;
 	}
 }
 
-const SafeOverlayTrigger: React.FC<SafeOverlayTriggerProps> = ({children, overlay, ...props}) => {
+const SafeOverlayTrigger: React.FC<SafeOverlayTriggerProps> = ({children, overlay, ...props}) =>
+{
 	const cleanupTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-	useEffect(() => {
-		return () => {
-			if (cleanupTimeoutRef.current) {
+	useEffect(() =>
+	{
+		return () =>
+		{
+			if (cleanupTimeoutRef.current)
+			{
 				clearTimeout(cleanupTimeoutRef.current);
 			}
 
-			cleanupTimeoutRef.current = setTimeout(() => {
+			cleanupTimeoutRef.current = setTimeout(() =>
+			{
 				const tooltips = document.querySelectorAll(".tooltip.show, .tooltip.bs-tooltip-auto");
-				tooltips.forEach((tooltip) => {
-					try {
-						if (tooltip.parentNode && document.body.contains(tooltip)) {
+				tooltips.forEach((tooltip) =>
+				{
+					try
+					{
+						if (tooltip.parentNode && document.body.contains(tooltip))
+						{
 							tooltip.classList.remove("show");
 							(tooltip as HTMLElement).style.display = "none";
 						}
-					} catch {}
+					}
+					catch
+					{
+					}
 				});
 			}, 0);
 		};
 	}, []);
 
-	const handleToggle = (nextShow: boolean) => {
-		if (!nextShow) {
-			cleanupTimeoutRef.current = setTimeout(() => {
+	const handleToggle = (nextShow: boolean) =>
+	{
+		if (!nextShow)
+		{
+			cleanupTimeoutRef.current = setTimeout(() =>
+			{
 				const tooltips = document.querySelectorAll(".tooltip:not(.show)");
-				tooltips.forEach((tooltip) => {
-					try {
+				tooltips.forEach((tooltip) =>
+				{
+					try
+					{
 						const rect = tooltip.getBoundingClientRect();
 						if (
 							rect.width === 0 &&
 							rect.height === 0 &&
 							tooltip.parentNode &&
 							document.body.contains(tooltip)
-						) {
+						)
+						{
 							tooltip.classList.remove("show");
 							(tooltip as HTMLElement).style.display = "none";
 						}
-					} catch {}
+					}
+					catch
+					{
+					}
 				});
 			}, 500);
 		}

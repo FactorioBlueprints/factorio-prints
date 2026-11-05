@@ -4,20 +4,37 @@ import {type BlueprintBook, type RawBlueprintData, validateRawBlueprintData} fro
 import {type CompressionSettings, DEFAULT_COMPRESSION_SETTINGS} from "./compressionSettings";
 import {getErrorMessage} from "./errors";
 
-export class BlueprintError extends Error {
+export class BlueprintError extends Error
+{
 	public cause?: Error;
 
-	constructor(message: string, options?: {cause?: Error}) {
+	constructor(
+		message: string,
+		options?:
+		{
+			cause?: Error;
+		},
+	)
+	{
 		super(message);
 		this.name = "BlueprintError";
-		if (options?.cause) {
+		if (options?.cause)
+		{
 			this.cause = options.cause;
 		}
 	}
 }
 
-export function deserializeBlueprint(blueprintData: string, context?: {blueprintId?: string}): RawBlueprintData {
-	if (!blueprintData.startsWith("0")) {
+export function deserializeBlueprint(
+	blueprintData: string,
+	context?:
+	{
+		blueprintId?: string;
+	},
+): RawBlueprintData
+{
+	if (!blueprintData.startsWith("0"))
+	{
 		throw new BlueprintError(
 			`Unknown blueprint format: string does not start with '0'.\nStarts with:\n'${blueprintData.slice(0, 80)}'`,
 		);
@@ -26,26 +43,50 @@ export function deserializeBlueprint(blueprintData: string, context?: {blueprint
 	const base64String = blueprintData.slice(1);
 
 	let bytes: Uint8Array;
-	try {
+	try
+	{
 		bytes = Uint8Array.from(atob(base64String), (c: string) => c.charCodeAt(0));
-	} catch (error) {
-		throw new BlueprintError("Invalid base64 data", {cause: error as Error});
+	}
+	catch (error)
+	{
+		throw new BlueprintError(
+			"Invalid base64 data",
+			{
+				cause: error as Error,
+			},
+		);
 	}
 
 	let decompressedBytes: Uint8Array;
-	try {
+	try
+	{
 		decompressedBytes = unzlibSync(bytes);
-	} catch (error) {
-		throw new BlueprintError("Failed to decompress blueprint data", {cause: error as Error});
+	}
+	catch (error)
+	{
+		throw new BlueprintError(
+			"Failed to decompress blueprint data",
+			{
+				cause: error as Error,
+			},
+		);
 	}
 
 	const decompressedStr = new TextDecoder().decode(decompressedBytes);
 
 	let parsedData: unknown;
-	try {
+	try
+	{
 		parsedData = JSON.parse(decompressedStr.trim());
-	} catch (error) {
-		throw new BlueprintError("Invalid JSON in blueprint data", {cause: error as Error});
+	}
+	catch (error)
+	{
+		throw new BlueprintError(
+			"Invalid JSON in blueprint data",
+			{
+				cause: error as Error,
+			},
+		);
 	}
 
 	const result = validateRawBlueprintData(parsedData, context);
@@ -53,10 +94,20 @@ export function deserializeBlueprint(blueprintData: string, context?: {blueprint
 	return result;
 }
 
-export function deserializeBlueprintNoThrow(data: string, context?: {blueprintId?: string}): RawBlueprintData | null {
-	try {
+export function deserializeBlueprintNoThrow(
+	data: string,
+	context?:
+	{
+		blueprintId?: string;
+	},
+): RawBlueprintData | null
+{
+	try
+	{
 		return deserializeBlueprint(data, context);
-	} catch {
+	}
+	catch
+	{
 		return null;
 	}
 }
@@ -64,7 +115,8 @@ export function deserializeBlueprintNoThrow(data: string, context?: {blueprintId
 export function serializeBlueprint(
 	data: RawBlueprintData,
 	settings: CompressionSettings = DEFAULT_COMPRESSION_SETTINGS,
-): string {
+): string
+{
 	const jsonStr = JSON.stringify(data).trim();
 	const bytes = new TextEncoder().encode(jsonStr);
 
@@ -73,10 +125,12 @@ export function serializeBlueprint(
 	return "0" + btoa(compressed.reduce((acc, byte) => acc + String.fromCharCode(byte), ""));
 }
 
-function parseVersion4(versionNumber: number | string | bigint): string {
+function parseVersion4(versionNumber: number | string | bigint): string
+{
 	const version = BigInt(versionNumber);
 	const parts: number[] = [];
-	for (let i = 0; i < 4; i++) {
+	for (let i = 0; i < 4; i++)
+	{
 		const part = Number((version >> BigInt(48 - i * 16)) & BigInt(0xffff));
 		parts.push(part);
 	}
@@ -84,11 +138,15 @@ function parseVersion4(versionNumber: number | string | bigint): string {
 	return parts.join(".");
 }
 
-export function parseVersion3(number: number | string | bigint): string {
-	try {
+export function parseVersion3(number: number | string | bigint): string
+{
+	try
+	{
 		const version = parseVersion4(number);
 		return version.split(".").slice(0, 3).join(".");
-	} catch (error) {
+	}
+	catch (error)
+	{
 		return `Invalid version: ${getErrorMessage(error)}`;
 	}
 }

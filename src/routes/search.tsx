@@ -8,11 +8,14 @@ import ErrorBoundary from "../components/ErrorBoundary";
 import SearchQueryPanel from "../components/search/SearchQueryPanel";
 import SearchResultsGrid from "../components/search/SearchResultsGrid";
 
-export const Route = createFileRoute("/search")({
-	component: SearchPage,
-});
+export const Route = createFileRoute("/search")(
+	{
+		component: SearchPage,
+	},
+);
 
-function SearchPage() {
+function SearchPage()
+{
 	return (
 		<ErrorBoundary>
 			<Container fluid>

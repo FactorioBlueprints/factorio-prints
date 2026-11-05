@@ -9,102 +9,137 @@ import {useHighWatermarkSync} from "../hooks/useHighWatermarkSync";
 import {CACHE_BUSTER, createIDBPersister, getSafeLocalStorage, STORAGE_KEYS} from "../localStorage";
 import {queryClient, QUERY_CACHE_RETENTION_MILLISECONDS} from "./queryClient";
 
-interface BlueprintCacheSyncProviderProps {
+interface BlueprintCacheSyncProviderProps
+{
 	children: React.ReactNode;
 }
 
-function BlueprintCacheSyncProvider({children}: BlueprintCacheSyncProviderProps) {
+function BlueprintCacheSyncProvider({children}: BlueprintCacheSyncProviderProps)
+{
 	useBlueprintCacheSync();
 	useHighWatermarkSync();
 	return <>{children}</>;
 }
 
-interface QueryProviderProps {
+interface QueryProviderProps
+{
 	children: React.ReactNode;
 }
 
-const noOpPersister: Persister = {
+const noOpPersister: Persister =
+{
 	persistClient: () => undefined,
 	restoreClient: () => undefined,
 	removeClient: () => undefined,
 };
 
-function createLocalStoragePersister(): Persister | undefined {
+function createLocalStoragePersister(): Persister | undefined
+{
 	const storage = getSafeLocalStorage();
-	if (!storage) {
+	if (!storage)
+	{
 		return undefined;
 	}
 
-	return createSyncStoragePersister({
-		storage,
-		key: STORAGE_KEYS.QUERY_CACHE,
-		throttleTime: 1000,
-	});
+	return createSyncStoragePersister(
+		{
+			storage,
+			key: STORAGE_KEYS.QUERY_CACHE,
+			throttleTime: 1000,
+		},
+	);
 }
 
-function createFallbackPersister(indexedDbPersister: Persister, localStoragePersister: Persister): Persister {
+function createFallbackPersister(indexedDbPersister: Persister, localStoragePersister: Persister): Persister
+{
 	let activePersister = indexedDbPersister;
 
 	return {
 		persistClient: (client: PersistedClient) => activePersister.persistClient(client),
-		restoreClient: async () => {
-			try {
+		restoreClient: async () =>
+		{
+			try
+			{
 				const indexedDbClient = await indexedDbPersister.restoreClient();
-				if (indexedDbClient !== undefined) {
+				if (indexedDbClient !== undefined)
+				{
 					return indexedDbClient;
 				}
-			} catch (error) {
+			}
+			catch (error)
+			{
 				activePersister = localStoragePersister;
-				captureException(error, {
-					tags: {
-						component: "QueryProvider",
-						errorType: "indexeddb-restore",
+				captureException(
+					error,
+					{
+						tags:
+						{
+							component: "QueryProvider",
+							errorType: "indexeddb-restore",
+						},
 					},
-				});
+				);
 			}
 
 			return localStoragePersister.restoreClient();
 		},
-		removeClient: async () => {
+		removeClient: async () =>
+		{
 			await Promise.all([indexedDbPersister.removeClient(), localStoragePersister.removeClient()]);
 		},
 	};
 }
 
-function createQueryCachePersister(): Persister {
+function createQueryCachePersister(): Persister
+{
 	const localStoragePersister = createLocalStoragePersister() ?? noOpPersister;
 
-	if (typeof window === "undefined" || typeof window.indexedDB === "undefined") {
+	if (typeof window === "undefined" || typeof window.indexedDB === "undefined")
+	{
 		return localStoragePersister;
 	}
 
-	try {
+	try
+	{
 		return createFallbackPersister(createIDBPersister(), localStoragePersister);
-	} catch (error) {
-		captureException(error, {
-			tags: {
-				component: "QueryProvider",
-				errorType: "indexeddb-initialization",
+	}
+	catch (error)
+	{
+		captureException(
+			error,
+			{
+				tags:
+				{
+					component: "QueryProvider",
+					errorType: "indexeddb-initialization",
+				},
 			},
-		});
+		);
 		return localStoragePersister;
 	}
 }
 
-function handlePersistenceRestoreError() {
-	captureMessage("Failed to restore persisted query cache", {
-		level: "error",
-		tags: {
-			component: "QueryProvider",
-			errorType: "persistence-restore",
+function handlePersistenceRestoreError()
+{
+	captureMessage(
+		"Failed to restore persisted query cache",
+		{
+			level: "error",
+			tags:
+			{
+				component: "QueryProvider",
+				errorType: "persistence-restore",
+			},
 		},
-	});
+	);
 }
 
-function QueryProvider({children}: QueryProviderProps) {
+function QueryProvider({children}: QueryProviderProps)
+{
 	const persister = useMemo(createQueryCachePersister, []);
 	const persistOptions = useMemo(
-		() => ({
+		() => (
+		{
 			persister,
 			maxAge: QUERY_CACHE_RETENTION_MILLISECONDS,
 			buster: CACHE_BUSTER,

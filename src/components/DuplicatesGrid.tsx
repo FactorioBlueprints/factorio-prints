@@ -13,24 +13,30 @@ import Stack from "react-bootstrap/Stack";
 import {useDuplicates} from "../hooks/useDuplicates";
 import RestBlueprintThumbnail from "./search/RestBlueprintThumbnail";
 
-const DuplicatesGrid: React.FC = () => {
+const DuplicatesGrid: React.FC = () =>
+{
 	const {data: duplicates, isLoading, isError, error} = useDuplicates();
 	const [searchText, setSearchText] = useState("");
 
-	const filteredDuplicates = useMemo(() => {
-		if (!duplicates) {
+	const filteredDuplicates = useMemo(() =>
+	{
+		if (!duplicates)
+		{
 			return [];
 		}
-		return duplicates.filter((blueprint) => {
+		return duplicates.filter((blueprint) =>
+		{
 			return searchText === "" || blueprint.title.toLowerCase().includes(searchText.toLowerCase());
 		});
 	}, [duplicates, searchText]);
 
-	const handleClear = (): void => {
+	const handleClear = (): void =>
+	{
 		setSearchText("");
 	};
 
-	if (isLoading) {
+	if (isLoading)
+	{
 		return (
 			<Container className="text-center p-5">
 				<FontAwesomeIcon icon={faSpinner} spin size="3x" />
@@ -39,7 +45,8 @@ const DuplicatesGrid: React.FC = () => {
 		);
 	}
 
-	if (isError) {
+	if (isError)
+	{
 		return (
 			<Container>
 				<Alert variant="danger">
@@ -50,7 +57,8 @@ const DuplicatesGrid: React.FC = () => {
 		);
 	}
 
-	if (!duplicates || duplicates.length === 0) {
+	if (!duplicates || duplicates.length === 0)
+	{
 		return (
 			<Container>
 				<Alert variant="info">

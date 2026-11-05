@@ -7,29 +7,43 @@ import Select, {type MultiValue} from "react-select";
 import {useTags} from "../hooks/useTags";
 import {searchParamsStore} from "../store/searchParamsStore";
 
-interface TagOption {
+interface TagOption
+{
 	value: string;
 	label: string;
 }
 
-const TagForm: React.FC = () => {
+const TagForm: React.FC = () =>
+{
 	const {data: tagsData, isLoading: tagsLoading} = useTags();
 
 	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
-	const selectedOptions = filteredTags.map((value) => ({value, label: value}));
+	const selectedOptions = filteredTags.map((value) => (
+	{
+		value,
+		label: value,
+	}));
 
-	const handleTagSelection = (selectedTags: MultiValue<TagOption>) => {
-		if (selectedTags === undefined) {
+	const handleTagSelection = (selectedTags: MultiValue<TagOption>) =>
+	{
+		if (selectedTags === undefined)
+		{
 			throw new Error("selectedTags is undefined in handleTagSelection");
 		}
 
 		const tagValues = selectedTags ? [...selectedTags].map((tag) => tag.value) : [];
-		searchParamsStore.setState((state) => ({...state, filteredTags: tagValues}));
+		searchParamsStore.setState((state) => (
+		{
+			...state,
+			filteredTags: tagValues,
+		}));
 	};
 
-	const options = useMemo(() => {
+	const options = useMemo(() =>
+	{
 		const tags = tagsData?.tags || [];
-		return tags.map((value) => ({
+		return tags.map((value) => (
+		{
 			value,
 			label: value,
 		}));

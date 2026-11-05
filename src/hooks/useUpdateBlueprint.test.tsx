@@ -7,7 +7,8 @@ import {beforeEach, describe, expect, it, vi} from "vite-plus/test";
 import {useUpdateBlueprint} from "./useUpdateBlueprint";
 
 // Mock Firebase
-vi.mock("firebase/database", () => ({
+vi.mock("firebase/database", () => (
+{
 	getDatabase: vi.fn(),
 	ref: vi.fn(),
 	update: vi.fn(),
@@ -15,28 +16,41 @@ vi.mock("firebase/database", () => ({
 }));
 
 // Mock router
-vi.mock("@tanstack/react-router", () => ({
+vi.mock("@tanstack/react-router", () => (
+{
 	useNavigate: vi.fn(),
 }));
 
 // Mock base
-vi.mock("../base", () => ({
+vi.mock("../base", () => (
+{
 	app: {},
 }));
 
-describe("useUpdateBlueprint", () => {
+describe("useUpdateBlueprint", () =>
+{
 	let queryClient: QueryClient;
 	let wrapper: ({children}: {children: React.ReactNode}) => React.JSX.Element;
 	let navigateMock: any;
 
-	beforeEach(() => {
+	beforeEach(() =>
+	{
 		vi.clearAllMocks();
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: {retry: false},
-				mutations: {retry: false},
+		queryClient = new QueryClient(
+			{
+				defaultOptions:
+				{
+					queries:
+					{
+						retry: false,
+					},
+					mutations:
+					{
+						retry: false,
+					},
+				},
 			},
-		});
+		);
 		wrapper = ({children}: {children: React.ReactNode}) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 		);
@@ -44,18 +58,29 @@ describe("useUpdateBlueprint", () => {
 		vi.mocked(useNavigate).mockReturnValue(navigateMock);
 	});
 
-	it("should update blueprint with raw data", async () => {
+	it("should update blueprint with raw data", async () =>
+	{
 		const mockRef = {};
 		vi.mocked(ref).mockReturnValue(mockRef as any);
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
-		const rawBlueprint = {
+		const rawBlueprint =
+		{
 			title: "Old Title",
 			blueprintString: "old string",
 			descriptionMarkdown: "old description",
 			tags: ["old-tag"],
-			image: {id: "oldImageId", type: "image/png", deletehash: "delete123"},
-			author: {userId: "user123", displayName: "Test User"},
+			image:
+			{
+				id: "oldImageId",
+				type: "image/png",
+				deletehash: "delete123",
+			},
+			author:
+			{
+				userId: "user123",
+				displayName: "Test User",
+			},
 			numberOfFavorites: 0,
 			lastUpdatedDate: Date.now(),
 			createdDate: Date.now(),
@@ -64,99 +89,152 @@ describe("useUpdateBlueprint", () => {
 
 		// Set up the cache with existing data
 		queryClient.setQueryData(["blueprints", "blueprintId", "blueprint123"], rawBlueprint);
-		queryClient.setQueryData(["blueprintSummaries", "blueprintId", "blueprint123"], {
-			title: "Old Title",
-			imgurId: "oldImageId",
-			imgurType: "image/png",
-			numberOfFavorites: 0,
-			lastUpdatedDate: Date.now(),
-		});
+		queryClient.setQueryData(
+			["blueprintSummaries", "blueprintId", "blueprint123"],
+			{
+				title: "Old Title",
+				imgurId: "oldImageId",
+				imgurType: "image/png",
+				numberOfFavorites: 0,
+				lastUpdatedDate: Date.now(),
+			},
+		);
 
-		const formData = {
+		const formData =
+		{
 			title: "New Title",
 			blueprintString: "new string",
 			descriptionMarkdown: "new description",
 			tags: ["new-tag"],
-			image: {id: "abc1234", type: "image/jpeg"},
+			image:
+			{
+				id: "abc1234",
+				type: "image/jpeg",
+			},
 		};
 
-		const {result} = renderHook(() => useUpdateBlueprint(), {wrapper});
+		const {result} = renderHook(
+			() => useUpdateBlueprint(),
+			{
+				wrapper,
+			},
+		);
 
-		await result.current.mutateAsync({
-			id: "blueprint123",
-			rawBlueprint,
-			formData,
-			availableTags: ["old-tag", "new-tag"],
-		});
+		await result.current.mutateAsync(
+			{
+				id: "blueprint123",
+				rawBlueprint,
+				formData,
+				availableTags: ["old-tag", "new-tag"],
+			},
+		);
 
 		// Verify Firebase update was called with correct data
-		expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-			"/blueprints/blueprint123/title": "New Title",
-			"/blueprints/blueprint123/blueprintString": "new string",
-			"/blueprints/blueprint123/descriptionMarkdown": "new description",
-			"/blueprints/blueprint123/tags": ["new-tag"],
-			"/blueprints/blueprint123/lastUpdatedDate": "SERVER_TIMESTAMP",
-			"/blueprints/blueprint123/image": {id: "abc1234", type: "image/jpeg"},
-			"/blueprintSummaries/blueprint123/title/": "New Title",
-			"/blueprintSummaries/blueprint123/lastUpdatedDate/": "SERVER_TIMESTAMP",
-			"/blueprintSummaries/blueprint123/imgurId/": "abc1234",
-			"/blueprintSummaries/blueprint123/imgurType/": "image/jpeg",
-			"/blueprintsPrivate/blueprint123/imageUrl": "https://imgur.com/abc1234",
-			"/byTag/old-tag/blueprint123": null,
-			"/byTag/new-tag/blueprint123": true,
-		});
+		expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(
+			mockRef,
+			{
+				"/blueprints/blueprint123/title": "New Title",
+				"/blueprints/blueprint123/blueprintString": "new string",
+				"/blueprints/blueprint123/descriptionMarkdown": "new description",
+				"/blueprints/blueprint123/tags": ["new-tag"],
+				"/blueprints/blueprint123/lastUpdatedDate": "SERVER_TIMESTAMP",
+				"/blueprints/blueprint123/image":
+				{
+					id: "abc1234",
+					type: "image/jpeg",
+				},
+				"/blueprintSummaries/blueprint123/title/": "New Title",
+				"/blueprintSummaries/blueprint123/lastUpdatedDate/": "SERVER_TIMESTAMP",
+				"/blueprintSummaries/blueprint123/imgurId/": "abc1234",
+				"/blueprintSummaries/blueprint123/imgurType/": "image/jpeg",
+				"/blueprintsPrivate/blueprint123/imageUrl": "https://imgur.com/abc1234",
+				"/byTag/old-tag/blueprint123": null,
+				"/byTag/new-tag/blueprint123": true,
+			},
+		);
 
 		// Verify navigation
-		expect(navigateMock).toHaveBeenCalledWith({
-			to: "/view/$blueprintId",
-			params: {blueprintId: "blueprint123"},
-		});
+		expect(navigateMock).toHaveBeenCalledWith(
+			{
+				to: "/view/$blueprintId",
+				params:
+				{
+					blueprintId: "blueprint123",
+				},
+			},
+		);
 	});
 
-	it("should handle update without image change", async () => {
+	it("should handle update without image change", async () =>
+	{
 		const mockRef = {};
 		vi.mocked(ref).mockReturnValue(mockRef as any);
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
-		const rawBlueprint = {
+		const rawBlueprint =
+		{
 			title: "Old Title",
 			blueprintString: "old string",
 			descriptionMarkdown: "old description",
 			tags: ["old-tag"],
-			image: {id: "same123", type: "image/png", deletehash: "delete123"},
+			image:
+			{
+				id: "same123",
+				type: "image/png",
+				deletehash: "delete123",
+			},
 			numberOfFavorites: 0,
 			lastUpdatedDate: Date.now(),
 			createdDate: Date.now(),
-			author: {userId: "user123", displayName: "Test User"},
+			author:
+			{
+				userId: "user123",
+				displayName: "Test User",
+			},
 			favorites: {},
 		};
 
 		// Set up the cache with existing data
 		queryClient.setQueryData(["blueprints", "blueprintId", "blueprint123"], rawBlueprint);
-		queryClient.setQueryData(["blueprintSummaries", "blueprintId", "blueprint123"], {
-			title: "Old Title",
-			imgurId: "same123",
-			imgurType: "image/png",
-			numberOfFavorites: 0,
-			lastUpdatedDate: Date.now(),
-		});
+		queryClient.setQueryData(
+			["blueprintSummaries", "blueprintId", "blueprint123"],
+			{
+				title: "Old Title",
+				imgurId: "same123",
+				imgurType: "image/png",
+				numberOfFavorites: 0,
+				lastUpdatedDate: Date.now(),
+			},
+		);
 
-		const formData = {
+		const formData =
+		{
 			title: "New Title",
 			blueprintString: "new string",
 			descriptionMarkdown: "new description",
 			tags: ["new-tag"],
-			image: {id: "same123", type: "image/png"},
+			image:
+			{
+				id: "same123",
+				type: "image/png",
+			},
 		};
 
-		const {result} = renderHook(() => useUpdateBlueprint(), {wrapper});
+		const {result} = renderHook(
+			() => useUpdateBlueprint(),
+			{
+				wrapper,
+			},
+		);
 
-		await result.current.mutateAsync({
-			id: "blueprint123",
-			rawBlueprint,
-			formData,
-			availableTags: ["old-tag", "new-tag"],
-		});
+		await result.current.mutateAsync(
+			{
+				id: "blueprint123",
+				rawBlueprint,
+				formData,
+				availableTags: ["old-tag", "new-tag"],
+			},
+		);
 
 		// Verify Firebase update was called without image update
 		const updateCalls = vi.mocked(dbUpdate).mock.calls[0][1] as any;
@@ -166,12 +244,14 @@ describe("useUpdateBlueprint", () => {
 		expect(updateCalls["/blueprintsPrivate/blueprint123/imageUrl"]).toBeUndefined();
 	});
 
-	it("should update cache on success", async () => {
+	it("should update cache on success", async () =>
+	{
 		const mockRef = {};
 		vi.mocked(ref).mockReturnValue(mockRef as any);
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 
-		const existingBlueprint = {
+		const existingBlueprint =
+		{
 			title: "Old Title",
 			blueprintString: "old string",
 			descriptionMarkdown: "old description",
@@ -179,21 +259,34 @@ describe("useUpdateBlueprint", () => {
 			lastUpdatedDate: 1000000,
 			numberOfFavorites: 0,
 			createdDate: Date.now(),
-			author: {userId: "user123", displayName: "Test User"},
-			image: {id: "img123", type: "image/png", deletehash: "delete123"},
+			author:
+			{
+				userId: "user123",
+				displayName: "Test User",
+			},
+			image:
+			{
+				id: "img123",
+				type: "image/png",
+				deletehash: "delete123",
+			},
 			favorites: {},
 		};
 
 		queryClient.setQueryData(["blueprints", "blueprintId", "blueprint123"], existingBlueprint);
-		queryClient.setQueryData(["blueprintSummaries", "blueprintId", "blueprint123"], {
-			title: "Old Title",
-			imgurId: "img123",
-			imgurType: "image/png",
-			numberOfFavorites: 0,
-			lastUpdatedDate: 1000000,
-		});
+		queryClient.setQueryData(
+			["blueprintSummaries", "blueprintId", "blueprint123"],
+			{
+				title: "Old Title",
+				imgurId: "img123",
+				imgurType: "image/png",
+				numberOfFavorites: 0,
+				lastUpdatedDate: 1000000,
+			},
+		);
 
-		const formData = {
+		const formData =
+		{
 			title: "New Title",
 			blueprintString: "new string",
 			descriptionMarkdown: "new description",
@@ -201,14 +294,21 @@ describe("useUpdateBlueprint", () => {
 			image: null,
 		};
 
-		const {result} = renderHook(() => useUpdateBlueprint(), {wrapper});
+		const {result} = renderHook(
+			() => useUpdateBlueprint(),
+			{
+				wrapper,
+			},
+		);
 
-		await result.current.mutateAsync({
-			id: "blueprint123",
-			rawBlueprint: existingBlueprint,
-			formData,
-			availableTags: ["old-tag"],
-		});
+		await result.current.mutateAsync(
+			{
+				id: "blueprint123",
+				rawBlueprint: existingBlueprint,
+				formData,
+				availableTags: ["old-tag"],
+			},
+		);
 
 		// Check cache was updated
 		const updatedBlueprint = queryClient.getQueryData(["blueprints", "blueprintId", "blueprint123"]) as any;
@@ -217,10 +317,12 @@ describe("useUpdateBlueprint", () => {
 		expect(updatedBlueprint.descriptionMarkdown).toBe("new description");
 		expect(updatedBlueprint.tags).toEqual(["new-tag"]);
 		expect(updatedBlueprint.lastUpdatedDate).toBeGreaterThan(1000000);
-		expect(updatedBlueprint.image).toEqual({
-			id: "img123",
-			type: "image/png",
-			deletehash: "delete123",
-		});
+		expect(updatedBlueprint.image).toEqual(
+			{
+				id: "img123",
+				type: "image/png",
+				deletehash: "delete123",
+			},
+		);
 	});
 });

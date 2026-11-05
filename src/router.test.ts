@@ -3,41 +3,96 @@ import {afterEach, describe, expect, test, vi} from "vite-plus/test";
 import {routeTree} from "./routeTree.gen";
 import {getRouterDiagnostics, router as applicationRouter} from "./router";
 
-const rootRouteChildren = {
-	IndexRoute: {id: "/"},
-	notFoundRoute: {id: "/__not-found"},
-	AccountRoute: {id: "/account"},
-	BlueprintsRoute: {id: "/blueprints"},
-	ChatRoute: {id: "/chat"},
-	CollectionRoute: {id: "/collection"},
-	CreateRoute: {id: "/create"},
-	FavoritesRoute: {id: "/favorites"},
-	TopRoute: {id: "/top"},
-	UsersRoute: {id: "/users"},
-	EditBlueprintIdRoute: {id: "/edit/$blueprintId"},
-	TagTagRoute: {id: "/tag/$tag"},
-	TaggedTagRoute: {id: "/tagged/$tag"},
-	UserUserIdRoute: {id: "/user/$userId"},
-	ViewBlueprintIdRoute: {id: "/view/$blueprintId"},
-	AdminUserUserIdRoute: {id: "/admin/user/$userId"},
+const rootRouteChildren =
+{
+	IndexRoute:
+	{
+		id: "/",
+	},
+	notFoundRoute:
+	{
+		id: "/__not-found",
+	},
+	AccountRoute:
+	{
+		id: "/account",
+	},
+	BlueprintsRoute:
+	{
+		id: "/blueprints",
+	},
+	ChatRoute:
+	{
+		id: "/chat",
+	},
+	CollectionRoute:
+	{
+		id: "/collection",
+	},
+	CreateRoute:
+	{
+		id: "/create",
+	},
+	FavoritesRoute:
+	{
+		id: "/favorites",
+	},
+	TopRoute:
+	{
+		id: "/top",
+	},
+	UsersRoute:
+	{
+		id: "/users",
+	},
+	EditBlueprintIdRoute:
+	{
+		id: "/edit/$blueprintId",
+	},
+	TagTagRoute:
+	{
+		id: "/tag/$tag",
+	},
+	TaggedTagRoute:
+	{
+		id: "/tagged/$tag",
+	},
+	UserUserIdRoute:
+	{
+		id: "/user/$userId",
+	},
+	ViewBlueprintIdRoute:
+	{
+		id: "/view/$blueprintId",
+	},
+	AdminUserUserIdRoute:
+	{
+		id: "/admin/user/$userId",
+	},
 };
 
-describe("Router Configuration", () => {
-	afterEach(() => {
+describe("Router Configuration", () =>
+{
+	afterEach(() =>
+	{
 		vi.useRealTimers();
 	});
 
-	test("Router can be created with route tree", () => {
-		const router = createRouter({
-			routeTree,
-			defaultPreload: false,
-		});
+	test("Router can be created with route tree", () =>
+	{
+		const router = createRouter(
+			{
+				routeTree,
+				defaultPreload: false,
+			},
+		);
 
 		expect(router).toBeDefined();
 		expect(router.routeTree).toBe(routeTree);
 	});
 
-	test("Route tree contains all expected routes", () => {
+	test("Route tree contains all expected routes", () =>
+	{
 		const expectedRoutes = [
 			"/",
 			"/__not-found",
@@ -60,35 +115,56 @@ describe("Router Configuration", () => {
 		expect(routeTree).toBeDefined();
 
 		const mockRouteIds = Object.values(rootRouteChildren).map((r) => r.id);
-		expectedRoutes.forEach((route) => {
+		expectedRoutes.forEach((route) =>
+		{
 			expect(mockRouteIds).toContain(route);
 		});
 
-		const router = createRouter({
-			routeTree,
-			defaultPreload: false,
-		});
+		const router = createRouter(
+			{
+				routeTree,
+				defaultPreload: false,
+			},
+		);
 
 		expect(router).toBeDefined();
 	});
 
-	test("disables automatic route preloading", () => {
-		expect({
-			defaultPreload: applicationRouter.options.defaultPreload,
-			defaultPreloadStaleTime: applicationRouter.options.defaultPreloadStaleTime,
-		}).toStrictEqual({
-			defaultPreload: false,
-			defaultPreloadStaleTime: undefined,
-		});
+	test("disables automatic route preloading", () =>
+	{
+		expect(
+			{
+				defaultPreload: applicationRouter.options.defaultPreload,
+				defaultPreloadStaleTime: applicationRouter.options.defaultPreloadStaleTime,
+			},
+		).toStrictEqual(
+			{
+				defaultPreload: false,
+				defaultPreloadStaleTime: undefined,
+			},
+		);
 	});
 
-	test("deduplicates route preloads and records their match lifecycle", async () => {
+	test("deduplicates route preloads and records their match lifecycle", async () =>
+	{
 		const existingEntryCount = getRouterDiagnostics().entries.length;
-		vi.useFakeTimers({toFake: ["Date"]});
+		vi.useFakeTimers(
+			{
+				toFake: ["Date"],
+			},
+		);
 		vi.setSystemTime(new Date("2000-01-01T00:00:00.000Z"));
 
-		const firstPreload = applicationRouter.preloadRoute({to: "/account"});
-		const duplicatePreload = applicationRouter.preloadRoute({to: "/account"});
+		const firstPreload = applicationRouter.preloadRoute(
+			{
+				to: "/account",
+			},
+		);
+		const duplicatePreload = applicationRouter.preloadRoute(
+			{
+				to: "/account",
+			},
+		);
 
 		expect(duplicatePreload).toBe(firstPreload);
 		await firstPreload;

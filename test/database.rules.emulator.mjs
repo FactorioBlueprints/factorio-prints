@@ -12,141 +12,193 @@ const userId = "user-100";
 
 let testEnvironment;
 
-before(async () => {
+before(async () =>
+{
 	const rules = await readFile(new URL("../database.rules.json", import.meta.url), "utf8");
-	testEnvironment = await initializeTestEnvironment({
-		projectId,
-		database: {
-			host: "127.0.0.1",
-			port: 9000,
-			rules,
+	testEnvironment = await initializeTestEnvironment(
+		{
+			projectId,
+			database:
+			{
+				host: "127.0.0.1",
+				port: 9000,
+				rules,
+			},
 		},
-	});
+	);
 });
 
-after(async () => {
+after(async () =>
+{
 	await testEnvironment.cleanup();
 });
 
-beforeEach(async () => {
+beforeEach(async () =>
+{
 	await testEnvironment.clearDatabase();
-	await testEnvironment.withSecurityRulesDisabled(async (context) => {
-		await set(ref(context.database()), {
-			blueprints: {
-				[blueprintId]: {
-					author: {
-						displayName: "Owner 100",
-						userId: ownerId,
-					},
-					favorites: {
-						"fan-100": true,
-						"fan-200": true,
-					},
-					numberOfFavorites: 2,
-					title: "Original blueprint",
-				},
-			},
-			blueprintSummaries: {
-				[blueprintId]: {
-					numberOfFavorites: 2,
-					title: "Original summary",
-				},
-			},
-			blueprintsPrivate: {
-				[blueprintId]: {
-					imageUrl: "https://i.imgur.com/image100.png",
-				},
-			},
-			moderators: {
-				[moderatorId]: true,
-			},
-			byTag: {
-				category1: {
-					tag1: {
-						[blueprintId]: true,
+	await testEnvironment.withSecurityRulesDisabled(async (context) =>
+	{
+		await set(
+			ref(context.database()),
+			{
+				blueprints:
+				{
+					[blueprintId]:
+					{
+						author:
+						{
+							displayName: "Owner 100",
+							userId: ownerId,
+						},
+						favorites:
+						{
+							"fan-100": true,
+							"fan-200": true,
+						},
+						numberOfFavorites: 2,
+						title: "Original blueprint",
 					},
 				},
+				blueprintSummaries:
+				{
+					[blueprintId]:
+					{
+						numberOfFavorites: 2,
+						title: "Original summary",
+					},
+				},
+				blueprintsPrivate:
+				{
+					[blueprintId]:
+					{
+						imageUrl: "https://i.imgur.com/image100.png",
+					},
+				},
+				moderators:
+				{
+					[moderatorId]: true,
+				},
+				byTag:
+				{
+					category1:
+					{
+						tag1:
+						{
+							[blueprintId]: true,
+						},
+					},
+				},
+				tags:
+				{
+					"tag-100": "/category1/tag1/",
+				},
 			},
-			tags: {
-				"tag-100": "/category1/tag1/",
-			},
-		});
+		);
 	});
 });
 
-describe("numberOfFavorites rules", () => {
-	test("reject a direct count write from an authenticated user", async () => {
+describe("numberOfFavorites rules", () =>
+{
+	test("reject a direct count write from an authenticated user", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(set(ref(database, `blueprints/${blueprintId}/numberOfFavorites`), 3));
 	});
 
-	test("reject a blueprint count change through an owner's parent write grant", async () => {
+	test("reject a blueprint count change through an owner's parent write grant", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
 
 		await assertFails(
-			update(ref(database, `blueprints/${blueprintId}`), {
-				numberOfFavorites: 3,
-				title: "Tampered blueprint",
-			}),
+			update(
+				ref(database, `blueprints/${blueprintId}`),
+				{
+					numberOfFavorites: 3,
+					title: "Tampered blueprint",
+				},
+			),
 		);
 	});
 
-	test("reject a summary count change through a moderator's parent write grant", async () => {
+	test("reject a summary count change through a moderator's parent write grant", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(moderatorId).database();
 
 		await assertFails(
-			update(ref(database, `blueprintSummaries/${blueprintId}`), {
-				numberOfFavorites: 3,
-				title: "Tampered summary",
-			}),
+			update(
+				ref(database, `blueprintSummaries/${blueprintId}`),
+				{
+					numberOfFavorites: 3,
+					title: "Tampered summary",
+				},
+			),
 		);
 	});
 
-	test("allow an owner to update other blueprint fields", async () => {
+	test("allow an owner to update other blueprint fields", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
 
 		await assertSucceeds(
-			update(ref(database, `blueprints/${blueprintId}`), {
-				title: "Updated blueprint",
-			}),
+			update(
+				ref(database, `blueprints/${blueprintId}`),
+				{
+					title: "Updated blueprint",
+				},
+			),
 		);
 
 		const snapshot = await get(ref(database, `blueprints/${blueprintId}`));
-		assert.deepStrictEqual(snapshot.val(), {
-			author: {
-				displayName: "Owner 100",
-				userId: ownerId,
+		assert.deepStrictEqual(
+			snapshot.val(),
+			{
+				author:
+				{
+					displayName: "Owner 100",
+					userId: ownerId,
+				},
+				favorites:
+				{
+					"fan-100": true,
+					"fan-200": true,
+				},
+				numberOfFavorites: 2,
+				title: "Updated blueprint",
 			},
-			favorites: {
-				"fan-100": true,
-				"fan-200": true,
-			},
-			numberOfFavorites: 2,
-			title: "Updated blueprint",
-		});
+		);
 	});
 
-	test("allow a moderator to update other summary fields", async () => {
+	test("allow a moderator to update other summary fields", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(moderatorId).database();
 
 		await assertSucceeds(
-			update(ref(database, `blueprintSummaries/${blueprintId}`), {
-				title: "Updated summary",
-			}),
+			update(
+				ref(database, `blueprintSummaries/${blueprintId}`),
+				{
+					title: "Updated summary",
+				},
+			),
 		);
 
 		const snapshot = await get(ref(database, `blueprintSummaries/${blueprintId}`));
-		assert.deepStrictEqual(snapshot.val(), {
-			numberOfFavorites: 2,
-			title: "Updated summary",
-		});
+		assert.deepStrictEqual(
+			snapshot.val(),
+			{
+				numberOfFavorites: 2,
+				title: "Updated summary",
+			},
+		);
 	});
 
-	test("allow only zero as an initial blueprint count", async () => {
+	test("allow only zero as an initial blueprint count", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
-		const invalidBlueprint = {
-			author: {
+		const invalidBlueprint =
+		{
+			author:
+			{
 				userId: ownerId,
 			},
 			numberOfFavorites: 1,
@@ -155,46 +207,61 @@ describe("numberOfFavorites rules", () => {
 
 		await assertFails(set(ref(database, "blueprints/blueprint-200"), invalidBlueprint));
 		await assertSucceeds(
-			set(ref(database, "blueprints/blueprint-200"), {
-				...invalidBlueprint,
-				numberOfFavorites: 0,
-			}),
+			set(
+				ref(database, "blueprints/blueprint-200"),
+				{
+					...invalidBlueprint,
+					numberOfFavorites: 0,
+				},
+			),
 		);
 	});
 });
 
-describe("blueprintsPrivate access rules", () => {
-	test("reject a read from an unauthenticated visitor", async () => {
+describe("blueprintsPrivate access rules", () =>
+{
+	test("reject a read from an unauthenticated visitor", async () =>
+	{
 		const database = testEnvironment.unauthenticatedContext().database();
 
 		await assertFails(get(ref(database, `blueprintsPrivate/${blueprintId}`)));
 	});
 
-	test("reject a read from an unrelated authenticated user", async () => {
+	test("reject a read from an unrelated authenticated user", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(get(ref(database, `blueprintsPrivate/${blueprintId}`)));
 	});
 
-	test("allow a read from the blueprint owner", async () => {
+	test("allow a read from the blueprint owner", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
 
 		const snapshot = await assertSucceeds(get(ref(database, `blueprintsPrivate/${blueprintId}`)));
-		assert.deepStrictEqual(snapshot.val(), {
-			imageUrl: "https://i.imgur.com/image100.png",
-		});
+		assert.deepStrictEqual(
+			snapshot.val(),
+			{
+				imageUrl: "https://i.imgur.com/image100.png",
+			},
+		);
 	});
 
-	test("allow a read from a moderator", async () => {
+	test("allow a read from a moderator", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(moderatorId).database();
 
 		const snapshot = await assertSucceeds(get(ref(database, `blueprintsPrivate/${blueprintId}`)));
-		assert.deepStrictEqual(snapshot.val(), {
-			imageUrl: "https://i.imgur.com/image100.png",
-		});
+		assert.deepStrictEqual(
+			snapshot.val(),
+			{
+				imageUrl: "https://i.imgur.com/image100.png",
+			},
+		);
 	});
 
-	test("reject a write from an unrelated authenticated user", async () => {
+	test("reject a write from an unrelated authenticated user", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(
@@ -203,23 +270,29 @@ describe("blueprintsPrivate access rules", () => {
 	});
 });
 
-describe("moderators list rules", () => {
-	test("reject a user promoting themselves to moderator", async () => {
+describe("moderators list rules", () =>
+{
+	test("reject a user promoting themselves to moderator", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(set(ref(database, `moderators/${userId}`), true));
 	});
 
-	test("reject a moderator promoting another user", async () => {
+	test("reject a moderator promoting another user", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(moderatorId).database();
 
 		await assertFails(set(ref(database, `moderators/${userId}`), true));
 	});
 });
 
-describe("blueprint creation rules", () => {
-	const newBlueprint = {
-		author: {
+describe("blueprint creation rules", () =>
+{
+	const newBlueprint =
+	{
+		author:
+		{
 			displayName: "User 100",
 			userId,
 		},
@@ -228,112 +301,137 @@ describe("blueprint creation rules", () => {
 		title: "New blueprint",
 	};
 
-	test("reject a create from an unauthenticated visitor", async () => {
+	test("reject a create from an unauthenticated visitor", async () =>
+	{
 		const database = testEnvironment.unauthenticatedContext().database();
 
 		await assertFails(set(ref(database, "blueprints/blueprint-200"), newBlueprint));
 	});
 
-	test("reject a create that claims another user's authorship", async () => {
+	test("reject a create that claims another user's authorship", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(
-			set(ref(database, "blueprints/blueprint-200"), {
-				...newBlueprint,
-				author: {
-					displayName: "Owner 100",
-					userId: ownerId,
+			set(
+				ref(database, "blueprints/blueprint-200"),
+				{
+					...newBlueprint,
+					author:
+					{
+						displayName: "Owner 100",
+						userId: ownerId,
+					},
 				},
-			}),
+			),
 		);
 	});
 
-	test("allow a create that claims the authenticated user's own authorship", async () => {
+	test("allow a create that claims the authenticated user's own authorship", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertSucceeds(set(ref(database, "blueprints/blueprint-200"), newBlueprint));
 	});
 });
 
-describe("blueprint collector index rules", () => {
-	test("reject a user writing their own collector entry", async () => {
+describe("blueprint collector index rules", () =>
+{
+	test("reject a user writing their own collector entry", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(set(ref(database, `blueprintCollectors/${blueprintId}/${userId}`), true));
 	});
 
-	test("reject a user writing another user's collector entry", async () => {
+	test("reject a user writing another user's collector entry", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(set(ref(database, `blueprintCollectors/${blueprintId}/${ownerId}`), true));
 	});
 
-	test("reject a client read of collector membership", async () => {
+	test("reject a client read of collector membership", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(get(ref(database, `blueprintCollectors/${blueprintId}`)));
 	});
 });
 
-describe("tags registry rules", () => {
-	test("reject a write from an authenticated non-moderator", async () => {
+describe("tags registry rules", () =>
+{
+	test("reject a write from an authenticated non-moderator", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(set(ref(database, "tags/tag-200"), "/category1/tag2/"));
 	});
 
-	test("reject a write from a moderator, since the registry is curated out of band", async () => {
+	test("reject a write from a moderator, since the registry is curated out of band", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(moderatorId).database();
 
 		await assertFails(set(ref(database, "tags/tag-200"), "/category1/tag2/"));
 	});
 });
 
-describe("byTag index rules", () => {
-	test("reject a write from an unauthenticated visitor", async () => {
+describe("byTag index rules", () =>
+{
+	test("reject a write from an unauthenticated visitor", async () =>
+	{
 		const database = testEnvironment.unauthenticatedContext().database();
 
 		await assertFails(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
 	});
 
-	test("reject a write from a user who does not own the blueprint", async () => {
+	test("reject a write from a user who does not own the blueprint", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(userId).database();
 
 		await assertFails(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
 	});
 
-	test("reject a write at the two-segment depth a single-key tag id would produce", async () => {
+	test("reject a write at the two-segment depth a single-key tag id would produce", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
 
 		await assertFails(set(ref(database, `byTag/category1/${blueprintId}`), true));
 	});
 
-	test("allow the blueprint owner to add a tag entry", async () => {
+	test("allow the blueprint owner to add a tag entry", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
 
 		await assertSucceeds(set(ref(database, `byTag/category1/tag2/${blueprintId}`), true));
 	});
 
-	test("allow the blueprint owner to remove a tag entry", async () => {
+	test("allow the blueprint owner to remove a tag entry", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
 
 		await assertSucceeds(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
 	});
 
-	test("allow a moderator to remove a tag entry", async () => {
+	test("allow a moderator to remove a tag entry", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(moderatorId).database();
 
 		await assertSucceeds(set(ref(database, `byTag/category1/tag1/${blueprintId}`), null));
 	});
 
-	test("allow the owner to retag through the multi-path update the edit flow issues", async () => {
+	test("allow the owner to retag through the multi-path update the edit flow issues", async () =>
+	{
 		const database = testEnvironment.authenticatedContext(ownerId).database();
 
 		await assertSucceeds(
-			update(ref(database), {
-				[`/byTag/category1/tag1/${blueprintId}`]: null,
-				[`/byTag/category2/tag3/${blueprintId}`]: true,
-			}),
+			update(
+				ref(database),
+				{
+					[`/byTag/category1/tag1/${blueprintId}`]: null,
+					[`/byTag/category2/tag3/${blueprintId}`]: true,
+				},
+			),
 		);
 	});
 });
