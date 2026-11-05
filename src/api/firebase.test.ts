@@ -605,6 +605,100 @@ describe("firebase API", () =>
 			consoleLogSpy.mockRestore();
 		});
 
+		it("should use the CDN copy when its date trails the summary by milliseconds", async () =>
+		{
+			const trailingBlueprint =
+			{
+				...mockBlueprint,
+				lastUpdatedDate: 1727000000000 - 120,
+			};
+			vi.mocked(globalThis.fetch)
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						text: async () => "2025-05-25T04:18:36Z",
+					} as unknown as Response,
+				)
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						json: async () => trailingBlueprint,
+					} as unknown as Response,
+				);
+
+			const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			const result = await fetchBlueprint(mockBlueprintId, mockBlueprintSummary);
+
+			expect(get).not.toHaveBeenCalled();
+			expect(result).toStrictEqual(trailingBlueprint);
+
+			consoleLogSpy.mockRestore();
+		});
+
+		it("should fall back to Firebase when the CDN copy is more than a few seconds behind the summary", async () =>
+		{
+			const staleBlueprint =
+			{
+				...mockBlueprint,
+				lastUpdatedDate: 1727000000000 - 60_000,
+			};
+			vi.mocked(globalThis.fetch)
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						text: async () => "2025-05-25T04:18:36Z",
+					} as unknown as Response,
+				)
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						json: async () => staleBlueprint,
+					} as unknown as Response,
+				);
+			vi.mocked(get).mockResolvedValue(
+				{
+					exists: () => true,
+					val: () => mockBlueprint,
+				} as any,
+			);
+
+			const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			const result = await fetchBlueprint(mockBlueprintId, mockBlueprintSummary);
+
+			expect(get).toHaveBeenCalled();
+			expect(result).toStrictEqual(mockBlueprint);
+
+			consoleLogSpy.mockRestore();
+		});
+
+		it("should use the CDN copy that trails the summary by milliseconds when the watermark fetch fails", async () =>
+		{
+			const trailingBlueprint =
+			{
+				...mockBlueprint,
+				lastUpdatedDate: 1727000000000 - 120,
+			};
+			vi.mocked(globalThis.fetch)
+				.mockRejectedValueOnce(new Error("Network error"))
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						json: async () => trailingBlueprint,
+					} as unknown as Response,
+				);
+
+			const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+			const result = await fetchBlueprint(mockBlueprintId, mockBlueprintSummary);
+
+			expect(get).not.toHaveBeenCalled();
+			expect(result).toStrictEqual(trailingBlueprint);
+
+			consoleLogSpy.mockRestore();
+		});
+
 		it("should try CDN when watermark fetch fails", async () =>
 		{
 			// Watermark fetch fails
