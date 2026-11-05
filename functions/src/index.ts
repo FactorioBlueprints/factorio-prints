@@ -4,14 +4,8 @@ import {initializeApp} from "firebase-admin/app";
 import {getDatabase} from "firebase-admin/database";
 import {onValueWritten, onValueDeleted, DatabaseEvent, DataSnapshot} from "firebase-functions/v2/database";
 import {Change} from "firebase-functions/v2";
-import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
-import
-{
-	buildCollectorBackfill,
-	getCollectedBlueprintIds,
-	getIndexedCollectorUserIds,
-	getLegacyCollectorUserIds,
-} from "./collectorIndex";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
+import {getIndexedCollectorUserIds, getLegacyCollectorUserIds} from "./collectorIndex";
 import {planBlueprintLastUpdatedMirror} from "./lastUpdatedMirror";
 
 initializeApp();
@@ -242,122 +236,6 @@ export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
 		return null;
 	},
 );
-
-/**
- * Cloud Function to reconcile favorite counts (can be called manually if needed)
- * This is a failsafe to fix any discrepancies
- */
-export const reconcileFavoriteCounts = onRequest(async (req, res) =>
-{
-	// This should be protected in production
-	// Check for admin authentication or a secret key
-	const authToken = req.headers.authorization;
-	if (authToken !== `Bearer ${process.env.ADMIN_SECRET}`)
-	{
-		res.status(403).send("Unauthorized");
-		return;
-	}
-
-	const database = getDatabase();
-
-	const blueprintsSnapshot = await database.ref("/blueprints").once("value");
-	const blueprints = blueprintsSnapshot.val() || {};
-
-	const updates: Record<string, number> = {};
-	let reconcileCount = 0;
-
-	for (const blueprintId of Object.keys(blueprints))
-	{
-		const blueprint = blueprints[blueprintId];
-		const favorites = blueprint.favorites || {};
-
-		const actualCount = Object.values(favorites).filter((value) => value === true).length;
-
-		const currentCount = blueprint.numberOfFavorites || 0;
-
-		if (currentCount !== actualCount)
-		{
-			updates[`/blueprints/${blueprintId}/numberOfFavorites`] = actualCount;
-			updates[`/blueprintSummaries/${blueprintId}/numberOfFavorites`] = actualCount;
-			reconcileCount++;
-		}
-	}
-
-	if (Object.keys(updates).length > 0)
-	{
-		await database.ref().update(updates);
-		res.json(
-			{
-				success: true,
-				message: `Reconciled ${reconcileCount} blueprint favorite counts`,
-				reconciled: reconcileCount,
-			},
-		);
-	}
-	else
-	{
-		res.json(
-			{
-				success: true,
-				message: "All favorite counts are already accurate",
-				reconciled: 0,
-			},
-		);
-	}
-});
-
-/**
- * Backfill collector indexes from user collections.
- */
-export const backfillBlueprintCollectors = onRequest(async (req, res) =>
-{
-	const authToken = req.headers.authorization;
-	if (authToken !== `Bearer ${process.env.ADMIN_SECRET}`)
-	{
-		res.status(403).send("Unauthorized");
-		return;
-	}
-
-	const database = getDatabase();
-	const usersSnapshot = await database.ref("/users").once("value");
-	const users = usersSnapshot.val() || {};
-	const collectedBlueprintIds = [...getCollectedBlueprintIds(users)];
-	const existingBlueprintIds = new Set<string>();
-
-	for (let offset = 0; offset < collectedBlueprintIds.length; offset += 100)
-	{
-		const batch = collectedBlueprintIds.slice(offset, offset + 100);
-		const snapshots = await Promise.all(
-			batch.map((blueprintId) => database.ref(`/blueprints/${blueprintId}`).once("value")),
-		);
-
-		for (const [index, snapshot] of snapshots.entries())
-		{
-			if (snapshot.exists())
-			{
-				existingBlueprintIds.add(batch[index]);
-			}
-		}
-	}
-
-	const backfill = buildCollectorBackfill(users, existingBlueprintIds);
-	await database.ref().update(
-		{
-			...backfill.updates,
-			"/migrations/blueprintCollectorsBackfillComplete": true,
-		},
-	);
-
-	res.json(
-		{
-			success: true,
-			message: `Backfilled collectors for ${backfill.entries} (user, blueprint) pairs across ${backfill.users} users`,
-			users: backfill.users,
-			entries: backfill.entries,
-			skippedEntries: backfill.skippedEntries,
-		},
-	);
-});
 
 /**
  * Reconcile one blueprint's favorite count from the moderator UI.
