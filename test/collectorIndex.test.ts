@@ -1,11 +1,5 @@
 import {describe, expect, test} from "vite-plus/test";
-import
-{
-	buildCollectorBackfill,
-	getCollectedBlueprintIds,
-	getIndexedCollectorUserIds,
-	getLegacyCollectorUserIds,
-} from "../functions/src/collectorIndex";
+import {getIndexedCollectorUserIds, getLegacyCollectorUserIds} from "../functions/src/collectorIndex";
 
 const users =
 {
@@ -34,30 +28,6 @@ const users =
 
 describe("collector index", () =>
 {
-	test("collects unique blueprint IDs from active user collection entries", () =>
-	{
-		expect(getCollectedBlueprintIds(users)).toStrictEqual(
-			new Set(["blueprint-100", "deleted-blueprint-100", "blueprint-200"]),
-		);
-	});
-
-	test("builds updates only for blueprints that still exist", () =>
-	{
-		expect(buildCollectorBackfill(users, new Set(["blueprint-100", "blueprint-200"]))).toStrictEqual(
-			{
-				updates:
-				{
-					"/blueprintCollectors/blueprint-100/alice": true,
-					"/blueprintCollectors/blueprint-100/bob": true,
-					"/blueprintCollectors/blueprint-200/bob": true,
-				},
-				users: 2,
-				entries: 3,
-				skippedEntries: 1,
-			},
-		);
-	});
-
 	test("reads only active users from a blueprint collector index", () =>
 	{
 		expect(
