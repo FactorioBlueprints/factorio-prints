@@ -152,6 +152,46 @@ export const fetchCdnWatermark = async (): Promise<Date | null> =>
 };
 
 /**
+ * A blueprint and its summary are stamped by separate server timestamps, so their lastUpdatedDate values
+ * routinely differ by milliseconds (and by seconds in older data). A CDN copy that trails the summary by
+ * less than this is treated as current; a real edit moves the summary by far more.
+ */
+const CDN_STALENESS_TOLERANCE_MS = 5000;
+
+const isCdnCopyCurrent = (
+	cdnLastUpdated: number | null | undefined,
+	summaryLastUpdated: number | null | undefined,
+): boolean =>
+{
+	if (cdnLastUpdated == null || summaryLastUpdated == null)
+	{
+		return false;
+	}
+	return summaryLastUpdated - cdnLastUpdated < CDN_STALENESS_TOLERANCE_MS;
+};
+
+const formatDate = (value: number | null | undefined): string =>
+	value ? format(new Date(value), "yyyy-MM-dd HH:mm:ss.SSS") : "missing";
+
+const logStaleCdnCopy = (
+	blueprintId: string,
+	cdnLastUpdated: number | null | undefined,
+	summaryLastUpdated: number | null | undefined,
+): void =>
+{
+	if (cdnLastUpdated == null || summaryLastUpdated == null)
+	{
+		console.log(
+			`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${formatDate(cdnLastUpdated)}, Summary: ${formatDate(summaryLastUpdated)})`,
+		);
+		return;
+	}
+	console.log(
+		`Blueprint ${blueprintId} CDN data is stale by ${formatDistance(new Date(cdnLastUpdated), new Date(summaryLastUpdated))} (CDN: ${formatDate(cdnLastUpdated)}, Summary: ${formatDate(summaryLastUpdated)})`,
+	);
+};
+
+/**
  * Fetches blueprint data from the CDN.
  *
  * @param blueprintSummary - The blueprint summary containing the blueprint key
@@ -276,28 +316,13 @@ export const fetchBlueprint = async (
 					// CDN fetch succeeded - compare lastUpdatedDate values
 					const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-					if (cdnLastUpdated === summaryLastUpdated)
+					if (isCdnCopyCurrent(cdnLastUpdated, summaryLastUpdated))
 					{
-						// Dates match - use CDN data
 						console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
 						return cdnBlueprint;
 					}
-					else if (cdnLastUpdated && summaryLastUpdated)
-					{
-						// Dates don't match - CDN data is stale
-						const cdnDate = new Date(cdnLastUpdated);
-						const timeDiff = formatDistance(cdnDate, summaryDate);
-						console.log(
-							`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, "yyyy-MM-dd HH:mm:ss.SSS")}, Summary: ${format(summaryDate, "yyyy-MM-dd HH:mm:ss.SSS")})`,
-						);
-					}
-					else
-					{
-						// One or both dates are missing
-						console.log(
-							`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"})`,
-						);
-					}
+
+					logStaleCdnCopy(blueprintId, cdnLastUpdated, summaryLastUpdated);
 				}
 			}
 		}
@@ -311,37 +336,13 @@ export const fetchBlueprint = async (
 				// CDN fetch succeeded - compare lastUpdatedDate values
 				const cdnLastUpdated = cdnBlueprint.lastUpdatedDate;
 
-				if (cdnLastUpdated === summaryLastUpdated)
+				if (isCdnCopyCurrent(cdnLastUpdated, summaryLastUpdated))
 				{
-					// Dates match - use CDN data
 					console.log(`Blueprint ${blueprintId} fetched from CDN (dates match)`);
 					return cdnBlueprint;
 				}
-				else if (cdnLastUpdated && summaryLastUpdated)
-				{
-					// Dates don't match - check if CDN data is stale
-					const cdnDate = new Date(cdnLastUpdated);
-					const summaryDate = new Date(summaryLastUpdated);
-					const timeDifferenceMs = summaryDate.getTime() - cdnDate.getTime();
-					const timeDiff = formatDistance(cdnDate, summaryDate);
 
-					if (timeDifferenceMs < 1000)
-					{
-						// CDN data is stale by less than 1 second - use it anyway
-						return cdnBlueprint;
-					}
-					// CDN data is stale by more than 1 second
-					console.log(
-						`Blueprint ${blueprintId} CDN data is stale by ${timeDiff} (CDN: ${format(cdnDate, "yyyy-MM-dd HH:mm:ss.SSS")}, Summary: ${format(summaryDate, "yyyy-MM-dd HH:mm:ss.SSS")})`,
-					);
-				}
-				else
-				{
-					// One or both dates are missing
-					console.log(
-						`Blueprint ${blueprintId} CDN data has missing dates (CDN: ${cdnLastUpdated ? format(new Date(cdnLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"}, Summary: ${summaryLastUpdated ? format(new Date(summaryLastUpdated), "yyyy-MM-dd HH:mm:ss.SSS") : "missing"})`,
-					);
-				}
+				logStaleCdnCopy(blueprintId, cdnLastUpdated, summaryLastUpdated);
 			}
 		}
 
