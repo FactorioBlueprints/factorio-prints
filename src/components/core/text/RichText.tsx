@@ -1,14 +1,16 @@
 import type React from "react";
 import {FactorioIcon, type IconSize} from "../icons/FactorioIcon";
 
-interface RichTextProps {
+interface RichTextProps
+{
 	text: string;
 	className?: string;
 	inline?: boolean;
 	iconSize?: IconSize;
 }
 
-interface ParsedSegment {
+interface ParsedSegment
+{
 	type: "text" | "icon" | "color" | "font" | "tooltip";
 	content: string;
 	color?: string;
@@ -17,70 +19,101 @@ interface ParsedSegment {
 
 const RICH_TEXT_PATTERN = /\[([^\]]+)\]([^[]*)\[\/\1\]|\[([^\]]+)\]/g;
 
-function parseRichText(text: string): ParsedSegment[] {
+function parseRichText(text: string): ParsedSegment[]
+{
 	const segments: ParsedSegment[] = [];
 	let lastIndex = 0;
 
 	const matches = Array.from(text.matchAll(RICH_TEXT_PATTERN));
 
-	for (const match of matches) {
+	for (const match of matches)
+	{
 		const index = match.index!;
 
 		// Add plain text before the match
-		if (index > lastIndex) {
-			segments.push({
-				type: "text",
-				content: text.substring(lastIndex, index),
-			});
+		if (index > lastIndex)
+		{
+			segments.push(
+				{
+					type: "text",
+					content: text.substring(lastIndex, index),
+				},
+			);
 		}
 
-		if (match[1]) {
+		if (match[1])
+		{
 			// Matched a tag with content [tag]content[/tag]
 			const tag = match[1];
 			const content = match[2];
 
-			if (tag.startsWith("color=")) {
-				segments.push({
-					type: "color",
-					content,
-					color: tag.substring(6),
-				});
-			} else if (tag === "font" || tag.startsWith("font=")) {
-				segments.push({
-					type: "font",
-					content,
-					font: tag === "font" ? "default-game" : tag.substring(5),
-				});
-			} else {
-				// Unknown tag, treat as text
-				segments.push({
-					type: "text",
-					content: match[0],
-				});
+			if (tag.startsWith("color="))
+			{
+				segments.push(
+					{
+						type: "color",
+						content,
+						color: tag.substring(6),
+					},
+				);
 			}
-		} else if (match[3]) {
+			else if (tag === "font" || tag.startsWith("font="))
+			{
+				segments.push(
+					{
+						type: "font",
+						content,
+						font: tag === "font" ? "default-game" : tag.substring(5),
+					},
+				);
+			}
+			else
+			{
+				// Unknown tag, treat as text
+				segments.push(
+					{
+						type: "text",
+						content: match[0],
+					},
+				);
+			}
+		}
+		else if (match[3])
+		{
 			// Matched a self-closing tag [tag]
 			const tag = match[3];
 
-			if (tag.includes("=")) {
-				if (tag.startsWith("tooltip=")) {
-					segments.push({
-						type: "tooltip",
-						content: tag,
-					});
-				} else {
-					// Regular icon like [item=iron-plate]
-					segments.push({
-						type: "icon",
-						content: tag,
-					});
+			if (tag.includes("="))
+			{
+				if (tag.startsWith("tooltip="))
+				{
+					segments.push(
+						{
+							type: "tooltip",
+							content: tag,
+						},
+					);
 				}
-			} else {
+				else
+				{
+					// Regular icon like [item=iron-plate]
+					segments.push(
+						{
+							type: "icon",
+							content: tag,
+						},
+					);
+				}
+			}
+			else
+			{
 				// Unknown tag, treat as text
-				segments.push({
-					type: "text",
-					content: match[0],
-				});
+				segments.push(
+					{
+						type: "text",
+						content: match[0],
+					},
+				);
 			}
 		}
 
@@ -88,30 +121,43 @@ function parseRichText(text: string): ParsedSegment[] {
 	}
 
 	// Add any remaining text
-	if (lastIndex < text.length) {
-		segments.push({
-			type: "text",
-			content: text.substring(lastIndex),
-		});
+	if (lastIndex < text.length)
+	{
+		segments.push(
+			{
+				type: "text",
+				content: text.substring(lastIndex),
+			},
+		);
 	}
 
 	return segments;
 }
 
-function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize = "tiny"): React.ReactNode {
-	if (segment.type === "text") {
+function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize = "tiny"): React.ReactNode
+{
+	if (segment.type === "text")
+	{
 		return segment.content;
 	}
 
-	if (segment.type === "color") {
+	if (segment.type === "color")
+	{
 		return (
-			<span key={index} style={{color: segment.color}}>
+			<span
+				key={index}
+				style={
+				{
+					color: segment.color,
+				}}
+			>
 				{segment.content}
 			</span>
 		);
 	}
 
-	if (segment.type === "font") {
+	if (segment.type === "font")
+	{
 		const fontClass = segment.font === "default-game" ? "factorio-default-font" : "";
 		return fontClass ? (
 			<span key={index} className={fontClass}>
@@ -122,12 +168,14 @@ function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize
 		);
 	}
 
-	if (segment.type === "tooltip") {
+	if (segment.type === "tooltip")
+	{
 		const content = segment.content;
 		const tooltipContent = content.substring(8); // Remove 'tooltip='
 		const lastCommaIndex = tooltipContent.lastIndexOf(",");
 
-		if (lastCommaIndex > 0) {
+		if (lastCommaIndex > 0)
+		{
 			const tooltipText = tooltipContent.substring(0, lastCommaIndex);
 
 			// Show a generic tooltip icon (question mark style)
@@ -135,7 +183,8 @@ function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize
 				<span
 					key={index}
 					title={tooltipText}
-					style={{
+					style={
+					{
 						textDecoration: "underline",
 						cursor: "help",
 						display: "inline-block",
@@ -157,7 +206,8 @@ function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize
 		return segment.content;
 	}
 
-	if (segment.type === "icon") {
+	if (segment.type === "icon")
+	{
 		const content = segment.content;
 
 		// Handle standard icon syntax: [type=name] or [type=name,quality]
@@ -166,7 +216,8 @@ function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize
 		return (
 			<FactorioIcon
 				key={index}
-				icon={{
+				icon={
+				{
 					type: type as any,
 					name: name,
 					quality: quality ? (quality as any) : undefined,
@@ -180,13 +231,15 @@ function renderSegment(segment: ParsedSegment, index: number, iconSize: IconSize
 	return segment.content;
 }
 
-export const RichText: React.FC<RichTextProps> = ({text, className, inline = false, iconSize = "tiny"}) => {
+export const RichText: React.FC<RichTextProps> = ({text, className, inline = false, iconSize = "tiny"}) =>
+{
 	if (!text) return null;
 
 	const segments = parseRichText(text);
 	const content = segments.map((segment, index) => renderSegment(segment, index, iconSize));
 
-	if (inline) {
+	if (inline)
+	{
 		return <span className={className}>{content}</span>;
 	}
 

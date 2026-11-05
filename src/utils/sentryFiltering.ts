@@ -13,29 +13,35 @@ const maximumFrameSamples = 6;
 const minimumRepeatedFrameCount = 4;
 const minimumRepeatedStackLength = 8;
 
-function getExceptionFrames(event: Event): StackFrame[] {
+function getExceptionFrames(event: Event): StackFrame[]
+{
 	return (event.exception?.values ?? []).flatMap((exception) => exception.stacktrace?.frames ?? []);
 }
 
-function getEventMessage(event: Event): string {
-	if (typeof event.message === "string") {
+function getEventMessage(event: Event): string
+{
+	if (typeof event.message === "string")
+	{
 		return event.message;
 	}
 
 	const exceptionValue = event.exception?.values?.[0]?.value;
-	if (typeof exceptionValue === "string") {
+	if (typeof exceptionValue === "string")
+	{
 		return exceptionValue;
 	}
 
 	const argumentsValue = event.extra?.arguments;
-	if (Array.isArray(argumentsValue)) {
+	if (Array.isArray(argumentsValue))
+	{
 		return argumentsValue.map(String).join(" ");
 	}
 
 	return "";
 }
 
-function getFrameIdentity(frame: StackFrame): string {
+function getFrameIdentity(frame: StackFrame): string
+{
 	const functionName = frame.function ?? "<anonymous>";
 	const filename = frame.filename ?? "<unknown>";
 	const line = frame.lineno ?? 0;
@@ -43,16 +49,20 @@ function getFrameIdentity(frame: StackFrame): string {
 	return `${functionName}@${filename}:${line}:${column}`;
 }
 
-function getRequestUrl(event: Event): URL | undefined {
-	if (!event.request?.url || !URL.canParse(event.request.url)) {
+function getRequestUrl(event: Event): URL | undefined
+{
+	if (!event.request?.url || !URL.canParse(event.request.url))
+	{
 		return undefined;
 	}
 
 	return new URL(event.request.url);
 }
 
-function isInlineDocumentFrame(frame: StackFrame, requestUrl: URL): boolean {
-	if (!frame.filename || !URL.canParse(frame.filename, requestUrl)) {
+function isInlineDocumentFrame(frame: StackFrame, requestUrl: URL): boolean
+{
+	if (!frame.filename || !URL.canParse(frame.filename, requestUrl))
+	{
 		return false;
 	}
 
@@ -61,8 +71,10 @@ function isInlineDocumentFrame(frame: StackFrame, requestUrl: URL): boolean {
 	return frameUrl.origin === requestUrl.origin && !lastPathSegment.includes(".");
 }
 
-function isJavaScriptAssetFrame(frame: StackFrame, requestUrl: URL): boolean {
-	if (!frame.filename || !URL.canParse(frame.filename, requestUrl)) {
+function isJavaScriptAssetFrame(frame: StackFrame, requestUrl: URL): boolean
+{
+	if (!frame.filename || !URL.canParse(frame.filename, requestUrl))
+	{
 		return false;
 	}
 
@@ -70,29 +82,35 @@ function isJavaScriptAssetFrame(frame: StackFrame, requestUrl: URL): boolean {
 	return frameUrl.origin === requestUrl.origin && /\.(?:js|mjs)$/.test(frameUrl.pathname);
 }
 
-function getFrameSamples(frames: StackFrame[]): string[] {
+function getFrameSamples(frames: StackFrame[]): string[]
+{
 	const frameCounts = new Map<string, number>();
 
-	for (const frame of frames) {
+	for (const frame of frames)
+	{
 		const identity = getFrameIdentity(frame);
 		frameCounts.set(identity, (frameCounts.get(identity) ?? 0) + 1);
 	}
 
 	return [...frameCounts.entries()]
-		.sort(([firstIdentity, firstCount], [secondIdentity, secondCount]) => {
+		.sort(([firstIdentity, firstCount], [secondIdentity, secondCount]) =>
+		{
 			return secondCount - firstCount || firstIdentity.localeCompare(secondIdentity);
 		})
 		.slice(0, maximumFrameSamples)
 		.map(([identity, count]) => `${identity} × ${count}`);
 }
 
-function hasRepeatedFramePattern(frames: StackFrame[]): boolean {
-	if (frames.length < minimumRepeatedStackLength) {
+function hasRepeatedFramePattern(frames: StackFrame[]): boolean
+{
+	if (frames.length < minimumRepeatedStackLength)
+	{
 		return false;
 	}
 
 	const frameCounts = new Map<string, number>();
-	for (const frame of frames) {
+	for (const frame of frames)
+	{
 		const identity = getFrameIdentity(frame);
 		frameCounts.set(identity, (frameCounts.get(identity) ?? 0) + 1);
 	}
@@ -100,32 +118,39 @@ function hasRepeatedFramePattern(frames: StackFrame[]): boolean {
 	return [...frameCounts.values()].some((count) => count >= minimumRepeatedFrameCount);
 }
 
-function getEventRoute(event: Event, requestUrl: URL): string {
+function getEventRoute(event: Event, requestUrl: URL): string
+{
 	return event.transaction ?? requestUrl.pathname;
 }
 
 // The browser SDK never sends contexts.browser (Sentry derives it server-side), so detect
 // the browser from the User-Agent header the HttpContext integration attaches to the event.
-function getUserAgent(event: Event): string {
+function getUserAgent(event: Event): string
+{
 	return event.request?.headers?.["User-Agent"] ?? globalThis.navigator?.userAgent ?? "";
 }
 
-function getFrameSource(frame: StackFrame): string {
+function getFrameSource(frame: StackFrame): string
+{
 	return [frame.context_line, ...(frame.pre_context ?? []), ...(frame.post_context ?? [])]
 		.filter((line): line is string => typeof line === "string")
 		.join("\n");
 }
 
-function isGoogleAdsFrame(frame: StackFrame): boolean {
+function isGoogleAdsFrame(frame: StackFrame): boolean
+{
 	const filename = frame.filename ?? "";
 	return /(?:^|\.)googlesyndication\.com(?:\/|$)/.test(filename) || filename.includes("/pagead/js/adsbygoogle.js");
 }
 
-function isFirstPartyAssetFrame(frame: StackFrame, requestUrl: URL | undefined): boolean {
-	if (frame.in_app === true) {
+function isFirstPartyAssetFrame(frame: StackFrame, requestUrl: URL | undefined): boolean
+{
+	if (frame.in_app === true)
+	{
 		return true;
 	}
-	if (!requestUrl || !frame.filename || !URL.canParse(frame.filename, requestUrl)) {
+	if (!requestUrl || !frame.filename || !URL.canParse(frame.filename, requestUrl))
+	{
 		return false;
 	}
 
@@ -133,16 +158,20 @@ function isFirstPartyAssetFrame(frame: StackFrame, requestUrl: URL | undefined):
 	return frameUrl.origin === requestUrl.origin && /\.(?:js|jsx|mjs|ts|tsx)$/.test(frameUrl.pathname);
 }
 
-function setNoiseFingerprint(event: Event, fingerprint: string): void {
+function setNoiseFingerprint(event: Event, fingerprint: string): void
+{
 	event.fingerprint = [fingerprint];
-	event.tags = {
+	event.tags =
+	{
 		...event.tags,
 		external_runtime_noise: fingerprint,
 	};
 }
 
-function isGoogleAdsFetchFailure(event: Event, message: string): boolean {
-	if (message !== "Failed to fetch" && message !== "TypeError: Failed to fetch") {
+function isGoogleAdsFetchFailure(event: Event, message: string): boolean
+{
+	if (message !== "Failed to fetch" && message !== "TypeError: Failed to fetch")
+	{
 		return false;
 	}
 
@@ -152,9 +181,11 @@ function isGoogleAdsFetchFailure(event: Event, message: string): boolean {
 	);
 }
 
-function isGoogleAdsInlinePair(event: Event, message: string): boolean {
+function isGoogleAdsInlinePair(event: Event, message: string): boolean
+{
 	const frames = getExceptionFrames(event);
-	if (message === "Ba") {
+	if (message === "Ba")
+	{
 		return (
 			frames.length === 0 &&
 			getUserAgent(event).includes(chromeIosUserAgentToken) &&
@@ -165,8 +196,10 @@ function isGoogleAdsInlinePair(event: Event, message: string): boolean {
 	return message === "ga" && frames.some((frame) => getFrameSource(frame).includes("adsbygoogle"));
 }
 
-function isCryptoInjectionPair(event: Event, message: string): boolean {
-	if (message === "Crypto site not identified within timeout period") {
+function isCryptoInjectionPair(event: Event, message: string): boolean
+{
+	if (message === "Crypto site not identified within timeout period")
+	{
 		return (
 			event.logger === "console" &&
 			Array.isArray(event.extra?.arguments) &&
@@ -175,7 +208,8 @@ function isCryptoInjectionPair(event: Event, message: string): boolean {
 		);
 	}
 
-	if (message !== "Cannot read properties of undefined (reading 'location')") {
+	if (message !== "Cannot read properties of undefined (reading 'location')")
+	{
 		return false;
 	}
 
@@ -189,7 +223,8 @@ function isCryptoInjectionPair(event: Event, message: string): boolean {
 	);
 }
 
-function isMonkeypatchedBrowserApiWarning(event: Event, message: string): boolean {
+function isMonkeypatchedBrowserApiWarning(event: Event, message: string): boolean
+{
 	return (
 		/^addEventListener ignored event='[a-z]+'$/.test(message) &&
 		event.logger === "console" &&
@@ -203,7 +238,8 @@ function isMonkeypatchedBrowserApiWarning(event: Event, message: string): boolea
 	);
 }
 
-function isStacklessNativeBridgeRejection(event: Event, message: string): boolean {
+function isStacklessNativeBridgeRejection(event: Event, message: string): boolean
+{
 	return (
 		/^Object Not Found Matching Id:\d+, MethodName:[A-Za-z][A-Za-z0-9_]*, ParamCount:\d+$/.test(message) &&
 		event.exception?.values?.[0]?.mechanism?.type === "onunhandledrejection" &&
@@ -211,15 +247,18 @@ function isStacklessNativeBridgeRejection(event: Event, message: string): boolea
 	);
 }
 
-export function normalizeAndFilterThirdPartyNoise(event: Event): boolean {
+export function normalizeAndFilterThirdPartyNoise(event: Event): boolean
+{
 	const message = getEventMessage(event);
 
-	if (isGoogleAdsInlinePair(event, message)) {
+	if (isGoogleAdsInlinePair(event, message))
+	{
 		setNoiseFingerprint(event, googleAdsPairFingerprint);
 		return false;
 	}
 
-	if (isCryptoInjectionPair(event, message)) {
+	if (isCryptoInjectionPair(event, message))
+	{
 		setNoiseFingerprint(event, injectedCryptoPairFingerprint);
 		return false;
 	}
@@ -231,20 +270,24 @@ export function normalizeAndFilterThirdPartyNoise(event: Event): boolean {
 	);
 }
 
-export function groupMobileIosRecursion(event: Event): boolean {
-	if (!getUserAgent(event).includes(chromeIosUserAgentToken)) {
+export function groupMobileIosRecursion(event: Event): boolean
+{
+	if (!getUserAgent(event).includes(chromeIosUserAgentToken))
+	{
 		return false;
 	}
 
 	const hasStackOverflow = (event.exception?.values ?? []).some(
 		(exception) => exception.type === "RangeError" && mobileIosRecursionMessage.test(exception.value ?? ""),
 	);
-	if (!hasStackOverflow) {
+	if (!hasStackOverflow)
+	{
 		return false;
 	}
 
 	const requestUrl = getRequestUrl(event);
-	if (!requestUrl) {
+	if (!requestUrl)
+	{
 		return false;
 	}
 
@@ -255,18 +298,22 @@ export function groupMobileIosRecursion(event: Event): boolean {
 	const repeatedFramePattern = hasRepeatedFramePattern(inlineDocumentFrames);
 	const inlineDocumentSignature = inlineDocumentFrameCount > 0 && firstPartyAssetFrameCount === 0;
 
-	if (!repeatedFramePattern && !inlineDocumentSignature) {
+	if (!repeatedFramePattern && !inlineDocumentSignature)
+	{
 		return false;
 	}
 
 	event.fingerprint = [mobileIosRecursionFingerprint];
-	event.tags = {
+	event.tags =
+	{
 		...event.tags,
 		mobile_ios_recursion: "inline-document",
 	};
-	event.contexts = {
+	event.contexts =
+	{
 		...event.contexts,
-		mobile_ios_recursion: {
+		mobile_ios_recursion:
+		{
 			first_party_asset_frame_count: firstPartyAssetFrameCount,
 			frame_count: frames.length,
 			frame_samples: getFrameSamples(frames),
@@ -280,13 +327,16 @@ export function groupMobileIosRecursion(event: Event): boolean {
 	return true;
 }
 
-export function isFirebaseAuthDatabaseClosingError(reason: unknown): boolean {
+export function isFirebaseAuthDatabaseClosingError(reason: unknown): boolean
+{
 	const message = reason instanceof Error ? reason.message : reason;
 	return message === firebaseAuthDatabaseClosingMessage;
 }
 
-export function isUnactionableError(message: string): boolean {
-	if (isFirebaseAuthDatabaseClosingError(message)) {
+export function isUnactionableError(message: string): boolean
+{
+	if (isFirebaseAuthDatabaseClosingError(message))
+	{
 		return true;
 	}
 
@@ -296,7 +346,8 @@ export function isUnactionableError(message: string): boolean {
 		(/^\[\d{4}-\d{2}-\d{2}T[^\]]+\]\s+@firebase\/auth: Auth \([^)]+\): /.test(message) &&
 			message.endsWith(firebasePendingPopupPromiseAssertion));
 
-	if (isFirebasePendingPopupPromiseAssertion) {
+	if (isFirebasePendingPopupPromiseAssertion)
+	{
 		return true;
 	}
 
@@ -305,7 +356,8 @@ export function isUnactionableError(message: string): boolean {
 		message.includes("FIREBASE WARNING: transaction at /users/") &&
 		message.includes("failed: disconnect");
 
-	if (isExpectedFirebaseDisconnectWarning) {
+	if (isExpectedFirebaseDisconnectWarning)
+	{
 		return true;
 	}
 

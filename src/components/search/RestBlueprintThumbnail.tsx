@@ -10,11 +10,13 @@ import buildImageUrl, {ImageVariant} from "../../helpers/buildImageUrl";
 import {RichText} from "../core/text/RichText";
 import SafeOverlayTrigger from "../SafeOverlayTrigger";
 
-interface RestBlueprintThumbnailProps {
+interface RestBlueprintThumbnailProps
+{
 	blueprintSummary: RestBlueprintSummary;
 }
 
-const RestBlueprintThumbnail: React.FC<RestBlueprintThumbnailProps> = ({blueprintSummary}) => {
+const RestBlueprintThumbnail: React.FC<RestBlueprintThumbnailProps> = ({blueprintSummary}) =>
+{
 	const {key, title, imgurImage, voteSummary} = blueprintSummary;
 	const {imgurId, imgurType} = imgurImage;
 	const numberOfFavorites = voteSummary.numberOfUpvotes;
@@ -26,29 +28,54 @@ const RestBlueprintThumbnail: React.FC<RestBlueprintThumbnailProps> = ({blueprin
 	);
 
 	let imageUrl: string;
-	try {
-		if (!imgurId || !imgurType) {
+	try
+	{
+		if (!imgurId || !imgurType)
+		{
 			imageUrl = "/icons/entity-unknown.png";
-		} else {
+		}
+		else
+		{
 			imageUrl = buildImageUrl(imgurId, imgurType, ImageVariant.Thumbnail);
 		}
-	} catch {
+	}
+	catch
+	{
 		imageUrl = "/icons/entity-unknown.png";
 	}
 
 	return (
-		<Card className="blueprint-thumbnail col-auto" style={{width: "11rem", backgroundColor: "#1c1e22"}}>
-			<Link to="/view/$blueprintId" params={{blueprintId: key}} preload={false}>
+		<Card
+			className="blueprint-thumbnail col-auto"
+			style={
+			{
+				width: "11rem",
+				backgroundColor: "#1c1e22",
+			}}
+		>
+			<Link
+				to="/view/$blueprintId"
+				params={
+				{
+					blueprintId: key,
+				}}
+				preload={false}
+			>
 				<Card.Img
 					variant="top"
 					src={imageUrl}
 					referrerPolicy="no-referrer"
-					onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+					onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) =>
+					{
 						const target = e.target as HTMLImageElement;
-						try {
+						try
+						{
 							target.onerror = null;
 							target.src = "/icons/entity-unknown.png";
-						} catch {}
+						}
+						catch
+						{
+						}
 					}}
 				/>
 			</Link>
@@ -61,7 +88,14 @@ const RestBlueprintThumbnail: React.FC<RestBlueprintThumbnailProps> = ({blueprin
 				</span>
 				{"  "}
 				<SafeOverlayTrigger placement="bottom" overlay={tooltip}>
-					<Link to="/view/$blueprintId" params={{blueprintId: key}} preload={false}>
+					<Link
+						to="/view/$blueprintId"
+						params={
+						{
+							blueprintId: key,
+						}}
+						preload={false}
+					>
 						<span className="text-default">
 							<RichText text={title} inline />
 						</span>

@@ -9,14 +9,16 @@ import type {RawBlueprintData} from "../../schemas";
 import {safeJsonStringify} from "../../utils/safeJsonStringify";
 import BlueprintMarkdownDescription from "../BlueprintMarkdownDescription";
 
-interface DetailsCardProps {
+interface DetailsCardProps
+{
 	descriptionMarkdown?: string;
 	blueprintString?: string;
 	parsedData?: RawBlueprintData;
 	isLoading: boolean;
 }
 
-export function DetailsCard({descriptionMarkdown, blueprintString, parsedData, isLoading}: DetailsCardProps) {
+export function DetailsCard({descriptionMarkdown, blueprintString, parsedData, isLoading}: DetailsCardProps)
+{
 	const [showBlueprint, setShowBlueprint] = useState(false);
 	const [showJson, setShowJson] = useState(false);
 	const {copiedText, copyError, copyToClipboard} = useCopyToClipboard();
@@ -41,11 +43,13 @@ export function DetailsCard({descriptionMarkdown, blueprintString, parsedData, i
 		[],
 	);
 
-	const handleShowHideBase64 = useCallback(() => {
+	const handleShowHideBase64 = useCallback(() =>
+	{
 		setShowBlueprint((prevState) => !prevState);
 	}, []);
 
-	const handleShowHideJson = useCallback(() => {
+	const handleShowHideJson = useCallback(() =>
+	{
 		setShowJson((prevState) => !prevState);
 	}, []);
 

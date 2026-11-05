@@ -4,25 +4,32 @@ import {afterEach, vi} from "vite-plus/test";
 import "fake-indexeddb/auto";
 import React from "react";
 
-vi.mock("@fortawesome/fontawesome-svg-core", () => ({
-	library: {
+vi.mock("@fortawesome/fontawesome-svg-core", () => (
+{
+	library:
+	{
 		add: vi.fn(),
 	},
-	icon: vi.fn(() => ({
+	icon: vi.fn(() => (
+	{
 		abstract: [],
 		html: ["<svg></svg>"],
 	})),
-	config: {
+	config:
+	{
 		autoAddCss: false,
 	},
 }));
 
-vi.mock("@fortawesome/react-fontawesome", () => ({
-	FontAwesomeIcon: vi.fn(({icon, className}) => {
+vi.mock("@fortawesome/react-fontawesome", () => (
+{
+	FontAwesomeIcon: vi.fn(({icon, className}) =>
+	{
 		return `<i class="${className}" data-testid="font-awesome-icon" data-icon="${typeof icon === "string" ? icon : "mocked-icon"}"></i>`;
 	}),
 }));
 
-afterEach(() => {
+afterEach(() =>
+{
 	cleanup();
 });

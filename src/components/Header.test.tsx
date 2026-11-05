@@ -4,17 +4,20 @@ import {describe, expect, it, vi} from "vite-plus/test";
 import {useAuthState} from "react-firebase-hooks/auth";
 import Header from "./Header";
 
-vi.mock("@fortawesome/react-fontawesome", () => ({
+vi.mock("@fortawesome/react-fontawesome", () => (
+{
 	FontAwesomeIcon: () => <span aria-hidden="true" />,
 }));
 
-vi.mock("@tanstack/react-router", () => ({
+vi.mock("@tanstack/react-router", () => (
+{
 	Link: ({
 		children,
 		params: _params,
 		to,
 		...anchorProps
-	}: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+	}: React.AnchorHTMLAttributes<HTMLAnchorElement> &
+	{
 		params?: Record<string, string>;
 		to: string;
 	}) => (
@@ -24,34 +27,49 @@ vi.mock("@tanstack/react-router", () => ({
 	),
 }));
 
-vi.mock("firebase/auth", () => ({
+vi.mock("firebase/auth", () => (
+{
 	getAuth: vi.fn(() => ({})),
 	signOut: vi.fn(),
 }));
 
-vi.mock("react-firebase-hooks/auth", () => ({
+vi.mock("react-firebase-hooks/auth", () => (
+{
 	useAuthState: vi.fn(),
 }));
 
-vi.mock("../base", () => ({
+vi.mock("../base", () => (
+{
 	app: {},
 }));
 
-vi.mock("../hooks/useModerators", () => ({
-	useIsModerator: vi.fn(() => ({data: false})),
+vi.mock("../hooks/useModerators", () => (
+{
+	useIsModerator: vi.fn(() => (
+	{
+		data: false,
+	})),
 }));
 
-vi.mock("./auth/AuthenticationForm", () => ({
+vi.mock("./auth/AuthenticationForm", () => (
+{
 	AuthenticationForm: () => <div>Authentication form</div>,
 }));
 
 const normalizeText = (element: Element | null): string => element?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 
-describe("Header", () => {
-	it("renders the compact navigation labels and accessible home link", () => {
-		vi.mocked(useAuthState).mockReturnValue([{uid: "alice", displayName: "Alice"}, false, undefined] as ReturnType<
-			typeof useAuthState
-		>);
+describe("Header", () =>
+{
+	it("renders the compact navigation labels and accessible home link", () =>
+	{
+		vi.mocked(useAuthState).mockReturnValue([
+			{
+				uid: "alice",
+				displayName: "Alice",
+			},
+			false,
+			undefined,
+		] as ReturnType<typeof useAuthState>);
 
 		const {container} = render(<Header />);
 		const homeLink = container.querySelector(".navbar-brand a");
@@ -61,41 +79,53 @@ describe("Header", () => {
 		const accountToggle = container.querySelector(".account-navigation .dropdown-toggle");
 		const brandText = container.querySelector(".navbar-brand .navbar-brand-text");
 
-		expect({
-			accountLabel: normalizeText(accountToggle),
-			brandText: normalizeText(brandText),
-			homeLink: {
-				ariaLabel: homeLink?.getAttribute("aria-label"),
-				text: normalizeText(homeLink),
-				title: homeLink?.getAttribute("title"),
+		expect(
+			{
+				accountLabel: normalizeText(accountToggle),
+				brandText: normalizeText(brandText),
+				homeLink:
+				{
+					ariaLabel: homeLink?.getAttribute("aria-label"),
+					text: normalizeText(homeLink),
+					title: homeLink?.getAttribute("title"),
+				},
+				primaryLabels: Array.from(primaryLinks, normalizeText),
 			},
-			primaryLabels: Array.from(primaryLinks, normalizeText),
-		}).toStrictEqual({
-			accountLabel: "Account",
-			brandText: "Factorio Prints",
-			homeLink: {
-				ariaLabel: "Factorio Prints home",
-				text: "Factorio Prints",
-				title: "Factorio Prints home",
+		).toStrictEqual(
+			{
+				accountLabel: "Account",
+				brandText: "Factorio Prints",
+				homeLink:
+				{
+					ariaLabel: "Factorio Prints home",
+					text: "Factorio Prints",
+					title: "Factorio Prints home",
+				},
+				primaryLabels: [
+					"Search",
+					"Recent",
+					"Favorites",
+					"Collection",
+					"Create",
+					"Chat",
+					"Contributors",
+					"GitHub",
+					"Donate",
+				],
 			},
-			primaryLabels: [
-				"Search",
-				"Recent",
-				"Favorites",
-				"Collection",
-				"Create",
-				"Chat",
-				"Contributors",
-				"GitHub",
-				"Donate",
-			],
-		});
+		);
 	});
 
-	it("right-aligns the signed-in account menu so it stays on screen", () => {
-		vi.mocked(useAuthState).mockReturnValue([{uid: "alice", displayName: "Alice"}, false, undefined] as ReturnType<
-			typeof useAuthState
-		>);
+	it("right-aligns the signed-in account menu so it stays on screen", () =>
+	{
+		vi.mocked(useAuthState).mockReturnValue([
+			{
+				uid: "alice",
+				displayName: "Alice",
+			},
+			false,
+			undefined,
+		] as ReturnType<typeof useAuthState>);
 
 		const {container} = render(<Header />);
 		const accountToggle = container.querySelector(".account-navigation .dropdown-toggle");
@@ -103,13 +133,21 @@ describe("Header", () => {
 		fireEvent.click(accountToggle);
 		const menu = container.querySelector(".account-navigation .dropdown-menu");
 
-		expect({
-			end: menu?.classList.contains("dropdown-menu-end"),
-			legacyRight: menu?.classList.contains("dropdown-menu-right"),
-		}).toStrictEqual({end: true, legacyRight: false});
+		expect(
+			{
+				end: menu?.classList.contains("dropdown-menu-end"),
+				legacyRight: menu?.classList.contains("dropdown-menu-right"),
+			},
+		).toStrictEqual(
+			{
+				end: true,
+				legacyRight: false,
+			},
+		);
 	});
 
-	it("right-aligns the sign-in menu so it stays on screen", () => {
+	it("right-aligns the sign-in menu so it stays on screen", () =>
+	{
 		vi.mocked(useAuthState).mockReturnValue([null, false, undefined] as unknown as ReturnType<typeof useAuthState>);
 
 		const {container} = render(<Header />);

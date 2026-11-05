@@ -7,12 +7,14 @@ import {useRawBlueprintSummary} from "./useRawBlueprintSummary";
  * @param blueprintId - The blueprint ID to fetch
  * @returns React Query result with enriched blueprint summary data
  */
-export const useEnrichedBlueprintSummary = (blueprintId: string) => {
+export const useEnrichedBlueprintSummary = (blueprintId: string) =>
+{
 	const rawBlueprintSummaryQuery = useRawBlueprintSummary(blueprintId);
 
 	return {
 		...rawBlueprintSummaryQuery,
-		data: useMemo(() => {
+		data: useMemo(() =>
+		{
 			if (!rawBlueprintSummaryQuery.data) return null;
 
 			// Enrich the raw data

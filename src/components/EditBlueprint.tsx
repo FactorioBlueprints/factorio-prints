@@ -43,36 +43,49 @@ import NoMatch from "./NoMatch";
 import PageHeader from "./PageHeader";
 import TagSuggestionButton from "./TagSuggestionButton";
 
-const md = new MarkdownIt({
-	html: true,
-	linkify: true,
-	typographer: true,
-	breaks: false,
-});
+const md = new MarkdownIt(
+	{
+		html: true,
+		linkify: true,
+		typographer: true,
+		breaks: false,
+	},
+);
 
 const defaultTableRenderer =
 	md.renderer.rules.table_open ||
 	((tokens: any[], idx: number, options: any, env: any, self: any) => self.renderToken(tokens, idx, options));
 
-md.renderer.rules.table_open = (tokens: any[], idx: number, options: any, env: any, self: any) => {
+md.renderer.rules.table_open = (tokens: any[], idx: number, options: any, env: any, self: any) =>
+{
 	tokens[idx].attrSet("class", "table table-striped table-bordered");
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };
 
 const emptyTags: string[] = [];
 
-const blueprintFormSchema = z.object({
-	title: z.string().min(10, "Title must be at least 10 characters"),
-	descriptionMarkdown: z.string().min(10, "Description must be at least 10 characters"),
-	blueprintString: z.string().min(10, "Blueprint String must be at least 10 characters"),
-	// A screenshot uploaded while editing; null keeps the current one.
-	image: z.object({id: z.string(), type: z.string()}).nullable(),
-	tags: z.array(z.string()),
-});
+const blueprintFormSchema = z.object(
+	{
+		title: z.string().min(10, "Title must be at least 10 characters"),
+		descriptionMarkdown: z.string().min(10, "Description must be at least 10 characters"),
+		blueprintString: z.string().min(10, "Blueprint String must be at least 10 characters"),
+		// A screenshot uploaded while editing; null keeps the current one.
+		image: z
+			.object(
+				{
+					id: z.string(),
+					type: z.string(),
+				},
+			)
+			.nullable(),
+		tags: z.array(z.string()),
+	},
+);
 
 type BlueprintFormData = z.infer<typeof blueprintFormSchema>;
 
-interface UiState {
+interface UiState
+{
 	renderedMarkdown: string;
 	uploadProgressBarVisible: boolean;
 	uploadProgressPercent: number;
@@ -82,17 +95,20 @@ interface UiState {
 	submissionWarnings: string[];
 }
 
-interface SelectOption {
+interface SelectOption
+{
 	value: string;
 	label: string;
 }
 
-interface FormFieldError {
+interface FormFieldError
+{
 	field?: string;
 	message?: string;
 }
 
-type FormValues = {
+type FormValues =
+{
 	title: string;
 	descriptionMarkdown: string;
 	blueprintString: string;
@@ -100,16 +116,23 @@ type FormValues = {
 	tags: string[];
 };
 
-function checkIfBlueprintBookHasEntriesWithNoName(blueprintBook: BlueprintBook): boolean {
-	return some(blueprintBook.blueprints, (eachEntry) => {
+function checkIfBlueprintBookHasEntriesWithNoName(blueprintBook: BlueprintBook): boolean
+{
+	return some(blueprintBook.blueprints, (eachEntry) =>
+	{
 		if (eachEntry.blueprint_book) return checkIfBlueprintBookHasEntriesWithNoName(eachEntry.blueprint_book);
 		if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
 		return false;
 	});
 }
 
-function EditBlueprintWrapper() {
-	const {blueprintId} = useParams({from: "/edit/$blueprintId"});
+function EditBlueprintWrapper()
+{
+	const {blueprintId} = useParams(
+		{
+			from: "/edit/$blueprintId",
+		},
+	);
 	const navigate = useNavigate();
 
 	const [user] = useAuthState(getAuth(app));
@@ -118,14 +141,16 @@ function EditBlueprintWrapper() {
 	const {data: blueprintSummary, isLoading: summaryIsLoading} = useEnrichedBlueprintSummary(blueprintId);
 
 	// Fetch raw blueprint data for mutations
-	const {
+	const
+	{
 		data: rawBlueprintData,
 		isSuccess: rawBlueprintIsSuccess,
 		isLoading: rawBlueprintIsLoading,
 	} = useRawBlueprint(blueprintId, blueprintSummary);
 
 	// Use enriched blueprint for display
-	const {
+	const
+	{
 		data: blueprintData,
 		isSuccess: blueprintIsSuccess,
 		isLoading: blueprintIsLoading,
@@ -144,20 +169,23 @@ function EditBlueprintWrapper() {
 	const updateBlueprintMutation = useUpdateBlueprint();
 	const deleteBlueprintMutation = useDeleteBlueprint();
 
-	const [uiState, setUiState] = useState<UiState>({
-		renderedMarkdown: "",
-		uploadProgressBarVisible: false,
-		uploadProgressPercent: 0,
-		deletionModalVisible: false,
-		parsedBlueprint: null,
-		v15Decoded: null,
-		submissionWarnings: [],
-	});
+	const [uiState, setUiState] = useState<UiState>(
+		{
+			renderedMarkdown: "",
+			uploadProgressBarVisible: false,
+			uploadProgressPercent: 0,
+			deletionModalVisible: false,
+			parsedBlueprint: null,
+			v15Decoded: null,
+			submissionWarnings: [],
+		},
+	);
 
 	// Store current tags separately from form state. This is needed because form state updates don't reliably trigger re-renders for dependent calculations like our tag suggestions filtering.
 	const [currentTags, setCurrentTags] = useState<string[]>([]);
 
-	const defaultValues = useMemo((): FormValues => {
+	const defaultValues = useMemo((): FormValues =>
+	{
 		const tags = blueprintData?.tags
 			? Object.keys(blueprintData.tags).filter((tag) => blueprintData.tags[tag])
 			: emptyTags;
@@ -171,51 +199,67 @@ function EditBlueprintWrapper() {
 		};
 	}, [blueprintData]);
 
-	const form = useForm({
-		defaultValues,
-		onSubmit: async ({value}) => {
-			try {
-				blueprintFormSchema.parse(value);
-			} catch (error) {
-				if (error instanceof z.ZodError) {
+	const form = useForm(
+		{
+			defaultValues,
+			onSubmit: async ({value}) =>
+			{
+				try
+				{
+					blueprintFormSchema.parse(value);
+				}
+				catch (error)
+				{
+					if (error instanceof z.ZodError)
+					{
+						return;
+					}
+				}
+
+				const submissionWarnings = validateWarnings(value);
+				if (submissionWarnings.length > 0)
+				{
+					setUiState((prev) => (
+					{
+						...prev,
+						submissionWarnings,
+					}));
 					return;
 				}
-			}
 
-			const submissionWarnings = validateWarnings(value);
-			if (submissionWarnings.length > 0) {
-				setUiState((prev) => ({
-					...prev,
-					submissionWarnings,
-				}));
-				return;
-			}
-
-			if (rawBlueprintData) {
-				updateBlueprintMutation.mutate({
-					id: blueprintId,
-					rawBlueprint: rawBlueprintData,
-					formData: value,
-					availableTags: tags,
-				});
-			}
+				if (rawBlueprintData)
+				{
+					updateBlueprintMutation.mutate(
+						{
+							id: blueprintId,
+							rawBlueprint: rawBlueprintData,
+							formData: value,
+							availableTags: tags,
+						},
+					);
+				}
+			},
 		},
-	});
+	);
 
 	const [formInitialized, setFormInitialized] = useState(false);
 
-	useEffect(() => {
-		if (allDataLoaded && form && !formInitialized) {
+	useEffect(() =>
+	{
+		if (allDataLoaded && form && !formInitialized)
+		{
 			form.reset(defaultValues);
 
 			setCurrentTags(defaultValues.tags);
 			setFormInitialized(true);
 
 			// Initialize rendered markdown
-			if (defaultValues.descriptionMarkdown) {
+			if (defaultValues.descriptionMarkdown)
+			{
 				const html = md.render(defaultValues.descriptionMarkdown);
 				const renderedMarkdown = sanitizeHtml(html);
-				setUiState((prev) => ({
+				setUiState((prev) => (
+				{
 					...prev,
 					renderedMarkdown,
 				}));
@@ -223,19 +267,31 @@ function EditBlueprintWrapper() {
 		}
 	}, [allDataLoaded, defaultValues, form, formInitialized]);
 
-	useEffect(() => {
-		if (form.state.values.blueprintString) {
-			try {
-				const parsedBlueprint = new Blueprint(form.state.values.blueprintString, {blueprintId});
+	useEffect(() =>
+	{
+		if (form.state.values.blueprintString)
+		{
+			try
+			{
+				const parsedBlueprint = new Blueprint(
+					form.state.values.blueprintString,
+					{
+						blueprintId,
+					},
+				);
 				const v15Decoded = parsedBlueprint.getV15Decoded();
 
-				setUiState((prev) => ({
+				setUiState((prev) => (
+				{
 					...prev,
 					parsedBlueprint,
 					v15Decoded,
 				}));
-			} catch {
-				setUiState((prev) => ({
+			}
+			catch
+			{
+				setUiState((prev) => (
+				{
 					...prev,
 					parsedBlueprint: null,
 					v15Decoded: null,
@@ -244,17 +300,23 @@ function EditBlueprintWrapper() {
 		}
 	}, [form.state.values.blueprintString, blueprintId]);
 
-	useEffect(() => {
-		if (form.state.values.descriptionMarkdown) {
+	useEffect(() =>
+	{
+		if (form.state.values.descriptionMarkdown)
+		{
 			const html = md.render(form.state.values.descriptionMarkdown);
 			const renderedMarkdown = sanitizeHtml(html);
 
-			setUiState((prev) => ({
+			setUiState((prev) => (
+			{
 				...prev,
 				renderedMarkdown,
 			}));
-		} else {
-			setUiState((prev) => ({
+		}
+		else
+		{
+			setUiState((prev) => (
+			{
 				...prev,
 				renderedMarkdown: "",
 			}));
@@ -262,16 +324,25 @@ function EditBlueprintWrapper() {
 	}, [form.state.values.descriptionMarkdown]);
 
 	const validateWarnings = useCallback(
-		(formValues: FormValues) => {
+		(formValues: FormValues) =>
+		{
 			const warnings: string[] = [];
 
-			if (isEmpty(formValues.tags)) {
+			if (isEmpty(formValues.tags))
+			{
 				warnings.push("The blueprint has no tags. Consider adding a few tags.");
 			}
 
-			try {
-				const blueprint = new Blueprint(formValues.blueprintString.trim(), {blueprintId});
-				if (isEmpty(blueprint.decodedObject)) {
+			try
+			{
+				const blueprint = new Blueprint(
+					formValues.blueprintString.trim(),
+					{
+						blueprintId,
+					},
+				);
+				if (isEmpty(blueprint.decodedObject))
+				{
 					warnings.push("Could not parse blueprint.");
 					return warnings;
 				}
@@ -281,7 +352,8 @@ function EditBlueprintWrapper() {
 					uiState.v15Decoded &&
 					"blueprint" in uiState.v15Decoded &&
 					isEmpty(uiState.v15Decoded.blueprint?.label)
-				) {
+				)
+				{
 					warnings.push("Blueprint has no name. Consider adding a name.");
 				}
 				if (
@@ -289,7 +361,8 @@ function EditBlueprintWrapper() {
 					uiState.v15Decoded &&
 					"blueprint" in uiState.v15Decoded &&
 					isEmpty(uiState.v15Decoded.blueprint?.icons)
-				) {
+				)
+				{
 					warnings.push("The blueprint has no icons. Consider adding icons.");
 				}
 
@@ -299,10 +372,13 @@ function EditBlueprintWrapper() {
 					"blueprint_book" in uiState.v15Decoded &&
 					uiState.v15Decoded.blueprint_book &&
 					checkIfBlueprintBookHasEntriesWithNoName(uiState.v15Decoded.blueprint_book)
-				) {
+				)
+				{
 					warnings.push("Some blueprints in the book have no name. Consider naming all blueprints.");
 				}
-			} catch (e) {
+			}
+			catch (e)
+			{
 				warnings.push("Error validating blueprint: " + (e instanceof Error ? e.message : "Unknown error"));
 			}
 
@@ -311,24 +387,30 @@ function EditBlueprintWrapper() {
 		[uiState.v15Decoded, blueprintId],
 	);
 
-	const handleDismissWarnings = useCallback(() => {
-		setUiState((prevState) => ({
+	const handleDismissWarnings = useCallback(() =>
+	{
+		setUiState((prevState) => (
+		{
 			...prevState,
 			submissionWarnings: [],
 		}));
 	}, []);
 
 	const handleForceSaveBlueprintEdits = useCallback(
-		(event: React.MouseEvent<HTMLButtonElement>) => {
+		(event: React.MouseEvent<HTMLButtonElement>) =>
+		{
 			event.preventDefault();
 
-			if (rawBlueprintData) {
-				updateBlueprintMutation.mutate({
-					id: blueprintId,
-					rawBlueprint: rawBlueprintData,
-					formData: form.state.values,
-					availableTags: tags,
-				});
+			if (rawBlueprintData)
+			{
+				updateBlueprintMutation.mutate(
+					{
+						id: blueprintId,
+						rawBlueprint: rawBlueprintData,
+						formData: form.state.values,
+						availableTags: tags,
+					},
+				);
 			}
 		},
 		[updateBlueprintMutation, blueprintId, form.state.values, rawBlueprintData, tags],
@@ -336,48 +418,67 @@ function EditBlueprintWrapper() {
 
 	const uploadScreenshot = useCallback(
 		(file: File) =>
-			uploadImage(file, async () => {
+			uploadImage(file, async () =>
+			{
 				if (!user) throw new Error("Sign in again, then retry the upload.");
 				return user.getIdToken();
 			}),
 		[user],
 	);
 
-	const handleCancel = useCallback(() => {
-		navigate({to: "/view/$blueprintId", params: {blueprintId}});
+	const handleCancel = useCallback(() =>
+	{
+		navigate(
+			{
+				to: "/view/$blueprintId",
+				params:
+				{
+					blueprintId,
+				},
+			},
+		);
 	}, [navigate, blueprintId]);
 
-	const handleShowConfirmDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+	const handleShowConfirmDelete = useCallback((event: React.MouseEvent<HTMLButtonElement>) =>
+	{
 		event.preventDefault();
-		setUiState((prevState) => ({
+		setUiState((prevState) => (
+		{
 			...prevState,
 			deletionModalVisible: true,
 		}));
 	}, []);
 
-	const handleHideConfirmDelete = useCallback(() => {
-		setUiState((prevState) => ({
+	const handleHideConfirmDelete = useCallback(() =>
+	{
+		setUiState((prevState) => (
+		{
 			...prevState,
 			deletionModalVisible: false,
 		}));
 	}, []);
 
-	const handleDeleteBlueprint = useCallback(() => {
+	const handleDeleteBlueprint = useCallback(() =>
+	{
 		const authorId = rawBlueprintData?.author?.userId;
 
-		if (!authorId) {
+		if (!authorId)
+		{
 			return;
 		}
 
-		deleteBlueprintMutation.mutate({
-			id: blueprintId,
-			authorId,
-			tags: currentTags,
-		});
+		deleteBlueprintMutation.mutate(
+			{
+				id: blueprintId,
+				authorId,
+				tags: currentTags,
+			},
+		);
 	}, [deleteBlueprintMutation, blueprintId, rawBlueprintData?.author?.userId, currentTags]);
 
 	const handleTagSelection = useCallback(
-		(selectedTags: readonly SelectOption[] | null) => {
+		(selectedTags: readonly SelectOption[] | null) =>
+		{
 			const tagValues = selectedTags ? selectedTags.map((each) => each.value) : [];
 			(form as any).setFieldValue("tags", tagValues);
 			setCurrentTags(tagValues);
@@ -386,8 +487,10 @@ function EditBlueprintWrapper() {
 	);
 
 	const addTag = useCallback(
-		(tag: string) => {
-			if (!currentTags.includes(tag)) {
+		(tag: string) =>
+		{
+			if (!currentTags.includes(tag))
+			{
 				const updatedTags = [...currentTags, tag];
 				(form as any).setFieldValue("tags", updatedTags);
 				setCurrentTags(updatedTags);
@@ -396,9 +499,11 @@ function EditBlueprintWrapper() {
 		[form, currentTags],
 	);
 
-	const renderOldThumbnail = useCallback(() => {
+	const renderOldThumbnail = useCallback(() =>
+	{
 		// Prefer new Imgur image format when available
-		if (blueprintData?.image?.id) {
+		if (blueprintData?.image?.id)
+		{
 			const {id, type} = blueprintData.image;
 			const imageUrl = buildImageUrl(id, type, ImageVariant.Thumbnail);
 			return (
@@ -407,11 +512,19 @@ function EditBlueprintWrapper() {
 						{"Old screenshot"}
 					</Form.Label>
 					<Col sm={10}>
-						<Card className="mb-2 mr-2" style={{width: "14rem", backgroundColor: "#1c1e22"}}>
+						<Card
+							className="mb-2 mr-2"
+							style={
+							{
+								width: "14rem",
+								backgroundColor: "#1c1e22",
+							}}
+						>
 							<Card.Img
 								variant="top"
 								src={imageUrl || noImageAvailable}
-								onError={(e) => {
+								onError={(e) =>
+								{
 									const target = e.target as HTMLImageElement;
 									target.src = noImageAvailable;
 								}}
@@ -426,13 +539,15 @@ function EditBlueprintWrapper() {
 		}
 
 		// Fallback to old imageUrl field (Firebase Storage or legacy Imgur URLs)
-		if (blueprintData?.imageUrl) {
+		if (blueprintData?.imageUrl)
+		{
 			let imageUrl = blueprintData.imageUrl;
 
 			// Convert Imgur page URLs to direct image URLs
 			const imgurPageRegex = /^https:\/\/imgur\.com\/([a-zA-Z0-9]{7})$/;
 			const match = imageUrl.match(imgurPageRegex);
-			if (match) {
+			if (match)
+			{
 				// Convert https://imgur.com/QbepqZa to https://i.imgur.com/QbepqZa.png
 				imageUrl = `https://i.imgur.com/${match[1]}.png`;
 			}
@@ -443,11 +558,19 @@ function EditBlueprintWrapper() {
 						{"Old screenshot"}
 					</Form.Label>
 					<Col sm={10}>
-						<Card className="mb-2 mr-2" style={{width: "14rem", backgroundColor: "#1c1e22"}}>
+						<Card
+							className="mb-2 mr-2"
+							style={
+							{
+								width: "14rem",
+								backgroundColor: "#1c1e22",
+							}}
+						>
 							<Card.Img
 								variant="top"
 								src={imageUrl || noImageAvailable}
-								onError={(e) => {
+								onError={(e) =>
+								{
 									const target = e.target as HTMLImageElement;
 									target.src = noImageAvailable;
 								}}
@@ -465,7 +588,8 @@ function EditBlueprintWrapper() {
 		return null;
 	}, [blueprintData, form.state.values.title]);
 
-	const getUnusedTagSuggestions = () => {
+	const getUnusedTagSuggestions = () =>
+	{
 		if (!user || !blueprintData?.title) return [];
 
 		const tagSuggestions = generateTagSuggestions(
@@ -479,7 +603,8 @@ function EditBlueprintWrapper() {
 
 	const unusedTagSuggestions = getUnusedTagSuggestions();
 
-	if (!user) {
+	if (!user)
+	{
 		return (
 			<>
 				<h1 className="display-4">{"Edit a Blueprint"}</h1>
@@ -488,7 +613,8 @@ function EditBlueprintWrapper() {
 		);
 	}
 
-	if (isLoading) {
+	if (isLoading)
+	{
 		return (
 			<h1>
 				<FontAwesomeIcon icon={faCog} spin />
@@ -497,12 +623,14 @@ function EditBlueprintWrapper() {
 		);
 	}
 
-	if (blueprintError || !blueprintData?.title) {
+	if (blueprintError || !blueprintData?.title)
+	{
 		return <NoMatch />;
 	}
 
 	const ownedByCurrentUser = user && user.uid === blueprintData?.author?.userId;
-	if (!ownedByCurrentUser && !isModerator) {
+	if (!ownedByCurrentUser && !isModerator)
+	{
 		return <h1>You are not the author of this blueprint.</h1>;
 	}
 
@@ -592,7 +720,8 @@ function EditBlueprintWrapper() {
 						<Alert variant="danger" className="alert-fixed" dismissible>
 							<h4>{"Error editing blueprint"}</h4>
 							<ul>
-								{form.state.errors.map((error, index) => {
+								{form.state.errors.map((error, index) =>
+								{
 									// Handle both string errors and object errors
 									const errorMessage =
 										typeof error === "string"
@@ -647,10 +776,14 @@ function EditBlueprintWrapper() {
 									<details>
 										<summary>Error Details</summary>
 										<pre className="mt-2 p-2 bg-dark text-light rounded">
-											{(() => {
-												try {
+											{(() =>
+											{
+												try
+												{
 													return JSON.stringify(deleteBlueprintMutation.error, null, 2);
-												} catch {
+												}
+												catch
+												{
 													return `Error message: ${deleteBlueprintMutation.error.message}\nStack: ${deleteBlueprintMutation.error.stack || "No stack trace available"}`;
 												}
 											})()}
@@ -671,7 +804,8 @@ function EditBlueprintWrapper() {
 				<Row>
 					<form
 						className="w-100"
-						onSubmit={(e) => {
+						onSubmit={(e) =>
+						{
 							e.preventDefault();
 							form.handleSubmit();
 						}}
@@ -736,7 +870,10 @@ function EditBlueprintWrapper() {
 												value={field.state.value}
 												onBlur={field.handleBlur}
 												onChange={(e) => field.handleChange(e.target.value)}
-												style={{minHeight: 200}}
+												style={
+												{
+													minHeight: 200,
+												}}
 											/>
 											{field.state.meta.errors?.length > 0 && (
 												<div className="text-danger mt-1">
@@ -758,7 +895,13 @@ function EditBlueprintWrapper() {
 										</Form.Label>
 										<Col sm={10}>
 											<Card>
-												<div style={{minHeight: 200, padding: "1rem"}}>
+												<div
+													style={
+													{
+														minHeight: 200,
+														padding: "1rem",
+													}}
+												>
 													<MarkdownWithRichText markdown={field.state.value || ""} />
 												</div>
 											</Card>
@@ -830,8 +973,16 @@ function EditBlueprintWrapper() {
 										</Form.Label>
 										<Col sm={10}>
 											<Select
-												value={currentTags.map((value) => ({value, label: value}))}
-												options={tags.map((value) => ({value, label: value}))}
+												value={currentTags.map((value) => (
+												{
+													value,
+													label: value,
+												}))}
+												options={tags.map((value) => (
+												{
+													value,
+													label: value,
+												}))}
 												onChange={handleTagSelection}
 												isMulti
 												placeholder="Select at least one tag"
@@ -856,7 +1007,13 @@ function EditBlueprintWrapper() {
 						/>
 
 						<Form.Group as={Row} className="mb-3">
-							<Col sm={{span: 10, offset: 2}}>
+							<Col
+								sm={
+								{
+									span: 10,
+									offset: 2,
+								}}
+							>
 								<ButtonToolbar>
 									<Button
 										type="submit"

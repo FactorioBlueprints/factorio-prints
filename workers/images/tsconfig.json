@@ -1,5 +1,6 @@
 {
-	"compilerOptions": {
+	"compilerOptions":
+	{
 		"allowImportingTsExtensions": true,
 		"isolatedModules": true,
 		"lib": ["ES2022"],

@@ -39,7 +39,8 @@ import PageHeader from "./PageHeader";
 import ImageUpload from "./ImageUpload";
 import TagSuggestionButton from "./TagSuggestionButton";
 
-interface BlueprintFormData {
+interface BlueprintFormData
+{
 	title: string;
 	descriptionMarkdown: string;
 	blueprintString: string;
@@ -47,7 +48,8 @@ interface BlueprintFormData {
 	tags?: string[];
 }
 
-interface CreateState {
+interface CreateState
+{
 	renderedMarkdown: string;
 	submissionErrors: string[];
 	submissionWarnings: string[];
@@ -58,47 +60,56 @@ interface CreateState {
 	blueprintValidationError: string | null;
 }
 
-interface SelectOption {
+interface SelectOption
+{
 	value: string;
 	label: string;
 }
 
-type BlueprintBookEntry = {
-	blueprint?: {
+type BlueprintBookEntry =
+{
+	blueprint?:
+	{
 		label?: string;
 	};
 	blueprint_book?: BlueprintBook;
 };
 
-type BlueprintBook = {
+type BlueprintBook =
+{
 	blueprints: BlueprintBookEntry[];
 };
 
-const md = new MarkdownIt({
-	html: true,
-	linkify: true,
-	typographer: true,
-	breaks: false,
-});
+const md = new MarkdownIt(
+	{
+		html: true,
+		linkify: true,
+		typographer: true,
+		breaks: false,
+	},
+);
 
 const defaultTableRenderer =
 	md.renderer.rules.table_open ||
 	((tokens: any, idx: number, options: any, env: any, self: any) => self.renderToken(tokens, idx, options));
 
-md.renderer.rules.table_open = (tokens: any, idx: number, options: any, env: any, self: any) => {
+md.renderer.rules.table_open = (tokens: any, idx: number, options: any, env: any, self: any) =>
+{
 	tokens[idx].attrSet("class", "table table-striped table-bordered");
 	return defaultTableRenderer(tokens, idx, options, env, self);
 };
 
 const emptyTags: string[] = [];
 
-const initialState: CreateState = {
+const initialState: CreateState =
+{
 	renderedMarkdown: "",
 	submissionErrors: [],
 	submissionWarnings: [],
 	uploadProgressBarVisible: false,
 	uploadProgressPercent: 0,
-	blueprint: {
+	blueprint:
+	{
 		title: "",
 		descriptionMarkdown: "",
 		blueprintString: "",
@@ -108,15 +119,18 @@ const initialState: CreateState = {
 	blueprintValidationError: null,
 };
 
-function checkIfBlueprintBookHasEntriesWithNoName(blueprintBook: BlueprintBook): boolean {
-	return some(blueprintBook.blueprints, (eachEntry: BlueprintBookEntry) => {
+function checkIfBlueprintBookHasEntriesWithNoName(blueprintBook: BlueprintBook): boolean
+{
+	return some(blueprintBook.blueprints, (eachEntry: BlueprintBookEntry) =>
+	{
 		if (eachEntry.blueprint_book) return checkIfBlueprintBookHasEntriesWithNoName(eachEntry.blueprint_book);
 		if (eachEntry.blueprint) return isEmpty(eachEntry.blueprint.label);
 		return false;
 	});
 }
 
-const Create: React.FC = () => {
+const Create: React.FC = () =>
+{
 	const [user] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const navigate = useNavigate();
 	const [state, setState] = useState<CreateState>(initialState);
@@ -132,22 +146,30 @@ const Create: React.FC = () => {
 
 	const createBlueprintMutation = useCreateBlueprint();
 
-	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null => {
-		try {
+	const parseBlueprint = useCallback((blueprintString: string): Blueprint | null =>
+	{
+		try
+		{
 			return new Blueprint(blueprintString);
-		} catch {
+		}
+		catch
+		{
 			return null;
 		}
 	}, []);
 
 	const cacheBlueprintState = useCallback(
-		(blueprint: BlueprintFormData | null) => {
-			if (blueprint) {
+		(blueprint: BlueprintFormData | null) =>
+		{
+			if (blueprint)
+			{
 				// Drafts saved before screenshots were uploaded carry an imageUrl and no image.
-				const {imageUrl: _legacyImageUrl, ...draft} = blueprint as BlueprintFormData & {
+				const {imageUrl: _legacyImageUrl, ...draft} = blueprint as BlueprintFormData &
+				{
 					imageUrl?: string;
 				};
-				const newBlueprint = {
+				const newBlueprint =
+				{
 					...draft,
 					image: restorableDraftImage(draft.image, Date.now()),
 					tags: blueprint.tags || emptyTags,
@@ -166,7 +188,8 @@ const Create: React.FC = () => {
 					(blueprint.tags && blueprint.tags.length > 0)
 				);
 
-				setState((prevState) => ({
+				setState((prevState) => (
+				{
 					...prevState,
 					blueprint: newBlueprint,
 					renderedMarkdown,
@@ -177,7 +200,8 @@ const Create: React.FC = () => {
 				setV15Decoded(decoded);
 
 				// Set BlueprintWrapper if we have valid decoded data
-				if (decoded) {
+				if (decoded)
+				{
 					const wrapper = new BlueprintWrapper(decoded);
 					setBlueprintWrapper(wrapper);
 				}
@@ -186,38 +210,48 @@ const Create: React.FC = () => {
 		[parseBlueprint],
 	);
 
-	useEffect(() => {
+	useEffect(() =>
+	{
 		const blueprint = loadFromStorage(STORAGE_KEYS.CREATE_FORM);
-		if (blueprint) {
+		if (blueprint)
+		{
 			cacheBlueprintState(blueprint);
 		}
 	}, [cacheBlueprintState]);
 
-	useEffect(() => {
+	useEffect(() =>
+	{
 		saveToStorage(STORAGE_KEYS.CREATE_FORM, state.blueprint);
 	}, [state.blueprint]);
 
-	const handleDismissError = useCallback(() => {
-		setState((prevState) => ({
+	const handleDismissError = useCallback(() =>
+	{
+		setState((prevState) => (
+		{
 			...prevState,
 			submissionErrors: [],
 		}));
 	}, []);
 
-	const handleDismissWarnings = useCallback(() => {
-		setState((prevState) => ({
+	const handleDismissWarnings = useCallback(() =>
+	{
+		setState((prevState) => (
+		{
 			...prevState,
 			submissionWarnings: [],
 		}));
 	}, []);
 
-	const handleDescriptionChanged = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+	const handleDescriptionChanged = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) =>
+	{
 		const descriptionMarkdown = event.target.value;
 		const renderedMarkdown = DOMPurify.sanitize(md.render(descriptionMarkdown || ""));
-		setState((prevState) => ({
+		setState((prevState) => (
+		{
 			...prevState,
 			renderedMarkdown,
-			blueprint: {
+			blueprint:
+			{
 				...prevState.blueprint,
 				descriptionMarkdown,
 			},
@@ -225,10 +259,12 @@ const Create: React.FC = () => {
 	}, []);
 
 	const handleChange = useCallback(
-		(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+		(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+		{
 			const {name, value} = event.target;
 
-			if (name === "blueprintString") {
+			if (name === "blueprintString")
+			{
 				const newParsedBlueprint = parseBlueprint(value);
 				const newV15Decoded = newParsedBlueprint ? newParsedBlueprint.getV15Decoded() : null;
 
@@ -236,9 +272,11 @@ const Create: React.FC = () => {
 				setV15Decoded(newV15Decoded);
 			}
 
-			setState((prevState) => ({
+			setState((prevState) => (
+			{
 				...prevState,
-				blueprint: {
+				blueprint:
+				{
 					...prevState.blueprint,
 					[name]: value,
 				},
@@ -248,13 +286,17 @@ const Create: React.FC = () => {
 	);
 
 	const handleBlueprintPaste = useCallback(
-		(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		(event: React.ChangeEvent<HTMLTextAreaElement>) =>
+		{
 			const value = event.target.value.trim();
 
-			if (!value) {
-				setState((prevState) => ({
+			if (!value)
+			{
+				setState((prevState) => (
+				{
 					...prevState,
-					blueprint: {
+					blueprint:
+					{
 						...prevState.blueprint,
 						blueprintString: "",
 					},
@@ -272,10 +314,13 @@ const Create: React.FC = () => {
 			setV15Decoded(newV15Decoded);
 
 			// Check if the blueprint is valid
-			if (!newParsedBlueprint || !newV15Decoded) {
-				setState((prevState) => ({
+			if (!newParsedBlueprint || !newV15Decoded)
+			{
+				setState((prevState) => (
+				{
 					...prevState,
-					blueprint: {
+					blueprint:
+					{
 						...prevState.blueprint,
 						blueprintString: value,
 					},
@@ -294,10 +339,13 @@ const Create: React.FC = () => {
 			let extractedTitle = "";
 			let extractedDescription = "";
 
-			if (newParsedBlueprint.isBlueprint() && newV15Decoded.blueprint) {
+			if (newParsedBlueprint.isBlueprint() && newV15Decoded.blueprint)
+			{
 				extractedTitle = newV15Decoded.blueprint.label || "";
 				extractedDescription = newV15Decoded.blueprint.description || "";
-			} else if (newParsedBlueprint.isBook() && newV15Decoded.blueprint_book) {
+			}
+			else if (newParsedBlueprint.isBook() && newV15Decoded.blueprint_book)
+			{
 				extractedTitle = newV15Decoded.blueprint_book.label || "";
 				extractedDescription = newV15Decoded.blueprint_book.description || "";
 			}
@@ -305,18 +353,22 @@ const Create: React.FC = () => {
 			// Extract version tag
 			const version = newV15Decoded.blueprint?.version || newV15Decoded.blueprint_book?.version;
 			let versionTag: string | undefined;
-			if (version) {
+			if (version)
+			{
 				// Use parseVersion3 to get major.minor.patch format, then extract major.minor
 				const fullVersion = parseVersion3(version);
-				if (fullVersion && !fullVersion.startsWith("Invalid")) {
+				if (fullVersion && !fullVersion.startsWith("Invalid"))
+				{
 					const versionParts = fullVersion.split(".");
 					versionTag = `/version/${versionParts[0]},${versionParts[1]}/`;
 				}
 			}
 
-			setState((prevState) => ({
+			setState((prevState) => (
+			{
 				...prevState,
-				blueprint: {
+				blueprint:
+				{
 					...prevState.blueprint,
 					blueprintString: value,
 					title: prevState.blueprint.title || extractedTitle,
@@ -337,73 +389,95 @@ const Create: React.FC = () => {
 		[parseBlueprint],
 	);
 
-	const validateInputs = useCallback((): string[] => {
+	const validateInputs = useCallback((): string[] =>
+	{
 		const submissionErrors: string[] = [];
 		const {blueprint} = state;
-		if (!blueprint.title) {
+		if (!blueprint.title)
+		{
 			submissionErrors.push("Title may not be empty");
-		} else if (blueprint.title.trim().length < 10) {
+		}
+		else if (blueprint.title.trim().length < 10)
+		{
 			submissionErrors.push("Title must be at least 10 characters");
 		}
 
-		if (!blueprint.descriptionMarkdown) {
+		if (!blueprint.descriptionMarkdown)
+		{
 			submissionErrors.push("Description Markdown may not be empty");
-		} else if (blueprint.descriptionMarkdown.trim().length < 10) {
+		}
+		else if (blueprint.descriptionMarkdown.trim().length < 10)
+		{
 			submissionErrors.push("Description Markdown must be at least 10 characters");
 		}
 
-		if (!blueprint.blueprintString) {
+		if (!blueprint.blueprintString)
+		{
 			submissionErrors.push("Blueprint String may not be empty");
-		} else if (blueprint.blueprintString.trim().length < 10) {
+		}
+		else if (blueprint.blueprintString.trim().length < 10)
+		{
 			submissionErrors.push("Blueprint String must be at least 10 characters");
 		}
 
-		if (!blueprint.image) {
+		if (!blueprint.image)
+		{
 			submissionErrors.push("Upload a screenshot of the blueprint");
 		}
 
 		return submissionErrors;
 	}, [state]);
 
-	const validateWarnings = useCallback((): string[] => {
+	const validateWarnings = useCallback((): string[] =>
+	{
 		const submissionWarnings: string[] = [];
 
-		if (isEmpty(state.blueprint.tags)) {
+		if (isEmpty(state.blueprint.tags))
+		{
 			submissionWarnings.push("The blueprint has no tags. Consider adding a few tags.");
 		}
 
-		if (state.blueprintValidationError) {
+		if (state.blueprintValidationError)
+		{
 			submissionWarnings.push("Could not parse blueprint.");
 			return submissionWarnings;
 		}
 
 		const blueprint = new Blueprint(state.blueprint.blueprintString.trim());
-		if (isEmpty(blueprint.decodedObject)) {
+		if (isEmpty(blueprint.decodedObject))
+		{
 			submissionWarnings.push("Could not parse blueprint.");
 			return submissionWarnings;
 		}
 
-		if (blueprint.isBlueprint() && v15Decoded && isEmpty(v15Decoded.blueprint.label)) {
+		if (blueprint.isBlueprint() && v15Decoded && isEmpty(v15Decoded.blueprint.label))
+		{
 			submissionWarnings.push("Blueprint has no name. Consider adding a name.");
 		}
-		if (blueprint.isBlueprint() && v15Decoded && isEmpty(v15Decoded.blueprint.icons)) {
+		if (blueprint.isBlueprint() && v15Decoded && isEmpty(v15Decoded.blueprint.icons))
+		{
 			submissionWarnings.push("The blueprint has no icons. Consider adding icons.");
 		}
 
-		if (blueprint.isBook() && v15Decoded && checkIfBlueprintBookHasEntriesWithNoName(v15Decoded.blueprint_book)) {
+		if (blueprint.isBook() && v15Decoded && checkIfBlueprintBookHasEntriesWithNoName(v15Decoded.blueprint_book))
+		{
 			submissionWarnings.push("Some blueprints in the book have no name. Consider naming all blueprints.");
 		}
 
 		return submissionWarnings;
 	}, [state.blueprint, v15Decoded, state.blueprintValidationError]);
 
-	useEffect(() => {
-		if (user && pendingSubmission) {
+	useEffect(() =>
+	{
+		if (user && pendingSubmission)
+		{
 			setPendingSubmission(false);
 
 			const submissionErrors = validateInputs();
-			if (submissionErrors.length > 0) {
-				setState((prevState) => ({
+			if (submissionErrors.length > 0)
+			{
+				setState((prevState) => (
+				{
 					...prevState,
 					submissionErrors,
 				}));
@@ -411,8 +485,10 @@ const Create: React.FC = () => {
 			}
 
 			const submissionWarnings = validateWarnings();
-			if (submissionWarnings.length > 0) {
-				setState((prevState) => ({
+			if (submissionWarnings.length > 0)
+			{
+				setState((prevState) => (
+				{
 					...prevState,
 					submissionWarnings,
 				}));
@@ -421,11 +497,16 @@ const Create: React.FC = () => {
 
 			createBlueprintMutation.mutate(
 				{
-					formData: {...state.blueprint, image: state.blueprint.image!},
+					formData:
+					{
+						...state.blueprint,
+						image: state.blueprint.image!,
+					},
 					user: user,
 				},
 				{
-					onSuccess: () => {
+					onSuccess: () =>
+					{
 						setState(initialState);
 						removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 					},
@@ -435,10 +516,12 @@ const Create: React.FC = () => {
 	}, [user, pendingSubmission, createBlueprintMutation, state.blueprint, validateInputs, validateWarnings]);
 
 	const handleCreateBlueprint = useCallback(
-		(event: React.FormEvent) => {
+		(event: React.FormEvent) =>
+		{
 			event.preventDefault();
 
-			if (!user) {
+			if (!user)
+			{
 				setPendingSubmission(true);
 				setShowAuthPrompt(true);
 				return;
@@ -446,8 +529,10 @@ const Create: React.FC = () => {
 
 			const submissionErrors = validateInputs();
 
-			if (submissionErrors.length > 0) {
-				setState((prevState) => ({
+			if (submissionErrors.length > 0)
+			{
+				setState((prevState) => (
+				{
 					...prevState,
 					submissionErrors,
 				}));
@@ -455,8 +540,10 @@ const Create: React.FC = () => {
 			}
 
 			const submissionWarnings = validateWarnings();
-			if (submissionWarnings.length > 0) {
-				setState((prevState) => ({
+			if (submissionWarnings.length > 0)
+			{
+				setState((prevState) => (
+				{
 					...prevState,
 					submissionWarnings,
 				}));
@@ -465,11 +552,16 @@ const Create: React.FC = () => {
 
 			createBlueprintMutation.mutate(
 				{
-					formData: {...state.blueprint, image: state.blueprint.image!},
+					formData:
+					{
+						...state.blueprint,
+						image: state.blueprint.image!,
+					},
 					user: user!,
 				},
 				{
-					onSuccess: () => {
+					onSuccess: () =>
+					{
 						setState(initialState);
 						removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 					},
@@ -480,18 +572,22 @@ const Create: React.FC = () => {
 	);
 
 	const handleForceCreateBlueprint = useCallback(
-		(event: React.MouseEvent) => {
+		(event: React.MouseEvent) =>
+		{
 			event.preventDefault();
 
-			if (!user) {
+			if (!user)
+			{
 				setPendingSubmission(true);
 				setShowAuthPrompt(true);
 				return;
 			}
 
 			const submissionErrors = validateInputs();
-			if (submissionErrors.length > 0) {
-				setState((prevState) => ({
+			if (submissionErrors.length > 0)
+			{
+				setState((prevState) => (
+				{
 					...prevState,
 					submissionErrors,
 				}));
@@ -500,11 +596,16 @@ const Create: React.FC = () => {
 
 			createBlueprintMutation.mutate(
 				{
-					formData: {...state.blueprint, image: state.blueprint.image!},
+					formData:
+					{
+						...state.blueprint,
+						image: state.blueprint.image!,
+					},
 					user: user!,
 				},
 				{
-					onSuccess: () => {
+					onSuccess: () =>
+					{
 						setState(initialState);
 						removeFromStorage(STORAGE_KEYS.CREATE_FORM);
 					},
@@ -514,41 +615,79 @@ const Create: React.FC = () => {
 		[createBlueprintMutation, state.blueprint, user, validateInputs],
 	);
 
-	const handleCancel = useCallback(() => {
+	const handleCancel = useCallback(() =>
+	{
 		removeFromStorage(STORAGE_KEYS.CREATE_FORM);
-		navigate({to: "/blueprints", from: "/create"});
+		navigate(
+			{
+				to: "/blueprints",
+				from: "/create",
+			},
+		);
 	}, [navigate]);
 
-	const handleTagSelection = useCallback((selectedTags: readonly SelectOption[] | null) => {
+	const handleTagSelection = useCallback((selectedTags: readonly SelectOption[] | null) =>
+	{
 		const tags = selectedTags ? selectedTags.map((each) => each.value) : [];
-		setState((prevState) => ({
+		setState((prevState) => (
+		{
 			...prevState,
-			blueprint: {
+			blueprint:
+			{
 				...prevState.blueprint,
 				tags,
 			},
 		}));
 	}, []);
 
-	const addTag = useCallback((tag: string) => {
+	const addTag = useCallback((tag: string) =>
+	{
 		setState((prevState) =>
-			update(prevState, {
-				blueprint: {tags: {$push: [tag]}},
-			}),
+			update(
+				prevState,
+				{
+					blueprint:
+					{
+						tags:
+						{
+							$push: [tag],
+						},
+					},
+				},
+			),
 		);
 	}, []);
 
 	const uploadScreenshot = useCallback(
 		(file: File) =>
-			uploadImage(file, async () => {
+			uploadImage(file, async () =>
+			{
 				if (!user) throw new Error("Sign in to upload a screenshot.");
 				return user.getIdToken();
 			}),
 		[user],
 	);
 
-	const handleScreenshotUploaded = useCallback((image: UploadedImage) => {
-		setState((prevState) => update(prevState, {blueprint: {image: {$set: {...image, uploadedAt: Date.now()}}}}));
+	const handleScreenshotUploaded = useCallback((image: UploadedImage) =>
+	{
+		setState((prevState) =>
+			update(
+				prevState,
+				{
+					blueprint:
+					{
+						image:
+						{
+							$set:
+							{
+								...image,
+								uploadedAt: Date.now(),
+							},
+						},
+					},
+				},
+			),
+		);
 	}, []);
 
 	const {blueprint} = state;
@@ -559,7 +698,8 @@ const Create: React.FC = () => {
 		<>
 			<Modal
 				show={showAuthPrompt}
-				onHide={() => {
+				onHide={() =>
+				{
 					setShowAuthPrompt(false);
 					setPendingSubmission(false);
 				}}
@@ -677,7 +817,10 @@ const Create: React.FC = () => {
 									placeholder="Paste your Factorio blueprint string here"
 									value={blueprint.blueprintString}
 									onChange={handleBlueprintPaste}
-									style={{minHeight: 150}}
+									style={
+									{
+										minHeight: 150,
+									}}
 								/>
 								{state.blueprintValidationError && (
 									<Alert variant="warning" className="mt-2">
@@ -725,7 +868,10 @@ const Create: React.FC = () => {
 											placeholder="Description (plain text or *GitHub Flavored Markdown*)"
 											value={blueprint.descriptionMarkdown}
 											onChange={handleDescriptionChanged}
-											style={{minHeight: 200}}
+											style={
+											{
+												minHeight: 200,
+											}}
 										/>
 									</Col>
 								</Form.Group>
@@ -736,7 +882,13 @@ const Create: React.FC = () => {
 									</Form.Label>
 									<Col sm={10}>
 										<Card>
-											<div style={{minHeight: 200, padding: "1rem"}}>
+											<div
+												style={
+												{
+													minHeight: 200,
+													padding: "1rem",
+												}}
+											>
 												<MarkdownWithRichText markdown={blueprint.descriptionMarkdown || ""} />
 											</div>
 										</Card>
@@ -768,8 +920,16 @@ const Create: React.FC = () => {
 									</Form.Label>
 									<Col sm={10}>
 										<Select
-											value={(state.blueprint.tags || []).map((value) => ({value, label: value}))}
-											options={tags.map((value) => ({value, label: value}))}
+											value={(state.blueprint.tags || []).map((value) => (
+											{
+												value,
+												label: value,
+											}))}
+											options={tags.map((value) => (
+											{
+												value,
+												label: value,
+											}))}
 											onChange={handleTagSelection}
 											isMulti
 											placeholder="Select at least one tag"
@@ -803,7 +963,13 @@ const Create: React.FC = () => {
 
 						{state.blueprintPasted && (
 							<Form.Group as={Row} className="mb-3">
-								<Col sm={{span: 10, offset: 2}}>
+								<Col
+									sm={
+									{
+										span: 10,
+										offset: 2,
+									}}
+								>
 									<ButtonToolbar>
 										<Button
 											type="button"

@@ -1,6 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from "vite-plus/test";
 import {z} from "zod";
-import {
+import
+{
 	blueprintIdSchema,
 	blueprintBookSchema,
 	enrichedBlueprintSummarySchema,
@@ -31,21 +32,27 @@ import {
 	validateRawUserFavorites,
 } from "./schemas";
 
-const sentryMocks = vi.hoisted(() => ({
+const sentryMocks = vi.hoisted(() => (
+{
 	captureMessage: vi.fn(),
 }));
 
-vi.mock("@sentry/react", () => ({
+vi.mock("@sentry/react", () => (
+{
 	captureMessage: sentryMocks.captureMessage,
 }));
 
-describe("Schema validation", () => {
-	beforeEach(() => {
+describe("Schema validation", () =>
+{
+	beforeEach(() =>
+	{
 		sentryMocks.captureMessage.mockReset();
 	});
 
-	describe("blueprintIdSchema", () => {
-		it("accepts a Firebase push ID", () => {
+	describe("blueprintIdSchema", () =>
+	{
+		it("accepts a Firebase push ID", () =>
+		{
 			expect(blueprintIdSchema.parse("00000000000000000000")).toBe("00000000000000000000");
 		});
 
@@ -59,93 +66,151 @@ describe("Schema validation", () => {
 			"0000000000000000000]",
 			"0000000000000000000/",
 			"0000000000000000000\n",
-		])("rejects an invalid blueprint ID: %j", (blueprintId) => {
+		])("rejects an invalid blueprint ID: %j", (blueprintId) =>
+		{
 			expect(blueprintIdSchema.safeParse(blueprintId).success).toBe(false);
 		});
 	});
 
-	describe("validate function", () => {
-		it("validates data without reporting an event", () => {
-			const mockSchema = {parse: vi.fn((data) => data)};
-			const mockData = {test: "data"};
+	describe("validate function", () =>
+	{
+		it("validates data without reporting an event", () =>
+		{
+			const mockSchema =
+			{
+				parse: vi.fn((data) => data),
+			};
+			const mockData =
+			{
+				test: "data",
+			};
 
 			const result = validate(mockData, mockSchema as any, "test data");
 
-			expect({
-				result,
-				schemaParseCalls: mockSchema.parse.mock.calls,
-				captureMessageCalls: sentryMocks.captureMessage.mock.calls,
-			}).toStrictEqual({
-				result: mockData,
-				schemaParseCalls: [[mockData]],
-				captureMessageCalls: [],
-			});
+			expect(
+				{
+					result,
+					schemaParseCalls: mockSchema.parse.mock.calls,
+					captureMessageCalls: sentryMocks.captureMessage.mock.calls,
+				},
+			).toStrictEqual(
+				{
+					result: mockData,
+					schemaParseCalls: [[mockData]],
+					captureMessageCalls: [],
+				},
+			);
 		});
 
-		it("reports one bounded event when schema parsing throws an unexpected error", () => {
+		it("reports one bounded event when schema parsing throws an unexpected error", () =>
+		{
 			const validationError = new Error("Test validation failure");
-			const mockSchema = {
-				parse: vi.fn(() => {
+			const mockSchema =
+			{
+				parse: vi.fn(() =>
+				{
 					throw validationError;
 				}),
 			};
-			const testData = {field: "test value"};
+			const testData =
+			{
+				field: "test value",
+			};
 
 			expect(() => validate(testData, mockSchema as any, "test data")).toThrowError(
 				new Error("Invalid test data: Test validation failure"),
 			);
-			expect({
-				schemaParseCalls: mockSchema.parse.mock.calls,
-				captureMessageCalls: sentryMocks.captureMessage.mock.calls,
-			}).toStrictEqual({
-				schemaParseCalls: [[testData]],
-				captureMessageCalls: [
-					[
-						"Schema validation failed with unexpected error",
-						{
-							level: "error",
-							fingerprint: ["schema-validation", "test data", "unexpected-error"],
-							tags: {component: "schema-validation"},
-							extra: {
-								description: "test data",
-								error: "Error: Test validation failure",
-								payloadExcerpt: '{"field":"test value"}',
+			expect(
+				{
+					schemaParseCalls: mockSchema.parse.mock.calls,
+					captureMessageCalls: sentryMocks.captureMessage.mock.calls,
+				},
+			).toStrictEqual(
+				{
+					schemaParseCalls: [[testData]],
+					captureMessageCalls: [
+						[
+							"Schema validation failed with unexpected error",
+							{
+								level: "error",
+								fingerprint: ["schema-validation", "test data", "unexpected-error"],
+								tags:
+								{
+									component: "schema-validation",
+								},
+								extra:
+								{
+									description: "test data",
+									error: "Error: Test validation failure",
+									payloadExcerpt: '{"field":"test value"}',
+								},
 							},
-						},
+						],
 					],
-				],
-			});
+				},
+			);
 		});
 
-		it("reports FACTORIO-PRINTS-1JY, FACTORIO-PRINTS-1JZ, FACTORIO-PRINTS-1K0, and FACTORIO-PRINTS-1K1 as one bounded event", () => {
-			const nestedBlueprintSchema = z.object({
-				blueprint_book: z.object({
-					blueprints: z.array(
-						z.object({
-							blueprint: z.object({
-								entities: z.array(z.object({name: z.string()})),
-								label: z.string(),
-							}),
-						}),
+		it("reports FACTORIO-PRINTS-1JY, FACTORIO-PRINTS-1JZ, FACTORIO-PRINTS-1K0, and FACTORIO-PRINTS-1K1 as one bounded event", () =>
+		{
+			const nestedBlueprintSchema = z.object(
+				{
+					blueprint_book: z.object(
+						{
+							blueprints: z.array(
+								z.object(
+									{
+										blueprint: z.object(
+											{
+												entities: z.array(
+													z.object(
+														{
+															name: z.string(),
+														},
+													),
+												),
+												label: z.string(),
+											},
+										),
+									},
+								),
+							),
+						},
 					),
-				}),
-			});
-			const blueprintContext = {
-				entities: [{name: 100}],
+				},
+			);
+			const blueprintContext =
+			{
+				entities: [
+					{
+						name: 100,
+					},
+				],
 				label: "x".repeat(6_000),
 			};
-			const testData = {
-				blueprint_book: {
-					blueprints: [{blueprint: blueprintContext}],
+			const testData =
+			{
+				blueprint_book:
+				{
+					blueprints: [
+						{
+							blueprint: blueprintContext,
+						},
+					],
 				},
 			};
 			const payload = JSON.stringify(testData);
 			const serializedBlueprintContext = JSON.stringify(blueprintContext);
 
 			expect(() =>
-				validate(testData, nestedBlueprintSchema, "raw blueprint data", {
-					blueprintId: "00000000000000000000",
-				}),
+				validate(
+					testData,
+					nestedBlueprintSchema,
+					"raw blueprint data",
+					{
+						blueprintId: "00000000000000000000",
+					},
+				),
 			).toThrowError(
 				new Error(
 					"Invalid raw blueprint data: blueprint_book.blueprints.0.blueprint.entities.0.name: Invalid input: expected string, received number",
@@ -158,11 +223,13 @@ describe("Schema validation", () => {
 					{
 						level: "error",
 						fingerprint: ["schema-validation", "raw blueprint data"],
-						tags: {
+						tags:
+						{
 							component: "schema-validation",
 							blueprintId: "00000000000000000000",
 						},
-						extra: {
+						extra:
+						{
 							description: "raw blueprint data",
 							errorCount: 1,
 							reportedErrorCount: 1,
@@ -191,9 +258,12 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("raw schemas", () => {
-		it("should validate a raw blueprint summary", () => {
-			const fakeRawSummary = {
+	describe("raw schemas", () =>
+	{
+		it("should validate a raw blueprint summary", () =>
+		{
+			const fakeRawSummary =
+			{
 				title: "Test Blueprint",
 				imgurId: "img123",
 				imgurType: "image/png",
@@ -205,7 +275,8 @@ describe("Schema validation", () => {
 
 			expect(() => rawBlueprintSummarySchema.parse(fakeRawSummary)).not.toThrow();
 
-			const invalidRawSummary = {
+			const invalidRawSummary =
+			{
 				...fakeRawSummary,
 				extraField: "should fail strict validation",
 			};
@@ -213,8 +284,10 @@ describe("Schema validation", () => {
 			expect(() => rawBlueprintSummarySchema.parse(invalidRawSummary)).toThrow();
 		});
 
-		it("should validate a raw blueprint", () => {
-			const fakeRawBlueprint = {
+		it("should validate a raw blueprint", () =>
+		{
+			const fakeRawBlueprint =
+			{
 				title: "Test Blueprint",
 				blueprintString: "base64string",
 				createdDate: 1625097600000,
@@ -222,11 +295,13 @@ describe("Schema validation", () => {
 				lastUpdatedDate: 1625097600000,
 				numberOfFavorites: 0,
 				tags: ["tag1", "tag2"],
-				author: {
+				author:
+				{
 					userId: "user123",
 					displayName: "Test User",
 				},
-				image: {
+				image:
+				{
 					id: "img123",
 					type: "image/png",
 				},
@@ -235,7 +310,8 @@ describe("Schema validation", () => {
 
 			expect(() => rawBlueprintSchema.parse(fakeRawBlueprint)).not.toThrow();
 
-			const invalidRawBlueprint = {
+			const invalidRawBlueprint =
+			{
 				...fakeRawBlueprint,
 				unexpectedField: "should fail",
 			};
@@ -243,8 +319,10 @@ describe("Schema validation", () => {
 			expect(() => rawBlueprintSchema.parse(invalidRawBlueprint)).toThrow();
 		});
 
-		it("should validate a raw blueprint with ISO string dates", () => {
-			const fakeRawBlueprint = {
+		it("should validate a raw blueprint with ISO string dates", () =>
+		{
+			const fakeRawBlueprint =
+			{
 				title: "Test Blueprint",
 				blueprintString: "base64string",
 				createdDate: "2020-12-26T08:42:26.506Z",
@@ -252,11 +330,13 @@ describe("Schema validation", () => {
 				lastUpdatedDate: "2021-04-25T08:22:16.341Z",
 				numberOfFavorites: 0,
 				tags: ["tag1", "tag2"],
-				author: {
+				author:
+				{
 					userId: "user123",
 					displayName: "Test User",
 				},
-				image: {
+				image:
+				{
 					id: "img123",
 					type: "image/png",
 				},
@@ -268,10 +348,14 @@ describe("Schema validation", () => {
 			expect(result.lastUpdatedDate).toBe(1619338936341);
 		});
 
-		it("should validate a raw blueprint summary page", () => {
-			const fakeRawPage = {
-				data: {
-					key1: {
+		it("should validate a raw blueprint summary page", () =>
+		{
+			const fakeRawPage =
+			{
+				data:
+				{
+					key1:
+					{
 						title: "Test Blueprint 1",
 						imgurId: "img123",
 						imgurType: "image/png",
@@ -280,7 +364,8 @@ describe("Schema validation", () => {
 						height: 200,
 						width: 300,
 					},
-					key2: {
+					key2:
+					{
 						title: "Test Blueprint 2",
 						imgurId: "img456",
 						imgurType: "image/jpeg",
@@ -295,7 +380,8 @@ describe("Schema validation", () => {
 
 			expect(() => rawBlueprintSummaryPageSchema.parse(fakeRawPage)).not.toThrow();
 
-			const invalidRawPage = {
+			const invalidRawPage =
+			{
 				...fakeRawPage,
 				unexpectedField: "should fail",
 			};
@@ -303,12 +389,16 @@ describe("Schema validation", () => {
 			expect(() => rawBlueprintSummaryPageSchema.parse(invalidRawPage)).toThrow();
 		});
 
-		it("should validate raw paginated blueprint summaries", () => {
-			const fakeRawPaginated = {
+		it("should validate raw paginated blueprint summaries", () =>
+		{
+			const fakeRawPaginated =
+			{
 				pages: [
 					{
-						data: {
-							key1: {
+						data:
+						{
+							key1:
+							{
 								title: "Test Blueprint 1",
 								imgurId: "img123",
 								imgurType: "image/png",
@@ -321,8 +411,10 @@ describe("Schema validation", () => {
 						hasMore: true,
 					},
 					{
-						data: {
-							key2: {
+						data:
+						{
+							key2:
+							{
 								title: "Test Blueprint 2",
 								imgurId: "img456",
 								imgurType: "image/jpeg",
@@ -335,12 +427,19 @@ describe("Schema validation", () => {
 						hasMore: false,
 					},
 				],
-				pageParams: [null, {key: "key1", value: 1625097600000}],
+				pageParams: [
+					null,
+					{
+						key: "key1",
+						value: 1625097600000,
+					},
+				],
 			};
 
 			expect(() => rawPaginatedBlueprintSummariesSchema.parse(fakeRawPaginated)).not.toThrow();
 
-			const invalidPaginated = {
+			const invalidPaginated =
+			{
 				pages: [
 					{
 						data: {},
@@ -353,21 +452,30 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("validateEnrichedBlueprint", () => {
-		it("should validate a valid enriched blueprint", () => {
-			const mockBlueprint = {
+	describe("validateEnrichedBlueprint", () =>
+	{
+		it("should validate a valid enriched blueprint", () =>
+		{
+			const mockBlueprint =
+			{
 				title: "Test Blueprint",
 				blueprintString: "base64string",
 				createdDate: 1625097600000,
 				descriptionMarkdown: "Description",
 				lastUpdatedDate: 1625097600000,
 				numberOfFavorites: 0,
-				tags: {tag1: true, tag2: true},
-				author: {
+				tags:
+				{
+					tag1: true,
+					tag2: true,
+				},
+				author:
+				{
 					userId: "user123",
 					displayName: "Test User",
 				},
-				image: {
+				image:
+				{
 					id: "img123",
 					type: "image/png",
 				},
@@ -384,9 +492,12 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("validateEnrichedBlueprintSummary", () => {
-		it("should validate a valid blueprint summary", () => {
-			const mockSummary = {
+	describe("validateEnrichedBlueprintSummary", () =>
+	{
+		it("should validate a valid blueprint summary", () =>
+		{
+			const mockSummary =
+			{
 				key: "key123",
 				title: "Test Blueprint",
 				imgurId: "img123",
@@ -403,8 +514,10 @@ describe("Schema validation", () => {
 			expect(result).toEqual(mockSummary);
 		});
 
-		it("should reject blueprint summary with unexpected fields", () => {
-			const mockSummary = {
+		it("should reject blueprint summary with unexpected fields", () =>
+		{
+			const mockSummary =
+			{
 				key: "key123",
 				title: "Test Blueprint",
 				imgurId: "img123",
@@ -421,8 +534,10 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("validateEnrichedBlueprintSummaries", () => {
-		it("should validate an array of blueprint summaries", () => {
+	describe("validateEnrichedBlueprintSummaries", () =>
+	{
+		it("should validate an array of blueprint summaries", () =>
+		{
 			const mockSummaries = [
 				{
 					key: "key1",
@@ -454,9 +569,12 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("validateEnrichedPaginatedBlueprintSummaries", () => {
-		it("should validate paginated blueprint summaries", () => {
-			const mockPaginatedData = {
+	describe("validateEnrichedPaginatedBlueprintSummaries", () =>
+	{
+		it("should validate paginated blueprint summaries", () =>
+		{
+			const mockPaginatedData =
+			{
 				pages: [
 					{
 						data: [
@@ -493,7 +611,13 @@ describe("Schema validation", () => {
 						hasMore: false,
 					},
 				],
-				pageParams: [null, {key: "key1", value: 1625097600000}],
+				pageParams: [
+					null,
+					{
+						key: "key1",
+						value: 1625097600000,
+					},
+				],
 			};
 
 			const result = validateEnrichedPaginatedBlueprintSummaries(mockPaginatedData);
@@ -502,11 +626,16 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("validateRawBlueprintSummaryPage", () => {
-		it("should validate a valid raw blueprint summary page", () => {
-			const fakePage = {
-				data: {
-					key1: {
+	describe("validateRawBlueprintSummaryPage", () =>
+	{
+		it("should validate a valid raw blueprint summary page", () =>
+		{
+			const fakePage =
+			{
+				data:
+				{
+					key1:
+					{
 						title: "Test Blueprint",
 						imgurId: "img123",
 						imgurType: "image/png",
@@ -523,10 +652,14 @@ describe("Schema validation", () => {
 			expect(result).toEqual(fakePage);
 		});
 
-		it("should throw error for invalid page structure", () => {
-			const invalidPage = {
-				data: {
-					key1: {
+		it("should throw error for invalid page structure", () =>
+		{
+			const invalidPage =
+			{
+				data:
+				{
+					key1:
+					{
 						title: "Missing required fields",
 						// Missing imgurId, imgurType, numberOfFavorites
 					},
@@ -540,13 +673,18 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("validateRawPaginatedBlueprintSummaries", () => {
-		it("should validate valid raw paginated blueprint summaries", () => {
-			const fakePaginatedData = {
+	describe("validateRawPaginatedBlueprintSummaries", () =>
+	{
+		it("should validate valid raw paginated blueprint summaries", () =>
+		{
+			const fakePaginatedData =
+			{
 				pages: [
 					{
-						data: {
-							key1: {
+						data:
+						{
+							key1:
+							{
 								title: "Test Blueprint",
 								imgurId: "img123",
 								imgurType: "image/png",
@@ -566,8 +704,10 @@ describe("Schema validation", () => {
 			expect(result).toEqual(fakePaginatedData);
 		});
 
-		it("should validate paginated data without pageParams", () => {
-			const fakePaginatedData = {
+		it("should validate paginated data without pageParams", () =>
+		{
+			const fakePaginatedData =
+			{
 				pages: [
 					{
 						data: {},
@@ -582,8 +722,10 @@ describe("Schema validation", () => {
 			expect(result).toEqual(fakePaginatedData);
 		});
 
-		it("should throw error for missing pages array", () => {
-			const invalidData = {
+		it("should throw error for missing pages array", () =>
+		{
+			const invalidData =
+			{
 				// Missing pages array
 				pageParams: [],
 			};
@@ -593,10 +735,14 @@ describe("Schema validation", () => {
 			);
 		});
 
-		describe("tag schemas", () => {
-			describe("rawTagsSchema", () => {
-				it("should validate valid raw tags data", () => {
-					const validRawTags = {
+		describe("tag schemas", () =>
+		{
+			describe("rawTagsSchema", () =>
+			{
+				it("should validate valid raw tags data", () =>
+				{
+					const validRawTags =
+					{
 						belt: ["balancer", "bus", "loader"],
 						production: ["science", "smelting", "mining", "oil processing"],
 						power: ["nuclear", "solar", "steam"],
@@ -610,43 +756,57 @@ describe("Schema validation", () => {
 					expect(result).toEqual(validRawTags);
 				});
 
-				it("should validate empty raw tags", () => {
+				it("should validate empty raw tags", () =>
+				{
 					const emptyTags = {};
 					expect(() => rawTagsSchema.parse(emptyTags)).not.toThrow();
 					const result = validateRawTags(emptyTags);
 					expect(result).toEqual(emptyTags);
 				});
 
-				it("should validate single category with tags", () => {
-					const singleCategory = {
+				it("should validate single category with tags", () =>
+				{
+					const singleCategory =
+					{
 						belt: ["balancer", "express transport belt (blue)"],
 					};
 					expect(() => rawTagsSchema.parse(singleCategory)).not.toThrow();
 				});
 
-				it("should reject non-string tag names", () => {
-					const invalidTags = {
+				it("should reject non-string tag names", () =>
+				{
+					const invalidTags =
+					{
 						belt: ["balancer", 123, "bus"], // Number in array
 					};
 					expect(() => rawTagsSchema.parse(invalidTags)).toThrow();
 				});
 
-				it("should reject non-array values", () => {
-					const invalidTags = {
+				it("should reject non-array values", () =>
+				{
+					const invalidTags =
+					{
 						belt: "balancer", // String instead of array
 					};
 					expect(() => rawTagsSchema.parse(invalidTags)).toThrow();
 				});
 
-				it("should reject nested objects", () => {
-					const invalidTags = {
-						belt: {balancer: true}, // Object instead of array
+				it("should reject nested objects", () =>
+				{
+					const invalidTags =
+					{
+						belt:
+						{
+							balancer: true,
+						}, // Object instead of array
 					};
 					expect(() => rawTagsSchema.parse(invalidTags)).toThrow();
 				});
 
-				it("should handle real-world tag data from tags.json", () => {
-					const realWorldTags = {
+				it("should handle real-world tag data from tags.json", () =>
+				{
+					const realWorldTags =
+					{
 						belt: [
 							"balancer",
 							"bus",
@@ -735,9 +895,12 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("enrichedTagSchema", () => {
-				it("should validate valid enriched tag", () => {
-					const validTag = {
+			describe("enrichedTagSchema", () =>
+			{
+				it("should validate valid enriched tag", () =>
+				{
+					const validTag =
+					{
 						path: "/belt/balancer/",
 						category: "belt",
 						name: "balancer",
@@ -747,29 +910,34 @@ describe("Schema validation", () => {
 					expect(() => enrichedTagSchema.parse(validTag)).not.toThrow();
 				});
 
-				it("should reject tag with missing fields", () => {
-					const missingPath = {
+				it("should reject tag with missing fields", () =>
+				{
+					const missingPath =
+					{
 						category: "belt",
 						name: "balancer",
 						label: "Balancer",
 					};
 					expect(() => enrichedTagSchema.parse(missingPath)).toThrow();
 
-					const missingCategory = {
+					const missingCategory =
+					{
 						path: "/belt/balancer/",
 						name: "balancer",
 						label: "Balancer",
 					};
 					expect(() => enrichedTagSchema.parse(missingCategory)).toThrow();
 
-					const missingName = {
+					const missingName =
+					{
 						path: "/belt/balancer/",
 						category: "belt",
 						label: "Balancer",
 					};
 					expect(() => enrichedTagSchema.parse(missingName)).toThrow();
 
-					const missingLabel = {
+					const missingLabel =
+					{
 						path: "/belt/balancer/",
 						category: "belt",
 						name: "balancer",
@@ -777,8 +945,10 @@ describe("Schema validation", () => {
 					expect(() => enrichedTagSchema.parse(missingLabel)).toThrow();
 				});
 
-				it("should reject tag with extra fields due to strict mode", () => {
-					const extraField = {
+				it("should reject tag with extra fields due to strict mode", () =>
+				{
+					const extraField =
+					{
 						path: "/belt/balancer/",
 						category: "belt",
 						name: "balancer",
@@ -788,8 +958,10 @@ describe("Schema validation", () => {
 					expect(() => enrichedTagSchema.parse(extraField)).toThrow();
 				});
 
-				it("should reject non-string field values", () => {
-					const invalidTypes = {
+				it("should reject non-string field values", () =>
+				{
+					const invalidTypes =
+					{
 						path: 123, // Should be string
 						category: "belt",
 						name: "balancer",
@@ -798,7 +970,8 @@ describe("Schema validation", () => {
 					expect(() => enrichedTagSchema.parse(invalidTypes)).toThrow();
 				});
 
-				it("should validate real-world tag examples", () => {
+				it("should validate real-world tag examples", () =>
+				{
 					const realWorldExamples = [
 						{
 							path: "/production/science/",
@@ -826,14 +999,17 @@ describe("Schema validation", () => {
 						},
 					];
 
-					realWorldExamples.forEach((tag) => {
+					realWorldExamples.forEach((tag) =>
+					{
 						expect(() => enrichedTagSchema.parse(tag)).not.toThrow();
 					});
 				});
 			});
 
-			describe("enrichedTagsSchema", () => {
-				it("should validate array of enriched tags", () => {
+			describe("enrichedTagsSchema", () =>
+			{
+				it("should validate array of enriched tags", () =>
+				{
 					const validTags = [
 						{
 							path: "/belt/balancer/",
@@ -860,15 +1036,18 @@ describe("Schema validation", () => {
 					expect(result).toEqual(validTags);
 				});
 
-				it("should validate empty array", () => {
+				it("should validate empty array", () =>
+				{
 					const emptyArray: any[] = [];
 					expect(() => enrichedTagsSchema.parse(emptyArray)).not.toThrow();
 					const result = validateEnrichedTags(emptyArray);
 					expect(result).toEqual(emptyArray);
 				});
 
-				it("should reject non-array values", () => {
-					const notArray = {
+				it("should reject non-array values", () =>
+				{
+					const notArray =
+					{
 						path: "/belt/balancer/",
 						category: "belt",
 						name: "balancer",
@@ -877,7 +1056,8 @@ describe("Schema validation", () => {
 					expect(() => enrichedTagsSchema.parse(notArray)).toThrow();
 				});
 
-				it("should reject array with invalid tag objects", () => {
+				it("should reject array with invalid tag objects", () =>
+				{
 					const invalidArray = [
 						{
 							path: "/belt/balancer/",
@@ -893,7 +1073,8 @@ describe("Schema validation", () => {
 					expect(() => enrichedTagsSchema.parse(invalidArray)).toThrow();
 				});
 
-				it("should reject array with non-object elements", () => {
+				it("should reject array with non-object elements", () =>
+				{
 					const mixedArray = [
 						{
 							path: "/belt/balancer/",
@@ -908,9 +1089,12 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("tag validation functions", () => {
-				it("validateRawTags should provide clear error messages", () => {
-					const invalidData = {
+			describe("tag validation functions", () =>
+			{
+				it("validateRawTags should provide clear error messages", () =>
+				{
+					const invalidData =
+					{
 						belt: "not an array",
 					};
 
@@ -922,8 +1106,12 @@ describe("Schema validation", () => {
 							{
 								level: "error",
 								fingerprint: ["schema-validation", "raw tags"],
-								tags: {component: "schema-validation"},
-								extra: {
+								tags:
+								{
+									component: "schema-validation",
+								},
+								extra:
+								{
 									description: "raw tags",
 									errorCount: 1,
 									reportedErrorCount: 1,
@@ -946,7 +1134,8 @@ describe("Schema validation", () => {
 					]);
 				});
 
-				it("validateEnrichedTags should provide clear error messages", () => {
+				it("validateEnrichedTags should provide clear error messages", () =>
+				{
 					const invalidData = [
 						{
 							path: "/belt/balancer/",
@@ -962,8 +1151,12 @@ describe("Schema validation", () => {
 							{
 								level: "error",
 								fingerprint: ["schema-validation", "enriched tags"],
-								tags: {component: "schema-validation"},
-								extra: {
+								tags:
+								{
+									component: "schema-validation",
+								},
+								extra:
+								{
 									description: "enriched tags",
 									errorCount: 3,
 									reportedErrorCount: 3,
@@ -1000,15 +1193,18 @@ describe("Schema validation", () => {
 					]);
 				});
 
-				it("should handle null and undefined inputs", () => {
+				it("should handle null and undefined inputs", () =>
+				{
 					expect(() => validateRawTags(null as any)).toThrow();
 					expect(() => validateRawTags(undefined as any)).toThrow();
 					expect(() => validateEnrichedTags(null as any)).toThrow();
 					expect(() => validateEnrichedTags(undefined as any)).toThrow();
 				});
 
-				it("should validate complex nested structures", () => {
-					const complexRawTags = {
+				it("should validate complex nested structures", () =>
+				{
+					const complexRawTags =
+					{
 						"very-long-category-name-that-should-still-work": [
 							"tag with spaces",
 							"tag-with-dashes",
@@ -1023,18 +1219,24 @@ describe("Schema validation", () => {
 			});
 		});
 
-		describe("user schemas", () => {
-			describe("rawUserSchema", () => {
-				it("should validate valid raw user data", () => {
-					const validUser = {
+		describe("user schemas", () =>
+		{
+			describe("rawUserSchema", () =>
+			{
+				it("should validate valid raw user data", () =>
+				{
+					const validUser =
+					{
 						id: "user123",
 						displayName: "John Doe",
 						email: "john@example.com",
-						favorites: {
+						favorites:
+						{
 							blueprint1: true,
 							blueprint2: false,
 						},
-						blueprints: {
+						blueprints:
+						{
 							blueprint3: true,
 							blueprint4: true,
 						},
@@ -1043,16 +1245,20 @@ describe("Schema validation", () => {
 					expect(() => validateRawUser(validUser)).not.toThrow();
 				});
 
-				it("should validate user with minimal data", () => {
-					const minimalUser = {
+				it("should validate user with minimal data", () =>
+				{
+					const minimalUser =
+					{
 						id: "user123",
 					};
 
 					expect(() => validateRawUser(minimalUser)).not.toThrow();
 				});
 
-				it("should apply defaults for optional fields", () => {
-					const userWithoutOptionals = {
+				it("should apply defaults for optional fields", () =>
+				{
+					const userWithoutOptionals =
+					{
 						id: "user123",
 					};
 
@@ -1062,16 +1268,20 @@ describe("Schema validation", () => {
 					expect(result.blueprints).toEqual({});
 				});
 
-				it("should reject user without id", () => {
-					const userWithoutId = {
+				it("should reject user without id", () =>
+				{
+					const userWithoutId =
+					{
 						displayName: "John Doe",
 					};
 
 					expect(() => validateRawUser(userWithoutId)).toThrow();
 				});
 
-				it("should reject user with extra fields", () => {
-					const userWithExtra = {
+				it("should reject user with extra fields", () =>
+				{
+					const userWithExtra =
+					{
 						id: "user123",
 						extraField: "should not be allowed",
 					};
@@ -1080,17 +1290,22 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("enrichedUserSchema", () => {
-				it("should validate valid enriched user data", () => {
-					const validEnrichedUser = {
+			describe("enrichedUserSchema", () =>
+			{
+				it("should validate valid enriched user data", () =>
+				{
+					const validEnrichedUser =
+					{
 						id: "user123",
 						displayName: "John Doe",
 						email: "john@example.com",
-						favorites: {
+						favorites:
+						{
 							blueprint1: true,
 							blueprint2: false,
 						},
-						blueprints: {
+						blueprints:
+						{
 							blueprint3: true,
 							blueprint4: true,
 						},
@@ -1101,16 +1316,20 @@ describe("Schema validation", () => {
 					expect(() => validateEnrichedUser(validEnrichedUser)).not.toThrow();
 				});
 
-				it("should require count fields", () => {
-					const userWithoutCounts = {
+				it("should require count fields", () =>
+				{
+					const userWithoutCounts =
+					{
 						id: "user123",
 					};
 
 					expect(() => validateEnrichedUser(userWithoutCounts)).toThrow();
 				});
 
-				it("should reject enriched user with extra fields", () => {
-					const userWithExtra = {
+				it("should reject enriched user with extra fields", () =>
+				{
+					const userWithExtra =
+					{
 						id: "user123",
 						favoritesCount: 0,
 						blueprintsCount: 0,
@@ -1121,16 +1340,20 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("user validation functions", () => {
-				it("should handle null and undefined inputs", () => {
+			describe("user validation functions", () =>
+			{
+				it("should handle null and undefined inputs", () =>
+				{
 					expect(() => validateRawUser(null as any)).toThrow();
 					expect(() => validateRawUser(undefined as any)).toThrow();
 					expect(() => validateEnrichedUser(null as any)).toThrow();
 					expect(() => validateEnrichedUser(undefined as any)).toThrow();
 				});
 
-				it("should validate user with empty favorites and blueprints", () => {
-					const userWithEmptyRecords = {
+				it("should validate user with empty favorites and blueprints", () =>
+				{
+					const userWithEmptyRecords =
+					{
 						id: "user123",
 						favorites: {},
 						blueprints: {},
@@ -1142,10 +1365,14 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("userBlueprints schemas", () => {
-				describe("rawUserBlueprintsSchema", () => {
-					it("should validate valid raw user blueprints data", () => {
-						const validUserBlueprints = {
+			describe("userBlueprints schemas", () =>
+			{
+				describe("rawUserBlueprintsSchema", () =>
+				{
+					it("should validate valid raw user blueprints data", () =>
+					{
+						const validUserBlueprints =
+						{
 							"blueprint-1": true,
 							"blueprint-2": true,
 							"blueprint-3": false,
@@ -1154,13 +1381,16 @@ describe("Schema validation", () => {
 						expect(() => validateRawUserBlueprints(validUserBlueprints)).not.toThrow();
 					});
 
-					it("should validate empty blueprints object", () => {
+					it("should validate empty blueprints object", () =>
+					{
 						const emptyBlueprints = {};
 						expect(() => validateRawUserBlueprints(emptyBlueprints)).not.toThrow();
 					});
 
-					it("should reject non-boolean values", () => {
-						const invalidBlueprints = {
+					it("should reject non-boolean values", () =>
+					{
+						const invalidBlueprints =
+						{
 							"blueprint-1": true,
 							"blueprint-2": "not a boolean",
 						};
@@ -1168,14 +1398,17 @@ describe("Schema validation", () => {
 						expect(() => validateRawUserBlueprints(invalidBlueprints)).toThrow();
 					});
 
-					it("should reject non-object types", () => {
+					it("should reject non-object types", () =>
+					{
 						expect(() => validateRawUserBlueprints([] as any)).toThrow();
 						expect(() => validateRawUserBlueprints("string" as any)).toThrow();
 						expect(() => validateRawUserBlueprints(123 as any)).toThrow();
 					});
 
-					it("should validate real-world blueprint data", () => {
-						const realWorldData = {
+					it("should validate real-world blueprint data", () =>
+					{
+						const realWorldData =
+						{
 							"-KnQ865j-qQ21WoUPbd3": true,
 							"-L_jADWYOzVoz7tNRFf0": true,
 							"-MhFKv_xHyTpGxP5ABCD": false,
@@ -1185,10 +1418,14 @@ describe("Schema validation", () => {
 					});
 				});
 
-				describe("enrichedUserBlueprintsSchema", () => {
-					it("should validate valid enriched user blueprints data", () => {
-						const validEnrichedBlueprints = {
-							blueprintIds: {
+				describe("enrichedUserBlueprintsSchema", () =>
+				{
+					it("should validate valid enriched user blueprints data", () =>
+					{
+						const validEnrichedBlueprints =
+						{
+							blueprintIds:
+							{
 								"blueprint-1": true,
 								"blueprint-2": true,
 							},
@@ -1198,8 +1435,10 @@ describe("Schema validation", () => {
 						expect(() => validateEnrichedUserBlueprints(validEnrichedBlueprints)).not.toThrow();
 					});
 
-					it("should validate empty blueprints with zero count", () => {
-						const emptyEnrichedBlueprints = {
+					it("should validate empty blueprints with zero count", () =>
+					{
+						const emptyEnrichedBlueprints =
+						{
 							blueprintIds: {},
 							count: 0,
 						};
@@ -1207,24 +1446,33 @@ describe("Schema validation", () => {
 						expect(() => validateEnrichedUserBlueprints(emptyEnrichedBlueprints)).not.toThrow();
 					});
 
-					it("should reject missing count field", () => {
-						const missingCount = {
-							blueprintIds: {"blueprint-1": true},
+					it("should reject missing count field", () =>
+					{
+						const missingCount =
+						{
+							blueprintIds:
+							{
+								"blueprint-1": true,
+							},
 						};
 
 						expect(() => validateEnrichedUserBlueprints(missingCount)).toThrow();
 					});
 
-					it("should reject missing blueprintIds field", () => {
-						const missingIds = {
+					it("should reject missing blueprintIds field", () =>
+					{
+						const missingIds =
+						{
 							count: 5,
 						};
 
 						expect(() => validateEnrichedUserBlueprints(missingIds)).toThrow();
 					});
 
-					it("should reject extra fields due to strict mode", () => {
-						const extraFields = {
+					it("should reject extra fields due to strict mode", () =>
+					{
+						const extraFields =
+						{
 							blueprintIds: {},
 							count: 0,
 							extraField: "not allowed",
@@ -1235,10 +1483,14 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("userFavorites schemas", () => {
-				describe("rawUserFavoritesSchema", () => {
-					it("should validate valid raw user favorites data", () => {
-						const validUserFavorites = {
+			describe("userFavorites schemas", () =>
+			{
+				describe("rawUserFavoritesSchema", () =>
+				{
+					it("should validate valid raw user favorites data", () =>
+					{
+						const validUserFavorites =
+						{
 							"blueprint-1": true,
 							"blueprint-2": false,
 							"blueprint-3": true,
@@ -1247,13 +1499,16 @@ describe("Schema validation", () => {
 						expect(() => validateRawUserFavorites(validUserFavorites)).not.toThrow();
 					});
 
-					it("should validate empty favorites object", () => {
+					it("should validate empty favorites object", () =>
+					{
 						const emptyFavorites = {};
 						expect(() => validateRawUserFavorites(emptyFavorites)).not.toThrow();
 					});
 
-					it("should reject non-boolean values", () => {
-						const invalidFavorites = {
+					it("should reject non-boolean values", () =>
+					{
+						const invalidFavorites =
+						{
 							"blueprint-1": true,
 							"blueprint-2": 1,
 						};
@@ -1261,14 +1516,17 @@ describe("Schema validation", () => {
 						expect(() => validateRawUserFavorites(invalidFavorites)).toThrow();
 					});
 
-					it("should reject non-object types", () => {
+					it("should reject non-object types", () =>
+					{
 						expect(() => validateRawUserFavorites(null as any)).toThrow();
 						expect(() => validateRawUserFavorites(undefined as any)).toThrow();
 						expect(() => validateRawUserFavorites([] as any)).toThrow();
 					});
 
-					it("should validate real-world favorite data with mixed boolean values", () => {
-						const realWorldFavorites = {
+					it("should validate real-world favorite data with mixed boolean values", () =>
+					{
+						const realWorldFavorites =
+						{
 							"-KnQ865j-qQ21WoUPbd3": true,
 							"-L_jADWYOzVoz7tNRFf0": false,
 							"-MhFKv_xHyTpGxP5ABCD": true,
@@ -1280,10 +1538,14 @@ describe("Schema validation", () => {
 					});
 				});
 
-				describe("enrichedUserFavoritesSchema", () => {
-					it("should validate valid enriched user favorites data", () => {
-						const validEnrichedFavorites = {
-							favoriteIds: {
+				describe("enrichedUserFavoritesSchema", () =>
+				{
+					it("should validate valid enriched user favorites data", () =>
+					{
+						const validEnrichedFavorites =
+						{
+							favoriteIds:
+							{
 								"blueprint-1": true,
 								"blueprint-2": false,
 								"blueprint-3": true,
@@ -1294,8 +1556,10 @@ describe("Schema validation", () => {
 						expect(() => validateEnrichedUserFavorites(validEnrichedFavorites)).not.toThrow();
 					});
 
-					it("should validate empty favorites with zero count", () => {
-						const emptyEnrichedFavorites = {
+					it("should validate empty favorites with zero count", () =>
+					{
+						const emptyEnrichedFavorites =
+						{
 							favoriteIds: {},
 							count: 0,
 						};
@@ -1303,24 +1567,33 @@ describe("Schema validation", () => {
 						expect(() => validateEnrichedUserFavorites(emptyEnrichedFavorites)).not.toThrow();
 					});
 
-					it("should reject missing count field", () => {
-						const missingCount = {
-							favoriteIds: {"blueprint-1": true},
+					it("should reject missing count field", () =>
+					{
+						const missingCount =
+						{
+							favoriteIds:
+							{
+								"blueprint-1": true,
+							},
 						};
 
 						expect(() => validateEnrichedUserFavorites(missingCount)).toThrow();
 					});
 
-					it("should reject missing favoriteIds field", () => {
-						const missingIds = {
+					it("should reject missing favoriteIds field", () =>
+					{
+						const missingIds =
+						{
 							count: 3,
 						};
 
 						expect(() => validateEnrichedUserFavorites(missingIds)).toThrow();
 					});
 
-					it("should reject extra fields due to strict mode", () => {
-						const extraFields = {
+					it("should reject extra fields due to strict mode", () =>
+					{
+						const extraFields =
+						{
 							favoriteIds: {},
 							count: 0,
 							additionalData: "not allowed",
@@ -1329,8 +1602,10 @@ describe("Schema validation", () => {
 						expect(() => validateEnrichedUserFavorites(extraFields)).toThrow();
 					});
 
-					it("should reject non-number count values", () => {
-						const invalidCount = {
+					it("should reject non-number count values", () =>
+					{
+						const invalidCount =
+						{
 							favoriteIds: {},
 							count: "5",
 						};
@@ -1340,10 +1615,14 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("userCollection schemas", () => {
-				describe("rawUserCollectionSchema", () => {
-					it("should validate valid raw user collection data", () => {
-						const validUserCollection = {
+			describe("userCollection schemas", () =>
+			{
+				describe("rawUserCollectionSchema", () =>
+				{
+					it("should validate valid raw user collection data", () =>
+					{
+						const validUserCollection =
+						{
 							"blueprint-1": true,
 							"blueprint-2": false,
 						};
@@ -1351,13 +1630,16 @@ describe("Schema validation", () => {
 						expect(() => validateRawUserCollection(validUserCollection)).not.toThrow();
 					});
 
-					it("should validate empty collection object", () => {
+					it("should validate empty collection object", () =>
+					{
 						const emptyCollection = {};
 						expect(() => validateRawUserCollection(emptyCollection)).not.toThrow();
 					});
 
-					it("should reject non-boolean values", () => {
-						const invalidCollection = {
+					it("should reject non-boolean values", () =>
+					{
+						const invalidCollection =
+						{
 							"blueprint-1": true,
 							"blueprint-2": "invalid",
 						};
@@ -1366,10 +1648,14 @@ describe("Schema validation", () => {
 					});
 				});
 
-				describe("enrichedUserCollectionSchema", () => {
-					it("should validate valid enriched user collection data", () => {
-						const validEnrichedCollection = {
-							collectionIds: {
+				describe("enrichedUserCollectionSchema", () =>
+				{
+					it("should validate valid enriched user collection data", () =>
+					{
+						const validEnrichedCollection =
+						{
+							collectionIds:
+							{
 								"blueprint-1": true,
 								"blueprint-2": false,
 							},
@@ -1379,13 +1665,28 @@ describe("Schema validation", () => {
 						expect(() => validateEnrichedUserCollection(validEnrichedCollection)).not.toThrow();
 					});
 
-					it("should reject missing fields", () => {
-						expect(() => validateEnrichedUserCollection({count: 1})).toThrow();
-						expect(() => validateEnrichedUserCollection({collectionIds: {}})).toThrow();
+					it("should reject missing fields", () =>
+					{
+						expect(() =>
+							validateEnrichedUserCollection(
+								{
+									count: 1,
+								},
+							),
+						).toThrow();
+						expect(() =>
+							validateEnrichedUserCollection(
+								{
+									collectionIds: {},
+								},
+							),
+						).toThrow();
 					});
 
-					it("should reject extra fields due to strict mode", () => {
-						const extraFields = {
+					it("should reject extra fields due to strict mode", () =>
+					{
+						const extraFields =
+						{
 							collectionIds: {},
 							count: 0,
 							extra: "nope",
@@ -1396,9 +1697,12 @@ describe("Schema validation", () => {
 				});
 			});
 
-			describe("user data validation functions", () => {
-				it("validateRawUserBlueprints should provide clear error messages", () => {
-					const invalidData = {
+			describe("user data validation functions", () =>
+			{
+				it("validateRawUserBlueprints should provide clear error messages", () =>
+				{
+					const invalidData =
+					{
 						"blueprint-1": "not a boolean",
 					};
 
@@ -1410,8 +1714,12 @@ describe("Schema validation", () => {
 							{
 								level: "error",
 								fingerprint: ["schema-validation", "raw user blueprints"],
-								tags: {component: "schema-validation"},
-								extra: {
+								tags:
+								{
+									component: "schema-validation",
+								},
+								extra:
+								{
 									description: "raw user blueprints",
 									errorCount: 1,
 									reportedErrorCount: 1,
@@ -1434,8 +1742,10 @@ describe("Schema validation", () => {
 					]);
 				});
 
-				it("validateEnrichedUserFavorites should provide clear error messages", () => {
-					const invalidData = {
+				it("validateEnrichedUserFavorites should provide clear error messages", () =>
+				{
+					const invalidData =
+					{
 						count: 5,
 						// Missing favoriteIds
 					};
@@ -1448,8 +1758,12 @@ describe("Schema validation", () => {
 							{
 								level: "error",
 								fingerprint: ["schema-validation", "enriched user favorites"],
-								tags: {component: "schema-validation"},
-								extra: {
+								tags:
+								{
+									component: "schema-validation",
+								},
+								extra:
+								{
 									description: "enriched user favorites",
 									errorCount: 1,
 									reportedErrorCount: 1,
@@ -1475,9 +1789,12 @@ describe("Schema validation", () => {
 		});
 	});
 
-	describe("blueprintBookSchema", () => {
-		it("should handle blueprint books with undefined blueprints field", () => {
-			const bookWithUndefinedBlueprints = {
+	describe("blueprintBookSchema", () =>
+	{
+		it("should handle blueprint books with undefined blueprints field", () =>
+		{
+			const bookWithUndefinedBlueprints =
+			{
 				label: "Test Book",
 				description: "A test blueprint book",
 			};
@@ -1486,19 +1803,24 @@ describe("Schema validation", () => {
 			expect(result.blueprints).toEqual([]);
 		});
 
-		it("should handle nested blueprint books with undefined blueprints field", () => {
-			const nestedBookData = {
-				blueprint_book: {
+		it("should handle nested blueprint books with undefined blueprints field", () =>
+		{
+			const nestedBookData =
+			{
+				blueprint_book:
+				{
 					blueprints: [
 						{
 							index: 0,
-							blueprint: {
+							blueprint:
+							{
 								label: "Blueprint 1",
 							},
 						},
 						{
 							index: 1,
-							blueprint_book: {
+							blueprint_book:
+							{
 								label: "Nested Book",
 								// No blueprints field - this was causing the error
 							},
@@ -1519,8 +1841,10 @@ describe("Schema validation", () => {
 			expect(result.blueprint_book?.blueprints[1].blueprint_book?.blueprints).toEqual([]);
 		});
 
-		it("should handle blueprint books with empty array blueprints field", () => {
-			const bookWithEmptyBlueprints = {
+		it("should handle blueprint books with empty array blueprints field", () =>
+		{
+			const bookWithEmptyBlueprints =
+			{
 				label: "Empty Book",
 				blueprints: [],
 			};
@@ -1529,13 +1853,16 @@ describe("Schema validation", () => {
 			expect(result.blueprints).toEqual([]);
 		});
 
-		it("should preserve existing blueprints array when provided", () => {
-			const bookWithBlueprints = {
+		it("should preserve existing blueprints array when provided", () =>
+		{
+			const bookWithBlueprints =
+			{
 				label: "Book with blueprints",
 				blueprints: [
 					{
 						index: 0,
-						blueprint: {
+						blueprint:
+						{
 							label: "Test Blueprint",
 						},
 					},

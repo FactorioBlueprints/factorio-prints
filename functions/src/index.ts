@@ -5,7 +5,8 @@ import {getDatabase} from "firebase-admin/database";
 import {onValueWritten, onValueDeleted, DatabaseEvent, DataSnapshot} from "firebase-functions/v2/database";
 import {Change} from "firebase-functions/v2";
 import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
-import {
+import
+{
 	buildCollectorBackfill,
 	getCollectedBlueprintIds,
 	getIndexedCollectorUserIds,
@@ -20,7 +21,8 @@ initializeApp();
  */
 export const updateFavoriteCount = onValueWritten(
 	"/users/{userId}/favorites/{blueprintId}",
-	async (event: DatabaseEvent<Change<DataSnapshot>>) => {
+	async (event: DatabaseEvent<Change<DataSnapshot>>) =>
+	{
 		const blueprintId = event.params.blueprintId;
 		const userId = event.params.userId;
 		const change = event.data;
@@ -32,7 +34,8 @@ export const updateFavoriteCount = onValueWritten(
 		const wasRemoved = beforeValue === true && (afterValue === null || afterValue === false);
 		const wasAdded = (beforeValue === null || beforeValue === false) && afterValue === true;
 
-		if (!wasAdded && !wasRemoved) {
+		if (!wasAdded && !wasRemoved)
+		{
 			// No actual change in favorite status
 			return null;
 		}
@@ -43,7 +46,8 @@ export const updateFavoriteCount = onValueWritten(
 		// This prevents re-creating deleted blueprints when cleanupFavoritesOnBlueprintDelete
 		// removes user favorites and triggers this function.
 		const blueprintSnapshot = await database.ref(`/blueprints/${blueprintId}`).once("value");
-		if (!blueprintSnapshot.exists()) {
+		if (!blueprintSnapshot.exists())
+		{
 			functions.logger.log(
 				`Blueprint ${blueprintId} no longer exists, skipping favorite update (user ${userId})`,
 			);
@@ -52,9 +56,12 @@ export const updateFavoriteCount = onValueWritten(
 
 		// Update the blueprint's favorites record to match.
 		const blueprintFavoriteRef = database.ref(`/blueprints/${blueprintId}/favorites/${userId}`);
-		if (afterValue === true) {
+		if (afterValue === true)
+		{
 			await blueprintFavoriteRef.set(true);
-		} else {
+		}
+		else
+		{
 			await blueprintFavoriteRef.remove();
 		}
 
@@ -67,7 +74,8 @@ export const updateFavoriteCount = onValueWritten(
 		const favoriteCount = Object.values(favorites).filter((value) => value === true).length;
 
 		// Update the count in both locations atomically
-		const updates: Record<string, number> = {
+		const updates: Record<string, number> =
+		{
 			[`/blueprints/${blueprintId}/numberOfFavorites`]: favoriteCount,
 			[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: favoriteCount,
 		};
@@ -87,7 +95,8 @@ export const updateFavoriteCount = onValueWritten(
  */
 export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 	"/blueprints/{blueprintId}",
-	async (event: DatabaseEvent<DataSnapshot>) => {
+	async (event: DatabaseEvent<DataSnapshot>) =>
+	{
 		const blueprintId = event.params.blueprintId;
 		const snapshot = event.data;
 		const blueprint = snapshot.val();
@@ -96,7 +105,8 @@ export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 		const favorites = blueprint?.favorites ?? {};
 		const userIds = Object.keys(favorites).filter((userId) => favorites[userId] === true);
 
-		if (userIds.length === 0) {
+		if (userIds.length === 0)
+		{
 			functions.logger.log(`Blueprint ${blueprintId} deleted with no favorites to clean up`);
 			return null;
 		}
@@ -104,7 +114,8 @@ export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 		const database = getDatabase();
 		const updates: Record<string, null> = {};
 
-		for (const userId of userIds) {
+		for (const userId of userIds)
+		{
 			updates[`/users/${userId}/favorites/${blueprintId}`] = null;
 		}
 
@@ -119,7 +130,8 @@ export const cleanupFavoritesOnBlueprintDelete = onValueDeleted(
 
 export const updateBlueprintCollector = onValueWritten(
 	"/users/{userId}/collection/{blueprintId}",
-	async (event: DatabaseEvent<Change<DataSnapshot>>) => {
+	async (event: DatabaseEvent<Change<DataSnapshot>>) =>
+	{
 		const blueprintId = event.params.blueprintId;
 		const userId = event.params.userId;
 		const beforeValue = event.data.before.val();
@@ -127,13 +139,15 @@ export const updateBlueprintCollector = onValueWritten(
 		const wasRemoved = beforeValue === true && afterValue !== true;
 		const wasAdded = beforeValue !== true && afterValue === true;
 
-		if (!wasAdded && !wasRemoved) {
+		if (!wasAdded && !wasRemoved)
+		{
 			return null;
 		}
 
 		const database = getDatabase();
 		const blueprintSnapshot = await database.ref(`/blueprints/${blueprintId}`).once("value");
-		if (!blueprintSnapshot.exists()) {
+		if (!blueprintSnapshot.exists())
+		{
 			functions.logger.log(
 				`Blueprint ${blueprintId} no longer exists, skipping collector update (user ${userId})`,
 			);
@@ -141,9 +155,12 @@ export const updateBlueprintCollector = onValueWritten(
 		}
 
 		const collectorRef = database.ref(`/blueprintCollectors/${blueprintId}/${userId}`);
-		if (afterValue === true) {
+		if (afterValue === true)
+		{
 			await collectorRef.set(true);
-		} else {
+		}
+		else
+		{
 			await collectorRef.remove();
 		}
 
@@ -156,7 +173,8 @@ export const updateBlueprintCollector = onValueWritten(
  */
 export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
 	"/blueprints/{blueprintId}",
-	async (event: DatabaseEvent<DataSnapshot>) => {
+	async (event: DatabaseEvent<DataSnapshot>) =>
+	{
 		const blueprintId = event.params.blueprintId;
 		const database = getDatabase();
 		const collectorSnapshot = await database.ref(`/blueprintCollectors/${blueprintId}`).once("value");
@@ -164,15 +182,19 @@ export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
 		const backfillSnapshot = await database.ref("/migrations/blueprintCollectorsBackfillComplete").once("value");
 		const userIds = new Set(indexedUserIds);
 
-		if (backfillSnapshot.val() !== true) {
+		if (backfillSnapshot.val() !== true)
+		{
 			const usersSnapshot = await database.ref("/users").once("value");
-			for (const userId of getLegacyCollectorUserIds(usersSnapshot.val(), blueprintId)) {
+			for (const userId of getLegacyCollectorUserIds(usersSnapshot.val(), blueprintId))
+			{
 				userIds.add(userId);
 			}
 		}
 
-		if (userIds.size === 0) {
-			if (collectorSnapshot.exists()) {
+		if (userIds.size === 0)
+		{
+			if (collectorSnapshot.exists())
+			{
 				await collectorSnapshot.ref.remove();
 			}
 			functions.logger.log(`Blueprint ${blueprintId} deleted with no collectors to clean up`);
@@ -181,7 +203,8 @@ export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
 
 		const updates: Record<string, null> = {};
 
-		for (const userId of userIds) {
+		for (const userId of userIds)
+		{
 			updates[`/users/${userId}/collection/${blueprintId}`] = null;
 		}
 		updates[`/blueprintCollectors/${blueprintId}`] = null;
@@ -199,11 +222,13 @@ export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
  * Cloud Function to reconcile favorite counts (can be called manually if needed)
  * This is a failsafe to fix any discrepancies
  */
-export const reconcileFavoriteCounts = onRequest(async (req, res) => {
+export const reconcileFavoriteCounts = onRequest(async (req, res) =>
+{
 	// This should be protected in production
 	// Check for admin authentication or a secret key
 	const authToken = req.headers.authorization;
-	if (authToken !== `Bearer ${process.env.ADMIN_SECRET}`) {
+	if (authToken !== `Bearer ${process.env.ADMIN_SECRET}`)
+	{
 		res.status(403).send("Unauthorized");
 		return;
 	}
@@ -216,7 +241,8 @@ export const reconcileFavoriteCounts = onRequest(async (req, res) => {
 	const updates: Record<string, number> = {};
 	let reconcileCount = 0;
 
-	for (const blueprintId of Object.keys(blueprints)) {
+	for (const blueprintId of Object.keys(blueprints))
+	{
 		const blueprint = blueprints[blueprintId];
 		const favorites = blueprint.favorites || {};
 
@@ -224,35 +250,45 @@ export const reconcileFavoriteCounts = onRequest(async (req, res) => {
 
 		const currentCount = blueprint.numberOfFavorites || 0;
 
-		if (currentCount !== actualCount) {
+		if (currentCount !== actualCount)
+		{
 			updates[`/blueprints/${blueprintId}/numberOfFavorites`] = actualCount;
 			updates[`/blueprintSummaries/${blueprintId}/numberOfFavorites`] = actualCount;
 			reconcileCount++;
 		}
 	}
 
-	if (Object.keys(updates).length > 0) {
+	if (Object.keys(updates).length > 0)
+	{
 		await database.ref().update(updates);
-		res.json({
-			success: true,
-			message: `Reconciled ${reconcileCount} blueprint favorite counts`,
-			reconciled: reconcileCount,
-		});
-	} else {
-		res.json({
-			success: true,
-			message: "All favorite counts are already accurate",
-			reconciled: 0,
-		});
+		res.json(
+			{
+				success: true,
+				message: `Reconciled ${reconcileCount} blueprint favorite counts`,
+				reconciled: reconcileCount,
+			},
+		);
+	}
+	else
+	{
+		res.json(
+			{
+				success: true,
+				message: "All favorite counts are already accurate",
+				reconciled: 0,
+			},
+		);
 	}
 });
 
 /**
  * Backfill collector indexes from user collections.
  */
-export const backfillBlueprintCollectors = onRequest(async (req, res) => {
+export const backfillBlueprintCollectors = onRequest(async (req, res) =>
+{
 	const authToken = req.headers.authorization;
-	if (authToken !== `Bearer ${process.env.ADMIN_SECRET}`) {
+	if (authToken !== `Bearer ${process.env.ADMIN_SECRET}`)
+	{
 		res.status(403).send("Unauthorized");
 		return;
 	}
@@ -263,56 +299,68 @@ export const backfillBlueprintCollectors = onRequest(async (req, res) => {
 	const collectedBlueprintIds = [...getCollectedBlueprintIds(users)];
 	const existingBlueprintIds = new Set<string>();
 
-	for (let offset = 0; offset < collectedBlueprintIds.length; offset += 100) {
+	for (let offset = 0; offset < collectedBlueprintIds.length; offset += 100)
+	{
 		const batch = collectedBlueprintIds.slice(offset, offset + 100);
 		const snapshots = await Promise.all(
 			batch.map((blueprintId) => database.ref(`/blueprints/${blueprintId}`).once("value")),
 		);
 
-		for (const [index, snapshot] of snapshots.entries()) {
-			if (snapshot.exists()) {
+		for (const [index, snapshot] of snapshots.entries())
+		{
+			if (snapshot.exists())
+			{
 				existingBlueprintIds.add(batch[index]);
 			}
 		}
 	}
 
 	const backfill = buildCollectorBackfill(users, existingBlueprintIds);
-	await database.ref().update({
-		...backfill.updates,
-		"/migrations/blueprintCollectorsBackfillComplete": true,
-	});
+	await database.ref().update(
+		{
+			...backfill.updates,
+			"/migrations/blueprintCollectorsBackfillComplete": true,
+		},
+	);
 
-	res.json({
-		success: true,
-		message: `Backfilled collectors for ${backfill.entries} (user, blueprint) pairs across ${backfill.users} users`,
-		users: backfill.users,
-		entries: backfill.entries,
-		skippedEntries: backfill.skippedEntries,
-	});
+	res.json(
+		{
+			success: true,
+			message: `Backfilled collectors for ${backfill.entries} (user, blueprint) pairs across ${backfill.users} users`,
+			users: backfill.users,
+			entries: backfill.entries,
+			skippedEntries: backfill.skippedEntries,
+		},
+	);
 });
 
 /**
  * Reconcile one blueprint's favorite count from the moderator UI.
  */
-export const reconcileFavoriteCount = onCall(async (request) => {
+export const reconcileFavoriteCount = onCall(async (request) =>
+{
 	const userId = request.auth?.uid;
-	if (!userId) {
+	if (!userId)
+	{
 		throw new HttpsError("unauthenticated", "Authentication is required.");
 	}
 
 	const blueprintId = request.data?.blueprintId;
-	if (typeof blueprintId !== "string" || blueprintId.length === 0 || /[.#$[\]/]/.test(blueprintId)) {
+	if (typeof blueprintId !== "string" || blueprintId.length === 0 || /[.#$[\]/]/.test(blueprintId))
+	{
 		throw new HttpsError("invalid-argument", "A valid blueprintId is required.");
 	}
 
 	const database = getDatabase();
 	const moderatorSnapshot = await database.ref(`/moderators/${userId}`).once("value");
-	if (moderatorSnapshot.val() !== true) {
+	if (moderatorSnapshot.val() !== true)
+	{
 		throw new HttpsError("permission-denied", "Moderator access is required.");
 	}
 
 	const blueprintSnapshot = await database.ref(`/blueprints/${blueprintId}`).once("value");
-	if (!blueprintSnapshot.exists()) {
+	if (!blueprintSnapshot.exists())
+	{
 		throw new HttpsError("not-found", "Blueprint not found.");
 	}
 
@@ -328,11 +376,14 @@ export const reconcileFavoriteCount = onCall(async (request) => {
 	const previousSummaryCount = typeof summaryCount === "number" ? summaryCount : 0;
 	const hasDiscrepancy = previousBlueprintCount !== actualCount || previousSummaryCount !== actualCount;
 
-	if (hasDiscrepancy) {
-		await database.ref().update({
-			[`/blueprints/${blueprintId}/numberOfFavorites`]: actualCount,
-			[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
-		});
+	if (hasDiscrepancy)
+	{
+		await database.ref().update(
+			{
+				[`/blueprints/${blueprintId}/numberOfFavorites`]: actualCount,
+				[`/blueprintSummaries/${blueprintId}/numberOfFavorites`]: actualCount,
+			},
+		);
 	}
 
 	return {
@@ -350,24 +401,28 @@ export const reconcileFavoriteCount = onCall(async (request) => {
  * Creates the /users/{userId} record with displayName, email, and empty collections.
  * This ensures all users have a profile in the database for consistent data access.
  */
-export const initializeUserProfile = functionsV1.auth.user().onCreate(async (user) => {
+export const initializeUserProfile = functionsV1.auth.user().onCreate(async (user) =>
+{
 	const database = getDatabase();
 	const userRef = database.ref(`/users/${user.uid}`);
 
 	// Check if user profile already exists (safety check)
 	const existingProfile = await userRef.once("value");
-	if (existingProfile.exists()) {
+	if (existingProfile.exists())
+	{
 		functions.logger.log(`User profile already exists for ${user.uid}, skipping initialization`);
 		return null;
 	}
 
-	await userRef.set({
-		displayName: user.displayName || "Anonymous",
-		email: user.email || null,
-		favorites: {},
-		collection: {},
-		blueprints: {},
-	});
+	await userRef.set(
+		{
+			displayName: user.displayName || "Anonymous",
+			email: user.email || null,
+			favorites: {},
+			collection: {},
+			blueprints: {},
+		},
+	);
 
 	functions.logger.log(`Initialized user profile for ${user.uid} (${user.email || "no email"})`);
 	return null;
@@ -378,11 +433,13 @@ export const initializeUserProfile = functionsV1.auth.user().onCreate(async (use
  * Removes the user from all blueprints' favorites lists and deletes the user record.
  * User's authored blueprints remain in the database (orphaned).
  */
-export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user) => {
+export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user) =>
+{
 	const database = getDatabase();
 	const userId = user.uid;
 
-	try {
+	try
+	{
 		// Get user's favorites and blueprints
 		const userSnapshot = await database.ref(`/users/${userId}`).once("value");
 		const userData = userSnapshot.val() || {};
@@ -390,11 +447,13 @@ export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user)
 		const updates: Record<string, null> = {};
 
 		// Remove this user from all blueprints' favorites lists
-		for (const blueprintId of Object.keys(userData.favorites || {})) {
+		for (const blueprintId of Object.keys(userData.favorites || {}))
+		{
 			updates[`/blueprints/${blueprintId}/favorites/${userId}`] = null;
 		}
 
-		for (const blueprintId of Object.keys(userData.collection || {})) {
+		for (const blueprintId of Object.keys(userData.collection || {}))
+		{
 			updates[`/blueprintCollectors/${blueprintId}/${userId}`] = null;
 		}
 
@@ -408,7 +467,9 @@ export const cleanupOnUserDelete = functionsV1.auth.user().onDelete(async (user)
 		);
 
 		return null;
-	} catch (error) {
+	}
+	catch (error)
+	{
 		functions.logger.error(`Error cleaning up deleted user ${userId}:`, error);
 		throw error;
 	}

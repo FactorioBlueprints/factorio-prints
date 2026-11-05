@@ -8,27 +8,34 @@ import InputGroup from "react-bootstrap/InputGroup";
 
 import {searchParamsStore} from "../store/searchParamsStore";
 
-const SearchForm: React.FC = () => {
+const SearchForm: React.FC = () =>
+{
 	const titleFilter = useStore(searchParamsStore, (state) => state.titleFilter);
 
-	const filterOnTitle = (title: string): void => {
-		if (title === undefined) {
+	const filterOnTitle = (title: string): void =>
+	{
+		if (title === undefined)
+		{
 			throw new Error("Title is undefined in filterOnTitle");
 		}
 
-		searchParamsStore.setState((state) => ({
+		searchParamsStore.setState((state) => (
+		{
 			...state,
 			titleFilter: title,
 		}));
 	};
 
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-		if (event.key === "Escape") {
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void =>
+	{
+		if (event.key === "Escape")
+		{
 			event.currentTarget.select();
 		}
 	};
 
-	const handleSearchString = (event: React.ChangeEvent<HTMLInputElement>): void => {
+	const handleSearchString = (event: React.ChangeEvent<HTMLInputElement>): void =>
+	{
 		event.preventDefault();
 
 		const searchString = event.target.value;

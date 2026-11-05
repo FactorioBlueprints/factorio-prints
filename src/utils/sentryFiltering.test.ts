@@ -1,6 +1,7 @@
 import type {Event, StackFrame} from "@sentry/react";
 import {afterEach, describe, expect, it, vi} from "vite-plus/test";
-import {
+import
+{
 	groupMobileIosRecursion,
 	isFirebaseAuthDatabaseClosingError,
 	isUnactionableError,
@@ -21,21 +22,28 @@ function createMobileIosStackOverflowEvent(
 	release: string,
 	frames: StackFrame[],
 	userAgent: string = chromeIosUserAgent,
-): Event {
+): Event
+{
 	return {
-		exception: {
+		exception:
+		{
 			values: [
 				{
 					type: "RangeError",
 					value: "Maximum call stack size exceeded.",
-					stacktrace: {frames},
+					stacktrace:
+					{
+						frames,
+					},
 				},
 			],
 		},
 		release,
-		request: {
+		request:
+		{
 			url: `https://example.com${route}`,
-			headers: {
+			headers:
+			{
 				"User-Agent": userAgent,
 			},
 		},
@@ -43,12 +51,15 @@ function createMobileIosStackOverflowEvent(
 	};
 }
 
-describe("Sentry error filtering", () => {
-	afterEach(() => {
+describe("Sentry error filtering", () =>
+{
+	afterEach(() =>
+	{
 		vi.unstubAllGlobals();
 	});
 
-	it("groups a Chrome iOS event identified only by its User-Agent header", () => {
+	it("groups a Chrome iOS event identified only by its User-Agent header", () =>
+	{
 		const event = createMobileIosStackOverflowEvent("/view/example-print", "release-two", [
 			{
 				filename: "/view/example-print",
@@ -56,52 +67,75 @@ describe("Sentry error filtering", () => {
 			},
 		]);
 
-		expect({event, grouped: groupMobileIosRecursion(event)}).toStrictEqual({
-			event: {
-				contexts: {
-					mobile_ios_recursion: {
-						first_party_asset_frame_count: 0,
-						frame_count: 1,
-						frame_samples: ["<anonymous>@/view/example-print:187:0 × 1"],
-						inline_document_frame_count: 1,
-						release: "release-two",
-						repeated_frame_pattern: false,
-						route: "/view/example-print",
-					},
-				},
-				exception: {
-					values: [
-						{
-							type: "RangeError",
-							value: "Maximum call stack size exceeded.",
-							stacktrace: {
-								frames: [
-									{
-										filename: "/view/example-print",
-										lineno: 187,
-									},
-								],
-							},
-						},
-					],
-				},
-				fingerprint: ["mobile-ios-inline-document-recursion"],
-				release: "release-two",
-				request: {
-					url: "https://example.com/view/example-print",
-					headers: {
-						"User-Agent": chromeIosUserAgent,
-					},
-				},
-				tags: {mobile_ios_recursion: "inline-document"},
-				transaction: "/view/example-print",
+		expect(
+			{
+				event,
+				grouped: groupMobileIosRecursion(event),
 			},
-			grouped: true,
-		});
+		).toStrictEqual(
+			{
+				event:
+				{
+					contexts:
+					{
+						mobile_ios_recursion:
+						{
+							first_party_asset_frame_count: 0,
+							frame_count: 1,
+							frame_samples: ["<anonymous>@/view/example-print:187:0 × 1"],
+							inline_document_frame_count: 1,
+							release: "release-two",
+							repeated_frame_pattern: false,
+							route: "/view/example-print",
+						},
+					},
+					exception:
+					{
+						values: [
+							{
+								type: "RangeError",
+								value: "Maximum call stack size exceeded.",
+								stacktrace:
+								{
+									frames: [
+										{
+											filename: "/view/example-print",
+											lineno: 187,
+										},
+									],
+								},
+							},
+						],
+					},
+					fingerprint: ["mobile-ios-inline-document-recursion"],
+					release: "release-two",
+					request:
+					{
+						url: "https://example.com/view/example-print",
+						headers:
+						{
+							"User-Agent": chromeIosUserAgent,
+						},
+					},
+					tags:
+					{
+						mobile_ios_recursion: "inline-document",
+					},
+					transaction: "/view/example-print",
+				},
+				grouped: true,
+			},
+		);
 	});
 
-	it("falls back to navigator.userAgent when the event has no User-Agent header", () => {
-		vi.stubGlobal("navigator", {userAgent: chromeIosUserAgent});
+	it("falls back to navigator.userAgent when the event has no User-Agent header", () =>
+	{
+		vi.stubGlobal(
+			"navigator",
+			{
+				userAgent: chromeIosUserAgent,
+			},
+		);
 		const event = createMobileIosStackOverflowEvent("/blueprints", "release-one", [
 			{
 				filename: "/blueprints",
@@ -110,17 +144,26 @@ describe("Sentry error filtering", () => {
 		]);
 		delete event.request!.headers;
 
-		expect({
-			grouped: groupMobileIosRecursion(event),
-			fingerprint: event.fingerprint,
-		}).toStrictEqual({
-			grouped: true,
-			fingerprint: ["mobile-ios-inline-document-recursion"],
-		});
+		expect(
+			{
+				grouped: groupMobileIosRecursion(event),
+				fingerprint: event.fingerprint,
+			},
+		).toStrictEqual(
+			{
+				grouped: true,
+				fingerprint: ["mobile-ios-inline-document-recursion"],
+			},
+		);
 	});
 
-	it("groups the four observed Chrome Mobile iOS inline recursion variants", () => {
-		const repeatedViewFrames = Array.from({length: 4}).flatMap(() => [
+	it("groups the four observed Chrome Mobile iOS inline recursion variants", () =>
+	{
+		const repeatedViewFrames = Array.from(
+			{
+				length: 4,
+			},
+		).flatMap(() => [
 			{
 				filename: "https://example.com/",
 				function: "Fk",
@@ -134,7 +177,11 @@ describe("Sentry error filtering", () => {
 				colno: 408,
 			},
 		]);
-		const repeatedPreviousRouteFrames = Array.from({length: 4}).flatMap(() => [
+		const repeatedPreviousRouteFrames = Array.from(
+			{
+				length: 4,
+			},
+		).flatMap(() => [
 			{
 				filename: "/view/example-blueprint",
 				function: "Fk",
@@ -179,7 +226,8 @@ describe("Sentry error filtering", () => {
 		];
 
 		expect(
-			cases.map(({event, issueId}) => ({
+			cases.map(({event, issueId}) => (
+			{
 				context: groupMobileIosRecursion(event) ? event.contexts?.mobile_ios_recursion : undefined,
 				fingerprint: event.fingerprint,
 				issueId,
@@ -187,7 +235,8 @@ describe("Sentry error filtering", () => {
 			})),
 		).toStrictEqual([
 			{
-				context: {
+				context:
+				{
 					first_party_asset_frame_count: 0,
 					frame_count: 8,
 					frame_samples: ["Fk@https://example.com/:224:63 × 4", "Hk@https://example.com/:224:408 × 4"],
@@ -198,10 +247,14 @@ describe("Sentry error filtering", () => {
 				},
 				fingerprint: ["mobile-ios-inline-document-recursion"],
 				issueId: "FACTORIO-PRINTS-1JV",
-				tags: {mobile_ios_recursion: "inline-document"},
+				tags:
+				{
+					mobile_ios_recursion: "inline-document",
+				},
 			},
 			{
-				context: {
+				context:
+				{
 					first_party_asset_frame_count: 0,
 					frame_count: 8,
 					frame_samples: ["Fk@/view/example-blueprint:224:63 × 4", "Hk@/view/example-blueprint:224:408 × 4"],
@@ -212,10 +265,14 @@ describe("Sentry error filtering", () => {
 				},
 				fingerprint: ["mobile-ios-inline-document-recursion"],
 				issueId: "FACTORIO-PRINTS-1JW",
-				tags: {mobile_ios_recursion: "inline-document"},
+				tags:
+				{
+					mobile_ios_recursion: "inline-document",
+				},
 			},
 			{
-				context: {
+				context:
+				{
 					first_party_asset_frame_count: 0,
 					frame_count: 1,
 					frame_samples: ["<anonymous>@/blueprints:184:0 × 1"],
@@ -226,10 +283,14 @@ describe("Sentry error filtering", () => {
 				},
 				fingerprint: ["mobile-ios-inline-document-recursion"],
 				issueId: "FACTORIO-PRINTS-1JP",
-				tags: {mobile_ios_recursion: "inline-document"},
+				tags:
+				{
+					mobile_ios_recursion: "inline-document",
+				},
 			},
 			{
-				context: {
+				context:
+				{
 					first_party_asset_frame_count: 0,
 					frame_count: 1,
 					frame_samples: ["<anonymous>@/view/example-print:187:0 × 1"],
@@ -240,12 +301,16 @@ describe("Sentry error filtering", () => {
 				},
 				fingerprint: ["mobile-ios-inline-document-recursion"],
 				issueId: "FACTORIO-PRINTS-1KC",
-				tags: {mobile_ios_recursion: "inline-document"},
+				tags:
+				{
+					mobile_ios_recursion: "inline-document",
+				},
 			},
 		]);
 	});
 
-	it("preserves unrelated range errors and external script failures", () => {
+	it("preserves unrelated range errors and external script failures", () =>
+	{
 		const firstPartyRangeError = createMobileIosStackOverflowEvent("/search", "release-one", [
 			{
 				filename: "https://example.com/assets/application.js",
@@ -288,8 +353,13 @@ describe("Sentry error filtering", () => {
 			desktopChromeUserAgent,
 		);
 		// A server-style browser context must not override the User-Agent the client actually sent.
-		desktopChromeStackOverflow.contexts = {
-			browser: {name: "Chrome Mobile iOS", version: "151.0.0"},
+		desktopChromeStackOverflow.contexts =
+		{
+			browser:
+			{
+				name: "Chrome Mobile iOS",
+				version: "151.0.0",
+			},
 		};
 		const advertisingScriptStackOverflow = createMobileIosStackOverflowEvent("/search", "release-one", [
 			{
@@ -309,49 +379,73 @@ describe("Sentry error filtering", () => {
 		const expectedEvents = structuredClone(cases);
 
 		expect(
-			cases.map((event) => ({
+			cases.map((event) => (
+			{
 				event,
 				grouped: groupMobileIosRecursion(event),
 			})),
 		).toStrictEqual(
-			expectedEvents.map((event) => ({
+			expectedEvents.map((event) => (
+			{
 				event,
 				grouped: false,
 			})),
 		);
 	});
 
-	it("normalizes paired injected events and filters independently proven external noise", () => {
-		const cases: {event: Event; issueId: string}[] = [
+	it("normalizes paired injected events and filters independently proven external noise", () =>
+	{
+		const cases:
+		{
+			event: Event;
+			issueId: string;
+		}[] = [
 			{
 				issueId: "FACTORIO-PRINTS-1K2",
-				event: {
-					exception: {
+				event:
+				{
+					exception:
+					{
 						values: [
 							{
 								type: "Error",
 								value: "Ba",
-								mechanism: {handled: false, type: "onunhandledrejection"},
+								mechanism:
+								{
+									handled: false,
+									type: "onunhandledrejection",
+								},
 							},
 						],
 					},
 					message: "Ba",
-					request: {
+					request:
+					{
 						url: "https://example.com/view/example-blueprint",
-						headers: {"User-Agent": chromeIosUserAgent},
+						headers:
+						{
+							"User-Agent": chromeIosUserAgent,
+						},
 					},
 				},
 			},
 			{
 				issueId: "FACTORIO-PRINTS-1K3",
-				event: {
-					exception: {
+				event:
+				{
+					exception:
+					{
 						values: [
 							{
 								type: "Error",
 								value: "ga",
-								mechanism: {handled: false, type: "onerror"},
-								stacktrace: {
+								mechanism:
+								{
+									handled: false,
+									type: "onerror",
+								},
+								stacktrace:
+								{
 									frames: [
 										{
 											filename: "https://example.com/view/example-blueprint",
@@ -368,19 +462,29 @@ describe("Sentry error filtering", () => {
 							},
 						],
 					},
-					request: {url: "https://example.com/view/example-blueprint"},
+					request:
+					{
+						url: "https://example.com/view/example-blueprint",
+					},
 				},
 			},
 			{
 				issueId: "FACTORIO-PRINTS-1JX",
-				event: {
-					exception: {
+				event:
+				{
+					exception:
+					{
 						values: [
 							{
 								type: "TypeError",
 								value: "Failed to fetch",
-								mechanism: {handled: false, type: "onunhandledrejection"},
-								stacktrace: {
+								mechanism:
+								{
+									handled: false,
+									type: "onunhandledrejection",
+								},
+								stacktrace:
+								{
 									frames: [
 										{
 											filename: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js",
@@ -395,17 +499,23 @@ describe("Sentry error filtering", () => {
 							},
 						],
 					},
-					request: {url: "https://example.com/user/alice"},
+					request:
+					{
+						url: "https://example.com/user/alice",
+					},
 				},
 			},
 			{
 				issueId: "FACTORIO-PRINTS-1K5",
-				event: {
-					exception: {
+				event:
+				{
+					exception:
+					{
 						values: [
 							{
 								value: "addEventListener ignored event='mouseout'",
-								stacktrace: {
+								stacktrace:
+								{
 									frames: [
 										{
 											filename: "<anonymous>",
@@ -418,7 +528,10 @@ describe("Sentry error filtering", () => {
 							},
 						],
 					},
-					extra: {arguments: ["addEventListener ignored event='mouseout'"]},
+					extra:
+					{
+						arguments: ["addEventListener ignored event='mouseout'"],
+					},
 					level: "warning",
 					logger: "console",
 					message: "addEventListener ignored event='mouseout'",
@@ -426,11 +539,20 @@ describe("Sentry error filtering", () => {
 			},
 			{
 				issueId: "FACTORIO-PRINTS-1KB",
-				event: {
-					exception: {
-						values: [{value: "Crypto site not identified within timeout period"}],
+				event:
+				{
+					exception:
+					{
+						values: [
+							{
+								value: "Crypto site not identified within timeout period",
+							},
+						],
 					},
-					extra: {arguments: ["Crypto site not identified within timeout period"]},
+					extra:
+					{
+						arguments: ["Crypto site not identified within timeout period"],
+					},
 					level: "error",
 					logger: "console",
 					message: "Crypto site not identified within timeout period",
@@ -438,14 +560,21 @@ describe("Sentry error filtering", () => {
 			},
 			{
 				issueId: "FACTORIO-PRINTS-1KA",
-				event: {
-					exception: {
+				event:
+				{
+					exception:
+					{
 						values: [
 							{
 								type: "TypeError",
 								value: "Cannot read properties of undefined (reading 'location')",
-								mechanism: {handled: false, type: "onerror"},
-								stacktrace: {
+								mechanism:
+								{
+									handled: false,
+									type: "onerror",
+								},
+								stacktrace:
+								{
 									frames: [
 										{
 											filename: "https://example.com/view/example-blueprint",
@@ -463,18 +592,27 @@ describe("Sentry error filtering", () => {
 							},
 						],
 					},
-					request: {url: "https://example.com/view/example-blueprint"},
+					request:
+					{
+						url: "https://example.com/view/example-blueprint",
+					},
 				},
 			},
 			{
 				issueId: "FACTORIO-PRINTS-1JR",
-				event: {
-					exception: {
+				event:
+				{
+					exception:
+					{
 						values: [
 							{
 								type: "UnhandledRejection",
 								value: "Non-Error promise rejection captured with value: Object Not Found Matching Id:2, MethodName:update, ParamCount:4",
-								mechanism: {handled: false, type: "onunhandledrejection"},
+								mechanism:
+								{
+									handled: false,
+									type: "onunhandledrejection",
+								},
 							},
 						],
 					},
@@ -484,7 +622,8 @@ describe("Sentry error filtering", () => {
 		];
 
 		expect(
-			cases.map(({event, issueId}) => ({
+			cases.map(({event, issueId}) => (
+			{
 				filtered: normalizeAndFilterThirdPartyNoise(event),
 				fingerprint: event.fingerprint ?? null,
 				issueId,
@@ -495,13 +634,19 @@ describe("Sentry error filtering", () => {
 				filtered: false,
 				fingerprint: ["third-party-google-ads-inline-runtime"],
 				issueId: "FACTORIO-PRINTS-1K2",
-				tags: {external_runtime_noise: "third-party-google-ads-inline-runtime"},
+				tags:
+				{
+					external_runtime_noise: "third-party-google-ads-inline-runtime",
+				},
 			},
 			{
 				filtered: false,
 				fingerprint: ["third-party-google-ads-inline-runtime"],
 				issueId: "FACTORIO-PRINTS-1K3",
-				tags: {external_runtime_noise: "third-party-google-ads-inline-runtime"},
+				tags:
+				{
+					external_runtime_noise: "third-party-google-ads-inline-runtime",
+				},
 			},
 			{
 				filtered: true,
@@ -519,13 +664,19 @@ describe("Sentry error filtering", () => {
 				filtered: false,
 				fingerprint: ["injected-crypto-runtime"],
 				issueId: "FACTORIO-PRINTS-1KB",
-				tags: {external_runtime_noise: "injected-crypto-runtime"},
+				tags:
+				{
+					external_runtime_noise: "injected-crypto-runtime",
+				},
 			},
 			{
 				filtered: false,
 				fingerprint: ["injected-crypto-runtime"],
 				issueId: "FACTORIO-PRINTS-1KA",
-				tags: {external_runtime_noise: "injected-crypto-runtime"},
+				tags:
+				{
+					external_runtime_noise: "injected-crypto-runtime",
+				},
 			},
 			{
 				filtered: true,
@@ -536,15 +687,18 @@ describe("Sentry error filtering", () => {
 		]);
 	});
 
-	it("preserves similar first-party failures without external evidence", () => {
+	it("preserves similar first-party failures without external evidence", () =>
+	{
 		const events: Event[] = [
 			{
-				exception: {
+				exception:
+				{
 					values: [
 						{
 							type: "TypeError",
 							value: "Failed to fetch",
-							stacktrace: {
+							stacktrace:
+							{
 								frames: [
 									{
 										filename: "https://example.com/assets/application.js",
@@ -556,15 +710,20 @@ describe("Sentry error filtering", () => {
 						},
 					],
 				},
-				request: {url: "https://example.com/view/example-blueprint"},
+				request:
+				{
+					url: "https://example.com/view/example-blueprint",
+				},
 			},
 			{
-				exception: {
+				exception:
+				{
 					values: [
 						{
 							type: "TypeError",
 							value: "Cannot read properties of undefined (reading 'location')",
-							stacktrace: {
+							stacktrace:
+							{
 								frames: [
 									{
 										filename: "https://example.com/assets/application.js",
@@ -576,16 +735,25 @@ describe("Sentry error filtering", () => {
 						},
 					],
 				},
-				request: {url: "https://example.com/view/example-blueprint"},
+				request:
+				{
+					url: "https://example.com/view/example-blueprint",
+				},
 			},
 			{
-				exception: {
+				exception:
+				{
 					values: [
 						{
 							type: "Error",
 							value: "Ba",
-							mechanism: {handled: false, type: "onunhandledrejection"},
-							stacktrace: {
+							mechanism:
+							{
+								handled: false,
+								type: "onunhandledrejection",
+							},
+							stacktrace:
+							{
 								frames: [
 									{
 										filename: "https://example.com/assets/application.js",
@@ -598,35 +766,54 @@ describe("Sentry error filtering", () => {
 					],
 				},
 				message: "Ba",
-				request: {
+				request:
+				{
 					url: "https://example.com/view/example-blueprint",
-					headers: {"User-Agent": chromeIosUserAgent},
+					headers:
+					{
+						"User-Agent": chromeIosUserAgent,
+					},
 				},
 			},
 			{
-				exception: {
+				exception:
+				{
 					values: [
 						{
 							type: "Error",
 							value: "Ba",
-							mechanism: {handled: false, type: "onunhandledrejection"},
+							mechanism:
+							{
+								handled: false,
+								type: "onunhandledrejection",
+							},
 						},
 					],
 				},
 				message: "Ba",
-				request: {
+				request:
+				{
 					url: "https://example.com/view/example-blueprint",
-					headers: {"User-Agent": desktopChromeUserAgent},
+					headers:
+					{
+						"User-Agent": desktopChromeUserAgent,
+					},
 				},
 			},
 			{
-				exception: {
+				exception:
+				{
 					values: [
 						{
 							type: "UnhandledRejection",
 							value: "Non-Error promise rejection captured with value: Object Not Found Matching Id:2, MethodName:update, ParamCount:4",
-							mechanism: {handled: false, type: "onunhandledrejection"},
-							stacktrace: {
+							mechanism:
+							{
+								handled: false,
+								type: "onunhandledrejection",
+							},
+							stacktrace:
+							{
 								frames: [
 									{
 										filename: "https://example.com/assets/application.js",
@@ -641,11 +828,13 @@ describe("Sentry error filtering", () => {
 				message: "Object Not Found Matching Id:2, MethodName:update, ParamCount:4",
 			},
 			{
-				exception: {
+				exception:
+				{
 					values: [
 						{
 							value: "addEventListener ignored event='mouseout'",
-							stacktrace: {
+							stacktrace:
+							{
 								frames: [
 									{
 										filename: "https://example.com/assets/application.js",
@@ -657,16 +846,25 @@ describe("Sentry error filtering", () => {
 						},
 					],
 				},
-				extra: {arguments: ["addEventListener ignored event='mouseout'"]},
+				extra:
+				{
+					arguments: ["addEventListener ignored event='mouseout'"],
+				},
 				level: "warning",
 				logger: "console",
 				message: "addEventListener ignored event='mouseout'",
 			},
 			{
-				exception: {
-					values: [{value: "Crypto site not identified within timeout period"}],
+				exception:
+				{
+					values: [
+						{
+							value: "Crypto site not identified within timeout period",
+						},
+					],
 				},
-				extra: {
+				extra:
+				{
 					arguments: ["Crypto site not identified within timeout period", "application"],
 				},
 				level: "error",
@@ -674,12 +872,14 @@ describe("Sentry error filtering", () => {
 				message: "Crypto site not identified within timeout period",
 			},
 			{
-				exception: {
+				exception:
+				{
 					values: [
 						{
 							type: "Error",
 							value: "ga",
-							stacktrace: {
+							stacktrace:
+							{
 								frames: [
 									{
 										filename: "https://example.com/view/example-blueprint",
@@ -690,25 +890,31 @@ describe("Sentry error filtering", () => {
 						},
 					],
 				},
-				request: {url: "https://example.com/view/example-blueprint"},
+				request:
+				{
+					url: "https://example.com/view/example-blueprint",
+				},
 			},
 		];
 		const expectedEvents = structuredClone(events);
 
 		expect(
-			events.map((event) => ({
+			events.map((event) => (
+			{
 				event,
 				filtered: normalizeAndFilterThirdPartyNoise(event),
 			})),
 		).toStrictEqual(
-			expectedEvents.map((event) => ({
+			expectedEvents.map((event) => (
+			{
 				event,
 				filtered: false,
 			})),
 		);
 	});
 
-	it("filters expected Firebase user transaction disconnect warnings", () => {
+	it("filters expected Firebase user transaction disconnect warnings", () =>
+	{
 		const messages = [
 			"[2026-07-27T18:07:41.068Z] @firebase/database: FIREBASE WARNING: transaction at /users/user-123 failed: disconnect",
 			"@firebase/database: FIREBASE WARNING: transaction at /blueprints/blueprint-123 failed: disconnect",
@@ -718,7 +924,8 @@ describe("Sentry error filtering", () => {
 		expect(messages.map(isUnactionableError)).toStrictEqual([true, false, false]);
 	});
 
-	it("filters Vite asset preload failures", () => {
+	it("filters Vite asset preload failures", () =>
+	{
 		const messages = [
 			"Unable to preload CSS for https://factorioprints.com/assets/RichText-BKC2Zd9i.css",
 			"Unable to preload CSS for /assets/index-CzBJOCTd.css",
@@ -729,7 +936,8 @@ describe("Sentry error filtering", () => {
 		expect(messages.map(isUnactionableError)).toStrictEqual([true, true, true, false]);
 	});
 
-	it("filters only the Firebase pending popup promise assertion variants", () => {
+	it("filters only the Firebase pending popup promise assertion variants", () =>
+	{
 		const messages = [
 			"INTERNAL ASSERTION FAILED: Pending promise was never set",
 			"[2000-01-01T00:00:00.000Z]  @firebase/auth: Auth (12.17.0): INTERNAL ASSERTION FAILED: Pending promise was never set",
@@ -742,7 +950,8 @@ describe("Sentry error filtering", () => {
 		expect(messages.map(isUnactionableError)).toStrictEqual([true, true, false, false, false, false]);
 	});
 
-	it("filters only the Firebase Auth hidden-page database closure", () => {
+	it("filters only the Firebase Auth hidden-page database closure", () =>
+	{
 		const reasons = [
 			new Error("Database is closing/hidden"),
 			"Database is closing/hidden",

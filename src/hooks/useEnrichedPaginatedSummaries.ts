@@ -10,10 +10,12 @@ import {useRawPaginatedSummaries} from "./useRawPaginatedSummaries";
  * @param orderByField - The field to order the results by
  * @returns React Query result with enriched paginated blueprint summaries
  */
-export const useEnrichedPaginatedSummaries = (pageSize = 60, orderByField = "lastUpdatedDate") => {
+export const useEnrichedPaginatedSummaries = (pageSize = 60, orderByField = "lastUpdatedDate") =>
+{
 	const rawPaginatedQuery = useRawPaginatedSummaries(pageSize, orderByField);
 
-	const enrichedData = useMemo(() => {
+	const enrichedData = useMemo(() =>
+	{
 		if (!rawPaginatedQuery.data) return null;
 
 		// Enrich the raw data

@@ -4,11 +4,14 @@ import React from "react";
 import DuplicatesGrid from "../components/DuplicatesGrid";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-export const Route = createFileRoute("/duplicates")({
-	component: DuplicatesPage,
-});
+export const Route = createFileRoute("/duplicates")(
+	{
+		component: DuplicatesPage,
+	},
+);
 
-function DuplicatesPage() {
+function DuplicatesPage()
+{
 	return (
 		<ErrorBoundary>
 			<DuplicatesGrid />

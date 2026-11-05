@@ -13,7 +13,8 @@ const legacyImgurPrefix = "legacy-imgur";
 const immutableCacheControl = "public, max-age=31536000, immutable";
 const bearerPrefix = "Bearer ";
 
-enum UploadOutcome {
+enum UploadOutcome
+{
 	Accepted = "accepted",
 	Error = "error",
 	Forbidden = "forbidden",
@@ -21,7 +22,8 @@ enum UploadOutcome {
 	Unauthorized = "unauthorized",
 }
 
-export interface UploadDependencies {
+export interface UploadDependencies
+{
 	readonly consumeUploadQuota: (userId: string) => Promise<boolean>;
 	readonly deleteFromImgur: (deletehash: string) => Promise<ImgurDeleteResult>;
 	readonly isModerator: (userId: string) => Promise<boolean>;
@@ -32,7 +34,8 @@ export interface UploadDependencies {
 	readonly verifyIdToken: (token: string) => Promise<IdTokenVerification>;
 }
 
-const rejectionStatuses: Record<ImageRejection, number> = {
+const rejectionStatuses: Record<ImageRejection, number> =
+{
 	[ImageRejection.DimensionsTooLarge]: 422,
 	[ImageRejection.Empty]: 400,
 	[ImageRejection.Malformed]: 422,
@@ -47,12 +50,15 @@ const recordUpload = (
 	format: string,
 	ownerId: string,
 	byteLength: number,
-) => {
-	environment.IMAGE_GATEWAY_METRICS.writeDataPoint({
-		indexes: ["factorio-prints-image-upload"],
-		blobs: [outcome, detail, format, ownerId],
-		doubles: [byteLength],
-	});
+) =>
+{
+	environment.IMAGE_GATEWAY_METRICS.writeDataPoint(
+		{
+			indexes: ["factorio-prints-image-upload"],
+			blobs: [outcome, detail, format, ownerId],
+			doubles: [byteLength],
+		},
+	);
 };
 
 const allowedOrigins = (environment: Env): string[] =>
@@ -62,7 +68,13 @@ const allowedOrigins = (environment: Env): string[] =>
 		.filter(Boolean);
 
 const corsHeaders = (origin: string | null): Record<string, string> =>
-	origin ? {"access-control-allow-origin": origin, vary: "origin"} : {};
+	origin
+		?
+			{
+				"access-control-allow-origin": origin,
+				vary: "origin",
+			}
+		: {};
 
 const textResponse = (
 	status: number,
@@ -70,20 +82,25 @@ const textResponse = (
 	origin: string | null,
 	headers: Record<string, string> = {},
 ): Response =>
-	new Response(message, {
-		status,
-		headers: {
-			"cache-control": "no-store",
-			"content-type": "text/plain; charset=UTF-8",
-			...corsHeaders(origin),
-			...headers,
+	new Response(
+		message,
+		{
+			status,
+			headers:
+			{
+				"cache-control": "no-store",
+				"content-type": "text/plain; charset=UTF-8",
+				...corsHeaders(origin),
+				...headers,
+			},
 		},
-	});
+	);
 
 const toHex = (buffer: ArrayBuffer): string =>
 	[...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 
-const readBearerToken = (request: Request): string | null => {
+const readBearerToken = (request: Request): string | null =>
+{
 	const header = request.headers.get("authorization");
 	if (!header?.startsWith(bearerPrefix)) return null;
 
@@ -96,10 +113,14 @@ const tryImgur = async (
 	dependencies: UploadDependencies,
 	bytes: Uint8Array,
 	contentType: string,
-): Promise<ImgurUploadResult> => {
-	try {
+): Promise<ImgurUploadResult> =>
+{
+	try
+	{
 		return await dependencies.uploadToImgur(bytes, contentType);
-	} catch (error) {
+	}
+	catch (error)
+	{
 		return {
 			ok: false,
 			reason: ImgurFailure.Unavailable,
@@ -112,128 +133,216 @@ export const handleUploadRequest = async (
 	request: Request,
 	environment: Env,
 	dependencies: UploadDependencies,
-): Promise<Response> => {
+): Promise<Response> =>
+{
 	// Browsers send Origin; a request without one is not from a web page, and still needs a token.
 	const requestOrigin = request.headers.get("origin");
 	const origin = requestOrigin && allowedOrigins(environment).includes(requestOrigin) ? requestOrigin : null;
-	if (requestOrigin && !origin) {
+	if (requestOrigin && !origin)
+	{
 		recordUpload(environment, UploadOutcome.Forbidden, "origin", "none", "none", 0);
 		return textResponse(403, "Origin not allowed", null);
 	}
 
-	if (request.method === "OPTIONS") {
-		return new Response(null, {
-			status: 204,
-			headers: {
-				...corsHeaders(origin),
-				"access-control-allow-headers": "authorization, content-type",
-				"access-control-allow-methods": "POST",
-				"access-control-max-age": "86400",
+	if (request.method === "OPTIONS")
+	{
+		return new Response(
+			null,
+			{
+				status: 204,
+				headers:
+				{
+					...corsHeaders(origin),
+					"access-control-allow-headers": "authorization, content-type",
+					"access-control-allow-methods": "POST",
+					"access-control-max-age": "86400",
+				},
 			},
-		});
+		);
 	}
-	if (request.method !== "POST") {
-		return textResponse(405, "Method not allowed", origin, {allow: "POST, OPTIONS"});
+	if (request.method !== "POST")
+	{
+		return textResponse(
+			405,
+			"Method not allowed",
+			origin,
+			{
+				allow: "POST, OPTIONS",
+			},
+		);
 	}
 
 	const token = readBearerToken(request);
-	if (!token) {
+	if (!token)
+	{
 		recordUpload(environment, UploadOutcome.Unauthorized, "missing-token", "none", "none", 0);
 		return textResponse(401, "Authentication required", origin);
 	}
 	const verification = await dependencies.verifyIdToken(token);
-	if (!verification.ok) {
+	if (!verification.ok)
+	{
 		recordUpload(environment, UploadOutcome.Unauthorized, verification.reason, "none", "none", 0);
 		return textResponse(401, "Authentication required", origin);
 	}
 	const ownerId = verification.identity.userId;
 
 	const declaredLength = Number(request.headers.get("content-length"));
-	if (!request.headers.has("content-length") || !Number.isInteger(declaredLength)) {
+	if (!request.headers.has("content-length") || !Number.isInteger(declaredLength))
+	{
 		recordUpload(environment, UploadOutcome.Rejected, "missing-length", "none", ownerId, 0);
 		return textResponse(411, "Content-Length is required", origin);
 	}
-	if (declaredLength > maximumImageBytes) {
+	if (declaredLength > maximumImageBytes)
+	{
 		recordUpload(environment, UploadOutcome.Rejected, "declared-too-large", "none", ownerId, declaredLength);
 		return textResponse(413, "Image is larger than the upload limit", origin);
 	}
 
 	const bytes = new Uint8Array(await request.arrayBuffer());
 	const inspection = inspectImageBytes(bytes);
-	if (!inspection.ok) {
+	if (!inspection.ok)
+	{
 		recordUpload(environment, UploadOutcome.Rejected, inspection.reason, "none", ownerId, bytes.length);
 		return textResponse(rejectionStatuses[inspection.reason], "Image was rejected", origin);
 	}
 
 	let withinQuota: boolean;
-	try {
+	try
+	{
 		// Moderators have no hourly limit; looking them up only past the limit keeps everyone else off Firebase.
 		withinQuota = (await dependencies.consumeUploadQuota(ownerId)) || (await dependencies.isModerator(ownerId));
-	} catch (error) {
-		console.error({event: "image_upload_quota_error", ownerId, message: String(error)});
-		return textResponse(503, "Upload limits are temporarily unavailable", origin, {
-			"retry-after": "60",
-		});
 	}
-	if (!withinQuota) {
+	catch (error)
+	{
+		console.error(
+			{
+				event: "image_upload_quota_error",
+				ownerId,
+				message: String(error),
+			},
+		);
+		return textResponse(
+			503,
+			"Upload limits are temporarily unavailable",
+			origin,
+			{
+				"retry-after": "60",
+			},
+		);
+	}
+	if (!withinQuota)
+	{
 		recordUpload(environment, UploadOutcome.Rejected, "hourly-limit", inspection.format, ownerId, bytes.length);
-		return textResponse(429, "Hourly upload limit reached", origin, {"retry-after": "600"});
+		return textResponse(
+			429,
+			"Hourly upload limit reached",
+			origin,
+			{
+				"retry-after": "600",
+			},
+		);
 	}
 
 	const imgur = await tryImgur(dependencies, bytes, inspection.contentType);
 	const imageId = imgur.ok ? imgur.id : dependencies.newFallbackId();
 	const detail = imgur.ok ? "imgur" : `fallback:${imgur.reason}`;
-	if (!imgur.ok) {
-		console.warn({
-			event: "image_upload_imgur_fallback",
-			ownerId,
-			reason: imgur.reason,
-			detail: imgur.detail,
-		});
+	if (!imgur.ok)
+	{
+		console.warn(
+			{
+				event: "image_upload_imgur_fallback",
+				ownerId,
+				reason: imgur.reason,
+				detail: imgur.detail,
+			},
+		);
 	}
 
 	const sha256 = toHex(await crypto.subtle.digest("SHA-256", bytes));
-	try {
-		await environment.IMAGES.put(`${legacyImgurPrefix}/${imageId}/original`, bytes, {
-			httpMetadata: {cacheControl: immutableCacheControl, contentType: inspection.contentType},
-			customMetadata: {
-				height: String(inspection.height),
-				...(imgur.ok ? {imgurDeletehash: imgur.deletehash} : {imgurFailure: imgur.reason}),
-				origin: "upload",
-				ownerId,
+	try
+	{
+		await environment.IMAGES.put(
+			`${legacyImgurPrefix}/${imageId}/original`,
+			bytes,
+			{
+				httpMetadata:
+				{
+					cacheControl: immutableCacheControl,
+					contentType: inspection.contentType,
+				},
+				customMetadata:
+				{
+					height: String(inspection.height),
+					...(imgur.ok
+						?
+							{
+								imgurDeletehash: imgur.deletehash,
+							}
+						:
+							{
+								imgurFailure: imgur.reason,
+							}),
+					origin: "upload",
+					ownerId,
+					sha256,
+					uploadedAt: new Date(dependencies.now()).toISOString(),
+					width: String(inspection.width),
+				},
 				sha256,
-				uploadedAt: new Date(dependencies.now()).toISOString(),
-				width: String(inspection.width),
 			},
-			sha256,
-		});
-	} catch (error) {
+		);
+	}
+	catch (error)
+	{
 		// Without the R2 copy the image would exist only on Imgur; remove it so the two agree.
 		if (imgur.ok) await dependencies.deleteFromImgur(imgur.deletehash).catch(() => undefined);
 		recordUpload(environment, UploadOutcome.Error, "r2-error", inspection.format, ownerId, bytes.length);
-		console.error({
-			event: "image_upload_r2_error",
-			ownerId,
-			message: error instanceof Error ? error.message : String(error),
-		});
-		return textResponse(503, "Image storage is temporarily unavailable", origin, {
-			"retry-after": "60",
-		});
+		console.error(
+			{
+				event: "image_upload_r2_error",
+				ownerId,
+				message: error instanceof Error ? error.message : String(error),
+			},
+		);
+		return textResponse(
+			503,
+			"Image storage is temporarily unavailable",
+			origin,
+			{
+				"retry-after": "60",
+			},
+		);
 	}
 
 	// An upload no blueprint uses within an hour is deleted. If scheduling fails the upload is merely
 	// never cleaned up, so that does not fail the upload.
-	await dependencies.scheduleExpiry(imageId, imgur.ok ? imgur.deletehash : undefined).catch((error: unknown) => {
-		console.error({event: "image_upload_expiry_error", imageId, message: String(error)});
+	await dependencies.scheduleExpiry(imageId, imgur.ok ? imgur.deletehash : undefined).catch((error: unknown) =>
+	{
+		console.error(
+			{
+				event: "image_upload_expiry_error",
+				imageId,
+				message: String(error),
+			},
+		);
 	});
 
 	recordUpload(environment, UploadOutcome.Accepted, detail, inspection.format, ownerId, bytes.length);
-	return new Response(JSON.stringify({id: imageId, type: inspection.contentType}), {
-		status: 201,
-		headers: {
-			"cache-control": "no-store",
-			"content-type": "application/json; charset=UTF-8",
-			...corsHeaders(origin),
+	return new Response(
+		JSON.stringify(
+			{
+				id: imageId,
+				type: inspection.contentType,
+			},
+		),
+		{
+			status: 201,
+			headers:
+			{
+				"cache-control": "no-store",
+				"content-type": "application/json; charset=UTF-8",
+				...corsHeaders(origin),
+			},
 		},
-	});
+	);
 };

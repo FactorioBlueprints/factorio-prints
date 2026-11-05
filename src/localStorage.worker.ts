@@ -1,18 +1,22 @@
 import {createStore, del, get, set, type UseStore} from "idb-keyval";
 import {PersistenceStore} from "./localStorage.persistence";
 
-function logIndexedDbDebug(message: string): void {
-	if (import.meta.env.DEV) {
+function logIndexedDbDebug(message: string): void
+{
+	if (import.meta.env.DEV)
+	{
 		console.debug(message);
 	}
 }
 
-interface StoreConfig {
+interface StoreConfig
+{
 	dbName: string;
 	storeName: string;
 }
 
-interface WorkerMessage {
+interface WorkerMessage
+{
 	type: "persist" | "restore" | "set" | "get" | "delete" | "init" | "healthCheck";
 	key?: string;
 	data?: any;
@@ -20,12 +24,14 @@ interface WorkerMessage {
 	storeConfig?: StoreConfig;
 }
 
-interface OperationResult {
+interface OperationResult
+{
 	success: boolean;
 	data?: any;
 }
 
-interface ErrorResult {
+interface ErrorResult
+{
 	message: string;
 	stack?: string;
 	isConnectionClosing?: boolean;
@@ -35,7 +41,8 @@ interface ErrorResult {
 	reason?: string;
 }
 
-interface WorkerResponse {
+interface WorkerResponse
+{
 	id?: number;
 	result?: OperationResult;
 	error?: ErrorResult;
@@ -50,40 +57,50 @@ let isStoreInitialized = false;
 
 declare const self: DedicatedWorkerGlobalScope;
 
-function resetStore() {
+function resetStore()
+{
 	store = undefined;
 	persistenceStore = undefined;
 	isStoreInitialized = false;
 	logIndexedDbDebug("[IndexedDB Worker] Store reset for reconnection");
 }
 
-async function initializeStore(): Promise<void> {
-	if (!storeConfig) {
+async function initializeStore(): Promise<void>
+{
+	if (!storeConfig)
+	{
 		throw new Error("Store configuration not provided");
 	}
 
-	try {
+	try
+	{
 		store = createStore(storeConfig.dbName, storeConfig.storeName);
 		persistenceStore = new PersistenceStore(store);
 		isStoreInitialized = true;
 		logIndexedDbDebug("[IndexedDB Worker] Store initialized successfully");
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.error("[IndexedDB Worker] Failed to initialize store:", error);
 		throw new Error(`Failed to create IndexedDB store: ${error instanceof Error ? error.message : String(error)}`);
 	}
 }
 
-async function ensureStoreConnection(): Promise<void> {
-	if (!isStoreInitialized || !store) {
+async function ensureStoreConnection(): Promise<void>
+{
+	if (!isStoreInitialized || !store)
+	{
 		await initializeStore();
 	}
 }
 
 // Global error handler for uncaught errors in the worker
-self.addEventListener("error", (event: ErrorEvent) => {
+self.addEventListener("error", (event: ErrorEvent) =>
+{
 	console.error("[IndexedDB Worker] Uncaught error:", event);
 
-	const errorInfo = {
+	const errorInfo =
+	{
 		message: event.message || "Unknown error",
 		filename: event.filename,
 		lineno: event.lineno,
@@ -93,20 +110,24 @@ self.addEventListener("error", (event: ErrorEvent) => {
 	};
 
 	// Send error info to main thread for proper logging
-	self.postMessage({
-		type: "error",
-		error: {
-			message: `Uncaught worker error: ${errorInfo.message}`,
-			stack: errorInfo.stack,
-			isUncaught: true,
-			details: errorInfo,
+	self.postMessage(
+		{
+			type: "error",
+			error:
+			{
+				message: `Uncaught worker error: ${errorInfo.message}`,
+				stack: errorInfo.stack,
+				isUncaught: true,
+				details: errorInfo,
+			},
+			success: false,
 		},
-		success: false,
-	});
+	);
 });
 
 // Global handler for unhandled promise rejections in the worker
-self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
+self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) =>
+{
 	console.error("[IndexedDB Worker] Unhandled promise rejection:", event.reason);
 
 	const errorMessage = event.reason instanceof Error ? event.reason.message : String(event.reason);
@@ -114,28 +135,43 @@ self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
 	const errorStack = event.reason instanceof Error ? event.reason.stack : undefined;
 
 	// Send error info to main thread for proper logging
-	self.postMessage({
-		type: "error",
-		error: {
-			message: `Unhandled promise rejection: ${errorMessage}`,
-			stack: errorStack,
-			isUnhandledRejection: true,
-			reason: String(event.reason),
+	self.postMessage(
+		{
+			type: "error",
+			error:
+			{
+				message: `Unhandled promise rejection: ${errorMessage}`,
+				stack: errorStack,
+				isUnhandledRejection: true,
+				reason: String(event.reason),
+			},
+			success: false,
 		},
-		success: false,
-	});
+	);
 });
 
-self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
+self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> =>
+{
 	const {type, key, data: requestData, id} = e.data;
 
-	try {
-		if (type === "init" && e.data.storeConfig) {
-			if (!storeConfig) {
+	try
+	{
+		if (type === "init" && e.data.storeConfig)
+		{
+			if (!storeConfig)
+			{
 				storeConfig = e.data.storeConfig;
 			}
 			await initializeStore();
-			const response: WorkerResponse = {id, result: {success: true}, success: true};
+			const response: WorkerResponse =
+			{
+				id,
+				result:
+				{
+					success: true,
+				},
+				success: true,
+			};
 			self.postMessage(response);
 			return;
 		}
@@ -150,50 +186,63 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 			type === "get" ||
 			type === "delete" ||
 			type === "healthCheck"
-		) {
+		)
+		{
 			await ensureStoreConnection();
-			if (!store) {
+			if (!store)
+			{
 				throw new Error(
 					"IndexedDB store not initialized. This may indicate a browser compatibility issue or storage restrictions.",
 				);
 			}
 		}
 
-		switch (type) {
+		switch (type)
+		{
 			case "persist":
-				if (key === undefined) {
+				if (key === undefined)
+				{
 					throw new Error("Key is required for persist operation");
 				}
-				if (!persistenceStore) {
+				if (!persistenceStore)
+				{
 					throw new Error("Persistence store not initialized");
 				}
 				result = await persistenceStore.persist(key, requestData);
 				break;
 			case "restore":
-				if (key === undefined) {
+				if (key === undefined)
+				{
 					throw new Error("Key is required for restore operation");
 				}
-				if (!persistenceStore) {
+				if (!persistenceStore)
+				{
 					throw new Error("Persistence store not initialized");
 				}
 				result = await persistenceStore.restore(key);
 				break;
 			case "set":
-				if (key === undefined) {
+				if (key === undefined)
+				{
 					throw new Error("Key is required for set operation");
 				}
 				await set(key, requestData, store);
-				result = {success: true};
+				result =
+				{
+					success: true,
+				};
 				break;
 			case "get":
-				if (key === undefined) {
+				if (key === undefined)
+				{
 					throw new Error("Key is required for get operation");
 				}
 				const getStart = Date.now();
 				const data = await get(key, store);
 				const getDuration = Date.now() - getStart;
 
-				if (getDuration > 1000 && data) {
+				if (getDuration > 1000 && data)
+				{
 					const dataSize =
 						typeof data === "object" && data.data ? data.data.length : JSON.stringify(data).length;
 					logIndexedDbDebug(
@@ -201,27 +250,45 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 					);
 				}
 
-				result = {success: true, data};
+				result =
+				{
+					success: true,
+					data,
+				};
 				break;
 			case "delete":
-				if (key === undefined) {
+				if (key === undefined)
+				{
 					throw new Error("Key is required for delete operation");
 				}
-				if (persistenceStore) {
+				if (persistenceStore)
+				{
 					await persistenceStore.delete(key);
-				} else {
+				}
+				else
+				{
 					await del(key, store);
 				}
-				result = {success: true};
+				result =
+				{
+					success: true,
+				};
 				break;
 			case "healthCheck":
 				// Perform a simple operation to check connection health
-				try {
+				try
+				{
 					const testKey = "__health_check__";
 					await set(testKey, Date.now(), store);
 					await del(testKey, store);
-					result = {success: true, data: "healthy"};
-				} catch (healthError) {
+					result =
+					{
+						success: true,
+						data: "healthy",
+					};
+				}
+				catch (healthError)
+				{
 					console.warn("[IndexedDB Worker] Health check failed:", healthError);
 					resetStore();
 					throw new Error("Health check failed - connection may be lost");
@@ -231,9 +298,16 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 				throw new Error("Unknown operation type");
 		}
 
-		const response: WorkerResponse = {id, result, success: true};
+		const response: WorkerResponse =
+		{
+			id,
+			result,
+			success: true,
+		};
 		self.postMessage(response);
-	} catch (error) {
+	}
+	catch (error)
+	{
 		const errorMessage = error instanceof Error ? error.message : "Unknown error";
 		const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -247,15 +321,18 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>): Promise<void> => {
 			errorMessage.includes("TransactionInactiveError") ||
 			errorMessage.includes("AbortError");
 
-		if (isConnectionClosing) {
+		if (isConnectionClosing)
+		{
 			console.warn("[IndexedDB Worker] Database connection issue detected:", type, key, errorMessage);
 			// Reset the store to force reconnection on next operation
 			resetStore();
 		}
 
-		const response: WorkerResponse = {
+		const response: WorkerResponse =
+		{
 			id,
-			error: {
+			error:
+			{
 				message: errorMessage,
 				stack: errorStack,
 				isConnectionClosing,

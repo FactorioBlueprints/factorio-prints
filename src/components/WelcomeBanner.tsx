@@ -7,23 +7,33 @@ import {useAuthState} from "react-firebase-hooks/auth";
 import {app} from "../base.js";
 import {CACHE_BUSTER, loadFromStorage, saveToStorage} from "../localStorage.js";
 
-function getInitialDismissalState(): boolean {
-	const dismissalData = loadFromStorage<{cacheBuster: string; dismissed: boolean}>("welcomeBannerDismissal");
-	if (dismissalData) {
+function getInitialDismissalState(): boolean
+{
+	const dismissalData = loadFromStorage<
+	{
+		cacheBuster: string;
+		dismissed: boolean;
+	}>("welcomeBannerDismissal");
+	if (dismissalData)
+	{
 		const {dismissed, cacheBuster} = dismissalData;
-		if (dismissed && cacheBuster === CACHE_BUSTER) {
+		if (dismissed && cacheBuster === CACHE_BUSTER)
+		{
 			return true;
 		}
 	}
 	return false;
 }
 
-const WelcomeBanner: React.FC = () => {
+const WelcomeBanner: React.FC = () =>
+{
 	const [user, loading] = useAuthState(getAuth(app));
 	const [isDismissed, setIsDismissed] = useState(getInitialDismissalState);
 
-	const handleDismiss = () => {
-		const dismissalData = {
+	const handleDismiss = () =>
+	{
+		const dismissalData =
+		{
 			dismissed: true,
 			cacheBuster: CACHE_BUSTER,
 		};
@@ -31,28 +41,50 @@ const WelcomeBanner: React.FC = () => {
 		setIsDismissed(true);
 	};
 
-	if (loading || isDismissed) {
+	if (loading || isDismissed)
+	{
 		return null;
 	}
 
-	if (user) {
+	if (user)
+	{
 		return (
 			<div
 				className="p-4 rounded-lg jumbotron position-relative"
-				style={{paddingTop: "1.5rem", paddingBottom: "1.5rem"}}
+				style={
+				{
+					paddingTop: "1.5rem",
+					paddingBottom: "1.5rem",
+				}}
 			>
 				<button
 					type="button"
 					className="btn-close position-absolute"
-					style={{top: "0.5rem", right: "0.5rem"}}
+					style={
+					{
+						top: "0.5rem",
+						right: "0.5rem",
+					}}
 					aria-label="Close"
 					onClick={handleDismiss}
 				/>
 				<h2 className="h4 mb-2">{"🚀 Welcome to Factorio Prints!"}</h2>
-				<p className="mb-0" style={{fontSize: "1rem"}}>
+				<p
+					className="mb-0"
+					style={
+					{
+						fontSize: "1rem",
+					}}
+				>
 					{"Share and discover blueprints for Factorio."}
 				</p>
-				<p className="mb-0" style={{fontSize: "1rem"}}>
+				<p
+					className="mb-0"
+					style={
+					{
+						fontSize: "1rem",
+					}}
+				>
 					<a href="https://discord.gg/uvUUw5a9Qc" target="_blank" rel="noopener noreferrer">
 						<FontAwesomeIcon icon={faDiscord} size="sm" fixedWidth className="me-1" />
 						{" Join our Discord"}
@@ -68,7 +100,11 @@ const WelcomeBanner: React.FC = () => {
 			<button
 				type="button"
 				className="btn-close position-absolute"
-				style={{top: "1rem", right: "1rem"}}
+				style={
+				{
+					top: "1rem",
+					right: "1rem",
+				}}
 				aria-label="Close"
 				onClick={handleDismiss}
 			/>

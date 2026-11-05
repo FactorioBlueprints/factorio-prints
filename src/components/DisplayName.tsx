@@ -8,13 +8,15 @@ import {useAuthState} from "react-firebase-hooks/auth";
 import {app} from "../base";
 import {useUserDisplayName} from "../hooks/useUser";
 
-interface DisplayNameProps {
+interface DisplayNameProps
+{
 	userId?: string;
 	withLink?: boolean;
 	externalIsLoading?: boolean;
 }
 
-const DisplayName: React.FC<DisplayNameProps> = ({userId, withLink = true, externalIsLoading = false}) => {
+const DisplayName: React.FC<DisplayNameProps> = ({userId, withLink = true, externalIsLoading = false}) =>
+{
 	const [currentUser] = useAuthState(getAuth(app)) as [User | null | undefined, boolean, Error | undefined];
 	const isYou = currentUser && currentUser.uid === userId;
 
@@ -22,7 +24,8 @@ const DisplayName: React.FC<DisplayNameProps> = ({userId, withLink = true, exter
 
 	const isLoading = nameIsLoading || externalIsLoading || !userId;
 
-	if (isLoading) {
+	if (isLoading)
+	{
 		return <FontAwesomeIcon icon={faCog} spin />;
 	}
 
@@ -35,9 +38,16 @@ const DisplayName: React.FC<DisplayNameProps> = ({userId, withLink = true, exter
 		</span>
 	);
 
-	if (withLink) {
+	if (withLink)
+	{
 		return (
-			<Link to="/user/$userId" params={{userId}}>
+			<Link
+				to="/user/$userId"
+				params={
+				{
+					userId,
+				}}
+			>
 				{content}
 			</Link>
 		);

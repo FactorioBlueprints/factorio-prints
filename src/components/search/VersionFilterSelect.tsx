@@ -7,38 +7,46 @@ import Select, {type SingleValue} from "react-select";
 import gameVersions from "../../data/gameVersions.json";
 import {advancedSearchStore, setGameVersion} from "../../store/advancedSearchStore";
 
-interface VersionOption {
+interface VersionOption
+{
 	value: number;
 	label: string;
 }
 
-interface GameVersion {
+interface GameVersion
+{
 	versionNumber: number;
 	version1: number;
 	version2: number;
 	version3: number;
 }
 
-const VersionFilterSelect: React.FC = () => {
+const VersionFilterSelect: React.FC = () =>
+{
 	const gameVersionLong = useStore(advancedSearchStore, (state) => state.gameVersionLong);
 
-	const options = useMemo(() => {
+	const options = useMemo(() =>
+	{
 		return (gameVersions as GameVersion[])
-			.map((version) => ({
+			.map((version) => (
+			{
 				value: version.versionNumber,
 				label: `${version.version1}.${version.version2}.${version.version3}`,
 			}))
 			.reverse();
 	}, []);
 
-	const selectedOption = useMemo(() => {
-		if (!gameVersionLong) {
+	const selectedOption = useMemo(() =>
+	{
+		if (!gameVersionLong)
+		{
 			return null;
 		}
 		return options.find((option) => option.value === gameVersionLong) ?? null;
 	}, [gameVersionLong, options]);
 
-	const handleChange = (selected: SingleValue<VersionOption>): void => {
+	const handleChange = (selected: SingleValue<VersionOption>): void =>
+	{
 		setGameVersion(selected?.value ?? null);
 	};
 

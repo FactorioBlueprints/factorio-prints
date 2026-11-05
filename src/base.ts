@@ -1,6 +1,7 @@
 import {type FirebaseApp, initializeApp} from "firebase/app";
 
-const firebaseConfig = {
+const firebaseConfig =
+{
 	apiKey: "AIzaSyAcZJ7hGfxYKhkGHJwAnsLS3z5Tg9kWw2s",
 	authDomain: "facorio-blueprints.firebaseapp.com",
 	databaseURL: "https://facorio-blueprints.firebaseio.com",

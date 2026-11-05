@@ -14,7 +14,8 @@ import PageHeader from "./PageHeader";
 import SearchForm from "./SearchForm";
 import TagForm from "./TagForm";
 
-const MostFavoritedGrid: React.FC = () => {
+const MostFavoritedGrid: React.FC = () =>
+{
 	const {data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData} =
 		useEnrichedPaginatedSummaries(60, "numberOfFavorites");
 
@@ -22,7 +23,8 @@ const MostFavoritedGrid: React.FC = () => {
 	const filteredSummaries = useFilteredBlueprintSummaries(flattenedSummaries);
 	const blueprintSummaries = filteredSummaries;
 
-	if (isLoading) {
+	if (isLoading)
+	{
 		return (
 			<div className="p-5 rounded-lg jumbotron">
 				<h1 className="display-4">

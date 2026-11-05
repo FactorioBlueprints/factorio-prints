@@ -8,10 +8,12 @@ import {useAdvancedSearch} from "../../hooks/useAdvancedSearch";
 import RestBlueprintThumbnail from "./RestBlueprintThumbnail";
 import SearchPagination from "./SearchPagination";
 
-const SearchResultsGrid: React.FC = () => {
+const SearchResultsGrid: React.FC = () =>
+{
 	const {data, isLoading, isError, error, isFetching} = useAdvancedSearch();
 
-	if (isLoading) {
+	if (isLoading)
+	{
 		return (
 			<div className="text-center p-5">
 				<FontAwesomeIcon icon={faSpinner} spin size="3x" />
@@ -20,7 +22,8 @@ const SearchResultsGrid: React.FC = () => {
 		);
 	}
 
-	if (isError) {
+	if (isError)
+	{
 		return (
 			<Alert variant="danger">
 				<Alert.Heading>Search Error</Alert.Heading>
@@ -29,7 +32,8 @@ const SearchResultsGrid: React.FC = () => {
 		);
 	}
 
-	if (!data) {
+	if (!data)
+	{
 		return (
 			<div className="text-center p-5 text-muted">
 				<p>Enter search criteria and click Search to find blueprints.</p>
@@ -40,7 +44,8 @@ const SearchResultsGrid: React.FC = () => {
 	const {_data: blueprints, _metadata: metadata} = data;
 	const numberOfPages = metadata.pagination.numberOfPages;
 
-	if (blueprints.length === 0) {
+	if (blueprints.length === 0)
+	{
 		return (
 			<Alert variant="info">
 				<Alert.Heading>No Results</Alert.Heading>

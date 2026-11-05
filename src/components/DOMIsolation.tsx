@@ -1,6 +1,7 @@
 import {useRef, useEffect, type ReactNode} from "react";
 
-interface DOMIsolationProps {
+interface DOMIsolationProps
+{
 	children: ReactNode;
 	className?: string;
 	style?: React.CSSProperties;
@@ -17,23 +18,31 @@ interface DOMIsolationProps {
  * - "Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node"
  * - "Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node"
  */
-function DOMIsolation({children, className, style}: DOMIsolationProps) {
+function DOMIsolation({children, className, style}: DOMIsolationProps)
+{
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mountedRef = useRef(false);
 
-	useEffect(() => {
+	useEffect(() =>
+	{
 		mountedRef.current = true;
 		// 🛡️ Capture the container reference for cleanup
 		const container = containerRef.current;
 
-		return () => {
+		return () =>
+		{
 			// On unmount, manually clear the container to prevent React from
 			// trying to remove nodes that third-party scripts may have modified
-			if (container) {
-				while (container.firstChild) {
-					try {
+			if (container)
+			{
+				while (container.firstChild)
+				{
+					try
+					{
 						container.removeChild(container.firstChild);
-					} catch {
+					}
+					catch
+					{
 						// Ignore DOM manipulation errors during cleanup
 						break;
 					}

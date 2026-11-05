@@ -5,9 +5,12 @@ import type {RawBlueprintSummary} from "../schemas";
 /**
  * Hook to fetch a raw blueprint summary by ID
  */
-export const useRawBlueprintSummary = (blueprintId: string | undefined) => {
-	return useQuery<RawBlueprintSummary | null>({
-		...blueprintSummaryQuery(blueprintId!),
-		enabled: Boolean(blueprintId),
-	});
+export const useRawBlueprintSummary = (blueprintId: string | undefined) =>
+{
+	return useQuery<RawBlueprintSummary | null>(
+		{
+			...blueprintSummaryQuery(blueprintId!),
+			enabled: Boolean(blueprintId),
+		},
+	);
 };

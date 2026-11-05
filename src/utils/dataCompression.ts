@@ -1,18 +1,21 @@
 import {gzipSync, gunzipSync} from "fflate";
 
-export interface StoredData {
+export interface StoredData
+{
 	compressed: boolean;
 	data: string;
 }
 
-export interface DecompressedData {
+export interface DecompressedData
+{
 	data: unknown;
 	compressed: boolean;
 	originalSize: number;
 	storedSize: number;
 }
 
-export interface CompressedData {
+export interface CompressedData
+{
 	storedData: StoredData;
 	originalSize: number;
 }
@@ -20,48 +23,75 @@ export interface CompressedData {
 /**
  * 🗜️ Compress data for storage, with automatic fallback for small data
  */
-export function compressForStorage(data: unknown): StoredData {
+export function compressForStorage(data: unknown): StoredData
+{
 	return compressForStorageWithMetadata(data).storedData;
 }
 
-export function compressForStorageWithMetadata(data: unknown): CompressedData {
+export function compressForStorageWithMetadata(data: unknown): CompressedData
+{
 	const jsonString = JSON.stringify(data);
 
-	if (jsonString.length < 10240) {
+	if (jsonString.length < 10240)
+	{
 		return {
-			storedData: {compressed: false, data: jsonString},
+			storedData:
+			{
+				compressed: false,
+				data: jsonString,
+			},
 			originalSize: jsonString.length,
 		};
 	}
 
-	try {
+	try
+	{
 		const bytes = new TextEncoder().encode(jsonString);
-		const compressed = gzipSync(bytes, {level: 6, mtime: 0});
+		const compressed = gzipSync(
+			bytes,
+			{
+				level: 6,
+				mtime: 0,
+			},
+		);
 
 		// Convert Uint8Array to base64 without using spread operator to avoid stack overflow on large arrays
 		let binaryString = "";
 		const chunkSize = 8192; // Process in chunks to avoid memory issues
-		for (let i = 0; i < compressed.length; i += chunkSize) {
+		for (let i = 0; i < compressed.length; i += chunkSize)
+		{
 			const chunk = compressed.slice(i, i + chunkSize);
 			// Process each byte individually to avoid stack overflow with apply()
-			for (let j = 0; j < chunk.length; j++) {
+			for (let j = 0; j < chunk.length; j++)
+			{
 				binaryString += String.fromCharCode(chunk[j]);
 			}
 		}
 		const base64 = btoa(binaryString);
 
-		if (base64.length < jsonString.length * 0.9) {
+		if (base64.length < jsonString.length * 0.9)
+		{
 			return {
-				storedData: {compressed: true, data: base64},
+				storedData:
+				{
+					compressed: true,
+					data: base64,
+				},
 				originalSize: jsonString.length,
 			};
 		}
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.warn("[Compression] Failed to compress data:", error);
 	}
 
 	return {
-		storedData: {compressed: false, data: jsonString},
+		storedData:
+		{
+			compressed: false,
+			data: jsonString,
+		},
 		originalSize: jsonString.length,
 	};
 }
@@ -69,11 +99,13 @@ export function compressForStorageWithMetadata(data: unknown): CompressedData {
 /**
  * 🎈 Decompress data from storage
  */
-export function decompressFromStorage(storedData: any): any {
+export function decompressFromStorage(storedData: any): any
+{
 	return decompressFromStorageWithMetadata(storedData).data;
 }
 
-export function decompressFromStorageWithMetadata(storedData: unknown): DecompressedData {
+export function decompressFromStorageWithMetadata(storedData: unknown): DecompressedData
+{
 	if (
 		typeof storedData !== "object" ||
 		storedData === null ||
@@ -81,7 +113,8 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
 		!("data" in storedData) ||
 		typeof storedData.compressed !== "boolean" ||
 		typeof storedData.data !== "string"
-	) {
+	)
+	{
 		const serializedData = JSON.stringify(storedData);
 		return {
 			data: storedData,
@@ -93,8 +126,10 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
 
 	const storedSize = storedData.data.length;
 
-	if (!storedData.compressed) {
-		try {
+	if (!storedData.compressed)
+	{
+		try
+		{
 			const data = JSON.parse(storedData.data);
 			return {
 				data,
@@ -102,7 +137,9 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
 				originalSize: storedData.data.length,
 				storedSize,
 			};
-		} catch {
+		}
+		catch
+		{
 			return {
 				data: storedData,
 				compressed: false,
@@ -112,16 +149,19 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
 		}
 	}
 
-	try {
+	try
+	{
 		const base64 = storedData.data;
 		const binaryString = atob(base64);
 		const len = binaryString.length;
 		const bytes = new Uint8Array(len);
 
 		const chunkSize = 32768;
-		for (let i = 0; i < len; i += chunkSize) {
+		for (let i = 0; i < len; i += chunkSize)
+		{
 			const end = Math.min(i + chunkSize, len);
-			for (let j = i; j < end; j++) {
+			for (let j = i; j < end; j++)
+			{
 				bytes[j] = binaryString.charCodeAt(j);
 			}
 		}
@@ -134,10 +174,14 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
 			originalSize: jsonString.length,
 			storedSize,
 		};
-	} catch (error) {
+	}
+	catch (error)
+	{
 		console.error("[Compression] Failed to decompress data:", error);
-		if (typeof storedData.data === "string") {
-			try {
+		if (typeof storedData.data === "string")
+		{
+			try
+			{
 				const data = JSON.parse(storedData.data);
 				return {
 					data,
@@ -145,7 +189,9 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
 					originalSize: storedData.data.length,
 					storedSize,
 				};
-			} catch {
+			}
+			catch
+			{
 				return {
 					data: storedData,
 					compressed: true,
@@ -168,8 +214,10 @@ export function decompressFromStorageWithMetadata(storedData: unknown): Decompre
  * These occur when the user closes the tab/browser while an async operation is pending.
  * They are expected during normal browser lifecycle and should not be logged.
  */
-export function isShutdownAbortError(error: unknown): boolean {
-	if (!(error instanceof Error)) {
+export function isShutdownAbortError(error: unknown): boolean
+{
+	if (!(error instanceof Error))
+	{
 		return false;
 	}
 	const message = error.message.toLowerCase();
@@ -179,14 +227,22 @@ export function isShutdownAbortError(error: unknown): boolean {
 /**
  * 💾 Check if there's enough storage quota available
  */
-export async function checkStorageQuota(
-	requiredBytes: number,
-): Promise<{hasSpace: boolean; available?: number; used?: number}> {
-	if (!navigator.storage || !navigator.storage.estimate) {
-		return {hasSpace: true};
+export async function checkStorageQuota(requiredBytes: number): Promise<
+{
+	hasSpace: boolean;
+	available?: number;
+	used?: number;
+}>
+{
+	if (!navigator.storage || !navigator.storage.estimate)
+	{
+		return {
+			hasSpace: true,
+		};
 	}
 
-	try {
+	try
+	{
 		const estimate = await navigator.storage.estimate();
 		const usage = estimate.usage || 0;
 		const quota = estimate.quota || 0;
@@ -199,11 +255,18 @@ export async function checkStorageQuota(
 			available,
 			used: usage,
 		};
-	} catch (error) {
-		if (isShutdownAbortError(error)) {
-			return {hasSpace: true};
+	}
+	catch (error)
+	{
+		if (isShutdownAbortError(error))
+		{
+			return {
+				hasSpace: true,
+			};
 		}
 		console.warn("[Storage] Failed to estimate storage quota:", error);
-		return {hasSpace: true};
+		return {
+			hasSpace: true,
+		};
 	}
 }

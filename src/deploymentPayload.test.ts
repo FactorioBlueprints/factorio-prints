@@ -5,8 +5,10 @@ import {createViteConfiguration, getReleaseVersion, hasSentryUploadCredentials} 
 
 const readProjectFile = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
-describe("deployment payload", () => {
-	it("bundles the Slate theme without legacy stylesheet CDNs", () => {
+describe("deployment payload", () =>
+{
+	it("bundles the Slate theme without legacy stylesheet CDNs", () =>
+	{
 		const document = readProjectFile("index.html");
 		const entrypoint = readProjectFile("src/main.tsx");
 
@@ -15,7 +17,8 @@ describe("deployment payload", () => {
 		expect(entrypoint).toContain('import "bootswatch/dist/slate/bootstrap.min.css";');
 	});
 
-	it("ships only locally referenced icons", () => {
+	it("ships only locally referenced icons", () =>
+	{
 		const icons = readdirSync(resolve(process.cwd(), "public/icons")).sort();
 
 		expect(icons).toStrictEqual(["entity-unknown.png", "fbe.png"]);
@@ -24,8 +27,10 @@ describe("deployment payload", () => {
 		expect(readProjectFile("src/components/single/BlueprintContentHeader.tsx")).toContain("/icons/fbe.png");
 	});
 
-	it("generates uploadable source maps only with complete Sentry credentials", () => {
-		const sentryEnvironment = {
+	it("generates uploadable source maps only with complete Sentry credentials", () =>
+	{
+		const sentryEnvironment =
+		{
 			SENTRY_AUTH_TOKEN: "token",
 			SENTRY_ORG: "organization",
 			SENTRY_PROJECT: "project",
@@ -33,39 +38,54 @@ describe("deployment payload", () => {
 		const noCredentialsConfiguration = createViteConfiguration({});
 		const sentryUploadConfiguration = createViteConfiguration(sentryEnvironment);
 
-		expect({
-			noCredentials: {
-				hasCredentials: hasSentryUploadCredentials({}),
-				pluginCount: noCredentialsConfiguration.plugins?.length,
-				sourceMaps: noCredentialsConfiguration.build?.sourcemap,
+		expect(
+			{
+				noCredentials:
+				{
+					hasCredentials: hasSentryUploadCredentials({}),
+					pluginCount: noCredentialsConfiguration.plugins?.length,
+					sourceMaps: noCredentialsConfiguration.build?.sourcemap,
+				},
+				partialCredentials: hasSentryUploadCredentials(
+					{
+						SENTRY_AUTH_TOKEN: "token",
+					},
+				),
+				sentryUpload:
+				{
+					hasCredentials: hasSentryUploadCredentials(sentryEnvironment),
+					pluginCount: sentryUploadConfiguration.plugins?.length,
+					sourceMaps: sentryUploadConfiguration.build?.sourcemap,
+				},
 			},
-			partialCredentials: hasSentryUploadCredentials({SENTRY_AUTH_TOKEN: "token"}),
-			sentryUpload: {
-				hasCredentials: hasSentryUploadCredentials(sentryEnvironment),
-				pluginCount: sentryUploadConfiguration.plugins?.length,
-				sourceMaps: sentryUploadConfiguration.build?.sourcemap,
+		).toStrictEqual(
+			{
+				noCredentials:
+				{
+					hasCredentials: false,
+					pluginCount: 2,
+					sourceMaps: false,
+				},
+				partialCredentials: false,
+				sentryUpload:
+				{
+					hasCredentials: true,
+					pluginCount: 3,
+					sourceMaps: true,
+				},
 			},
-		}).toStrictEqual({
-			noCredentials: {
-				hasCredentials: false,
-				pluginCount: 2,
-				sourceMaps: false,
-			},
-			partialCredentials: false,
-			sentryUpload: {
-				hasCredentials: true,
-				pluginCount: 3,
-				sourceMaps: true,
-			},
-		});
+		);
 		expect(readProjectFile("vite.config.ts")).toContain('filesToDeleteAfterUpload: ["./dist/**/*.map"]');
 	});
 
-	it("uses the deployment commit as the release version", () => {
+	it("uses the deployment commit as the release version", () =>
+	{
 		expect(
-			getReleaseVersion({
-				SENTRY_RELEASE: "0000000000000000000000000000000000000000",
-			}),
+			getReleaseVersion(
+				{
+					SENTRY_RELEASE: "0000000000000000000000000000000000000000",
+				},
+			),
 		).toBe("0000000000000000000000000000000000000000");
 	});
 });

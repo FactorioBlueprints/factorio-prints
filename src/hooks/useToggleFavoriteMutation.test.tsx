@@ -7,32 +7,46 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vite-plus/test";
 import {useToggleFavoriteMutation} from "./useToggleFavoriteMutation";
 
 // Mock Firebase
-vi.mock("firebase/database", () => ({
+vi.mock("firebase/database", () => (
+{
 	ref: vi.fn(),
 	update: vi.fn(),
 }));
 
-vi.mock("../utils/firebaseDatabase", () => ({
+vi.mock("../utils/firebaseDatabase", () => (
+{
 	getFirebaseDatabase: vi.fn(),
 }));
 
-vi.mock("../base", () => ({
+vi.mock("../base", () => (
+{
 	app: {},
 }));
 
-describe("useToggleFavoriteMutation", () => {
+describe("useToggleFavoriteMutation", () =>
+{
 	let queryClient: QueryClient;
 	let wrapper: ({children}: {children: React.ReactNode}) => React.JSX.Element;
 	let mockDatabase: any;
 	let mockRef: any;
 
-	beforeEach(() => {
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: {retry: false},
-				mutations: {retry: false},
+	beforeEach(() =>
+	{
+		queryClient = new QueryClient(
+			{
+				defaultOptions:
+				{
+					queries:
+					{
+						retry: false,
+					},
+					mutations:
+					{
+						retry: false,
+					},
+				},
 			},
-		});
+		);
 
 		wrapper = ({children}: {children: React.ReactNode}) => (
 			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -45,15 +59,24 @@ describe("useToggleFavoriteMutation", () => {
 		vi.mocked(dbUpdate).mockResolvedValue(undefined);
 	});
 
-	afterEach(() => {
+	afterEach(() =>
+	{
 		vi.clearAllMocks();
 	});
 
-	describe("mutation function", () => {
-		it("should toggle favorite from false to true", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+	describe("mutation function", () =>
+	{
+		it("should toggle favorite from false to true", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -64,15 +87,25 @@ describe("useToggleFavoriteMutation", () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-				"/users/user456/favorites/blueprint123": true,
-			});
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(
+				mockRef,
+				{
+					"/users/user456/favorites/blueprint123": true,
+				},
+			);
 		});
 
-		it("should toggle favorite from true to false", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+		it("should toggle favorite from true to false", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: true,
@@ -83,15 +116,25 @@ describe("useToggleFavoriteMutation", () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-				"/users/user456/favorites/blueprint123": null,
-			});
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(
+				mockRef,
+				{
+					"/users/user456/favorites/blueprint123": null,
+				},
+			);
 		});
 
-		it("should handle zero favorite count", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+		it("should handle zero favorite count", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: true,
@@ -102,15 +145,25 @@ describe("useToggleFavoriteMutation", () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-				"/users/user456/favorites/blueprint123": null,
-			});
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(
+				mockRef,
+				{
+					"/users/user456/favorites/blueprint123": null,
+				},
+			);
 		});
 
-		it("should handle null numberOfFavorites", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+		it("should handle null numberOfFavorites", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -121,15 +174,25 @@ describe("useToggleFavoriteMutation", () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-				"/users/user456/favorites/blueprint123": true,
-			});
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(
+				mockRef,
+				{
+					"/users/user456/favorites/blueprint123": true,
+				},
+			);
 		});
 
-		it("should handle undefined numberOfFavorites", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+		it("should handle undefined numberOfFavorites", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -140,27 +203,38 @@ describe("useToggleFavoriteMutation", () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-				"/users/user456/favorites/blueprint123": true,
-			});
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(
+				mockRef,
+				{
+					"/users/user456/favorites/blueprint123": true,
+				},
+			);
 		});
 	});
 
-	describe("cache updates", () => {
-		it("should update blueprint cache when toggling favorite on", async () => {
-			const existingBlueprint = {
+	describe("cache updates", () =>
+	{
+		it("should update blueprint cache when toggling favorite on", async () =>
+		{
+			const existingBlueprint =
+			{
 				title: "Test Blueprint",
 				blueprintString: "test-string",
 				createdDate: 1234567890,
 				descriptionMarkdown: "Test description",
 				lastUpdatedDate: 1234567890,
 				numberOfFavorites: 5,
-				favorites: {user789: true},
-				author: {
+				favorites:
+				{
+					user789: true,
+				},
+				author:
+				{
 					displayName: "Test User",
 					userId: "testuser123",
 				},
-				image: {
+				image:
+				{
 					id: "test-image",
 					type: "image/png",
 				},
@@ -168,9 +242,15 @@ describe("useToggleFavoriteMutation", () => {
 
 			queryClient.setQueryData(["blueprints", "blueprintId", "blueprint123"], existingBlueprint);
 
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -182,43 +262,56 @@ describe("useToggleFavoriteMutation", () => {
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 			const updatedBlueprint = queryClient.getQueryData(["blueprints", "blueprintId", "blueprint123"]);
-			expect(updatedBlueprint).toEqual({
-				title: "Test Blueprint",
-				blueprintString: "test-string",
-				createdDate: 1234567890,
-				descriptionMarkdown: "Test description",
-				lastUpdatedDate: 1234567890,
-				numberOfFavorites: 6,
-				favorites: {
-					user789: true,
-					user456: true,
+			expect(updatedBlueprint).toEqual(
+				{
+					title: "Test Blueprint",
+					blueprintString: "test-string",
+					createdDate: 1234567890,
+					descriptionMarkdown: "Test description",
+					lastUpdatedDate: 1234567890,
+					numberOfFavorites: 6,
+					favorites:
+					{
+						user789: true,
+						user456: true,
+					},
+					author:
+					{
+						displayName: "Test User",
+						userId: "testuser123",
+					},
+					image:
+					{
+						id: "test-image",
+						type: "image/png",
+					},
+					tags: [],
 				},
-				author: {
-					displayName: "Test User",
-					userId: "testuser123",
-				},
-				image: {
-					id: "test-image",
-					type: "image/png",
-				},
-				tags: [],
-			});
+			);
 		});
 
-		it("should update blueprint cache when toggling favorite off", async () => {
-			const existingBlueprint = {
+		it("should update blueprint cache when toggling favorite off", async () =>
+		{
+			const existingBlueprint =
+			{
 				title: "Test Blueprint",
 				blueprintString: "test-string",
 				createdDate: 1234567890,
 				descriptionMarkdown: "Test description",
 				lastUpdatedDate: 1234567890,
 				numberOfFavorites: 5,
-				favorites: {user456: true, user789: true},
-				author: {
+				favorites:
+				{
+					user456: true,
+					user789: true,
+				},
+				author:
+				{
 					displayName: "Test User",
 					userId: "testuser123",
 				},
-				image: {
+				image:
+				{
 					id: "test-image",
 					type: "image/png",
 				},
@@ -226,9 +319,15 @@ describe("useToggleFavoriteMutation", () => {
 
 			queryClient.setQueryData(["blueprints", "blueprintId", "blueprint123"], existingBlueprint);
 
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: true,
@@ -240,31 +339,38 @@ describe("useToggleFavoriteMutation", () => {
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 			const updatedBlueprint = queryClient.getQueryData(["blueprints", "blueprintId", "blueprint123"]);
-			expect(updatedBlueprint).toEqual({
-				title: "Test Blueprint",
-				blueprintString: "test-string",
-				createdDate: 1234567890,
-				descriptionMarkdown: "Test description",
-				lastUpdatedDate: 1234567890,
-				numberOfFavorites: 4,
-				favorites: {
-					user456: undefined,
-					user789: true,
+			expect(updatedBlueprint).toEqual(
+				{
+					title: "Test Blueprint",
+					blueprintString: "test-string",
+					createdDate: 1234567890,
+					descriptionMarkdown: "Test description",
+					lastUpdatedDate: 1234567890,
+					numberOfFavorites: 4,
+					favorites:
+					{
+						user456: undefined,
+						user789: true,
+					},
+					author:
+					{
+						displayName: "Test User",
+						userId: "testuser123",
+					},
+					image:
+					{
+						id: "test-image",
+						type: "image/png",
+					},
+					tags: [],
 				},
-				author: {
-					displayName: "Test User",
-					userId: "testuser123",
-				},
-				image: {
-					id: "test-image",
-					type: "image/png",
-				},
-				tags: [],
-			});
+			);
 		});
 
-		it("should update blueprint summary cache", async () => {
-			const existingSummary = {
+		it("should update blueprint summary cache", async () =>
+		{
+			const existingSummary =
+			{
 				title: "Test Blueprint",
 				imgurId: "test-imgur-id",
 				imgurType: "image/png",
@@ -273,9 +379,15 @@ describe("useToggleFavoriteMutation", () => {
 
 			queryClient.setQueryData(["blueprintSummaries", "blueprintId", "blueprint123"], existingSummary);
 
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -287,25 +399,35 @@ describe("useToggleFavoriteMutation", () => {
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 			const updatedSummary = queryClient.getQueryData(["blueprintSummaries", "blueprintId", "blueprint123"]);
-			expect(updatedSummary).toEqual({
-				title: "Test Blueprint",
-				imgurId: "test-imgur-id",
-				imgurType: "image/png",
-				numberOfFavorites: 6,
-			});
+			expect(updatedSummary).toEqual(
+				{
+					title: "Test Blueprint",
+					imgurId: "test-imgur-id",
+					imgurType: "image/png",
+					numberOfFavorites: 6,
+				},
+			);
 		});
 
-		it("should update user favorites cache", async () => {
-			const existingFavorites = {
+		it("should update user favorites cache", async () =>
+		{
+			const existingFavorites =
+			{
 				blueprint789: true,
 				blueprint456: true,
 			};
 
 			queryClient.setQueryData(["users", "userId", "user456", "favorites"], existingFavorites);
 
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -317,17 +439,26 @@ describe("useToggleFavoriteMutation", () => {
 			await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 			const updatedFavorites = queryClient.getQueryData(["users", "userId", "user456", "favorites"]);
-			expect(updatedFavorites).toEqual({
-				blueprint789: true,
-				blueprint456: true,
-				blueprint123: true,
-			});
+			expect(updatedFavorites).toEqual(
+				{
+					blueprint789: true,
+					blueprint456: true,
+					blueprint123: true,
+				},
+			);
 		});
 
-		it("should update specific favorite status caches", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+		it("should update specific favorite status caches", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -361,11 +492,18 @@ describe("useToggleFavoriteMutation", () => {
 			expect(blueprintFavoriteStatus).toBe(true);
 		});
 
-		it("should handle missing cache data gracefully", async () => {
+		it("should handle missing cache data gracefully", async () =>
+		{
 			// No existing cache data
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -389,14 +527,22 @@ describe("useToggleFavoriteMutation", () => {
 		});
 	});
 
-	describe("error handling", () => {
-		it("should handle Firebase update errors", async () => {
+	describe("error handling", () =>
+	{
+		it("should handle Firebase update errors", async () =>
+		{
 			const error = new Error("Firebase update failed");
 			vi.mocked(dbUpdate).mockRejectedValue(error);
 
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -411,11 +557,19 @@ describe("useToggleFavoriteMutation", () => {
 		});
 	});
 
-	describe("raw data pattern compliance", () => {
-		it("should use provided numberOfFavorites for cache updates without fetching", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+	describe("raw data pattern compliance", () =>
+	{
+		it("should use provided numberOfFavorites for cache updates without fetching", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,
@@ -428,15 +582,25 @@ describe("useToggleFavoriteMutation", () => {
 
 			// Should use the provided numberOfFavorites (42) for cache updates only
 			// numberOfFavorites is NOT sent to database (Cloud Function is source of truth)
-			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(mockRef, {
-				"/users/user456/favorites/blueprint123": true,
-			});
+			expect(vi.mocked(dbUpdate)).toHaveBeenCalledWith(
+				mockRef,
+				{
+					"/users/user456/favorites/blueprint123": true,
+				},
+			);
 		});
 
-		it("should not make any additional data fetching calls", async () => {
-			const {result} = renderHook(() => useToggleFavoriteMutation(), {wrapper});
+		it("should not make any additional data fetching calls", async () =>
+		{
+			const {result} = renderHook(
+				() => useToggleFavoriteMutation(),
+				{
+					wrapper,
+				},
+			);
 
-			const params = {
+			const params =
+			{
 				blueprintId: "blueprint123",
 				userId: "user456",
 				isFavorite: false,

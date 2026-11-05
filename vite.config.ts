@@ -7,7 +7,8 @@ import type {UserConfig} from "vite-plus";
 
 process.title = "factorio-blueprints";
 
-type SentryUploadEnvironment = {
+type SentryUploadEnvironment =
+{
 	SENTRY_AUTH_TOKEN?: string;
 	SENTRY_ENVIRONMENT?: string;
 	SENTRY_ORG?: string;
@@ -15,8 +16,18 @@ type SentryUploadEnvironment = {
 	SENTRY_RELEASE?: string;
 };
 
-const fallbackVersion = execSync("git describe --always --tags", {encoding: "utf8"}).trim();
-const gitBranch = execSync("git rev-parse --abbrev-ref HEAD", {encoding: "utf8"}).trim();
+const fallbackVersion = execSync(
+	"git describe --always --tags",
+	{
+		encoding: "utf8",
+	},
+).trim();
+const gitBranch = execSync(
+	"git rev-parse --abbrev-ref HEAD",
+	{
+		encoding: "utf8",
+	},
+).trim();
 const buildTime = new Date().toISOString();
 
 export const hasSentryUploadCredentials = (environment: SentryUploadEnvironment = process.env) =>
@@ -25,31 +36,44 @@ export const hasSentryUploadCredentials = (environment: SentryUploadEnvironment 
 export const getReleaseVersion = (environment: SentryUploadEnvironment = process.env) =>
 	environment.SENTRY_RELEASE ?? fallbackVersion;
 
-export const createViteConfiguration = (environment: SentryUploadEnvironment = process.env): UserConfig => {
+export const createViteConfiguration = (environment: SentryUploadEnvironment = process.env): UserConfig =>
+{
 	const sentryUploadEnabled = hasSentryUploadCredentials(environment);
 	const version = getReleaseVersion(environment);
 
 	return {
-		run: {
-			tasks: {
-				check: {
+		run:
+		{
+			tasks:
+			{
+				check:
+				{
 					command: "vp check",
 					dependsOn: ["check:images", "check:toolchain"],
 				},
-				"test:run": {
+				"test:run":
+				{
 					command: "node node_modules/vitest/dist/cli.js run",
-					cache: {
-						input: [{auto: true}, "!node_modules/.vitest-cache/**"],
+					cache:
+					{
+						input: [
+							{
+								auto: true,
+							},
+							"!node_modules/.vitest-cache/**",
+						],
 						output: [],
 					},
 				},
 			},
 		},
 		// Formatting runs through oxfmt-next-line (configured in .oxfmtrc.json), not Vite+'s bundled oxfmt.
-		check: {
+		check:
+		{
 			fmt: false,
 		},
-		lint: {
+		lint:
+		{
 			plugins: ["oxc", "typescript", "unicorn", "react"],
 			jsPlugins: [
 				{
@@ -57,20 +81,24 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 					specifier: "vite-plus/oxlint-plugin",
 				},
 			],
-			categories: {
+			categories:
+			{
 				correctness: "warn",
 			},
-			rules: {
+			rules:
+			{
 				"vite-plus/prefer-vite-plus-imports": "error",
 			},
-			env: {
+			env:
+			{
 				builtin: true,
 			},
 			ignorePatterns: ["dist", "build", ".llm/**", "functions/**"],
 			overrides: [
 				{
 					files: ["functions/**/*.{ts,tsx}"],
-					rules: {
+					rules:
+					{
 						"no-array-constructor": "error",
 						"no-unused-expressions": "error",
 						"no-unused-vars": [
@@ -100,37 +128,43 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 						"typescript/prefer-namespace-keyword": "error",
 						"typescript/triple-slash-reference": "error",
 					},
-					env: {
+					env:
+					{
 						es2020: true,
 						node: true,
 					},
 				},
 				{
 					files: ["public/**/*.{ts,tsx}"],
-					globals: {
+					globals:
+					{
 						ServiceWorkerGlobalScope: "readonly",
 						ExtendableEvent: "readonly",
 					},
 				},
 				{
 					files: ["vite.config.ts", "vitest.config.ts"],
-					globals: {
+					globals:
+					{
 						process: "readonly",
 					},
 				},
 				{
 					files: ["**/*.test.{js,jsx,ts,tsx}", "**/*.spec.{js,jsx,ts,tsx}", "**/setupTests.{js,ts}"],
-					globals: {
+					globals:
+					{
 						vi: "readonly",
 					},
-					env: {
+					env:
+					{
 						browser: true,
 						jest: true,
 					},
 				},
 				{
 					files: ["**/*.{js,jsx}"],
-					rules: {
+					rules:
+					{
 						"constructor-super": "error",
 						"for-direction": "error",
 						"getter-return": "error",
@@ -209,7 +243,8 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 							},
 						],
 					},
-					env: {
+					env:
+					{
 						es2020: true,
 						browser: true,
 						jest: true,
@@ -217,7 +252,8 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 				},
 				{
 					files: ["src/**/*.{ts,tsx}", "!functions/**/*.{ts,tsx}"],
-					rules: {
+					rules:
+					{
 						"no-array-constructor": "error",
 						"no-unused-expressions": "error",
 						"no-unused-vars": [
@@ -254,82 +290,108 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 						"typescript/prefer-namespace-keyword": "error",
 						"typescript/triple-slash-reference": "error",
 					},
-					env: {
+					env:
+					{
 						es2020: true,
 						browser: true,
 						jest: true,
 					},
 				},
 			],
-			options: {
+			options:
+			{
 				typeAware: true,
 				typeCheck: true,
 			},
 		},
-		define: {
+		define:
+		{
 			"import.meta.env.VITE_APP_VERSION": JSON.stringify(version),
 			"import.meta.env.VITE_GIT_BRANCH": JSON.stringify(gitBranch),
 			"import.meta.env.VITE_BUILD_TIME": JSON.stringify(buildTime),
 		},
 		plugins: [
-			TanStackRouterVite({
-				routeFilePrefix: "",
-				routesDirectory: "./src/routes",
-				generatedRouteTree: "./src/routeTree.gen.ts",
-				disableTypes: false,
-				autoCodeSplitting: true,
-			}),
+			TanStackRouterVite(
+				{
+					routeFilePrefix: "",
+					routesDirectory: "./src/routes",
+					generatedRouteTree: "./src/routeTree.gen.ts",
+					disableTypes: false,
+					autoCodeSplitting: true,
+				},
+			),
 			react(),
 			...(sentryUploadEnabled
 				? [
-						sentryVitePlugin({
-							org: environment.SENTRY_ORG,
-							project: environment.SENTRY_PROJECT,
-							authToken: environment.SENTRY_AUTH_TOKEN,
-							release: {
-								name: version,
-								setCommits: {
-									auto: true,
-								},
-								...((environment.SENTRY_ENVIRONMENT === "production-firebase" ||
-									environment.SENTRY_ENVIRONMENT === "production-cloudflare") && {
-									deploy: {
-										env: environment.SENTRY_ENVIRONMENT,
+						sentryVitePlugin(
+							{
+								org: environment.SENTRY_ORG,
+								project: environment.SENTRY_PROJECT,
+								authToken: environment.SENTRY_AUTH_TOKEN,
+								release:
+								{
+									name: version,
+									setCommits:
+									{
+										auto: true,
 									},
-								}),
+									...((environment.SENTRY_ENVIRONMENT === "production-firebase" ||
+										environment.SENTRY_ENVIRONMENT === "production-cloudflare") &&
+									{
+										deploy:
+										{
+											env: environment.SENTRY_ENVIRONMENT,
+										},
+									}),
+								},
+								sourcemaps:
+								{
+									assets: "./dist/**",
+									filesToDeleteAfterUpload: ["./dist/**/*.map"],
+								},
 							},
-							sourcemaps: {
-								assets: "./dist/**",
-								filesToDeleteAfterUpload: ["./dist/**/*.map"],
-							},
-						}),
+						),
 					]
 				: []),
 		],
-		build: {
+		build:
+		{
 			sourcemap: sentryUploadEnabled,
-			rolldownOptions: {
-				output: {
-					codeSplitting: {
-						groups: [{name: "entities", test: /entitiesWithIcons/}],
+			rolldownOptions:
+			{
+				output:
+				{
+					codeSplitting:
+					{
+						groups: [
+							{
+								name: "entities",
+								test: /entitiesWithIcons/,
+							},
+						],
 					},
 				},
 			},
 		},
 		publicDir: "public",
-		server: {
+		server:
+		{
 			port: 3000,
-			proxy: {
+			proxy:
+			{
 				"/api": "http://localhost:8080",
 			},
 		},
-		resolve: {
+		resolve:
+		{
 			extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
-			alias: {
+			alias:
+			{
 				src: "/src",
 			},
 		},
-		optimizeDeps: {
+		optimizeDeps:
+		{
 			include: ["@fortawesome/fontawesome-svg-core"],
 		},
 	};

@@ -18,8 +18,13 @@ import PageHeader from "./PageHeader";
 import SearchForm from "./SearchForm";
 import TagForm from "./TagForm";
 
-const UserGrid: React.FC = () => {
-	const {userId} = useParams({from: "/user/$userId"});
+const UserGrid: React.FC = () =>
+{
+	const {userId} = useParams(
+		{
+			from: "/user/$userId",
+		},
+	);
 	const filteredTags = useStore(searchParamsStore, (state) => state.filteredTags);
 
 	const {data, isLoading, isSuccess, error} = useUserBlueprints(userId);
@@ -34,13 +39,12 @@ const UserGrid: React.FC = () => {
 	const filteredBlueprints = useFilteredBlueprintSummaries(validBlueprintSummaries);
 
 	// Sort newest first
-	const sortedBlueprints = [...filteredBlueprints].sort(
-		(a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) => {
-			const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
-			const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
-			return dateB.getTime() - dateA.getTime();
-		},
-	);
+	const sortedBlueprints = [...filteredBlueprints].sort((a: EnrichedBlueprintSummary, b: EnrichedBlueprintSummary) =>
+	{
+		const dateA = a.lastUpdatedDate ? new Date(a.lastUpdatedDate) : new Date(0);
+		const dateB = b.lastUpdatedDate ? new Date(b.lastUpdatedDate) : new Date(0);
+		return dateB.getTime() - dateA.getTime();
+	});
 
 	const isEmpty = isSuccess && sortedBlueprints.length === 0;
 

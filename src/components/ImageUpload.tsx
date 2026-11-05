@@ -6,7 +6,8 @@ import Row from "react-bootstrap/Row";
 import buildImageUrl, {ImageVariant} from "../helpers/buildImageUrl";
 import type {UploadedImage} from "../helpers/uploadImage";
 
-interface ImageUploadProps {
+interface ImageUploadProps
+{
 	// The image uploaded in this form so far, shown as a preview; null until one is uploaded.
 	readonly image: UploadedImage | null;
 	readonly onUploaded: (image: UploadedImage) => void;
@@ -16,21 +17,28 @@ interface ImageUploadProps {
 const firstFile = (files: FileList | ArrayLike<File> | null | undefined): File | undefined =>
 	files && files.length > 0 ? files[0] : undefined;
 
-function ImageUpload({image, onUploaded, upload}: ImageUploadProps) {
+function ImageUpload({image, onUploaded, upload}: ImageUploadProps)
+{
 	const inputId = useId();
 	const [uploading, setUploading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const send = useCallback(
-		async (file: File | undefined) => {
+		async (file: File | undefined) =>
+		{
 			if (!file || uploading) return;
 			setUploading(true);
 			setError(null);
-			try {
+			try
+			{
 				onUploaded(await upload(file));
-			} catch (uploadError) {
+			}
+			catch (uploadError)
+			{
 				setError(uploadError instanceof Error ? uploadError.message : String(uploadError));
-			} finally {
+			}
+			finally
+			{
 				setUploading(false);
 			}
 		},
@@ -38,7 +46,8 @@ function ImageUpload({image, onUploaded, upload}: ImageUploadProps) {
 	);
 
 	const handleDrop = useCallback(
-		(event: React.DragEvent<HTMLDivElement>) => {
+		(event: React.DragEvent<HTMLDivElement>) =>
+		{
 			event.preventDefault();
 			void send(firstFile(event.dataTransfer?.files));
 		},
@@ -46,9 +55,11 @@ function ImageUpload({image, onUploaded, upload}: ImageUploadProps) {
 	);
 
 	const handlePaste = useCallback(
-		(event: React.ClipboardEvent<HTMLDivElement>) => {
+		(event: React.ClipboardEvent<HTMLDivElement>) =>
+		{
 			const file = firstFile(event.clipboardData?.files);
-			if (file) {
+			if (file)
+			{
 				event.preventDefault();
 				void send(file);
 			}
@@ -70,7 +81,10 @@ function ImageUpload({image, onUploaded, upload}: ImageUploadProps) {
 						onDrop={handleDrop}
 						onPaste={handlePaste}
 						className="p-3 rounded"
-						style={{border: "2px dashed #6c757d"}}
+						style={
+						{
+							border: "2px dashed #6c757d",
+						}}
 					>
 						<label htmlFor={inputId} className="btn btn-secondary me-2 mb-0">
 							{"Choose an image"}
@@ -81,7 +95,8 @@ function ImageUpload({image, onUploaded, upload}: ImageUploadProps) {
 							accept="image/png,image/jpeg,image/gif"
 							className="d-none"
 							disabled={uploading}
-							onChange={(event) => {
+							onChange={(event) =>
+							{
 								void send(firstFile(event.target.files));
 								event.target.value = "";
 							}}
@@ -100,7 +115,14 @@ function ImageUpload({image, onUploaded, upload}: ImageUploadProps) {
 						{"New screenshot"}
 					</Form.Label>
 					<Col sm={10}>
-						<Card className="mb-2 mr-2" style={{width: "14rem", backgroundColor: "#1c1e22"}}>
+						<Card
+							className="mb-2 mr-2"
+							style={
+							{
+								width: "14rem",
+								backgroundColor: "#1c1e22",
+							}}
+						>
 							<Card.Img
 								variant="top"
 								alt="New screenshot"

@@ -1,12 +1,14 @@
 import React from "react";
 import Row from "react-bootstrap/Row";
 
-interface ErrorDisplayProps {
+interface ErrorDisplayProps
+{
 	error: unknown;
 	message?: string;
 }
 
-const ErrorDisplay = ({error, message = "There was a problem loading the data."}: ErrorDisplayProps) => {
+const ErrorDisplay = ({error, message = "There was a problem loading the data."}: ErrorDisplayProps) =>
+{
 	if (!error) return null;
 
 	return (

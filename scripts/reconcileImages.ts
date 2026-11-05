@@ -3,19 +3,22 @@ import {mkdir, readFile, rename, writeFile} from "node:fs/promises";
 import {dirname, resolve} from "node:path";
 import {pathToFileURL} from "node:url";
 import {parseArgs} from "node:util";
-import {
+import
+{
 	imageR2EnvironmentSchema,
 	listExistingImageObjectKeys,
 	loadImageInventory,
 	putAndVerifyImageObject,
 } from "./backfillImages.ts";
-import {
+import
+{
 	buildImgurSourceUrls,
 	downloadImageVariant,
 	mapWithConcurrency,
 	SourceImageMissingError,
 } from "./imageBackfillCore.ts";
-import {
+import
+{
 	buildReconciliationActions,
 	buildReconciliationAlertInputs,
 	countReconciliationStatuses,
@@ -34,7 +37,8 @@ const defaultObjectPrefix = "legacy-imgur";
 const defaultReportPath = ".llm/image-reconciliation-report.json";
 const defaultCheckpointPath = ".llm/image-reconciliation-checkpoint.json";
 
-interface CommandOptions {
+interface CommandOptions
+{
 	checkpointObjectKey?: string;
 	checkpointPath: string;
 	concurrency: number;
@@ -49,32 +53,83 @@ interface CommandOptions {
 	retryDelayMilliseconds: number;
 }
 
-const parsePositiveInteger = (value: string, optionName: string): number => {
+const parsePositiveInteger = (value: string, optionName: string): number =>
+{
 	const parsed = Number(value);
-	if (!Number.isInteger(parsed) || parsed < 1) {
+	if (!Number.isInteger(parsed) || parsed < 1)
+	{
 		throw new Error(`${optionName} must be a positive integer`);
 	}
 	return parsed;
 };
 
-const parseCommandOptions = (): CommandOptions => {
-	const {values} = parseArgs({
-		options: {
-			checkpoint: {default: defaultCheckpointPath, type: "string"},
-			"checkpoint-object-key": {type: "string"},
-			concurrency: {default: "8", type: "string"},
-			"database-url": {default: defaultDatabaseUrl, type: "string"},
-			execute: {default: false, type: "boolean"},
-			limit: {type: "string"},
-			"maximum-attempts": {default: "3", type: "string"},
-			"maximum-megabytes": {default: "20", type: "string"},
-			prefix: {default: defaultObjectPrefix, type: "string"},
-			report: {default: defaultReportPath, type: "string"},
-			"report-object-key": {type: "string"},
-			"retry-delay-hours": {default: "168", type: "string"},
+const parseCommandOptions = (): CommandOptions =>
+{
+	const {values} = parseArgs(
+		{
+			options:
+			{
+				checkpoint:
+				{
+					default: defaultCheckpointPath,
+					type: "string",
+				},
+				"checkpoint-object-key":
+				{
+					type: "string",
+				},
+				concurrency:
+				{
+					default: "8",
+					type: "string",
+				},
+				"database-url":
+				{
+					default: defaultDatabaseUrl,
+					type: "string",
+				},
+				execute:
+				{
+					default: false,
+					type: "boolean",
+				},
+				limit:
+				{
+					type: "string",
+				},
+				"maximum-attempts":
+				{
+					default: "3",
+					type: "string",
+				},
+				"maximum-megabytes":
+				{
+					default: "20",
+					type: "string",
+				},
+				prefix:
+				{
+					default: defaultObjectPrefix,
+					type: "string",
+				},
+				report:
+				{
+					default: defaultReportPath,
+					type: "string",
+				},
+				"report-object-key":
+				{
+					type: "string",
+				},
+				"retry-delay-hours":
+				{
+					default: "168",
+					type: "string",
+				},
+			},
+			strict: true,
 		},
-		strict: true,
-	});
+	);
 
 	return {
 		checkpointObjectKey: values["checkpoint-object-key"],
@@ -96,10 +151,14 @@ const parseCommandOptions = (): CommandOptions => {
 const isFileMissingError = (error: unknown): boolean =>
 	error instanceof Error && "code" in error && error.code === "ENOENT";
 
-const loadLocalCheckpoint = async (checkpointPath: string): Promise<ReconciliationCheckpoint> => {
-	try {
+const loadLocalCheckpoint = async (checkpointPath: string): Promise<ReconciliationCheckpoint> =>
+{
+	try
+	{
 		return reconciliationCheckpointSchema.parse(JSON.parse(await readFile(checkpointPath, "utf8")));
-	} catch (error) {
+	}
+	catch (error)
+	{
 		if (isFileMissingError(error)) return emptyReconciliationCheckpoint();
 		throw error;
 	}
@@ -109,21 +168,39 @@ export const loadR2Checkpoint = async (
 	client: S3Client,
 	bucket: string,
 	objectKey: string,
-): Promise<ReconciliationCheckpoint> => {
-	try {
-		const response = await client.send(new GetObjectCommand({Bucket: bucket, Key: objectKey}));
+): Promise<ReconciliationCheckpoint> =>
+{
+	try
+	{
+		const response = await client.send(
+			new GetObjectCommand(
+				{
+					Bucket: bucket,
+					Key: objectKey,
+				},
+			),
+		);
 		if (!response.Body) throw new Error(`R2 checkpoint ${objectKey} has no body`);
 		return reconciliationCheckpointSchema.parse(JSON.parse(await response.Body.transformToString()));
-	} catch (error) {
-		if (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404) {
+	}
+	catch (error)
+	{
+		if (error instanceof S3ServiceException && error.$metadata.httpStatusCode === 404)
+		{
 			return emptyReconciliationCheckpoint();
 		}
 		throw error;
 	}
 };
 
-const writeJsonAtomically = async (filePath: string, value: unknown): Promise<void> => {
-	await mkdir(dirname(filePath), {recursive: true});
+const writeJsonAtomically = async (filePath: string, value: unknown): Promise<void> =>
+{
+	await mkdir(
+		dirname(filePath),
+		{
+			recursive: true,
+		},
+	);
 	const pendingPath = `${filePath}.pending`;
 	await writeFile(pendingPath, `${JSON.stringify(value, null, 2)}\n`);
 	await rename(pendingPath, filePath);
@@ -135,16 +212,19 @@ export const writeR2Json = async (
 	objectKey: string,
 	value: unknown,
 	immutable: boolean,
-): Promise<void> => {
+): Promise<void> =>
+{
 	await client.send(
-		new PutObjectCommand({
-			Body: `${JSON.stringify(value, null, 2)}\n`,
-			Bucket: bucket,
-			CacheControl: "no-store",
-			ContentType: "application/json",
-			IfNoneMatch: immutable ? "*" : undefined,
-			Key: objectKey,
-		}),
+		new PutObjectCommand(
+			{
+				Body: `${JSON.stringify(value, null, 2)}\n`,
+				Bucket: bucket,
+				CacheControl: "no-store",
+				ContentType: "application/json",
+				IfNoneMatch: immutable ? "*" : undefined,
+				Key: objectKey,
+			},
+		),
 	);
 };
 
@@ -156,21 +236,27 @@ const executeReconciliationAction = async (
 	options: CommandOptions,
 	attemptedAt: Date,
 	persistCheckpoint: () => Promise<void>,
-): Promise<ReconciliationAction> => {
-	const image = {
+): Promise<ReconciliationAction> =>
+{
+	const image =
+	{
 		blueprintIds: action.blueprintIds,
 		imgurId: action.imgurId,
 		mediaTypes: action.mediaTypes,
 	};
 
-	try {
-		const downloadedImage = await downloadImageVariant(buildImgurSourceUrls(image, action.variant), {
-			delay: async (milliseconds) => new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds)),
-			fetcher: fetch,
-			maximumAttempts: 3,
-			maximumBytes: options.maximumBytes,
-			requestTimeoutMilliseconds: 20_000,
-		});
+	try
+	{
+		const downloadedImage = await downloadImageVariant(
+			buildImgurSourceUrls(image, action.variant),
+			{
+				delay: async (milliseconds) => new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds)),
+				fetcher: fetch,
+				maximumAttempts: 3,
+				maximumBytes: options.maximumBytes,
+				requestTimeoutMilliseconds: 20_000,
+			},
+		);
 		await putAndVerifyImageObject(client, bucket, action.key, image, downloadedImage);
 		delete checkpoint.variants[action.key];
 		await persistCheckpoint();
@@ -183,7 +269,9 @@ const executeReconciliationAction = async (
 			reason: undefined,
 			status: ReconciliationStatus.Migrated,
 		};
-	} catch (error) {
+	}
+	catch (error)
+	{
 		const failureKind =
 			error instanceof SourceImageMissingError ? RetryFailureKind.SourceMissing : RetryFailureKind.Failed;
 		const reason = error instanceof Error ? error.message : String(error);
@@ -213,18 +301,22 @@ const executeReconciliationAction = async (
 	}
 };
 
-const main = async () => {
+const main = async () =>
+{
 	const options = parseCommandOptions();
 	const observedAt = new Date();
 	const environment = imageR2EnvironmentSchema.parse(process.env);
-	const client = new S3Client({
-		credentials: {
-			accessKeyId: environment.R2_ACCESS_KEY_ID,
-			secretAccessKey: environment.R2_SECRET_ACCESS_KEY,
+	const client = new S3Client(
+		{
+			credentials:
+			{
+				accessKeyId: environment.R2_ACCESS_KEY_ID,
+				secretAccessKey: environment.R2_SECRET_ACCESS_KEY,
+			},
+			endpoint: `https://${environment.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+			region: "auto",
 		},
-		endpoint: `https://${environment.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-		region: "auto",
-	});
+	);
 	const [inventory, existingObjectKeys, checkpoint] = await Promise.all([
 		loadImageInventory(options.databaseUrl, options.concurrency),
 		listExistingImageObjectKeys(client, environment.R2_BUCKET, options.objectPrefix),
@@ -244,11 +336,14 @@ const main = async () => {
 	);
 
 	let checkpointWrites = Promise.resolve();
-	const persistCheckpoint = (): Promise<void> => {
+	const persistCheckpoint = (): Promise<void> =>
+	{
 		const snapshot = structuredClone(checkpoint);
-		checkpointWrites = checkpointWrites.then(async () => {
+		checkpointWrites = checkpointWrites.then(async () =>
+		{
 			await writeJsonAtomically(options.checkpointPath, snapshot);
-			if (options.checkpointObjectKey) {
+			if (options.checkpointObjectKey)
+			{
 				await writeR2Json(client, environment.R2_BUCKET, options.checkpointObjectKey, snapshot, false);
 			}
 		});
@@ -278,12 +373,15 @@ const main = async () => {
 		? null
 		: [...existingObjectKeys].filter((key) => !expectedObjectKeys.has(key)).sort();
 	const finishedAt = new Date();
-	const report = {
-		alertInputs: {
+	const report =
+	{
+		alertInputs:
+		{
 			...buildReconciliationAlertInputs(finalActions, finishedAt),
 			orphanedObjects: orphanedObjectKeys?.length ?? null,
 		},
-		checkpoint: {
+		checkpoint:
+		{
 			objectKey: options.checkpointObjectKey,
 			path: options.checkpointPath,
 			removedEntries: removedCheckpointEntries,
@@ -291,7 +389,8 @@ const main = async () => {
 		},
 		dryRun: !options.execute,
 		finishedAt: finishedAt.toISOString(),
-		inventory: {
+		inventory:
+		{
 			invalidBlueprintImages: inventory.invalidBlueprintImages,
 			rawBlueprints: inventory.rawBlueprintCount,
 			rawOnlyBlueprints: inventory.rawOnlyBlueprintCount,
@@ -299,7 +398,8 @@ const main = async () => {
 			summaries: inventory.summaryCount,
 			uniqueImages: inventory.images.length,
 		},
-		options: {
+		options:
+		{
 			concurrency: options.concurrency,
 			databaseUrl: options.databaseUrl,
 			limit: options.limit,
@@ -314,7 +414,8 @@ const main = async () => {
 		variants: finalActions.filter((action) => action.status !== ReconciliationStatus.Existing),
 	};
 	await writeJsonAtomically(options.reportPath, report);
-	if (options.execute && options.reportObjectKey) {
+	if (options.execute && options.reportObjectKey)
+	{
 		await writeR2Json(client, environment.R2_BUCKET, options.reportObjectKey, report, true);
 	}
 	console.log(JSON.stringify(report, null, 2));

@@ -3,11 +3,14 @@ import React from "react";
 import MyCollectionGrid from "../components/MyCollectionGrid";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-export const Route = createFileRoute("/collection")({
-	component: CollectionComponent,
-});
+export const Route = createFileRoute("/collection")(
+	{
+		component: CollectionComponent,
+	},
+);
 
-function CollectionComponent() {
+function CollectionComponent()
+{
 	return (
 		<ErrorBoundary>
 			<MyCollectionGrid />

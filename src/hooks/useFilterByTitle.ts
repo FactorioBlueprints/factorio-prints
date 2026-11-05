@@ -7,15 +7,19 @@ import {searchParamsStore} from "../store/searchParamsStore";
  * @param blueprintSummaries - The blueprint summaries to filter
  * @returns The filtered blueprint summaries
  */
-export const useFilterByTitle = (blueprintSummaries: EnrichedBlueprintSummary[] = []): EnrichedBlueprintSummary[] => {
+export const useFilterByTitle = (blueprintSummaries: EnrichedBlueprintSummary[] = []): EnrichedBlueprintSummary[] =>
+{
 	const titleFilter = useStore(searchParamsStore, (state) => state.titleFilter);
 
-	if (!titleFilter) {
+	if (!titleFilter)
+	{
 		return blueprintSummaries;
 	}
 
-	return blueprintSummaries.filter((blueprintSummary) => {
-		if (blueprintSummary.title === undefined) {
+	return blueprintSummaries.filter((blueprintSummary) =>
+	{
+		if (blueprintSummary.title === undefined)
+		{
 			return false;
 		}
 		return blueprintSummary.title.toLowerCase().includes(titleFilter.toLowerCase());

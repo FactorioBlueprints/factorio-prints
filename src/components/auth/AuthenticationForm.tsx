@@ -8,7 +8,8 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import {useAuthProviders} from "../../hooks/useAuthProviders";
 
-interface AuthenticationFormProps {
+interface AuthenticationFormProps
+{
 	onAuthSuccess?: () => void;
 	buttonClassName?: string;
 	showDivider?: boolean;
@@ -18,9 +19,11 @@ export const AuthenticationForm: React.FC<AuthenticationFormProps> = ({
 	onAuthSuccess,
 	buttonClassName = "",
 	showDivider = true,
-}) => {
+}) =>
+{
 	const [email, setEmail] = useState("");
-	const {
+	const
+	{
 		googleProvider,
 		githubProvider,
 		authenticateWithProvider,
@@ -29,9 +32,11 @@ export const AuthenticationForm: React.FC<AuthenticationFormProps> = ({
 		isEmailSending,
 	} = useAuthProviders(onAuthSuccess);
 
-	const handleEmailSubmit = (event: React.FormEvent) => {
+	const handleEmailSubmit = (event: React.FormEvent) =>
+	{
 		event.preventDefault();
-		authenticateWithEmail(email).then(() => {
+		authenticateWithEmail(email).then(() =>
+		{
 			setEmail("");
 		});
 	};

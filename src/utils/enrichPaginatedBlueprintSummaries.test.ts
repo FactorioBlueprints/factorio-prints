@@ -1,23 +1,30 @@
 import {describe, expect, it} from "vite-plus/test";
 import {enrichBlueprintSummaryPage, enrichPaginatedBlueprintSummaries} from "./enrichPaginatedBlueprintSummaries";
 
-describe("enrichBlueprintSummaryPage", () => {
-	it("should return null if input is null", () => {
+describe("enrichBlueprintSummaryPage", () =>
+{
+	it("should return null if input is null", () =>
+	{
 		const result = enrichBlueprintSummaryPage(null);
 		expect(result).toBeNull();
 	});
 
-	it("should transform raw page data into enriched page data", () => {
-		const rawPage: any = {
-			data: {
-				key1: {
+	it("should transform raw page data into enriched page data", () =>
+	{
+		const rawPage: any =
+		{
+			data:
+			{
+				key1:
+				{
 					title: "Blueprint 1",
 					imgurId: "img1",
 					imgurType: "image/png",
 					numberOfFavorites: 10,
 					lastUpdatedDate: 1000,
 				},
-				key2: {
+				key2:
+				{
 					title: "Blueprint 2",
 					imgurId: "img2",
 					imgurType: "image/jpeg",
@@ -30,7 +37,8 @@ describe("enrichBlueprintSummaryPage", () => {
 			lastValue: 500,
 		};
 
-		const expectedEnrichedPage = {
+		const expectedEnrichedPage =
+		{
 			data: [
 				{
 					title: "Blueprint 1",
@@ -60,15 +68,18 @@ describe("enrichBlueprintSummaryPage", () => {
 		expect(result).to.deep.equal(expectedEnrichedPage);
 	});
 
-	it("should handle empty data object", () => {
-		const rawPage: any = {
+	it("should handle empty data object", () =>
+	{
+		const rawPage: any =
+		{
 			data: {},
 			hasMore: false,
 			lastKey: null,
 			lastValue: null,
 		};
 
-		const expectedEnrichedPage = {
+		const expectedEnrichedPage =
+		{
 			data: [],
 			hasMore: false,
 			lastKey: null,
@@ -79,19 +90,31 @@ describe("enrichBlueprintSummaryPage", () => {
 		expect(result).to.deep.equal(expectedEnrichedPage);
 	});
 
-	it("should throw validation error for invalid raw data", () => {
-		const invalidRawPage: any = {
+	it("should throw validation error for invalid raw data", () =>
+	{
+		const invalidRawPage: any =
+		{
 			// Missing required fields
-			data: {key1: {title: "Test"}},
+			data:
+			{
+				key1:
+				{
+					title: "Test",
+				},
+			},
 		};
 
 		expect(() => enrichBlueprintSummaryPage(invalidRawPage)).toThrow(/Invalid raw blueprint summary page/);
 	});
 
-	it("should handle summaries without optional fields", () => {
-		const rawPage: any = {
-			data: {
-				key1: {
+	it("should handle summaries without optional fields", () =>
+	{
+		const rawPage: any =
+		{
+			data:
+			{
+				key1:
+				{
 					title: "Blueprint 1",
 					imgurId: "img1",
 					imgurType: "image/png",
@@ -104,7 +127,8 @@ describe("enrichBlueprintSummaryPage", () => {
 			lastValue: null,
 		};
 
-		const expectedEnrichedPage = {
+		const expectedEnrichedPage =
+		{
 			data: [
 				{
 					title: "Blueprint 1",
@@ -125,18 +149,24 @@ describe("enrichBlueprintSummaryPage", () => {
 	});
 });
 
-describe("enrichPaginatedBlueprintSummaries", () => {
-	it("should return null if input is null", () => {
+describe("enrichPaginatedBlueprintSummaries", () =>
+{
+	it("should return null if input is null", () =>
+	{
 		const result = enrichPaginatedBlueprintSummaries(null);
 		expect(result).toBeNull();
 	});
 
-	it("should transform raw paginated data into enriched paginated data", () => {
-		const rawPaginated: any = {
+	it("should transform raw paginated data into enriched paginated data", () =>
+	{
+		const rawPaginated: any =
+		{
 			pages: [
 				{
-					data: {
-						key1: {
+					data:
+					{
+						key1:
+						{
 							title: "Test 1",
 							imgurId: "img1",
 							imgurType: "image/png",
@@ -148,8 +178,10 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 					lastValue: 1000,
 				},
 				{
-					data: {
-						key2: {
+					data:
+					{
+						key2:
+						{
 							title: "Test 2",
 							imgurId: "img2",
 							imgurType: "image/jpeg",
@@ -161,10 +193,17 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 					lastValue: null,
 				},
 			],
-			pageParams: [null, {key: "key1", value: 1000}],
+			pageParams: [
+				null,
+				{
+					key: "key1",
+					value: 1000,
+				},
+			],
 		};
 
-		const expectedEnrichedPaginated = {
+		const expectedEnrichedPaginated =
+		{
 			pages: [
 				{
 					data: [
@@ -197,20 +236,29 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 					lastValue: null,
 				},
 			],
-			pageParams: [null, {key: "key1", value: 1000}],
+			pageParams: [
+				null,
+				{
+					key: "key1",
+					value: 1000,
+				},
+			],
 		};
 
 		const result = enrichPaginatedBlueprintSummaries(rawPaginated);
 		expect(result).to.deep.equal(expectedEnrichedPaginated);
 	});
 
-	it("should handle empty pages array", () => {
-		const rawPaginated: any = {
+	it("should handle empty pages array", () =>
+	{
+		const rawPaginated: any =
+		{
 			pages: [],
 			pageParams: [],
 		};
 
-		const expectedEnrichedPaginated = {
+		const expectedEnrichedPaginated =
+		{
 			pages: [],
 			pageParams: [],
 		};
@@ -219,12 +267,16 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 		expect(result).to.deep.equal(expectedEnrichedPaginated);
 	});
 
-	it("should handle paginated data without pageParams", () => {
-		const rawPaginated: any = {
+	it("should handle paginated data without pageParams", () =>
+	{
+		const rawPaginated: any =
+		{
 			pages: [
 				{
-					data: {
-						key1: {
+					data:
+					{
+						key1:
+						{
 							title: "Test 1",
 							imgurId: "img1",
 							imgurType: "image/png",
@@ -239,7 +291,8 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 			// pageParams is optional
 		};
 
-		const expectedEnrichedPaginated = {
+		const expectedEnrichedPaginated =
+		{
 			pages: [
 				{
 					data: [
@@ -264,8 +317,10 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 		expect(result).to.deep.equal(expectedEnrichedPaginated);
 	});
 
-	it("should throw validation error for invalid raw data", () => {
-		const invalidRawPaginated: any = {
+	it("should throw validation error for invalid raw data", () =>
+	{
+		const invalidRawPaginated: any =
+		{
 			// Missing required 'pages' field
 			pageParams: [],
 		};
@@ -275,8 +330,10 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 		);
 	});
 
-	it("should handle pages with empty data objects", () => {
-		const rawPaginated: any = {
+	it("should handle pages with empty data objects", () =>
+	{
+		const rawPaginated: any =
+		{
 			pages: [
 				{
 					data: {}, // Empty data object
@@ -288,7 +345,8 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 			pageParams: [null],
 		};
 
-		const expectedEnrichedPaginated = {
+		const expectedEnrichedPaginated =
+		{
 			pages: [
 				{
 					data: [],
@@ -304,18 +362,23 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 		expect(result).to.deep.equal(expectedEnrichedPaginated);
 	});
 
-	it("should preserve original structure when enriching multiple pages", () => {
-		const rawPaginated: any = {
+	it("should preserve original structure when enriching multiple pages", () =>
+	{
+		const rawPaginated: any =
+		{
 			pages: [
 				{
-					data: {
-						blueprint1: {
+					data:
+					{
+						blueprint1:
+						{
 							title: "Blueprint 1",
 							imgurId: "img1",
 							imgurType: "image/png",
 							numberOfFavorites: 1,
 						},
-						blueprint2: {
+						blueprint2:
+						{
 							title: "Blueprint 2",
 							imgurId: "img2",
 							imgurType: "image/jpeg",
@@ -327,8 +390,10 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 					lastValue: 2000,
 				},
 				{
-					data: {
-						blueprint3: {
+					data:
+					{
+						blueprint3:
+						{
 							title: "Blueprint 3",
 							imgurId: "img3",
 							imgurType: "image/gif",
@@ -340,10 +405,17 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 					lastValue: null,
 				},
 			],
-			pageParams: [null, {key: "blueprint2", value: 2000}],
+			pageParams: [
+				null,
+				{
+					key: "blueprint2",
+					value: 2000,
+				},
+			],
 		};
 
-		const expectedEnrichedPaginated = {
+		const expectedEnrichedPaginated =
+		{
 			pages: [
 				{
 					data: [
@@ -384,19 +456,29 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 					lastValue: null,
 				},
 			],
-			pageParams: [null, {key: "blueprint2", value: 2000}],
+			pageParams: [
+				null,
+				{
+					key: "blueprint2",
+					value: 2000,
+				},
+			],
 		};
 
 		const result = enrichPaginatedBlueprintSummaries(rawPaginated);
 		expect(result).to.deep.equal(expectedEnrichedPaginated);
 	});
 
-	it("should handle page with null values in pagination metadata", () => {
-		const rawPaginated: any = {
+	it("should handle page with null values in pagination metadata", () =>
+	{
+		const rawPaginated: any =
+		{
 			pages: [
 				{
-					data: {
-						key1: {
+					data:
+					{
+						key1:
+						{
 							title: "Test 1",
 							imgurId: "img1",
 							imgurType: "image/png",
@@ -411,7 +493,8 @@ describe("enrichPaginatedBlueprintSummaries", () => {
 			pageParams: [null],
 		};
 
-		const expectedEnrichedPaginated = {
+		const expectedEnrichedPaginated =
+		{
 			pages: [
 				{
 					data: [

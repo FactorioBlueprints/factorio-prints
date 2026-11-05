@@ -3,13 +3,15 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {captureException, withScope} from "@sentry/react";
 import React, {type ErrorInfo, type ReactNode} from "react";
 
-interface ErrorBoundaryProps {
+interface ErrorBoundaryProps
+{
 	children: ReactNode;
 	fallback?: ReactNode;
 	showDetails?: boolean;
 }
 
-interface ErrorBoundaryState {
+interface ErrorBoundaryState
+{
 	hasError: boolean;
 	error: Error | null;
 	errorInfo: ErrorInfo | null;
@@ -20,8 +22,10 @@ interface ErrorBoundaryState {
  * These errors occur when scripts like Google Ads or Disqus modify DOM nodes
  * that React is trying to manage, causing removeChild/insertBefore/appendChild to fail.
  */
-function isDOMManipulationError(error: Error): boolean {
-	if (error instanceof DOMException) {
+function isDOMManipulationError(error: Error): boolean
+{
+	if (error instanceof DOMException)
+	{
 		return (
 			error.code === 8 ||
 			error.name === "NotFoundError" ||
@@ -41,48 +45,79 @@ function isDOMManipulationError(error: Error): boolean {
 	);
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-	constructor(props: ErrorBoundaryProps) {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState>
+{
+	constructor(props: ErrorBoundaryProps)
+	{
 		super(props);
-		this.state = {hasError: false, error: null, errorInfo: null};
+		this.state =
+		{
+			hasError: false,
+			error: null,
+			errorInfo: null,
+		};
 	}
 
-	static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+	static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState>
+	{
 		// 🛡️ Don't show error UI for DOM manipulation errors - these are benign
 		// and caused by third-party scripts (ads, Disqus) modifying the DOM
-		if (isDOMManipulationError(error)) {
-			return {hasError: false, error: null};
+		if (isDOMManipulationError(error))
+		{
+			return {
+				hasError: false,
+				error: null,
+			};
 		}
-		return {hasError: true, error};
+		return {
+			hasError: true,
+			error,
+		};
 	}
 
-	componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+	componentDidCatch(error: Error, errorInfo: ErrorInfo): void
+	{
 		// 🛡️ Silently ignore DOM manipulation errors from third-party scripts
-		if (isDOMManipulationError(error)) {
-			if (import.meta.env.DEV) {
+		if (isDOMManipulationError(error))
+		{
+			if (import.meta.env.DEV)
+			{
 				console.warn("🛡️ DOM manipulation error suppressed:", error.message);
 			}
 			return;
 		}
 
-		this.setState({error, errorInfo});
+		this.setState(
+			{
+				error,
+				errorInfo,
+			},
+		);
 
-		withScope((scope) => {
-			scope.setContext("errorBoundary", {
-				componentStack: errorInfo.componentStack,
-			});
+		withScope((scope) =>
+		{
+			scope.setContext(
+				"errorBoundary",
+				{
+					componentStack: errorInfo.componentStack,
+				},
+			);
 			scope.setLevel("error");
 			captureException(error);
 		});
 
-		if (import.meta.env.DEV) {
+		if (import.meta.env.DEV)
+		{
 			console.error("ErrorBoundary caught an error:", error, errorInfo);
 		}
 	}
 
-	render(): ReactNode {
-		if (this.state.hasError) {
-			if (this.props.fallback) {
+	render(): ReactNode
+	{
+		if (this.state.hasError)
+		{
+			if (this.props.fallback)
+			{
 				return this.props.fallback;
 			}
 
@@ -96,7 +131,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 							<summary className="btn btn-secondary">View error details</summary>
 							<p className="mt-3 text-danger">{this.state.error?.toString()}</p>
 							{import.meta.env.DEV && (
-								<pre className="mt-3 p-3 bg-dark text-light rounded" style={{whiteSpace: "pre-wrap"}}>
+								<pre
+									className="mt-3 p-3 bg-dark text-light rounded"
+									style={
+									{
+										whiteSpace: "pre-wrap",
+									}}
+								>
 									<code>{this.state.errorInfo?.componentStack}</code>
 								</pre>
 							)}

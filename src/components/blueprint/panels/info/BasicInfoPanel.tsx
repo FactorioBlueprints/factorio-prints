@@ -10,13 +10,15 @@ import {FactorioIcon, Placeholder} from "../../../core/icons/FactorioIcon";
 import {RichText} from "../../../core/text/RichText";
 import {Version} from "../../../core/text/Version";
 
-interface InfoRowProps {
+interface InfoRowProps
+{
 	label: string;
 	children: ReactNode;
 	hidden?: boolean;
 }
 
-const InfoRow = ({label, children, hidden = false}: InfoRowProps) => {
+const InfoRow = ({label, children, hidden = false}: InfoRowProps) =>
+{
 	if (hidden) return null;
 	return (
 		<tr>
@@ -26,17 +28,21 @@ const InfoRow = ({label, children, hidden = false}: InfoRowProps) => {
 	);
 };
 
-const BasicInfoPanelComponent = ({blueprint}: {blueprint?: RawBlueprintData}) => {
+const BasicInfoPanelComponent = ({blueprint}: {blueprint?: RawBlueprintData}) =>
+{
 	if (!blueprint) return null;
 	const wrapper = new BlueprintWrapper(blueprint as any);
 	const {type, label, description, icons, version} = wrapper.getInfo();
 
-	function getIconElement(index: number, icon?: any) {
-		if (icon) {
+	function getIconElement(index: number, icon?: any)
+	{
+		if (icon)
+		{
 			return (
 				<FactorioIcon
 					key={index}
-					icon={{
+					icon={
+					{
 						name: icon.signal.name,
 						type: icon.signal.type as any,
 						quality: icon.signal.quality as any,
@@ -55,7 +61,14 @@ const BasicInfoPanelComponent = ({blueprint}: {blueprint?: RawBlueprintData}) =>
 			<Table bordered hover>
 				<tbody>
 					<InfoRow label="Type" hidden={!type}>
-						<FactorioIcon icon={{type: "item", name: type}} size={"tiny"} />
+						<FactorioIcon
+							icon={
+							{
+								type: "item",
+								name: type,
+							}}
+							size={"tiny"}
+						/>
 						<span> </span>
 						<span>{type}</span>
 					</InfoRow>
@@ -69,7 +82,8 @@ const BasicInfoPanelComponent = ({blueprint}: {blueprint?: RawBlueprintData}) =>
 					</InfoRow>
 
 					<InfoRow label="Icons" hidden={!icons?.length}>
-						{[1, 2, 3, 4].map((index) => {
+						{[1, 2, 3, 4].map((index) =>
+						{
 							const icon = icons?.find((icon) => icon.index === index);
 							return getIconElement(index, icon);
 						})}

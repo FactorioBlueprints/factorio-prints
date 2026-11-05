@@ -8,79 +8,93 @@ import {blueprintIdSchema, type EnrichedBlueprint, type EnrichedBlueprintSummary
 import enrichBlueprint from "../utils/enrichBlueprint";
 import {enrichBlueprintSummary} from "../utils/enrichBlueprintSummary";
 
-interface LoaderData {
+interface LoaderData
+{
 	blueprintSummary: EnrichedBlueprintSummary | null;
 	blueprintData: EnrichedBlueprint | null;
 }
 
-export const Route = createFileRoute("/view/$blueprintId")({
-	component: ViewBlueprintComponent,
-	loader: async ({params}): Promise<LoaderData> => {
-		const blueprintIdResult = blueprintIdSchema.safeParse(params.blueprintId);
-		if (!blueprintIdResult.success) {
-			return {
-				blueprintSummary: null,
-				blueprintData: null,
-			};
-		}
-		const blueprintId = blueprintIdResult.data;
-
-		try {
-			const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
-
-			if (!summaryData) {
+export const Route = createFileRoute("/view/$blueprintId")(
+	{
+		component: ViewBlueprintComponent,
+		loader: async ({params}): Promise<LoaderData> =>
+		{
+			const blueprintIdResult = blueprintIdSchema.safeParse(params.blueprintId);
+			if (!blueprintIdResult.success)
+			{
 				return {
 					blueprintSummary: null,
 					blueprintData: null,
 				};
 			}
+			const blueprintId = blueprintIdResult.data;
 
-			const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
+			try
+			{
+				const summaryData = await queryClient.fetchQuery(blueprintSummaryQuery(blueprintId));
 
-			if (!enrichedSummary) {
-				return {
-					blueprintSummary: null,
-					blueprintData: null,
-				};
-			}
-
-			const blueprintRawData = await queryClient.fetchQuery(blueprintQuery(blueprintId, enrichedSummary));
-
-			const enrichedBlueprint = blueprintRawData ? enrichBlueprint(blueprintRawData, blueprintId) : null;
-
-			return {
-				blueprintSummary: enrichedSummary,
-				blueprintData: enrichedBlueprint,
-			};
-		} catch (error) {
-			// Handle network errors gracefully - return null data instead of throwing
-			if (error instanceof TypeError && error.message === "Failed to fetch") {
-				return {
-					blueprintSummary: null,
-					blueprintData: null,
-				};
-			}
-			if (error instanceof Error && error.message) {
-				const message = error.message.toLowerCase();
-				if (
-					message.includes("failed to fetch") ||
-					message.includes("network error") ||
-					message.includes("network request failed") ||
-					message.includes("fetch failed")
-				) {
+				if (!summaryData)
+				{
 					return {
 						blueprintSummary: null,
 						blueprintData: null,
 					};
 				}
-			}
-			// Re-throw non-network errors
-			throw error;
-		}
-	},
-});
 
-function ViewBlueprintComponent() {
+				const enrichedSummary = enrichBlueprintSummary(summaryData, blueprintId);
+
+				if (!enrichedSummary)
+				{
+					return {
+						blueprintSummary: null,
+						blueprintData: null,
+					};
+				}
+
+				const blueprintRawData = await queryClient.fetchQuery(blueprintQuery(blueprintId, enrichedSummary));
+
+				const enrichedBlueprint = blueprintRawData ? enrichBlueprint(blueprintRawData, blueprintId) : null;
+
+				return {
+					blueprintSummary: enrichedSummary,
+					blueprintData: enrichedBlueprint,
+				};
+			}
+			catch (error)
+			{
+				// Handle network errors gracefully - return null data instead of throwing
+				if (error instanceof TypeError && error.message === "Failed to fetch")
+				{
+					return {
+						blueprintSummary: null,
+						blueprintData: null,
+					};
+				}
+				if (error instanceof Error && error.message)
+				{
+					const message = error.message.toLowerCase();
+					if (
+						message.includes("failed to fetch") ||
+						message.includes("network error") ||
+						message.includes("network request failed") ||
+						message.includes("fetch failed")
+					)
+					{
+						return {
+							blueprintSummary: null,
+							blueprintData: null,
+						};
+					}
+				}
+				// Re-throw non-network errors
+				throw error;
+			}
+		},
+	},
+);
+
+function ViewBlueprintComponent()
+{
 	return (
 		<ErrorBoundary>
 			<SingleBlueprint />

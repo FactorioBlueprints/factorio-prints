@@ -1,4 +1,5 @@
-import {
+import
+{
 	deleteImgurImage,
 	type ImgurCredentials,
 	type ImgurDeleteResult,
@@ -15,17 +16,20 @@ import {
 
 const tokenStorageKey = "imgur-token";
 
-export interface StoredImgurToken {
+export interface StoredImgurToken
+{
 	readonly seedHash: string;
 	readonly state: ImgurTokenState;
 }
 
-export interface ImgurTokenStore {
+export interface ImgurTokenStore
+{
 	readonly load: () => Promise<ImgurTokenState>;
 	readonly save: (state: ImgurTokenState) => Promise<void>;
 }
 
-interface ImgurSecrets {
+interface ImgurSecrets
+{
 	readonly IMGUR_CLIENT_ID?: string;
 	readonly IMGUR_CLIENT_SECRET?: string;
 	readonly IMGUR_REFRESH_TOKEN?: string;
@@ -37,37 +41,59 @@ export const resolveStoredToken = async (
 	stored: StoredImgurToken | undefined,
 	seedRefreshToken: string,
 	hash: (value: string) => Promise<string>,
-): Promise<StoredImgurToken> => {
+): Promise<StoredImgurToken> =>
+{
 	const seedHash = await hash(seedRefreshToken);
 	if (stored?.seedHash === seedHash) return stored;
 	return {
 		seedHash,
-		state: {accessToken: null, accessTokenExpiresAt: 0, refreshToken: seedRefreshToken},
+		state:
+		{
+			accessToken: null,
+			accessTokenExpiresAt: 0,
+			refreshToken: seedRefreshToken,
+		},
 	};
 };
 
 const jsonResponse = (body: ImgurUploadResult | ImgurDeleteResult, status = 200): Response =>
-	new Response(JSON.stringify(body), {
-		status,
-		headers: {"content-type": "application/json; charset=UTF-8"},
-	});
+	new Response(
+		JSON.stringify(body),
+		{
+			status,
+			headers:
+			{
+				"content-type": "application/json; charset=UTF-8",
+			},
+		},
+	);
 
 export const handleImgurUploaderRequest = async (
 	request: Request,
 	store: ImgurTokenStore,
 	credentials: ImgurCredentials | null,
 	dependencies: ImgurDependencies,
-): Promise<Response> => {
+): Promise<Response> =>
+{
 	const {pathname} = new URL(request.url);
-	if (request.method !== "POST" || (pathname !== "/upload" && pathname !== "/delete")) {
-		return new Response("Not found", {status: 404});
+	if (request.method !== "POST" || (pathname !== "/upload" && pathname !== "/delete"))
+	{
+		return new Response(
+			"Not found",
+			{
+				status: 404,
+			},
+		);
 	}
-	if (!credentials) {
-		return jsonResponse({
-			ok: false,
-			reason: ImgurFailure.Unauthorized,
-			detail: "Imgur credentials are not configured",
-		});
+	if (!credentials)
+	{
+		return jsonResponse(
+			{
+				ok: false,
+				reason: ImgurFailure.Unauthorized,
+				detail: "Imgur credentials are not configured",
+			},
+		);
 	}
 
 	const state = await store.load();
@@ -81,7 +107,12 @@ export const handleImgurUploaderRequest = async (
 					dependencies,
 				)
 			: await deleteImgurImage(
-					((await request.json()) as {deletehash: string}).deletehash,
+					(
+						(await request.json()) as
+						{
+							deletehash: string;
+						}
+					).deletehash,
 					state,
 					credentials,
 					dependencies,
@@ -90,12 +121,14 @@ export const handleImgurUploaderRequest = async (
 	return jsonResponse(outcome.result);
 };
 
-const sha256 = async (value: string): Promise<string> => {
+const sha256 = async (value: string): Promise<string> =>
+{
 	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
 	return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 
-export class ImgurUploader implements DurableObject {
+export class ImgurUploader implements DurableObject
+{
 	// Imgur calls run one at a time, so two requests never renew the token at once and race to
 	// store different rotated refresh tokens.
 	private queue: Promise<unknown> = Promise.resolve();
@@ -103,25 +136,35 @@ export class ImgurUploader implements DurableObject {
 	constructor(
 		private readonly state: DurableObjectState,
 		private readonly environment: Env,
-	) {}
+	)
+	{
+	}
 
-	fetch(request: Request): Promise<Response> {
+	fetch(request: Request): Promise<Response>
+	{
 		const run = this.queue.then(() => this.handle(request));
 		this.queue = run.catch(() => undefined);
 		return run;
 	}
 
-	private async handle(request: Request): Promise<Response> {
+	private async handle(request: Request): Promise<Response>
+	{
 		const secrets = this.environment as Env & ImgurSecrets;
 		const seed = secrets.IMGUR_REFRESH_TOKEN;
 		const credentials =
 			secrets.IMGUR_CLIENT_ID && secrets.IMGUR_CLIENT_SECRET && seed
-				? {clientId: secrets.IMGUR_CLIENT_ID, clientSecret: secrets.IMGUR_CLIENT_SECRET}
+				?
+					{
+						clientId: secrets.IMGUR_CLIENT_ID,
+						clientSecret: secrets.IMGUR_CLIENT_SECRET,
+					}
 				: null;
 
 		const storage = this.state.storage;
-		const store: ImgurTokenStore = {
-			load: async () => {
+		const store: ImgurTokenStore =
+		{
+			load: async () =>
+			{
 				const resolved = await resolveStoredToken(
 					await storage.get<StoredImgurToken>(tokenStorageKey),
 					seed ?? "",
@@ -130,23 +173,36 @@ export class ImgurUploader implements DurableObject {
 				await storage.put(tokenStorageKey, resolved);
 				return resolved.state;
 			},
-			save: async (next) => {
+			save: async (next) =>
+			{
 				const current = await storage.get<StoredImgurToken>(tokenStorageKey);
-				await storage.put(tokenStorageKey, {seedHash: current?.seedHash ?? "", state: next});
+				await storage.put(
+					tokenStorageKey,
+					{
+						seedHash: current?.seedHash ?? "",
+						state: next,
+					},
+				);
 			},
 		};
 
-		return handleImgurUploaderRequest(request, store, credentials, {
-			fetch: (input, init) => fetch(input, init),
-			now: () => Date.now(),
-			sleep: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
-		});
+		return handleImgurUploaderRequest(
+			request,
+			store,
+			credentials,
+			{
+				fetch: (input, init) => fetch(input, init),
+				now: () => Date.now(),
+				sleep: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
+			},
+		);
 	}
 }
 
 const accountObjectName = "factorio-blueprints-account";
 
-const uploaderStub = (namespace: DurableObjectNamespace): DurableObjectStub => {
+const uploaderStub = (namespace: DurableObjectNamespace): DurableObjectStub =>
+{
 	const us = namespace.jurisdiction("us");
 	return us.get(us.idFromName(accountObjectName));
 };
@@ -155,23 +211,41 @@ export const uploadThroughImgurUploader = async (
 	namespace: DurableObjectNamespace,
 	bytes: Uint8Array,
 	contentType: string,
-): Promise<ImgurUploadResult> => {
-	const response = await uploaderStub(namespace).fetch("https://imgur-uploader/upload", {
-		method: "POST",
-		headers: {"content-type": contentType},
-		body: bytes,
-	});
+): Promise<ImgurUploadResult> =>
+{
+	const response = await uploaderStub(namespace).fetch(
+		"https://imgur-uploader/upload",
+		{
+			method: "POST",
+			headers:
+			{
+				"content-type": contentType,
+			},
+			body: bytes,
+		},
+	);
 	return (await response.json()) as ImgurUploadResult;
 };
 
 export const deleteThroughImgurUploader = async (
 	namespace: DurableObjectNamespace,
 	deletehash: string,
-): Promise<ImgurDeleteResult> => {
-	const response = await uploaderStub(namespace).fetch("https://imgur-uploader/delete", {
-		method: "POST",
-		headers: {"content-type": "application/json"},
-		body: JSON.stringify({deletehash}),
-	});
+): Promise<ImgurDeleteResult> =>
+{
+	const response = await uploaderStub(namespace).fetch(
+		"https://imgur-uploader/delete",
+		{
+			method: "POST",
+			headers:
+			{
+				"content-type": "application/json",
+			},
+			body: JSON.stringify(
+				{
+					deletehash,
+				},
+			),
+		},
+	);
 	return (await response.json()) as ImgurDeleteResult;
 };

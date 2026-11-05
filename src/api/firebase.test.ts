@@ -1,5 +1,6 @@
 import {describe, it, expect, vi, beforeEach, afterEach} from "vite-plus/test";
-import {
+import
+{
 	fetchPaginatedSummaries,
 	getBlueprintCdnUrl,
 	fetchBlueprintFromCdn,
@@ -13,7 +14,8 @@ import {get} from "firebase/database";
 import {getFunctions, httpsCallable} from "firebase/functions";
 import type {EnrichedBlueprintSummary, RawBlueprint} from "../schemas";
 
-vi.mock("firebase/database", () => ({
+vi.mock("firebase/database", () => (
+{
 	ref: vi.fn(),
 	get: vi.fn(),
 	getDatabase: vi.fn(),
@@ -23,19 +25,25 @@ vi.mock("firebase/database", () => ({
 	endAt: vi.fn(),
 }));
 
-vi.mock("firebase/functions", () => ({
+vi.mock("firebase/functions", () => (
+{
 	getFunctions: vi.fn(),
 	httpsCallable: vi.fn(),
 }));
 
-vi.mock("../base", () => ({
+vi.mock("../base", () => (
+{
 	app: {},
 }));
 
-describe("firebase API", () => {
-	describe("reconcileFavoritesCount", () => {
-		it("uses the authenticated Cloud Function result", async () => {
-			const expectedResult = {
+describe("firebase API", () =>
+{
+	describe("reconcileFavoritesCount", () =>
+	{
+		it("uses the authenticated Cloud Function result", async () =>
+		{
+			const expectedResult =
+			{
 				blueprintId: "blueprint-100",
 				actualCount: 3,
 				previousBlueprintCount: 2,
@@ -43,7 +51,11 @@ describe("firebase API", () => {
 				hasDiscrepancy: true,
 				reconciled: true,
 			};
-			const callable = vi.fn().mockResolvedValue({data: expectedResult});
+			const callable = vi.fn().mockResolvedValue(
+				{
+					data: expectedResult,
+				},
+			);
 			const functions = {} as ReturnType<typeof getFunctions>;
 			vi.mocked(getFunctions).mockReturnValue(functions);
 			vi.mocked(httpsCallable).mockReturnValue(callable as unknown as ReturnType<typeof httpsCallable>);
@@ -52,13 +64,19 @@ describe("firebase API", () => {
 
 			expect(getFunctions).toHaveBeenCalledWith({});
 			expect(httpsCallable).toHaveBeenCalledWith(functions, "reconcileFavoriteCount");
-			expect(callable).toHaveBeenCalledWith({blueprintId: "blueprint-100"});
+			expect(callable).toHaveBeenCalledWith(
+				{
+					blueprintId: "blueprint-100",
+				},
+			);
 			expect(result).toStrictEqual(expectedResult);
 		});
 	});
 
-	describe("getBlueprintCdnUrl", () => {
-		it("should lower-case the prefix and keep the full mixed-case key", () => {
+	describe("getBlueprintCdnUrl", () =>
+	{
+		it("should lower-case the prefix and keep the full mixed-case key", () =>
+		{
 			const blueprintKey = "-KnQ865j-qQ21WoUPbd3";
 			const expectedUrl = "https://factorio-blueprint-firebase-cdn.pages.dev/-kn/-KnQ865j-qQ21WoUPbd3.json";
 
@@ -67,7 +85,8 @@ describe("firebase API", () => {
 			expect(result).toBe(expectedUrl);
 		});
 
-		it("should handle short keys correctly", () => {
+		it("should handle short keys correctly", () =>
+		{
 			const blueprintKey = "abc";
 			const expectedUrl = "https://factorio-blueprint-firebase-cdn.pages.dev/abc/abc.json";
 
@@ -76,7 +95,8 @@ describe("firebase API", () => {
 			expect(result).toBe(expectedUrl);
 		});
 
-		it("should handle keys with special characters", () => {
+		it("should handle keys with special characters", () =>
+		{
 			const blueprintKey = "-_$defghijklmnop";
 			const expectedUrl = "https://factorio-blueprint-firebase-cdn.pages.dev/-_$/-_$defghijklmnop.json";
 
@@ -86,17 +106,22 @@ describe("firebase API", () => {
 		});
 	});
 
-	describe("fetchBlueprintFromCdn", () => {
-		beforeEach(() => {
+	describe("fetchBlueprintFromCdn", () =>
+	{
+		beforeEach(() =>
+		{
 			globalThis.fetch = vi.fn();
 		});
 
-		afterEach(() => {
+		afterEach(() =>
+		{
 			vi.restoreAllMocks();
 		});
 
-		it("should fetch blueprint data from CDN successfully", async () => {
-			const mockBlueprintSummary: EnrichedBlueprintSummary = {
+		it("should fetch blueprint data from CDN successfully", async () =>
+		{
+			const mockBlueprintSummary: EnrichedBlueprintSummary =
+			{
 				key: "-KnQ865j-qQ21WoUPbd3",
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
@@ -106,40 +131,48 @@ describe("firebase API", () => {
 				thumbnail: null,
 			};
 
-			const mockBlueprintData: Partial<RawBlueprint> = {
+			const mockBlueprintData: Partial<RawBlueprint> =
+			{
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
 				createdDate: 1607936203137,
 				blueprintString: "some-blueprint-string",
 				descriptionMarkdown: "Test description",
-				author: {
+				author:
+				{
 					userId: "test-user-id",
 					displayName: "Test User",
 				},
-				image: {
+				image:
+				{
 					id: "test123",
 					type: "image/png",
 				},
 			};
 
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: true,
-				json: async () => mockBlueprintData,
-			} as unknown as Response);
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: true,
+					json: async () => mockBlueprintData,
+				} as unknown as Response,
+			);
 
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
-			const expectedBlueprintData: RawBlueprint = {
+			const expectedBlueprintData: RawBlueprint =
+			{
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
 				createdDate: 1607936203137,
 				blueprintString: "some-blueprint-string",
 				descriptionMarkdown: "Test description",
-				author: {
+				author:
+				{
 					userId: "test-user-id",
 					displayName: "Test User",
 				},
-				image: {
+				image:
+				{
 					id: "test123",
 					type: "image/png",
 				},
@@ -154,8 +187,10 @@ describe("firebase API", () => {
 			expect(result).toEqual(expectedBlueprintData);
 		});
 
-		it("should return null when blueprint summary has no key", async () => {
-			const mockBlueprintSummary: Partial<EnrichedBlueprintSummary> = {
+		it("should return null when blueprint summary has no key", async () =>
+		{
+			const mockBlueprintSummary: Partial<EnrichedBlueprintSummary> =
+			{
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
 			};
@@ -166,8 +201,10 @@ describe("firebase API", () => {
 			expect(globalThis.fetch).not.toHaveBeenCalled();
 		});
 
-		it("should return null when the CDN returns 404 (without logging)", async () => {
-			const mockBlueprintSummary: EnrichedBlueprintSummary = {
+		it("should return null when the CDN returns 404 (without logging)", async () =>
+		{
+			const mockBlueprintSummary: EnrichedBlueprintSummary =
+			{
 				key: "-KnQ865j-qQ21WoUPbd3",
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
@@ -177,11 +214,13 @@ describe("firebase API", () => {
 				thumbnail: null,
 			};
 
-			vi.mocked(globalThis.fetch).mockResolvedValue({
-				ok: false,
-				status: 404,
-				statusText: "Not Found",
-			} as unknown as Response);
+			vi.mocked(globalThis.fetch).mockResolvedValue(
+				{
+					ok: false,
+					status: 404,
+					statusText: "Not Found",
+				} as unknown as Response,
+			);
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -196,8 +235,10 @@ describe("firebase API", () => {
 			consoleWarnSpy.mockRestore();
 		});
 
-		it("should return null for non-404 CDN fetch errors", async () => {
-			const mockBlueprintSummary: EnrichedBlueprintSummary = {
+		it("should return null for non-404 CDN fetch errors", async () =>
+		{
+			const mockBlueprintSummary: EnrichedBlueprintSummary =
+			{
 				key: "-KnQ865j-qQ21WoUPbd3",
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
@@ -207,11 +248,13 @@ describe("firebase API", () => {
 				thumbnail: null,
 			};
 
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: false,
-				status: 500,
-				statusText: "Internal Server Error",
-			} as unknown as Response);
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: false,
+					status: 500,
+					statusText: "Internal Server Error",
+				} as unknown as Response,
+			);
 
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
@@ -221,8 +264,10 @@ describe("firebase API", () => {
 			]);
 		});
 
-		it("should return null when network error occurs", async () => {
-			const mockBlueprintSummary: EnrichedBlueprintSummary = {
+		it("should return null when network error occurs", async () =>
+		{
+			const mockBlueprintSummary: EnrichedBlueprintSummary =
+			{
 				key: "-KnQ865j-qQ21WoUPbd3",
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
@@ -248,8 +293,10 @@ describe("firebase API", () => {
 			consoleWarnSpy.mockRestore();
 		});
 
-		it("should return null when JSON parsing fails", async () => {
-			const mockBlueprintSummary: EnrichedBlueprintSummary = {
+		it("should return null when JSON parsing fails", async () =>
+		{
+			const mockBlueprintSummary: EnrichedBlueprintSummary =
+			{
 				key: "-KnQ865j-qQ21WoUPbd3",
 				title: "Test Blueprint",
 				lastUpdatedDate: 1607936203137,
@@ -259,12 +306,15 @@ describe("firebase API", () => {
 				thumbnail: null,
 			};
 
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: true,
-				json: async () => {
-					throw new Error("Invalid JSON");
-				},
-			} as unknown as Response);
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: true,
+					json: async () =>
+					{
+						throw new Error("Invalid JSON");
+					},
+				} as unknown as Response,
+			);
 
 			const result = await fetchBlueprintFromCdn(mockBlueprintSummary);
 
@@ -272,30 +322,38 @@ describe("firebase API", () => {
 		});
 	});
 
-	describe("getCdnWatermarkUrl", () => {
-		it("should return the correct watermark URL", () => {
+	describe("getCdnWatermarkUrl", () =>
+	{
+		it("should return the correct watermark URL", () =>
+		{
 			const expectedUrl = "https://factorio-blueprint-firebase-cdn.pages.dev/firebase_cdn_watermark.txt";
 			expect(getCdnWatermarkUrl()).toBe(expectedUrl);
 		});
 	});
 
-	describe("fetchCdnWatermark", () => {
-		beforeEach(() => {
+	describe("fetchCdnWatermark", () =>
+	{
+		beforeEach(() =>
+		{
 			globalThis.fetch = vi.fn();
 			clearWatermarkCache();
 		});
 
-		afterEach(() => {
+		afterEach(() =>
+		{
 			vi.restoreAllMocks();
 			clearWatermarkCache();
 		});
 
-		it("should fetch and parse watermark date successfully", async () => {
+		it("should fetch and parse watermark date successfully", async () =>
+		{
 			const mockDate = "2025-05-25T04:18:36Z";
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: true,
-				text: async () => mockDate,
-			} as unknown as Response);
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: true,
+					text: async () => mockDate,
+				} as unknown as Response,
+			);
 
 			const result = await fetchCdnWatermark();
 
@@ -306,7 +364,8 @@ describe("firebase API", () => {
 			expect(result?.toISOString()).toBe("2025-05-25T04:18:36.000Z");
 		});
 
-		it("should handle network errors gracefully", async () => {
+		it("should handle network errors gracefully", async () =>
+		{
 			vi.mocked(globalThis.fetch).mockRejectedValueOnce(new Error("Network error"));
 
 			const result = await fetchCdnWatermark();
@@ -314,12 +373,15 @@ describe("firebase API", () => {
 			expect(result).toBeNull();
 		});
 
-		it("should handle non-ok responses", async () => {
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: false,
-				status: 404,
-				statusText: "Not Found",
-			} as unknown as Response);
+		it("should handle non-ok responses", async () =>
+		{
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: false,
+					status: 404,
+					statusText: "Not Found",
+				} as unknown as Response,
+			);
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -331,11 +393,14 @@ describe("firebase API", () => {
 			consoleWarnSpy.mockRestore();
 		});
 
-		it("should handle invalid date formats", async () => {
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: true,
-				text: async () => "not-a-valid-date",
-			} as unknown as Response);
+		it("should handle invalid date formats", async () =>
+		{
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: true,
+					text: async () => "not-a-valid-date",
+				} as unknown as Response,
+			);
 
 			const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -347,12 +412,15 @@ describe("firebase API", () => {
 			consoleWarnSpy.mockRestore();
 		});
 
-		it("should trim whitespace from date string", async () => {
+		it("should trim whitespace from date string", async () =>
+		{
 			const mockDate = "  2025-05-25T04:18:36Z\n";
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: true,
-				text: async () => mockDate,
-			} as unknown as Response);
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: true,
+					text: async () => mockDate,
+				} as unknown as Response,
+			);
 
 			const result = await fetchCdnWatermark();
 
@@ -361,9 +429,11 @@ describe("firebase API", () => {
 		});
 	});
 
-	describe("fetchBlueprint with watermark", () => {
+	describe("fetchBlueprint with watermark", () =>
+	{
 		const mockBlueprintId = "-KnQ865j-qQ21WoUPbd3";
-		const mockBlueprintSummary: EnrichedBlueprintSummary = {
+		const mockBlueprintSummary: EnrichedBlueprintSummary =
+		{
 			key: mockBlueprintId,
 			title: "Test Blueprint",
 			lastUpdatedDate: 1727000000000, // 2024-09-22
@@ -373,17 +443,20 @@ describe("firebase API", () => {
 			thumbnail: null,
 		};
 
-		const mockBlueprint: RawBlueprint = {
+		const mockBlueprint: RawBlueprint =
+		{
 			title: "Test Blueprint",
 			lastUpdatedDate: 1727000000000,
 			createdDate: 1727000000000,
 			blueprintString: "some-blueprint-string",
 			descriptionMarkdown: "Test description",
-			author: {
+			author:
+			{
 				userId: "test-user-id",
 				displayName: "Test User",
 			},
-			image: {
+			image:
+			{
 				id: "test123",
 				type: "image/png",
 			},
@@ -392,27 +465,33 @@ describe("firebase API", () => {
 			favorites: {},
 		};
 
-		beforeEach(() => {
+		beforeEach(() =>
+		{
 			globalThis.fetch = vi.fn();
 			vi.clearAllMocks();
 			clearWatermarkCache();
 		});
 
-		afterEach(() => {
+		afterEach(() =>
+		{
 			vi.restoreAllMocks();
 			clearWatermarkCache();
 		});
 
-		it("should skip CDN when blueprint is newer than watermark", async () => {
+		it("should skip CDN when blueprint is newer than watermark", async () =>
+		{
 			// Watermark is older than blueprint
 			const watermarkDate = "2024-05-25T04:18:36Z";
-			vi.mocked(globalThis.fetch).mockResolvedValueOnce({
-				ok: true,
-				text: async () => watermarkDate,
-			} as unknown as Response);
+			vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+				{
+					ok: true,
+					text: async () => watermarkDate,
+				} as unknown as Response,
+			);
 
 			// Mock Firebase response
-			const mockSnapshot = {
+			const mockSnapshot =
+			{
 				exists: () => true,
 				val: () => mockBlueprint,
 			};
@@ -445,18 +524,23 @@ describe("firebase API", () => {
 			consoleLogSpy.mockRestore();
 		});
 
-		it("should try CDN when blueprint is older than watermark", async () => {
+		it("should try CDN when blueprint is older than watermark", async () =>
+		{
 			// Watermark is newer than blueprint
 			const watermarkDate = "2025-05-25T04:18:36Z";
 			vi.mocked(globalThis.fetch)
-				.mockResolvedValueOnce({
-					ok: true,
-					text: async () => watermarkDate,
-				} as unknown as Response)
-				.mockResolvedValueOnce({
-					ok: true,
-					json: async () => mockBlueprint,
-				} as unknown as Response);
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						text: async () => watermarkDate,
+					} as unknown as Response,
+				)
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						json: async () => mockBlueprint,
+					} as unknown as Response,
+				);
 
 			const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -483,19 +567,25 @@ describe("firebase API", () => {
 			consoleLogSpy.mockRestore();
 		});
 
-		it("should fall back to Firebase when the CDN returns 404", async () => {
+		it("should fall back to Firebase when the CDN returns 404", async () =>
+		{
 			vi.mocked(globalThis.fetch)
-				.mockResolvedValueOnce({
-					ok: true,
-					text: async () => "2025-05-25T04:18:36Z",
-				} as unknown as Response)
-				.mockResolvedValue({
-					ok: false,
-					status: 404,
-					statusText: "Not Found",
-				} as unknown as Response);
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						text: async () => "2025-05-25T04:18:36Z",
+					} as unknown as Response,
+				)
+				.mockResolvedValue(
+					{
+						ok: false,
+						status: 404,
+						statusText: "Not Found",
+					} as unknown as Response,
+				);
 
-			const mockSnapshot = {
+			const mockSnapshot =
+			{
 				exists: () => true,
 				val: () => mockBlueprint,
 			};
@@ -515,14 +605,17 @@ describe("firebase API", () => {
 			consoleLogSpy.mockRestore();
 		});
 
-		it("should try CDN when watermark fetch fails", async () => {
+		it("should try CDN when watermark fetch fails", async () =>
+		{
 			// Watermark fetch fails
 			vi.mocked(globalThis.fetch)
 				.mockRejectedValueOnce(new Error("Network error"))
-				.mockResolvedValueOnce({
-					ok: true,
-					json: async () => mockBlueprint,
-				} as unknown as Response);
+				.mockResolvedValueOnce(
+					{
+						ok: true,
+						json: async () => mockBlueprint,
+					} as unknown as Response,
+				);
 
 			const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -537,24 +630,30 @@ describe("firebase API", () => {
 		});
 	});
 
-	describe("fetchPaginatedSummaries", () => {
-		it("should reverse the data returned from Firebase to display newest items first", async () => {
-			const mockData = {
-				blueprint1: {
+	describe("fetchPaginatedSummaries", () =>
+	{
+		it("should reverse the data returned from Firebase to display newest items first", async () =>
+		{
+			const mockData =
+			{
+				blueprint1:
+				{
 					title: "Blueprint 1",
 					imgurId: "img1",
 					imgurType: "image/png",
 					numberOfFavorites: 5,
 					lastUpdatedDate: 300,
 				},
-				blueprint2: {
+				blueprint2:
+				{
 					title: "Blueprint 2",
 					imgurId: "img2",
 					imgurType: "image/png",
 					numberOfFavorites: 3,
 					lastUpdatedDate: 200,
 				},
-				blueprint3: {
+				blueprint3:
+				{
 					title: "Blueprint 3",
 					imgurId: "img3",
 					imgurType: "image/png",
@@ -563,18 +662,23 @@ describe("firebase API", () => {
 				},
 			};
 
-			const mockSnapshot = {
+			const mockSnapshot =
+			{
 				exists: () => true,
-				forEach: (callback: (child: any) => void) => {
+				forEach: (callback: (child: any) => void) =>
+				{
 					const entries = Object.entries(mockData).sort(
 						([, a], [, b]) => a.lastUpdatedDate - b.lastUpdatedDate,
 					);
 
-					entries.forEach(([key, value]) => {
-						callback({
-							key,
-							val: () => value,
-						});
+					entries.forEach(([key, value]) =>
+					{
+						callback(
+							{
+								key,
+								val: () => value,
+							},
+						);
 					});
 				},
 			};
@@ -583,7 +687,11 @@ describe("firebase API", () => {
 
 			const result = await fetchPaginatedSummaries();
 
-			const entries = Object.entries(result.data).map(([key, value]) => ({key, ...value}));
+			const entries = Object.entries(result.data).map(([key, value]) => (
+			{
+				key,
+				...value,
+			}));
 
 			const sortedByDateDesc = [...entries].sort((a, b) => (b.lastUpdatedDate || 0) - (a.lastUpdatedDate || 0));
 

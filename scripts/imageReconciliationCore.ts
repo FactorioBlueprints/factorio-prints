@@ -1,7 +1,8 @@
 import {z} from "zod";
 import {type BackfillImage, buildR2ObjectKey, type ImageVariant, imageVariants} from "./imageBackfillCore.ts";
 
-export const ReconciliationStatus = {
+export const ReconciliationStatus =
+{
 	Deferred: "deferred",
 	Exhausted: "exhausted",
 	Existing: "existing",
@@ -13,31 +14,37 @@ export const ReconciliationStatus = {
 
 export type ReconciliationStatus = (typeof ReconciliationStatus)[keyof typeof ReconciliationStatus];
 
-export const RetryFailureKind = {
+export const RetryFailureKind =
+{
 	Failed: "failed",
 	SourceMissing: "sourceMissing",
 } as const;
 
 export type RetryFailureKind = (typeof RetryFailureKind)[keyof typeof RetryFailureKind];
 
-const retryStateSchema = z.object({
-	attempts: z.number().int().positive(),
-	failureKind: z.enum(RetryFailureKind),
-	firstObservedAt: z.string().datetime(),
-	lastAttemptAt: z.string().datetime(),
-	nextAttemptAt: z.string().datetime(),
-	reason: z.string().min(1),
-});
+const retryStateSchema = z.object(
+	{
+		attempts: z.number().int().positive(),
+		failureKind: z.enum(RetryFailureKind),
+		firstObservedAt: z.string().datetime(),
+		lastAttemptAt: z.string().datetime(),
+		nextAttemptAt: z.string().datetime(),
+		reason: z.string().min(1),
+	},
+);
 
-export const reconciliationCheckpointSchema = z.object({
-	variants: z.record(z.string(), retryStateSchema),
-	version: z.literal(1),
-});
+export const reconciliationCheckpointSchema = z.object(
+	{
+		variants: z.record(z.string(), retryStateSchema),
+		version: z.literal(1),
+	},
+);
 
 export type ReconciliationCheckpoint = z.infer<typeof reconciliationCheckpointSchema>;
 export type RetryState = z.infer<typeof retryStateSchema>;
 
-export interface ReconciliationAction {
+export interface ReconciliationAction
+{
 	attempts: number;
 	blueprintIds: string[];
 	failureKind?: RetryFailureKind;
@@ -51,7 +58,8 @@ export interface ReconciliationAction {
 	variant: ImageVariant;
 }
 
-export interface ReconciliationAlertInputs {
+export interface ReconciliationAlertInputs
+{
 	deferredVariants: number;
 	exhaustedVariants: number;
 	failedVariants: number;
@@ -60,7 +68,8 @@ export interface ReconciliationAlertInputs {
 	sourceMissingVariants: number;
 }
 
-export const emptyReconciliationCheckpoint = (): ReconciliationCheckpoint => ({
+export const emptyReconciliationCheckpoint = (): ReconciliationCheckpoint => (
+{
 	variants: {},
 	version: 1,
 });
@@ -69,7 +78,8 @@ const classifyMissingVariant = (
 	retryState: RetryState | undefined,
 	observedAt: Date,
 	maximumAttempts: number,
-): ReconciliationStatus => {
+): ReconciliationStatus =>
+{
 	if (!retryState) return ReconciliationStatus.Planned;
 	if (retryState.attempts >= maximumAttempts) return ReconciliationStatus.Exhausted;
 	if (new Date(retryState.nextAttemptAt) > observedAt) return ReconciliationStatus.Deferred;
@@ -83,12 +93,15 @@ export const buildReconciliationActions = (
 	objectPrefix: string,
 	observedAt: Date,
 	maximumAttempts: number,
-): ReconciliationAction[] => {
-	if (!Number.isInteger(maximumAttempts) || maximumAttempts < 1) {
+): ReconciliationAction[] =>
+{
+	if (!Number.isInteger(maximumAttempts) || maximumAttempts < 1)
+	{
 		throw new Error("Maximum attempts must be a positive integer");
 	}
 	return images.flatMap((image) =>
-		imageVariants.map((variant) => {
+		imageVariants.map((variant) =>
+		{
 			const key = buildR2ObjectKey(objectPrefix, image.imgurId, variant);
 			const retryState = checkpoint.variants[key];
 			const status = existingObjectKeys.has(key)
@@ -118,13 +131,16 @@ export const recordReconciliationFailure = (
 	reason: string,
 	attemptedAt: Date,
 	retryDelayMilliseconds: number,
-): RetryState => {
-	if (!Number.isSafeInteger(retryDelayMilliseconds) || retryDelayMilliseconds < 1) {
+): RetryState =>
+{
+	if (!Number.isSafeInteger(retryDelayMilliseconds) || retryDelayMilliseconds < 1)
+	{
 		throw new Error("Retry delay must be a positive integer number of milliseconds");
 	}
 	const previousState = checkpoint.variants[key];
 	const attemptedAtText = attemptedAt.toISOString();
-	const retryState = {
+	const retryState =
+	{
 		attempts: (previousState?.attempts ?? 0) + 1,
 		failureKind,
 		firstObservedAt: previousState?.firstObservedAt ?? attemptedAtText,
@@ -139,9 +155,11 @@ export const recordReconciliationFailure = (
 export const pruneReconciledCheckpointEntries = (
 	checkpoint: ReconciliationCheckpoint,
 	existingObjectKeys: Set<string>,
-): number => {
+): number =>
+{
 	let removedEntries = 0;
-	for (const key of Object.keys(checkpoint.variants)) {
+	for (const key of Object.keys(checkpoint.variants))
+	{
 		if (!existingObjectKeys.has(key)) continue;
 		delete checkpoint.variants[key];
 		removedEntries += 1;
@@ -149,8 +167,10 @@ export const pruneReconciledCheckpointEntries = (
 	return removedEntries;
 };
 
-export const countReconciliationStatuses = (actions: ReconciliationAction[]): Record<ReconciliationStatus, number> => {
-	const counts = {
+export const countReconciliationStatuses = (actions: ReconciliationAction[]): Record<ReconciliationStatus, number> =>
+{
+	const counts =
+	{
 		[ReconciliationStatus.Deferred]: 0,
 		[ReconciliationStatus.Exhausted]: 0,
 		[ReconciliationStatus.Existing]: 0,
@@ -166,7 +186,8 @@ export const countReconciliationStatuses = (actions: ReconciliationAction[]): Re
 export const buildReconciliationAlertInputs = (
 	actions: ReconciliationAction[],
 	observedAt: Date,
-): ReconciliationAlertInputs => {
+): ReconciliationAlertInputs =>
+{
 	const counts = countReconciliationStatuses(actions);
 	const firstObservedTimes = actions
 		.filter((action) => action.status !== ReconciliationStatus.Existing)

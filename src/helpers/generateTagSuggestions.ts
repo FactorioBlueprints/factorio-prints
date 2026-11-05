@@ -25,7 +25,8 @@ const slowBeltTypes = ["splitter", "transport-belt", "underground-belt"];
 
 const allBeltTypes = [...expressBeltTypes, ...fastBeltTypes, ...slowBeltTypes];
 
-const generateEntityHistogram = (parsedBlueprint: any): Array<[string, number]> => {
+const generateEntityHistogram = (parsedBlueprint: any): Array<[string, number]> =>
+{
 	const entities: any[] = concat(parsedBlueprint.entities || [], parsedBlueprint.tiles || []);
 	const counts = countBy(entities, (entity: any) => entity.name);
 	const pairs = toPairs(counts) as Array<[string, number]>;
@@ -33,13 +34,18 @@ const generateEntityHistogram = (parsedBlueprint: any): Array<[string, number]> 
 	return reverse(sorted) as Array<[string, number]>;
 };
 
-const generateItemHistogram = (parsedBlueprint: any): Array<[string, number]> => {
+const generateItemHistogram = (parsedBlueprint: any): Array<[string, number]> =>
+{
 	const result: Record<string, number> = {};
 	const items = flatMap(parsedBlueprint.entities, (entity: any) => entity.items || []);
-	items.forEach((item: any) => {
-		if (has(item, "item") && has(item, "count")) {
+	items.forEach((item: any) =>
+	{
+		if (has(item, "item") && has(item, "count"))
+		{
 			result[item.item] = (result[item.item] || 0) + item.count;
-		} else {
+		}
+		else
+		{
 			forOwn(item, (value: number, key: string) => (result[key] = (result[key] || 0) + value));
 		}
 	});
@@ -49,18 +55,22 @@ const generateItemHistogram = (parsedBlueprint: any): Array<[string, number]> =>
 	return reverse(sorted) as Array<[string, number]>;
 };
 
-const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded: any): string[] => {
+const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded: any): string[] =>
+{
 	const tagSuggestions: string[] = [];
 
-	if (!parsedBlueprint) {
+	if (!parsedBlueprint)
+	{
 		return tagSuggestions;
 	}
 
 	const generateTagSuggestionsFromProduction = (
 		recipeCounts: Record<string, number>,
 		entityCounts: Record<string, number>,
-	) => {
-		if (entityCounts["rocket-silo"] > 0) {
+	) =>
+	{
+		if (entityCounts["rocket-silo"] > 0)
+		{
 			tagSuggestions.push("/production/rocket parts/");
 			if (
 				recipeCounts["high-tech-science-pack"] > 0 ||
@@ -69,81 +79,119 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 				recipeCounts["science-pack-1"] > 0 ||
 				recipeCounts["science-pack-2"] > 0 ||
 				recipeCounts["science-pack-3"] > 0
-			) {
+			)
+			{
 				tagSuggestions.push("/production/science/");
 			}
-		} else if (
+		}
+		else if (
 			recipeCounts["high-tech-science-pack"] > 0 ||
 			recipeCounts["military-science-pack"] > 0 ||
 			recipeCounts["production-science-pack"] > 0 ||
 			recipeCounts["science-pack-1"] > 0 ||
 			recipeCounts["science-pack-2"] > 0 ||
 			recipeCounts["science-pack-3"] > 0
-		) {
+		)
+		{
 			tagSuggestions.push("/production/science/");
-		} else if (
+		}
+		else if (
 			recipeCounts["low-density-structure"] > 0 ||
 			recipeCounts["rocket-fuel"] > 0 ||
 			recipeCounts["rocket-control-unit"] > 0
-		) {
+		)
+		{
 			tagSuggestions.push("/production/rocket parts/");
-		} else if (
+		}
+		else if (
 			recipeCounts["speed-module-3"] > 0 ||
 			recipeCounts["productivity-module-3"] > 0 ||
 			recipeCounts["effectivity-module-3"] > 0
-		) {
+		)
+		{
 			tagSuggestions.push("/production/modules/");
-		} else if (recipeCounts["processing-unit"] > 0) {
+		}
+		else if (recipeCounts["processing-unit"] > 0)
+		{
 			tagSuggestions.push("/production/processing unit (blue)/");
-		} else if (
+		}
+		else if (
 			recipeCounts["construction-robot"] ||
 			recipeCounts["flying-robot-frame"] ||
 			recipeCounts["logistic-robot"]
-		) {
+		)
+		{
 			tagSuggestions.push("/production/robots/");
-		} else if (recipeCounts.battery > 0) {
+		}
+		else if (recipeCounts.battery > 0)
+		{
 			tagSuggestions.push("/production/batteries/");
-		} else if (recipeCounts["advanced-circuit"] > 0) {
+		}
+		else if (recipeCounts["advanced-circuit"] > 0)
+		{
 			tagSuggestions.push("/production/advanced circuit (red)/");
-		} else if (recipeCounts["plastic-bar"] > 0) {
+		}
+		else if (recipeCounts["plastic-bar"] > 0)
+		{
 			tagSuggestions.push("/production/plastic/");
-		} else if (recipeCounts["coal-liquefaction"] > 0) {
+		}
+		else if (recipeCounts["coal-liquefaction"] > 0)
+		{
 			tagSuggestions.push("/production/coal liquification/");
-		} else if (
+		}
+		else if (
 			recipeCounts["advanced-oil-processing"] > 0 ||
 			recipeCounts["oil-processing"] > 0 ||
 			entityCounts.pumpjack > 0
-		) {
+		)
+		{
 			tagSuggestions.push("/production/oil processing/");
-		} else if (recipeCounts["kovarex-enrichment-process"]) {
+		}
+		else if (recipeCounts["kovarex-enrichment-process"])
+		{
 			tagSuggestions.push("/power/kovarex enrichment/");
-			if (recipeCounts["uranium-processing"]) {
+			if (recipeCounts["uranium-processing"])
+			{
 				tagSuggestions.push("/production/uranium/");
 			}
-		} else if (recipeCounts["uranium-processing"]) {
+		}
+		else if (recipeCounts["uranium-processing"])
+		{
 			tagSuggestions.push("/production/uranium/");
-		} else if (recipeCounts.inserter > 0) {
+		}
+		else if (recipeCounts.inserter > 0)
+		{
 			tagSuggestions.push("/production/inserters/");
-		} else if (
+		}
+		else if (
 			recipeCounts["firearm-magazine"] ||
 			recipeCounts["piercing-rounds-magazine"] ||
 			recipeCounts["uranium-rounds-magazine"] ||
 			recipeCounts["defender-capsule"] ||
 			recipeCounts["destroyer-capsule"] ||
 			recipeCounts["distractor-capsule"]
-		) {
+		)
+		{
 			tagSuggestions.push("/production/guns and ammo/");
-		} else if (recipeCounts["electronic-circuit"] > 0) {
+		}
+		else if (recipeCounts["electronic-circuit"] > 0)
+		{
 			tagSuggestions.push("/production/electronic circuit (green)/");
-		} else if (some(allBeltTypes, (each) => recipeCounts[each] > 0)) {
+		}
+		else if (some(allBeltTypes, (each) => recipeCounts[each] > 0))
+		{
 			tagSuggestions.push("/production/belts/");
-		} else if (
+		}
+		else if (
 			entityCounts["electric-furnace"] > 0 ||
 			entityCounts["steel-furnace"] > 0 ||
 			entityCounts["stone-furnace"] > 0
-		) {
+		)
+		{
 			tagSuggestions.push("/production/smelting/");
-		} else if (entityCounts["electric-mining-drill"] > 0) {
+		}
+		else if (entityCounts["electric-mining-drill"] > 0)
+		{
 			tagSuggestions.push("/production/mining/");
 		}
 	};
@@ -151,16 +199,21 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 	const generateTagSuggestionsFromEntityHistogram = (
 		entityHistogram: Array<[string, number]>,
 		entityCounts: Record<string, number>,
-	) => {
-		if (isEmpty(entityHistogram)) {
+	) =>
+	{
+		if (isEmpty(entityHistogram))
+		{
 			return;
 		}
 
-		if (every(entityHistogram, (pair) => allBeltTypes.includes(pair[0]))) {
+		if (every(entityHistogram, (pair) => allBeltTypes.includes(pair[0])))
+		{
 			tagSuggestions.push("/belt/balancer/");
 
-			const checkBeltSpeed = (beltTypes: string[], tag: string) => {
-				if (every(entityHistogram, (pair) => beltTypes.includes(pair[0]))) {
+			const checkBeltSpeed = (beltTypes: string[], tag: string) =>
+			{
+				if (every(entityHistogram, (pair) => beltTypes.includes(pair[0])))
+				{
 					tagSuggestions.push(tag);
 				}
 			};
@@ -173,84 +226,111 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 		if (
 			entityHistogram[0][0] === "small-lamp" ||
 			(entityCounts["small-lamp"] > 100 && entityHistogram[1] && entityHistogram[1][0] === "small-lamp")
-		) {
+		)
+		{
 			tagSuggestions.push("/circuit/indicator/");
 		}
 	};
 
-	const generateTagSuggestionsFromEntityCounts = (entityCounts: Record<string, number>) => {
-		if (entityCounts.lab > 0) {
+	const generateTagSuggestionsFromEntityCounts = (entityCounts: Record<string, number>) =>
+	{
+		if (entityCounts.lab > 0)
+		{
 			tagSuggestions.push("/production/research (labs)/");
-		} else if (
+		}
+		else if (
 			!entityCounts["train-stop"] &&
 			entityCounts["stone-wall"] &&
 			entityCounts.gate &&
 			entityCounts["straight-rail"] &&
 			entityCounts["rail-signal"]
-		) {
+		)
+		{
 			tagSuggestions.push("/train/crossing/");
-		} else if (
+		}
+		else if (
 			!entityCounts["train-stop"] &&
 			entityCounts["curved-rail"] > 0 &&
 			entityCounts["rail-chain-signal"] > 0 &&
 			entityCounts["rail-signal"] > 0 &&
 			entityCounts["straight-rail"] > 0
-		) {
+		)
+		{
 			tagSuggestions.push("/train/junction/");
 			tagSuggestions.push("/train/roundabout/");
 		}
 
-		if (entityCounts["nuclear-reactor"] > 0) {
+		if (entityCounts["nuclear-reactor"] > 0)
+		{
 			tagSuggestions.push("/power/nuclear/");
-		} else if (entityCounts["solar-panel"] > 10) {
+		}
+		else if (entityCounts["solar-panel"] > 10)
+		{
 			tagSuggestions.push("/power/solar/");
-		} else if (entityCounts["steam-engine"] > 1) {
+		}
+		else if (entityCounts["steam-engine"] > 1)
+		{
 			tagSuggestions.push("/power/steam/");
-		} else if (entityCounts.accumulator > 1) {
+		}
+		else if (entityCounts.accumulator > 1)
+		{
 			tagSuggestions.push("/power/accumulator/");
 		}
 
-		if (entityCounts.beacon > 10) {
+		if (entityCounts.beacon > 10)
+		{
 			tagSuggestions.push("/general/beaconized/");
 		}
 	};
 
-	const generateTagSuggestionsFromTitle = (title: string) => {
-		if (/\b(pax)\b/i.test(title)) {
+	const generateTagSuggestionsFromTitle = (title: string) =>
+	{
+		if (/\b(pax)\b/i.test(title))
+		{
 			tagSuggestions.push("/train/pax/");
 		}
-		if (/\b(train)\b/i.test(title) && /\b(unload)/i.test(title)) {
+		if (/\b(train)\b/i.test(title) && /\b(unload)/i.test(title))
+		{
 			tagSuggestions.push("/train/unloading station/");
 		}
-		if (/\b(train)\b/i.test(title) && /\b(load)/i.test(title)) {
+		if (/\b(train)\b/i.test(title) && /\b(load)/i.test(title))
+		{
 			tagSuggestions.push("/train/loading station/");
 		}
-		if (/\b(lhd)\b/i.test(title) || /\b(left hand drive)\b/i.test(title)) {
+		if (/\b(lhd)\b/i.test(title) || /\b(left hand drive)\b/i.test(title))
+		{
 			tagSuggestions.push("/train/left-hand-drive/");
 		}
-		if (/\b(rhd)\b/i.test(title) || /\b(right hand drive)\b/i.test(title)) {
+		if (/\b(rhd)\b/i.test(title) || /\b(right hand drive)\b/i.test(title))
+		{
 			tagSuggestions.push("/train/right-hand-drive/");
 		}
 
-		if (/\b(mall)\b/i.test(title)) {
+		if (/\b(mall)\b/i.test(title))
+		{
 			tagSuggestions.push("/production/mall (make everything)/");
 		}
 
-		if (/\b(early)\b/i.test(title)) {
+		if (/\b(early)\b/i.test(title))
+		{
 			tagSuggestions.push("/general/early game/");
 		}
-		if (/\b(mid)\b/i.test(title)) {
+		if (/\b(mid)\b/i.test(title))
+		{
 			tagSuggestions.push("/general/mid game/");
 		}
-		if (/\b(late)\b/i.test(title) || /\b(megabase)\b/i.test(title)) {
+		if (/\b(late)\b/i.test(title) || /\b(megabase)\b/i.test(title))
+		{
 			tagSuggestions.push("/general/late game (megabase)/");
 		}
 
-		if (/\b(compact)\b/i.test(title)) {
+		if (/\b(compact)\b/i.test(title))
+		{
 			tagSuggestions.push("/general/compact/");
 		}
 
-		if (/\b(tileable)\b/i.test(title) || /\b(tile)\b/i.test(title)) {
+		if (/\b(tileable)\b/i.test(title) || /\b(tile)\b/i.test(title))
+		{
 			tagSuggestions.push("/general/tileable/");
 		}
 	};
@@ -259,14 +339,17 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 		allGameEntities: string[],
 		entityCounts: Record<string, number>,
 		title: string,
-	) => {
-		if (/\b(Factorissimo)\b/i.test(title)) {
+	) =>
+	{
+		if (/\b(Factorissimo)\b/i.test(title))
+		{
 			tagSuggestions.push("/mods/factorissimo/");
 			return;
 		}
 
 		const allVanilla = every(allGameEntities, (each) => (entitiesWithIcons as any)[each] === true);
-		if (allVanilla) {
+		if (allVanilla)
+		{
 			tagSuggestions.push("/mods/vanilla/");
 			return;
 		}
@@ -283,22 +366,28 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 			entityCounts["lighted-medium-electric-pole"] > 0 ||
 			entityCounts["lighted-big-electric-pole"] > 0;
 
-		if (creativeMod) {
+		if (creativeMod)
+		{
 			tagSuggestions.push("/mods/creative/");
 		}
-		if (bobsMod) {
+		if (bobsMod)
+		{
 			tagSuggestions.push("/mods/bobs/");
 		}
-		if (angelsMod) {
+		if (angelsMod)
+		{
 			tagSuggestions.push("/mods/angels/");
 		}
-		if (lightedElectricPolesMod) {
+		if (lightedElectricPolesMod)
+		{
 			tagSuggestions.push("/mods/lighted-electric-poles/");
 		}
-		if (warehousingMod) {
+		if (warehousingMod)
+		{
 			tagSuggestions.push("/mods/warehousing/");
 		}
-		if (!creativeMod && !bobsMod && !angelsMod && !lightedElectricPolesMod && !warehousingMod) {
+		if (!creativeMod && !bobsMod && !angelsMod && !lightedElectricPolesMod && !warehousingMod)
+		{
 			tagSuggestions.push("/mods/other/");
 		}
 	};
@@ -309,7 +398,8 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 		recipeHistogram: Array<[string, number]>,
 		recipeCounts: Record<string, number>,
 		allGameEntities: string[],
-	) => {
+	) =>
+	{
 		generateTagSuggestionsFromProduction(recipeCounts, entityCounts);
 		generateTagSuggestionsFromEntityHistogram(entityHistogram, entityCounts);
 		generateTagSuggestionsFromEntityCounts(entityCounts);
@@ -317,8 +407,10 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 		generateTagSuggestionsForMods(allGameEntities, entityCounts, title);
 	};
 
-	if (v15Decoded) {
-		if (parsedBlueprint.isBook()) {
+	if (v15Decoded)
+	{
+		if (parsedBlueprint.isBook())
+		{
 			const blueprintEntities: any[] = fpFlatMap((bp: any) => bp.blueprint?.entities || [])(
 				v15Decoded.blueprint_book.blueprints,
 			);
@@ -348,7 +440,9 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 				recipeCountsObj,
 				allGameEntities,
 			);
-		} else if (parsedBlueprint.isBlueprint()) {
+		}
+		else if (parsedBlueprint.isBlueprint())
+		{
 			const recipes = fpMap((entity: any) => entity.recipe)(v15Decoded.blueprint.entities || []);
 			const definedRecipes: any[] = reject(isUndefined)(recipes) as any[];
 			const recipeCounts = countBy(definedRecipes, (recipe: any) => recipe);
@@ -373,12 +467,15 @@ const generateTagSuggestions = (title: string, parsedBlueprint: any, v15Decoded:
 		}
 	}
 
-	if (parsedBlueprint && parsedBlueprint.isV15()) {
+	if (parsedBlueprint && parsedBlueprint.isV15())
+	{
 		tagSuggestions.push("/version/0,15/");
 	}
 
-	for (const tag of tagSuggestions) {
-		if (!tag.startsWith("/") || !tag.endsWith("/")) {
+	for (const tag of tagSuggestions)
+	{
+		if (!tag.startsWith("/") || !tag.endsWith("/"))
+		{
 			throw new Error(`Tag suggestion format error: "${tag}" must have leading and trailing slashes`);
 		}
 	}

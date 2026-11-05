@@ -1,5 +1,6 @@
 import {del, get, set, type UseStore} from "idb-keyval";
-import {
+import
+{
 	compressForStorageWithMetadata,
 	decompressFromStorageWithMetadata,
 	checkStorageQuota,
@@ -8,26 +9,31 @@ import {
 
 export const MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS = 8 * 1024 * 1024;
 
-export interface PayloadRejection {
+export interface PayloadRejection
+{
 	status: "payload-rejected";
 	reason: "payload-too-large" | "post-message-failed";
 	serializedCharacters?: number;
 	maximumCharacters: number;
 }
 
-export interface PersistResult {
+export interface PersistResult
+{
 	success: boolean;
 	data:
-		| {
+		|
+		  {
 				status: "persisted";
 				compressed: boolean;
 				originalSize: number;
 				storedSize: number;
 		  }
-		| {
+		|
+		  {
 				status: "unchanged";
 		  }
-		| {
+		|
+		  {
 				status: "insufficient-storage";
 				requiredSize: number;
 				availableSize: number;
@@ -36,9 +42,11 @@ export interface PersistResult {
 		| PayloadRejection;
 }
 
-export interface RestoreResult {
+export interface RestoreResult
+{
 	success: true;
-	data?: {
+	data?:
+	{
 		client: unknown;
 		compressed: boolean;
 		originalSize: number;
@@ -46,19 +54,28 @@ export interface RestoreResult {
 	};
 }
 
-function extractPersistedQueryData(client: any): unknown {
-	if (!client?.clientState) {
+function extractPersistedQueryData(client: any): unknown
+{
+	if (!client?.clientState)
+	{
 		return client;
 	}
 
 	return {
-		queries: client.clientState.queries?.map((query: any) => ({
+		queries: client.clientState.queries?.map((query: any) => (
+		{
 			queryKey: query.queryKey,
 			queryHash: query.queryHash,
 			data: query.state?.data,
-			...(query.state?.error ? {error: query.state.error} : {}),
+			...(query.state?.error
+				?
+					{
+						error: query.state.error,
+					}
+				: {}),
 		})),
-		mutations: client.clientState.mutations?.map((mutation: any) => ({
+		mutations: client.clientState.mutations?.map((mutation: any) => (
+		{
 			mutationKey: mutation.mutationKey,
 			state: mutation.state?.status,
 			data: mutation.state?.data,
@@ -67,21 +84,28 @@ function extractPersistedQueryData(client: any): unknown {
 	};
 }
 
-function createPersistenceFingerprint(client: unknown): string {
+function createPersistenceFingerprint(client: unknown): string
+{
 	return JSON.stringify(extractPersistedQueryData(client));
 }
 
-export class PersistenceStore {
+export class PersistenceStore
+{
 	private lastPersistedFingerprint: string | undefined;
 
-	constructor(private readonly store: UseStore) {}
+	constructor(private readonly store: UseStore)
+	{
+	}
 
-	async persist(key: string, client: unknown): Promise<PersistResult> {
+	async persist(key: string, client: unknown): Promise<PersistResult>
+	{
 		const fingerprint = createPersistenceFingerprint(client);
-		if (fingerprint.length > MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS) {
+		if (fingerprint.length > MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS)
+		{
 			return {
 				success: false,
-				data: {
+				data:
+				{
 					status: "payload-rejected",
 					reason: "payload-too-large",
 					serializedCharacters: fingerprint.length,
@@ -90,10 +114,14 @@ export class PersistenceStore {
 			};
 		}
 
-		if (fingerprint === this.lastPersistedFingerprint) {
+		if (fingerprint === this.lastPersistedFingerprint)
+		{
 			return {
 				success: true,
-				data: {status: "unchanged"},
+				data:
+				{
+					status: "unchanged",
+				},
 			};
 		}
 
@@ -101,14 +129,17 @@ export class PersistenceStore {
 		const storedSize = storedData.data.length;
 		const quota = await checkStorageQuota(storedSize);
 
-		if (!quota.hasSpace) {
+		if (!quota.hasSpace)
+		{
 			await del(key, this.store);
 			this.lastPersistedFingerprint = undefined;
 			const quotaAfterClear = await checkStorageQuota(storedSize);
-			if (!quotaAfterClear.hasSpace) {
+			if (!quotaAfterClear.hasSpace)
+			{
 				return {
 					success: false,
-					data: {
+					data:
+					{
 						status: "insufficient-storage",
 						requiredSize: storedSize,
 						availableSize: quotaAfterClear.available ?? 0,
@@ -123,7 +154,8 @@ export class PersistenceStore {
 
 		return {
 			success: true,
-			data: {
+			data:
+			{
 				status: "persisted",
 				compressed: storedData.compressed,
 				originalSize,
@@ -132,10 +164,14 @@ export class PersistenceStore {
 		};
 	}
 
-	async restore(key: string): Promise<RestoreResult> {
+	async restore(key: string): Promise<RestoreResult>
+	{
 		const storedData = (await get(key, this.store)) as StoredData | unknown;
-		if (storedData === undefined) {
-			return {success: true};
+		if (storedData === undefined)
+		{
+			return {
+				success: true,
+			};
 		}
 
 		const restored = decompressFromStorageWithMetadata(storedData);
@@ -143,7 +179,8 @@ export class PersistenceStore {
 
 		return {
 			success: true,
-			data: {
+			data:
+			{
 				client: restored.data,
 				compressed: restored.compressed,
 				originalSize: restored.originalSize,
@@ -152,7 +189,8 @@ export class PersistenceStore {
 		};
 	}
 
-	async delete(key: string): Promise<void> {
+	async delete(key: string): Promise<void>
+	{
 		await del(key, this.store);
 		this.lastPersistedFingerprint = undefined;
 	}

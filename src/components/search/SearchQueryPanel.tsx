@@ -12,12 +12,15 @@ import SortOrderSelect from "./SortOrderSelect";
 import TagFilterSelect from "./TagFilterSelect";
 import VersionFilterSelect from "./VersionFilterSelect";
 
-const SearchQueryPanel: React.FC = () => {
-	const handleSearch = (): void => {
+const SearchQueryPanel: React.FC = () =>
+{
+	const handleSearch = (): void =>
+	{
 		submitSearch();
 	};
 
-	const handleClear = (): void => {
+	const handleClear = (): void =>
+	{
 		resetAdvancedSearch();
 	};
 

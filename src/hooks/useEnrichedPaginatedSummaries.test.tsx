@@ -3,7 +3,8 @@ import {renderHook, waitFor} from "@testing-library/react";
 import type React from "react";
 import {beforeEach, describe, expect, it, vi} from "vite-plus/test";
 import {fetchPaginatedSummaries} from "../api/firebase";
-import type {
+import type
+{
 	EnrichedBlueprintSummaryPage,
 	EnrichedPaginatedBlueprintSummaries,
 	RawBlueprintSummaryPage,
@@ -12,9 +13,12 @@ import {useEnrichedPaginatedSummaries} from "./useEnrichedPaginatedSummaries";
 
 vi.mock("../api/firebase");
 
-const exampleRawPage1: RawBlueprintSummaryPage = {
-	data: {
-		blueprint1: {
+const exampleRawPage1: RawBlueprintSummaryPage =
+{
+	data:
+	{
+		blueprint1:
+		{
 			title: "Test Blueprint 1",
 			imgurId: "img1",
 			imgurType: "image/png",
@@ -23,7 +27,8 @@ const exampleRawPage1: RawBlueprintSummaryPage = {
 			height: 256,
 			width: 512,
 		},
-		blueprint2: {
+		blueprint2:
+		{
 			title: "Test Blueprint 2",
 			imgurId: "img2",
 			imgurType: "image/jpeg",
@@ -36,9 +41,12 @@ const exampleRawPage1: RawBlueprintSummaryPage = {
 	lastValue: 2000,
 };
 
-const exampleRawPage2: RawBlueprintSummaryPage = {
-	data: {
-		blueprint3: {
+const exampleRawPage2: RawBlueprintSummaryPage =
+{
+	data:
+	{
+		blueprint3:
+		{
 			title: "Test Blueprint 3",
 			imgurId: "img3",
 			imgurType: "image/png",
@@ -51,7 +59,8 @@ const exampleRawPage2: RawBlueprintSummaryPage = {
 	lastValue: null,
 };
 
-const exampleEnrichedPage1: EnrichedBlueprintSummaryPage = {
+const exampleEnrichedPage1: EnrichedBlueprintSummaryPage =
+{
 	data: [
 		{
 			key: "blueprint1",
@@ -79,7 +88,8 @@ const exampleEnrichedPage1: EnrichedBlueprintSummaryPage = {
 	lastValue: 2000,
 };
 
-const exampleEnrichedPage2: EnrichedBlueprintSummaryPage = {
+const exampleEnrichedPage2: EnrichedBlueprintSummaryPage =
+{
 	data: [
 		{
 			key: "blueprint3",
@@ -96,17 +106,23 @@ const exampleEnrichedPage2: EnrichedBlueprintSummaryPage = {
 	lastValue: null,
 };
 
-describe("useEnrichedPaginatedSummaries", () => {
+describe("useEnrichedPaginatedSummaries", () =>
+{
 	let queryClient: QueryClient;
 
-	beforeEach(() => {
-		queryClient = new QueryClient({
-			defaultOptions: {
-				queries: {
-					retry: false,
+	beforeEach(() =>
+	{
+		queryClient = new QueryClient(
+			{
+				defaultOptions:
+				{
+					queries:
+					{
+						retry: false,
+					},
 				},
 			},
-		});
+		);
 
 		vi.clearAllMocks();
 		vi.mocked(fetchPaginatedSummaries).mockResolvedValue(exampleRawPage1);
@@ -116,8 +132,14 @@ describe("useEnrichedPaginatedSummaries", () => {
 		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 	);
 
-	it("should fetch and enrich paginated summaries with default parameters", async () => {
-		const {result} = renderHook(() => useEnrichedPaginatedSummaries(), {wrapper});
+	it("should fetch and enrich paginated summaries with default parameters", async () =>
+	{
+		const {result} = renderHook(
+			() => useEnrichedPaginatedSummaries(),
+			{
+				wrapper,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -125,34 +147,56 @@ describe("useEnrichedPaginatedSummaries", () => {
 		expect(fetchPaginatedSummaries).toHaveBeenCalledWith(60, null, null, "lastUpdatedDate");
 
 		// Verify the enriched data structure
-		const expectedEnrichedData: EnrichedPaginatedBlueprintSummaries = {
+		const expectedEnrichedData: EnrichedPaginatedBlueprintSummaries =
+		{
 			pages: [exampleEnrichedPage1],
-			pageParams: [{lastKey: null, lastValue: null}],
+			pageParams: [
+				{
+					lastKey: null,
+					lastValue: null,
+				},
+			],
 		};
 
 		expect(result.current.data).toStrictEqual(expectedEnrichedData);
 	});
 
-	it("should pass custom parameters to fetch function", async () => {
-		const {result} = renderHook(() => useEnrichedPaginatedSummaries(30, "numberOfFavorites"), {
-			wrapper,
-		});
+	it("should pass custom parameters to fetch function", async () =>
+	{
+		const {result} = renderHook(
+			() => useEnrichedPaginatedSummaries(30, "numberOfFavorites"),
+			{
+				wrapper,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(fetchPaginatedSummaries).toHaveBeenCalledWith(30, null, null, "numberOfFavorites");
 	});
 
-	it("should handle null data gracefully", async () => {
-		const {result} = renderHook(() => useEnrichedPaginatedSummaries(), {wrapper});
+	it("should handle null data gracefully", async () =>
+	{
+		const {result} = renderHook(
+			() => useEnrichedPaginatedSummaries(),
+			{
+				wrapper,
+			},
+		);
 
 		// Initial state should have null data
 		expect(result.current.data).toBeNull();
 		expect(result.current.isLoading).toBe(true);
 	});
 
-	it("should populate individual blueprint summaries in cache", async () => {
-		const {result} = renderHook(() => useEnrichedPaginatedSummaries(), {wrapper});
+	it("should populate individual blueprint summaries in cache", async () =>
+	{
+		const {result} = renderHook(
+			() => useEnrichedPaginatedSummaries(),
+			{
+				wrapper,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -165,12 +209,18 @@ describe("useEnrichedPaginatedSummaries", () => {
 		);
 	});
 
-	it("should handle pagination correctly", async () => {
+	it("should handle pagination correctly", async () =>
+	{
 		vi.mocked(fetchPaginatedSummaries)
 			.mockResolvedValueOnce(exampleRawPage1)
 			.mockResolvedValueOnce(exampleRawPage2);
 
-		const {result} = renderHook(() => useEnrichedPaginatedSummaries(), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedPaginatedSummaries(),
+			{
+				wrapper,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -179,11 +229,18 @@ describe("useEnrichedPaginatedSummaries", () => {
 
 		await waitFor(() => expect(result.current.data?.pages).toHaveLength(2));
 
-		const expectedEnrichedData: EnrichedPaginatedBlueprintSummaries = {
+		const expectedEnrichedData: EnrichedPaginatedBlueprintSummaries =
+		{
 			pages: [exampleEnrichedPage1, exampleEnrichedPage2],
 			pageParams: [
-				{lastKey: null, lastValue: null},
-				{lastKey: "blueprint2", lastValue: 2000},
+				{
+					lastKey: null,
+					lastValue: null,
+				},
+				{
+					lastKey: "blueprint2",
+					lastValue: 2000,
+				},
 			],
 		};
 
@@ -191,11 +248,17 @@ describe("useEnrichedPaginatedSummaries", () => {
 		expect(result.current.hasNextPage).toBe(false);
 	});
 
-	it("should handle errors from fetchPaginatedSummaries", async () => {
+	it("should handle errors from fetchPaginatedSummaries", async () =>
+	{
 		const testError = new Error("Test error");
 		vi.mocked(fetchPaginatedSummaries).mockRejectedValue(testError);
 
-		const {result} = renderHook(() => useEnrichedPaginatedSummaries(), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedPaginatedSummaries(),
+			{
+				wrapper,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isError).toBe(true));
 
@@ -203,8 +266,10 @@ describe("useEnrichedPaginatedSummaries", () => {
 		expect(result.current.data).toBeNull();
 	});
 
-	it("should handle hasMore false correctly", async () => {
-		const examplePageNoMore: RawBlueprintSummaryPage = {
+	it("should handle hasMore false correctly", async () =>
+	{
+		const examplePageNoMore: RawBlueprintSummaryPage =
+		{
 			...exampleRawPage1,
 			hasMore: false,
 			lastKey: null,
@@ -212,13 +277,19 @@ describe("useEnrichedPaginatedSummaries", () => {
 		};
 		vi.mocked(fetchPaginatedSummaries).mockResolvedValue(examplePageNoMore);
 
-		const {result} = renderHook(() => useEnrichedPaginatedSummaries(), {wrapper});
+		const {result} = renderHook(
+			() => useEnrichedPaginatedSummaries(),
+			{
+				wrapper,
+			},
+		);
 
 		await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
 		expect(result.current.hasNextPage).toBe(false);
 
-		const expectedEnrichedData: EnrichedPaginatedBlueprintSummaries = {
+		const expectedEnrichedData: EnrichedPaginatedBlueprintSummaries =
+		{
 			pages: [
 				{
 					...exampleEnrichedPage1,
@@ -227,7 +298,12 @@ describe("useEnrichedPaginatedSummaries", () => {
 					lastValue: null,
 				},
 			],
-			pageParams: [{lastKey: null, lastValue: null}],
+			pageParams: [
+				{
+					lastKey: null,
+					lastValue: null,
+				},
+			],
 		};
 
 		expect(result.current.data).toStrictEqual(expectedEnrichedData);

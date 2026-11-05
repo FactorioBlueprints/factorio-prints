@@ -4,7 +4,8 @@ import Card from "react-bootstrap/Card";
 import ListGroup from "react-bootstrap/ListGroup";
 import {FactorioIcon, Placeholder} from "../core/icons/FactorioIcon";
 import {RichText} from "../core/text/RichText";
-import type {
+import type
+{
 	RawBlueprintData,
 	BlueprintBook,
 	BlueprintContent,
@@ -23,7 +24,8 @@ const FBE_BASE_URL = "https://fbe.factorygamefan.com/";
 */
 const BLUEPRINT_DATA_URL = "https://factorioprints.xyz/api/blueprintData";
 
-interface BlueprintContentHeaderProps {
+interface BlueprintContentHeaderProps
+{
 	data: RawBlueprintData;
 	blueprintKey: string;
 	blueprintStringSha?: string;
@@ -35,7 +37,8 @@ function getBlueprintBook(
 	blueprintKey: string,
 	blueprintStringSha: string | undefined,
 	positionArray: number[],
-): React.ReactElement {
+): React.ReactElement
+{
 	const firstRow = getFirstRow(data);
 
 	const {blueprints = [], active_index} = data;
@@ -61,7 +64,8 @@ function getBlueprintBook(
 	);
 }
 
-function getEditorButton(positionArray: number[], blueprintStringSha: string): React.ReactElement {
+function getEditorButton(positionArray: number[], blueprintStringSha: string): React.ReactElement
+{
 	const position = positionArray.length === 0 ? "/" : `/position/${positionArray.join(".")}`;
 
 	return (
@@ -84,7 +88,8 @@ function getBlueprint(
 	data: BlueprintContent | UpgradePlanner | DeconstructionPlanner,
 	blueprintStringSha: string | undefined,
 	positionArray: number[],
-): React.ReactElement {
+): React.ReactElement
+{
 	const {icons, item, label} = data;
 
 	return (
@@ -108,21 +113,32 @@ function BlueprintContentHeader({
 	blueprintKey,
 	blueprintStringSha,
 	positionArray = [],
-}: BlueprintContentHeaderProps): React.ReactElement | null {
-	if (data.blueprint_book) {
+}: BlueprintContentHeaderProps): React.ReactElement | null
+{
+	if (data.blueprint_book)
+	{
 		return getBlueprintBook(data.blueprint_book, blueprintKey, blueprintStringSha, positionArray);
-	} else if (data.blueprint) {
+	}
+	else if (data.blueprint)
+	{
 		return getBlueprint(data.blueprint, blueprintStringSha, positionArray);
-	} else if (data.deconstruction_planner) {
+	}
+	else if (data.deconstruction_planner)
+	{
 		return getBlueprint(data.deconstruction_planner, blueprintStringSha, positionArray);
-	} else if (data.upgrade_planner) {
+	}
+	else if (data.upgrade_planner)
+	{
 		return getBlueprint(data.upgrade_planner, blueprintStringSha, positionArray);
-	} else {
+	}
+	else
+	{
 		return null;
 	}
 }
 
-function getFirstRow(data: BlueprintBook): React.ReactElement {
+function getFirstRow(data: BlueprintBook): React.ReactElement
+{
 	const {icons, item, label} = data;
 
 	return (
@@ -136,15 +152,18 @@ function getFirstRow(data: BlueprintBook): React.ReactElement {
 	);
 }
 
-function getItemIconIfExists(icons: BlueprintIcon[], index: number): React.ReactElement {
-	if (index >= icons.length || !icons[index]) {
+function getItemIconIfExists(icons: BlueprintIcon[], index: number): React.ReactElement
+{
+	if (index >= icons.length || !icons[index])
+	{
 		return <Placeholder key={index} size="small" inline />;
 	}
 
 	const icon = icons[index];
 	const signal = icon.signal;
 
-	if (!signal || !signal.name) {
+	if (!signal || !signal.name)
+	{
 		return <Placeholder key={index} size="small" inline />;
 	}
 

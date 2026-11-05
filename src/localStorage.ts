@@ -1,6 +1,7 @@
 import {addBreadcrumb, captureException} from "@sentry/react";
 import {createStore, del} from "idb-keyval";
-import {
+import
+{
 	MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
 	type PayloadRejection,
 	PersistenceStore,
@@ -9,13 +10,16 @@ import {
 } from "./localStorage.persistence";
 import LocalStorageWorker from "./localStorage.worker.wrapper";
 
-function logIndexedDbDebug(message: string): void {
-	if (import.meta.env.DEV) {
+function logIndexedDbDebug(message: string): void
+{
+	if (import.meta.env.DEV)
+	{
 		console.debug(message);
 	}
 }
 
-export const STORAGE_KEYS = {
+export const STORAGE_KEYS =
+{
 	QUERY_CACHE: "FACTORIO_PRINTS_QUERY_CACHE",
 	CREATE_FORM: "factorio-blueprint-create-form",
 	HIGH_WATERMARK: "factorio-prints-high-watermark",
@@ -25,8 +29,10 @@ export const CACHE_BUSTER = "7";
 
 const storageCapabilityTestKey = "__factorio_prints_storage_test__";
 
-function isStorage(value: unknown): value is Storage {
-	if (value === null || typeof value !== "object") {
+function isStorage(value: unknown): value is Storage
+{
+	if (value === null || typeof value !== "object")
+	{
 		return false;
 	}
 
@@ -40,84 +46,124 @@ function isStorage(value: unknown): value is Storage {
 	);
 }
 
-function getLocalStorageCapability(): Storage | undefined {
-	if (typeof window === "undefined") {
+function getLocalStorageCapability(): Storage | undefined
+{
+	if (typeof window === "undefined")
+	{
 		return undefined;
 	}
 
-	try {
+	try
+	{
 		const storage = window.localStorage;
 		return isStorage(storage) ? storage : undefined;
-	} catch {
+	}
+	catch
+	{
 		return undefined;
 	}
 }
 
-function createSafeStorage(storage: Storage): Storage {
+function createSafeStorage(storage: Storage): Storage
+{
 	return {
-		clear: () => {
-			try {
+		clear: () =>
+		{
+			try
+			{
 				storage.clear();
-			} catch {}
+			}
+			catch
+			{
+			}
 		},
-		getItem: (key) => {
-			try {
+		getItem: (key) =>
+		{
+			try
+			{
 				return storage.getItem(key);
-			} catch {
+			}
+			catch
+			{
 				return null;
 			}
 		},
-		key: (index) => {
-			try {
+		key: (index) =>
+		{
+			try
+			{
 				return storage.key(index);
-			} catch {
+			}
+			catch
+			{
 				return null;
 			}
 		},
-		get length() {
-			try {
+		get length()
+		{
+			try
+			{
 				return storage.length;
-			} catch {
+			}
+			catch
+			{
 				return 0;
 			}
 		},
-		removeItem: (key) => {
-			try {
+		removeItem: (key) =>
+		{
+			try
+			{
 				storage.removeItem(key);
-			} catch {}
+			}
+			catch
+			{
+			}
 		},
-		setItem: (key, value) => {
-			try {
+		setItem: (key, value) =>
+		{
+			try
+			{
 				storage.setItem(key, value);
-			} catch {}
+			}
+			catch
+			{
+			}
 		},
 	};
 }
 
-export function getSafeLocalStorage(): Storage | undefined {
+export function getSafeLocalStorage(): Storage | undefined
+{
 	const storage = getLocalStorageCapability();
-	if (!storage) {
+	if (!storage)
+	{
 		return undefined;
 	}
 
-	try {
+	try
+	{
 		storage.setItem(storageCapabilityTestKey, storageCapabilityTestKey);
 		storage.removeItem(storageCapabilityTestKey);
 		return createSafeStorage(storage);
-	} catch {
+	}
+	catch
+	{
 		return undefined;
 	}
 }
 
 const indexedDbStore = createStore("factorio-prints-db", "query-cache-store");
 
-interface DebounceOptions {
+interface DebounceOptions
+{
 	leading?: boolean;
 	trailing?: boolean;
 	maxWait?: number;
 }
 
-interface DebouncedFunction<T extends (...args: any[]) => any> {
+interface DebouncedFunction<T extends (...args: any[]) => any>
+{
 	(...args: Parameters<T>): ReturnType<T>;
 	cancel(): void;
 	flush(): ReturnType<T>;
@@ -128,7 +174,8 @@ function debounce<T extends (...args: any[]) => any>(
 	func: T,
 	wait: number,
 	options: DebounceOptions = {},
-): DebouncedFunction<T> {
+): DebouncedFunction<T>
+{
 	let lastArgs: Parameters<T> | undefined;
 	let lastThis: ThisParameterType<T> | undefined;
 	let maxWait: number;
@@ -141,28 +188,33 @@ function debounce<T extends (...args: any[]) => any>(
 	const maxing = "maxWait" in options;
 	maxWait = maxing ? Math.max(options.maxWait || 0, wait) : 0;
 
-	function invokeFunc(time: number): ReturnType<T> {
+	function invokeFunc(time: number): ReturnType<T>
+	{
 		const args = lastArgs!;
 		const thisArg = lastThis;
 
 		lastArgs = lastThis = undefined;
 		lastInvokeTime = time;
-		if (!args) {
+		if (!args)
+		{
 			throw new Error("invokeFunc called without arguments");
 		}
 		result = func.apply(thisArg, args);
 		return result;
 	}
 
-	function startTimer(pendingFunc: () => void, wait: number): ReturnType<typeof setTimeout> {
+	function startTimer(pendingFunc: () => void, wait: number): ReturnType<typeof setTimeout>
+	{
 		return setTimeout(pendingFunc, wait);
 	}
 
-	function cancelTimer(id: ReturnType<typeof setTimeout>): void {
+	function cancelTimer(id: ReturnType<typeof setTimeout>): void
+	{
 		clearTimeout(id);
 	}
 
-	function shouldInvoke(time: number): boolean {
+	function shouldInvoke(time: number): boolean
+	{
 		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 
@@ -174,23 +226,27 @@ function debounce<T extends (...args: any[]) => any>(
 		);
 	}
 
-	function trailingEdge(time: number): ReturnType<T> {
+	function trailingEdge(time: number): ReturnType<T>
+	{
 		timerId = undefined;
 
-		if (trailing && lastArgs) {
+		if (trailing && lastArgs)
+		{
 			return invokeFunc(time);
 		}
 		lastArgs = lastThis = undefined;
 		return result;
 	}
 
-	function leadingEdge(time: number): ReturnType<T> {
+	function leadingEdge(time: number): ReturnType<T>
+	{
 		lastInvokeTime = time;
 		timerId = startTimer(timerExpired, wait);
 		return leading ? invokeFunc(time) : result;
 	}
 
-	function remainingWait(time: number): number {
+	function remainingWait(time: number): number
+	{
 		const timeSinceLastCall = time - (lastCallTime || 0);
 		const timeSinceLastInvoke = time - lastInvokeTime;
 		const timeWaiting = wait - timeSinceLastCall;
@@ -198,10 +254,12 @@ function debounce<T extends (...args: any[]) => any>(
 		return maxing ? Math.min(timeWaiting, maxWait - timeSinceLastInvoke) : timeWaiting;
 	}
 
-	function timerExpired(): void {
+	function timerExpired(): void
+	{
 		const time = Date.now();
 
-		if (shouldInvoke(time)) {
+		if (shouldInvoke(time))
+		{
 			trailingEdge(time);
 			return;
 		}
@@ -209,7 +267,8 @@ function debounce<T extends (...args: any[]) => any>(
 		timerId = startTimer(timerExpired, remainingWait(time));
 	}
 
-	function debounced(this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T> {
+	function debounced(this: ThisParameterType<T>, ...args: Parameters<T>): ReturnType<T>
+	{
 		const time = Date.now();
 		const isInvoking = shouldInvoke(time);
 
@@ -217,23 +276,29 @@ function debounce<T extends (...args: any[]) => any>(
 		lastThis = this; // oxlint-disable-line @typescript-eslint/no-this-alias
 		lastCallTime = time;
 
-		if (isInvoking) {
-			if (timerId === undefined) {
+		if (isInvoking)
+		{
+			if (timerId === undefined)
+			{
 				return leadingEdge(lastCallTime);
 			}
-			if (maxing) {
+			if (maxing)
+			{
 				timerId = startTimer(timerExpired, wait);
 				return invokeFunc(lastCallTime);
 			}
 		}
-		if (timerId === undefined) {
+		if (timerId === undefined)
+		{
 			timerId = startTimer(timerExpired, wait);
 		}
 		return result;
 	}
 
-	debounced.cancel = (): void => {
-		if (timerId !== undefined) {
+	debounced.cancel = (): void =>
+	{
+		if (timerId !== undefined)
+		{
 			cancelTimer(timerId);
 		}
 		lastInvokeTime = 0;
@@ -249,7 +314,8 @@ function debounce<T extends (...args: any[]) => any>(
 
 let worker: Worker | undefined;
 let operationCounter = 0;
-interface PendingOperation {
+interface PendingOperation
+{
 	resolve: (result: WorkerOperationResult) => void;
 	operationType: StorageOperation;
 	timeoutHandle: ReturnType<typeof setTimeout>;
@@ -264,43 +330,66 @@ let isWorkerInitializing = false;
 let isWorkerDisabledForSession = false;
 let workerInitPromise: Promise<void> | undefined;
 
-function clearPendingOperation(id: number): PendingOperation | undefined {
+function clearPendingOperation(id: number): PendingOperation | undefined
+{
 	const pendingOperation = pendingOperations.get(id);
-	if (pendingOperation) {
+	if (pendingOperation)
+	{
 		clearTimeout(pendingOperation.timeoutHandle);
 		pendingOperations.delete(id);
 	}
 	return pendingOperation;
 }
 
-function clearAllPendingOperations(): PendingOperation[] {
+function clearAllPendingOperations(): PendingOperation[]
+{
 	const operations = [...pendingOperations.values()];
-	for (const operation of operations) {
+	for (const operation of operations)
+	{
 		clearTimeout(operation.timeoutHandle);
 	}
 	pendingOperations.clear();
 	return operations;
 }
 
-function settlePendingOperationsAfterTermination(): void {
-	for (const operation of clearAllPendingOperations()) {
-		operation.resolve(operation.operationType === "restore" ? {success: true} : {success: false});
+function settlePendingOperationsAfterTermination(): void
+{
+	for (const operation of clearAllPendingOperations())
+	{
+		operation.resolve(
+			operation.operationType === "restore"
+				?
+					{
+						success: true,
+					}
+				:
+					{
+						success: false,
+					},
+		);
 	}
 }
 
-function resetWorkerIfNeeded() {
+function resetWorkerIfNeeded()
+{
 	const now = Date.now();
-	if (now - lastWorkerResetTime > workerResetCooldown) {
+	if (now - lastWorkerResetTime > workerResetCooldown)
+	{
 		workerReconnectAttempts = 0;
 		lastWorkerResetTime = now;
 	}
 }
 
-function terminateWorker() {
-	if (worker) {
-		try {
+function terminateWorker()
+{
+	if (worker)
+	{
+		try
+		{
 			worker.terminate();
-		} catch (error) {
+		}
+		catch (error)
+		{
 			console.warn("[IndexedDB Worker] Error terminating worker:", error);
 		}
 		worker = undefined;
@@ -310,103 +399,134 @@ function terminateWorker() {
 	settlePendingOperationsAfterTermination();
 }
 
-function disableWorkerForSession() {
+function disableWorkerForSession()
+{
 	isWorkerDisabledForSession = true;
 	terminateWorker();
 }
 
-async function getWorker(): Promise<Worker | undefined> {
-	if (isWorkerDisabledForSession) {
+async function getWorker(): Promise<Worker | undefined>
+{
+	if (isWorkerDisabledForSession)
+	{
 		return undefined;
 	}
 
 	// If worker is being initialized, wait for it
-	if (isWorkerInitializing && workerInitPromise) {
-		try {
+	if (isWorkerInitializing && workerInitPromise)
+	{
+		try
+		{
 			await workerInitPromise;
 			return worker;
-		} catch (error) {
+		}
+		catch (error)
+		{
 			logIndexedDbDebug(`[IndexedDB Worker] Failed to wait for worker initialization: ${String(error)}`);
 			return undefined;
 		}
 	}
 
-	if (!worker && !isWorkerInitializing) {
+	if (!worker && !isWorkerInitializing)
+	{
 		resetWorkerIfNeeded();
 
-		if (workerReconnectAttempts >= maxWorkerReconnectAttempts) {
+		if (workerReconnectAttempts >= maxWorkerReconnectAttempts)
+		{
 			return undefined;
 		}
 
 		isWorkerInitializing = true;
 
-		workerInitPromise = new Promise<void>((resolve, reject) => {
+		workerInitPromise = new Promise<void>((resolve, reject) =>
+		{
 			let initializationTimeout: ReturnType<typeof setTimeout> | undefined;
-			const clearInitializationTimeout = (): void => {
-				if (initializationTimeout !== undefined) {
+			const clearInitializationTimeout = (): void =>
+			{
+				if (initializationTimeout !== undefined)
+				{
 					clearTimeout(initializationTimeout);
 					initializationTimeout = undefined;
 				}
 			};
 
-			try {
+			try
+			{
 				workerReconnectAttempts++;
 				logIndexedDbDebug(`[IndexedDB Worker] Creating worker (attempt ${workerReconnectAttempts})`);
 
 				worker = new LocalStorageWorker();
 				logIndexedDbDebug("[IndexedDB Worker] Successfully created worker using Vite import");
 
-				worker.onerror = (event) => {
+				worker.onerror = (event) =>
+				{
 					clearInitializationTimeout();
 					let errorToCapture: Error | null;
 					let errorMessage: string;
 
 					// Handle null/undefined event (shouldn't happen but being defensive)
-					if (!event) {
+					if (!event)
+					{
 						errorMessage = "Worker error: null or undefined event";
 						errorToCapture = new Error(errorMessage);
 						errorToCapture.name = "WorkerError";
 
-						captureException(errorToCapture, {
-							tags: {
-								component: "indexeddb-worker",
-								operation: "worker-error",
-								reconnectAttempt: workerReconnectAttempts,
+						captureException(
+							errorToCapture,
+							{
+								tags:
+								{
+									component: "indexeddb-worker",
+									operation: "worker-error",
+									reconnectAttempt: workerReconnectAttempts,
+								},
+								extra:
+								{
+									eventIsNull: true,
+								},
 							},
-							extra: {
-								eventIsNull: true,
-							},
-						});
+						);
 
 						disableWorkerForSession();
 						reject(errorToCapture);
 						return;
 					}
 
-					if (event instanceof ErrorEvent) {
+					if (event instanceof ErrorEvent)
+					{
 						errorMessage = event.message || "Unknown worker error";
-						if (event.error instanceof Error) {
+						if (event.error instanceof Error)
+						{
 							errorToCapture = event.error;
-						} else {
+						}
+						else
+						{
 							errorToCapture = new Error(errorMessage);
 							errorToCapture.name = "WorkerError";
 						}
 
-						captureException(errorToCapture, {
-							tags: {
-								component: "indexeddb-worker",
-								operation: "worker-error",
-								reconnectAttempt: workerReconnectAttempts,
+						captureException(
+							errorToCapture,
+							{
+								tags:
+								{
+									component: "indexeddb-worker",
+									operation: "worker-error",
+									reconnectAttempt: workerReconnectAttempts,
+								},
+								extra:
+								{
+									filename: event.filename,
+									lineno: event.lineno,
+									colno: event.colno,
+									message: errorMessage,
+									errorType: event.error ? event.error.constructor.name : "Unknown",
+								},
 							},
-							extra: {
-								filename: event.filename,
-								lineno: event.lineno,
-								colno: event.colno,
-								message: errorMessage,
-								errorType: event.error ? event.error.constructor.name : "Unknown",
-							},
-						});
-					} else {
+						);
+					}
+					else
+					{
 						// Safari sometimes emits a plain Event instead of ErrorEvent
 						const genericEvent = event as Event;
 						const eventType =
@@ -419,7 +539,8 @@ async function getWorker(): Promise<Worker | undefined> {
 
 						// Extract any available properties from the event
 						const eventProperties: Record<string, unknown> = {};
-						if (genericEvent && typeof genericEvent === "object") {
+						if (genericEvent && typeof genericEvent === "object")
+						{
 							// Attempt to extract standard Event properties
 							if ("type" in genericEvent) eventProperties.type = genericEvent.type;
 							if ("target" in genericEvent) eventProperties.hasTarget = genericEvent.target !== null;
@@ -433,59 +554,78 @@ async function getWorker(): Promise<Worker | undefined> {
 							if ("isTrusted" in genericEvent) eventProperties.isTrusted = genericEvent.isTrusted;
 
 							// Try to get any custom properties
-							try {
+							try
+							{
 								const allKeys = Object.keys(genericEvent);
-								if (allKeys.length > 0) {
+								if (allKeys.length > 0)
+								{
 									eventProperties.availableKeys = allKeys;
 								}
-							} catch {
+							}
+							catch
+							{
 								// Ignore if we can't enumerate keys
 							}
 						}
 
 						// Create a more descriptive error message
-						if (isSafari && eventType === "Event") {
+						if (isSafari && eventType === "Event")
+						{
 							errorMessage = `Safari worker initialization error: The worker script may have failed to load or encountered a syntax error`;
-						} else {
+						}
+						else
+						{
 							errorMessage = `Worker error (${eventType}): Unable to extract error details from event object`;
 						}
 
 						// Log Safari worker issues as info level since they're expected
-						if (isSafari && eventType === "Event") {
-							addBreadcrumb({
-								message: "Safari worker initialization issue",
-								category: "indexeddb",
-								level: "info",
-								data: {
-									eventType,
-									eventProperties,
-									userAgent: navigator.userAgent,
+						if (isSafari && eventType === "Event")
+						{
+							addBreadcrumb(
+								{
+									message: "Safari worker initialization issue",
+									category: "indexeddb",
+									level: "info",
+									data:
+									{
+										eventType,
+										eventProperties,
+										userAgent: navigator.userAgent,
+									},
 								},
-							});
+							);
 							// Don't capture Safari worker init issues as exceptions
 							errorToCapture = null;
-						} else {
+						}
+						else
+						{
 							errorToCapture = new Error(errorMessage);
 							errorToCapture.name = "WorkerError";
 						}
 
-						if (errorToCapture) {
-							captureException(errorToCapture, {
-								tags: {
-									component: "indexeddb-worker",
-									operation: "worker-error",
-									reconnectAttempt: workerReconnectAttempts,
-									browser: isSafari ? "safari" : "other",
+						if (errorToCapture)
+						{
+							captureException(
+								errorToCapture,
+								{
+									tags:
+									{
+										component: "indexeddb-worker",
+										operation: "worker-error",
+										reconnectAttempt: workerReconnectAttempts,
+										browser: isSafari ? "safari" : "other",
+									},
+									extra:
+									{
+										eventType,
+										eventProperties,
+										eventString: String(event),
+										isSafari,
+										userAgent: navigator.userAgent,
+										currentUrl: window.location.href,
+									},
 								},
-								extra: {
-									eventType,
-									eventProperties,
-									eventString: String(event),
-									isSafari,
-									userAgent: navigator.userAgent,
-									currentUrl: window.location.href,
-								},
-							});
+							);
 						}
 					}
 
@@ -493,52 +633,70 @@ async function getWorker(): Promise<Worker | undefined> {
 					reject(new Error(errorMessage));
 				};
 
-				worker.onmessage = (e) => {
+				worker.onmessage = (e) =>
+				{
 					const {id, result, error, success} = e.data;
 
-					if (e.data.type === "error" && error?.isUncaught) {
+					if (e.data.type === "error" && error?.isUncaught)
+					{
 						const uncaughtError = new Error(error.message);
 						uncaughtError.name = "WorkerUncaughtError";
 
-						captureException(uncaughtError, {
-							tags: {
-								component: "indexeddb-worker",
-								operation: "worker-runtime",
-								errorType: "uncaught-error",
+						captureException(
+							uncaughtError,
+							{
+								tags:
+								{
+									component: "indexeddb-worker",
+									operation: "worker-runtime",
+									errorType: "uncaught-error",
+								},
+								extra:
+								{
+									details: error.details,
+									stack: error.stack,
+								},
 							},
-							extra: {
-								details: error.details,
-								stack: error.stack,
-							},
-						});
+						);
 						return;
 					}
 
-					if (e.data.type === "error" && error?.isUnhandledRejection) {
+					if (e.data.type === "error" && error?.isUnhandledRejection)
+					{
 						const rejectionError = new Error(error.message);
 						rejectionError.name = "WorkerUnhandledRejection";
 
-						captureException(rejectionError, {
-							tags: {
-								component: "indexeddb-worker",
-								operation: "worker-runtime",
-								errorType: "unhandled-rejection",
+						captureException(
+							rejectionError,
+							{
+								tags:
+								{
+									component: "indexeddb-worker",
+									operation: "worker-runtime",
+									errorType: "unhandled-rejection",
+								},
+								extra:
+								{
+									reason: error.reason,
+									stack: error.stack,
+								},
 							},
-							extra: {
-								reason: error.reason,
-								stack: error.stack,
-							},
-						});
+						);
 						return;
 					}
 
 					const pendingOp = clearPendingOperation(id);
 
-					if (pendingOp) {
-						if (success) {
+					if (pendingOp)
+					{
+						if (success)
+						{
 							pendingOp.resolve(result);
-						} else {
-							if (error?.isConnectionClosing) {
+						}
+						else
+						{
+							if (error?.isConnectionClosing)
+							{
 								// Connection lost - reset worker for next operation
 								terminateWorker();
 								console.warn(
@@ -546,21 +704,34 @@ async function getWorker(): Promise<Worker | undefined> {
 								);
 
 								// 📊 Log as breadcrumb for debugging (error is already handled gracefully)
-								addBreadcrumb({
-									message: "IndexedDB connection closing - handled gracefully",
-									category: "indexeddb",
-									level: "warning",
-									data: {
-										errorMessage: error.message,
-										operationType: e.data.type,
-										key: e.data.key,
+								addBreadcrumb(
+									{
+										message: "IndexedDB connection closing - handled gracefully",
+										category: "indexeddb",
+										level: "warning",
+										data:
+										{
+											errorMessage: error.message,
+											operationType: e.data.type,
+											key: e.data.key,
+										},
 									},
-								});
+								);
 								// Return a safe fallback result based on the operation type
 								pendingOp.resolve(
-									pendingOp.operationType === "restore" ? {success: true} : {success: false},
+									pendingOp.operationType === "restore"
+										?
+											{
+												success: true,
+											}
+										:
+											{
+												success: false,
+											},
 								);
-							} else {
+							}
+							else
+							{
 								// 🛡️ Handle blob write failures specifically
 								const isBlobWriteError =
 									error.message.includes("Failed to write blobs") ||
@@ -568,30 +739,41 @@ async function getWorker(): Promise<Worker | undefined> {
 									error.message.includes("blob") ||
 									error.message.includes("Blob");
 
-								if (isBlobWriteError) {
+								if (isBlobWriteError)
+								{
 									console.warn("[IndexedDB] Blob write failure detected:", error.message);
 
 									// 📊 Log to Sentry for monitoring with specific context
-									try {
+									try
+									{
 										const blobError = new Error(`IndexedDB blob write failed: ${error.message}`);
 										blobError.name = "IndexedDBBlobWriteError";
 
-										captureException(blobError, {
-											level: "warning",
-											tags: {
-												component: "localStorage",
-												errorType: "blob-write-failure",
-												operationType: e.data.type || "unknown",
+										captureException(
+											blobError,
+											{
+												level: "warning",
+												tags:
+												{
+													component: "localStorage",
+													errorType: "blob-write-failure",
+													operationType: e.data.type || "unknown",
+												},
+												extra:
+												{
+													errorMessage: error.message,
+													key: e.data.key,
+												},
 											},
-											extra: {
-												errorMessage: error.message,
-												key: e.data.key,
-											},
-										});
-									} catch (sentryError) {
+										);
+									}
+									catch (sentryError)
+									{
 										console.warn("[IndexedDB] Failed to log blob error to Sentry:", sentryError);
 									}
-								} else {
+								}
+								else
+								{
 									// For other errors, log but don't throw
 									console.warn("[IndexedDB] Operation failed, using fallback:", error.message);
 								}
@@ -599,7 +781,15 @@ async function getWorker(): Promise<Worker | undefined> {
 								// Always resolve with fallback instead of rejecting to prevent cache persistence failure
 								// This allows the app to continue functioning even if caching fails
 								pendingOp.resolve(
-									pendingOp.operationType === "restore" ? {success: true} : {success: false},
+									pendingOp.operationType === "restore"
+										?
+											{
+												success: true,
+											}
+										:
+											{
+												success: false,
+											},
 								);
 							}
 						}
@@ -607,57 +797,76 @@ async function getWorker(): Promise<Worker | undefined> {
 				};
 
 				// Wait for initialization confirmation
-				initializationTimeout = setTimeout(() => {
+				initializationTimeout = setTimeout(() =>
+				{
 					initializationTimeout = undefined;
-					addBreadcrumb({
-						message: "IndexedDB worker initialization timed out; using main-thread persistence",
-						category: "indexeddb",
-						level: "info",
-					});
+					addBreadcrumb(
+						{
+							message: "IndexedDB worker initialization timed out; using main-thread persistence",
+							category: "indexeddb",
+							level: "info",
+						},
+					);
 					disableWorkerForSession();
 					reject(new Error("Worker initialization timeout"));
 				}, 5000);
 
 				const originalOnMessage = worker.onmessage;
-				worker.onmessage = (e) => {
-					if (!e.data.id && e.data.success) {
+				worker.onmessage = (e) =>
+				{
+					if (!e.data.id && e.data.success)
+					{
 						clearInitializationTimeout();
 						worker!.onmessage = originalOnMessage;
 						workerReconnectAttempts = 0;
 						isWorkerInitializing = false;
 						logIndexedDbDebug("[IndexedDB Worker] Worker initialized successfully");
 						resolve();
-					} else if (originalOnMessage && worker) {
+					}
+					else if (originalOnMessage && worker)
+					{
 						originalOnMessage.call(worker, e);
 					}
 				};
 
-				worker.postMessage({
-					type: "init",
-					storeConfig: {
-						dbName: "factorio-prints-db",
-						storeName: "query-cache-store",
+				worker.postMessage(
+					{
+						type: "init",
+						storeConfig:
+						{
+							dbName: "factorio-prints-db",
+							storeName: "query-cache-store",
+						},
 					},
-				});
-			} catch (error) {
+				);
+			}
+			catch (error)
+			{
 				clearInitializationTimeout();
 				disableWorkerForSession();
 
-				captureException(error, {
-					tags: {
-						component: "indexeddb-worker",
-						operation: "worker-creation",
-						reconnectAttempt: workerReconnectAttempts,
+				captureException(
+					error,
+					{
+						tags:
+						{
+							component: "indexeddb-worker",
+							operation: "worker-creation",
+							reconnectAttempt: workerReconnectAttempts,
+						},
 					},
-				});
+				);
 
 				reject(error);
 			}
 		});
 
-		try {
+		try
+		{
 			await workerInitPromise;
-		} catch (error) {
+		}
+		catch (error)
+		{
 			logIndexedDbDebug(`[IndexedDB Worker] Worker initialization failed: ${String(error)}`);
 			return undefined;
 		}
@@ -667,27 +876,40 @@ async function getWorker(): Promise<Worker | undefined> {
 }
 
 type StorageOperation = "persist" | "restore" | "delete";
-type WorkerOperationResult = {success: boolean; data?: any};
+type WorkerOperationResult =
+{
+	success: boolean;
+	data?: any;
+};
 
 let fallbackPersistenceStore: PersistenceStore | undefined;
 const discardedPayloadKeys = new Set<string>();
 
-function getFallbackPersistenceStore(): PersistenceStore {
+function getFallbackPersistenceStore(): PersistenceStore
+{
 	fallbackPersistenceStore ??= new PersistenceStore(indexedDbStore);
 	return fallbackPersistenceStore;
 }
 
-function isWorkerPayloadTransferError(error: unknown): boolean {
-	if (error === null || typeof error !== "object") {
+function isWorkerPayloadTransferError(error: unknown): boolean
+{
+	if (error === null || typeof error !== "object")
+	{
 		return false;
 	}
 
-	const namedError = error as {message?: unknown; name?: unknown};
-	if (namedError.name === "DataCloneError") {
+	const namedError = error as
+	{
+		message?: unknown;
+		name?: unknown;
+	};
+	if (namedError.name === "DataCloneError")
+	{
 		return true;
 	}
 
-	if (typeof namedError.message !== "string") {
+	if (typeof namedError.message !== "string")
+	{
 		return false;
 	}
 
@@ -695,23 +917,28 @@ function isWorkerPayloadTransferError(error: unknown): boolean {
 	return message.includes("clone") && message.includes("out of memory");
 }
 
-async function discardRejectedPayload(key: string, rejection: PayloadRejection): Promise<void> {
-	if (discardedPayloadKeys.has(key)) {
+async function discardRejectedPayload(key: string, rejection: PayloadRejection): Promise<void>
+{
+	if (discardedPayloadKeys.has(key))
+	{
 		return;
 	}
 
 	discardedPayloadKeys.add(key);
-	addBreadcrumb({
-		message: "IndexedDB worker persistence payload discarded",
-		category: "indexeddb",
-		level: "info",
-		data: {
-			key,
-			reason: rejection.reason,
-			serializedCharacters: rejection.serializedCharacters,
-			maximumCharacters: rejection.maximumCharacters,
+	addBreadcrumb(
+		{
+			message: "IndexedDB worker persistence payload discarded",
+			category: "indexeddb",
+			level: "info",
+			data:
+			{
+				key,
+				reason: rejection.reason,
+				serializedCharacters: rejection.serializedCharacters,
+				maximumCharacters: rejection.maximumCharacters,
+			},
 		},
-	});
+	);
 	await workerOperation("delete", key);
 }
 
@@ -720,29 +947,40 @@ async function workerOperation(
 	key: string,
 	data: any = null,
 	retryCount = 0,
-): Promise<WorkerOperationResult> {
+): Promise<WorkerOperationResult>
+{
 	const maxRetries = type === "persist" ? 3 : 4;
 	const baseDelay = type === "persist" ? 1000 : 500;
 
-	try {
+	try
+	{
 		const worker = await getWorker();
 
-		if (!worker) {
-			try {
-				switch (type) {
-					case "persist": {
+		if (!worker)
+		{
+			try
+			{
+				switch (type)
+				{
+					case "persist":
+					{
 						const persistenceStore = await getFallbackPersistenceStore();
 						return await persistenceStore.persist(key, data);
 					}
-					case "restore": {
+					case "restore":
+					{
 						const persistenceStore = await getFallbackPersistenceStore();
 						return await persistenceStore.restore(key);
 					}
 					case "delete":
 						await (await getFallbackPersistenceStore()).delete(key);
-						return {success: true};
+						return {
+							success: true,
+						};
 				}
-			} catch (error) {
+			}
+			catch (error)
+			{
 				if (
 					error instanceof Error &&
 					(error.message.includes("Connection to Indexed Database server lost") ||
@@ -750,8 +988,10 @@ async function workerOperation(
 						error.message.includes("IDBDatabase") ||
 						error.message.includes("TransactionInactiveError") ||
 						error.message.includes("AbortError"))
-				) {
-					if (retryCount < maxRetries) {
+				)
+				{
+					if (retryCount < maxRetries)
+					{
 						const delay = baseDelay * Math.pow(2, retryCount);
 						console.warn(
 							`[IndexedDB] Connection lost, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`,
@@ -761,106 +1001,164 @@ async function workerOperation(
 					}
 
 					console.error("[IndexedDB] Connection lost after max retries, returning fallback");
-					return type === "restore" ? {success: true} : {success: false};
+					return type === "restore"
+						?
+							{
+								success: true,
+							}
+						:
+							{
+								success: false,
+							};
 				}
 				throw error;
 			}
 		}
 
-		return await new Promise((resolve, reject) => {
+		return await new Promise((resolve, reject) =>
+		{
 			const id = operationCounter++;
 			const baseTimeout = type === "persist" ? 30000 : type === "delete" ? 5000 : 20000;
 			const retryMultiplier = Math.min(retryCount + 1, 3);
 			const timeoutDuration = baseTimeout * retryMultiplier;
 			const startTime = Date.now();
 
-			if (retryCount > 0) {
+			if (retryCount > 0)
+			{
 				logIndexedDbDebug(
 					`[IndexedDB] Operation ${type} with retry ${retryCount}, timeout increased to ${timeoutDuration}ms`,
 				);
 			}
 
-			const timeoutHandle = setTimeout(() => {
-				if (pendingOperations.has(id)) {
+			const timeoutHandle = setTimeout(() =>
+			{
+				if (pendingOperations.has(id))
+				{
 					pendingOperations.delete(id);
 					const duration = Date.now() - startTime;
 
 					// Log timeout errors to Sentry with rate limiting
-					try {
+					try
+					{
 						const expectedMaxDuration = timeoutDuration + 5000;
 						const isExpectedTimeout = duration < expectedMaxDuration;
 
-						if (!isExpectedTimeout) {
+						if (!isExpectedTimeout)
+						{
 							const timeoutError = new Error(
 								`IndexedDB operation timeout: ${type} ${key} after ${duration}ms`,
 							);
 							timeoutError.name = "IndexedDBTimeoutError";
 
-							captureException(timeoutError, {
-								level: duration > 60000 ? "error" : "warning",
-								tags: {
-									component: "localStorage",
-									errorType: "timeout",
-									operationType: type,
-									database: "FACTORIO_PRINTS_QUERY_CACHE",
-									timeoutRange:
-										duration < 20000
-											? "10-20s"
-											: duration < 40000
-												? "20-40s"
-												: duration < 60000
-													? "40-60s"
-													: "60s+",
+							captureException(
+								timeoutError,
+								{
+									level: duration > 60000 ? "error" : "warning",
+									tags:
+									{
+										component: "localStorage",
+										errorType: "timeout",
+										operationType: type,
+										database: "FACTORIO_PRINTS_QUERY_CACHE",
+										timeoutRange:
+											duration < 20000
+												? "10-20s"
+												: duration < 40000
+													? "20-40s"
+													: duration < 60000
+														? "40-60s"
+														: "60s+",
+									},
+									extra:
+									{
+										operationType: type,
+										key: key,
+										configuredTimeout: timeoutDuration,
+										baseTimeout: baseTimeout,
+										retryMultiplier: retryMultiplier,
+										actualDuration: duration,
+										retryCount: retryCount,
+										maxRetries: maxRetries,
+										userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+									},
 								},
-								extra: {
-									operationType: type,
-									key: key,
-									configuredTimeout: timeoutDuration,
-									baseTimeout: baseTimeout,
-									retryMultiplier: retryMultiplier,
-									actualDuration: duration,
-									retryCount: retryCount,
-									maxRetries: maxRetries,
-									userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
-								},
-							});
-						} else {
+							);
+						}
+						else
+						{
 							console.warn(
 								`[IndexedDB] Operation timeout (expected range): ${type} ${key} after ${duration}ms`,
 							);
 						}
-					} catch (sentryError) {
+					}
+					catch (sentryError)
+					{
 						// Silently ignore Sentry errors to prevent secondary errors
 						console.warn("[IndexedDB] Failed to log timeout to Sentry:", sentryError);
 					}
 
-					if (type === "restore" && key === STORAGE_KEYS.QUERY_CACHE) {
+					if (type === "restore" && key === STORAGE_KEYS.QUERY_CACHE)
+					{
 						del(key, indexedDbStore).catch((err) =>
 							console.error("[IndexedDB] Failed to clear cache after timeout:", err),
 						);
 					}
 
-					resolve(type === "restore" ? {success: true} : {success: false});
+					resolve(
+						type === "restore"
+							?
+								{
+									success: true,
+								}
+							:
+								{
+									success: false,
+								},
+					);
 				}
 			}, timeoutDuration);
 
-			pendingOperations.set(id, {resolve, operationType: type, timeoutHandle});
+			pendingOperations.set(
+				id,
+				{
+					resolve,
+					operationType: type,
+					timeoutHandle,
+				},
+			);
 
-			try {
-				worker.postMessage({type, key, data, id});
-			} catch (error) {
+			try
+			{
+				worker.postMessage(
+					{
+						type,
+						key,
+						data,
+						id,
+					},
+				);
+			}
+			catch (error)
+			{
 				clearPendingOperation(id);
 				reject(error);
 			}
 		});
-	} catch (error) {
-		if (type === "persist" && isWorkerPayloadTransferError(error)) {
-			const rejection: PayloadRejection = {
+	}
+	catch (error)
+	{
+		if (type === "persist" && isWorkerPayloadTransferError(error))
+		{
+			const rejection: PayloadRejection =
+			{
 				status: "payload-rejected",
 				reason: "post-message-failed",
 				maximumCharacters: MAX_WORKER_PERSIST_PAYLOAD_CHARACTERS,
 			};
-			return {success: false, data: rejection};
+			return {
+				success: false,
+				data: rejection,
+			};
 		}
 
 		if (
@@ -870,8 +1168,10 @@ async function workerOperation(
 				error.message.includes("InvalidStateError") ||
 				error.message.includes("TransactionInactiveError") ||
 				error.message.includes("AbortError"))
-		) {
-			if (retryCount < maxRetries) {
+		)
+		{
+			if (retryCount < maxRetries)
+			{
 				const delay = baseDelay * Math.pow(2, retryCount);
 				console.warn(
 					`[IndexedDB] Worker operation failed, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`,
@@ -884,32 +1184,48 @@ async function workerOperation(
 		}
 
 		console.error("[IndexedDB] Worker operation failed:", error);
-		captureException(error, {
-			tags: {
-				component: "localStorage",
-				errorType: "worker-operation-error",
-				operationType: type,
+		captureException(
+			error,
+			{
+				tags:
+				{
+					component: "localStorage",
+					errorType: "worker-operation-error",
+					operationType: type,
+				},
+				extra:
+				{
+					operationType: type,
+					key: key,
+					retryCount: retryCount,
+					errorMessage: error instanceof Error ? error.message : String(error),
+				},
 			},
-			extra: {
-				operationType: type,
-				key: key,
-				retryCount: retryCount,
-				errorMessage: error instanceof Error ? error.message : String(error),
-			},
-		});
+		);
 
-		return type === "restore" ? {success: true} : {success: false};
+		return type === "restore"
+			?
+				{
+					success: true,
+				}
+			:
+				{
+					success: false,
+				};
 	}
 }
 
-interface Persister {
+interface Persister
+{
 	persistClient: (client: any) => Promise<void>;
 	restoreClient: () => Promise<any>;
 	removeClient: () => Promise<void>;
 }
 
-function formatBytes(bytes: number): string {
-	if (bytes === 0) {
+function formatBytes(bytes: number): string
+{
+	if (bytes === 0)
+	{
 		return "0 Bytes";
 	}
 	const kilobyte = 1024;
@@ -918,34 +1234,42 @@ function formatBytes(bytes: number): string {
 	return `${parseFloat((bytes / Math.pow(kilobyte, sizeIndex)).toFixed(2))} ${sizes[sizeIndex]}`;
 }
 
-export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister {
+export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACHE): Persister
+{
 	const debouncedPersist = debounce(
-		async (client: any) => {
-			try {
+		async (client: any) =>
+		{
+			try
+			{
 				const result = await workerOperation("persist", idbValidKey, client);
 				const persistenceData = result.data as PersistResult["data"] | undefined;
 
-				if (persistenceData?.status === "payload-rejected") {
+				if (persistenceData?.status === "payload-rejected")
+				{
 					await discardRejectedPayload(idbValidKey, persistenceData);
 					return;
 				}
 
-				if (result.success) {
+				if (result.success)
+				{
 					discardedPayloadKeys.delete(idbValidKey);
 				}
 
-				if (persistenceData?.status === "unchanged") {
+				if (persistenceData?.status === "unchanged")
+				{
 					logIndexedDbDebug("[IndexedDB] Cache state unchanged, skipping persistence");
 					return;
 				}
 
-				if (result.success && persistenceData?.status === "persisted" && persistenceData.compressed) {
+				if (result.success && persistenceData?.status === "persisted" && persistenceData.compressed)
+				{
 					logIndexedDbDebug(
 						`[IndexedDB] Compressed cache: ${formatBytes(persistenceData.originalSize)} → ${formatBytes(persistenceData.storedSize)}`,
 					);
 				}
 
-				if (!result.success && persistenceData?.status === "insufficient-storage") {
+				if (!result.success && persistenceData?.status === "insufficient-storage")
+				{
 					console.warn("[IndexedDB] Insufficient storage space available");
 
 					const quotaError = new Error(
@@ -953,126 +1277,173 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					);
 					quotaError.name = "IndexedDBQuotaError";
 
-					captureException(quotaError, {
-						level: "warning",
-						tags: {
-							component: "localStorage",
-							errorType: "quota-exceeded",
+					captureException(
+						quotaError,
+						{
+							level: "warning",
+							tags:
+							{
+								component: "localStorage",
+								errorType: "quota-exceeded",
+							},
+							extra:
+							{
+								requiredSize: persistenceData.requiredSize,
+								availableSpace: persistenceData.availableSize,
+								usedSpace: persistenceData.usedSize,
+							},
 						},
-						extra: {
-							requiredSize: persistenceData.requiredSize,
-							availableSpace: persistenceData.availableSize,
-							usedSpace: persistenceData.usedSize,
-						},
-					});
+					);
 				}
 
-				if (!result.success) {
-					addBreadcrumb({
-						message: "IndexedDB persistence failed gracefully",
-						category: "indexeddb",
-						level: "info",
-						data: {key: idbValidKey},
-					});
+				if (!result.success)
+				{
+					addBreadcrumb(
+						{
+							message: "IndexedDB persistence failed gracefully",
+							category: "indexeddb",
+							level: "info",
+							data:
+							{
+								key: idbValidKey,
+							},
+						},
+					);
 				}
-			} catch (error) {
+			}
+			catch (error)
+			{
 				console.error("[IndexedDB] Error persisting to IndexedDB:", error);
 
-				try {
-					captureException(error, {
-						level: "warning",
-						tags: {
-							component: "localStorage",
-							operation: "persist",
+				try
+				{
+					captureException(
+						error,
+						{
+							level: "warning",
+							tags:
+							{
+								component: "localStorage",
+								operation: "persist",
+							},
+							extra:
+							{
+								key: idbValidKey,
+								errorMessage: error instanceof Error ? error.message : String(error),
+							},
 						},
-						extra: {
-							key: idbValidKey,
-							errorMessage: error instanceof Error ? error.message : String(error),
-						},
-					});
-				} catch (sentryError) {
+					);
+				}
+				catch (sentryError)
+				{
 					console.warn("[IndexedDB] Failed to log to Sentry:", sentryError);
 				}
 			}
 		},
 		2000,
-		{maxWait: 10000},
+		{
+			maxWait: 10000,
+		},
 	);
 
-	const persister: Persister = {
-		persistClient: async (client: any) => {
-			if (!client) {
+	const persister: Persister =
+	{
+		persistClient: async (client: any) =>
+		{
+			if (!client)
+			{
 				console.warn("[IndexedDB] Attempted to persist null/undefined client");
 				return;
 			}
-			try {
+			try
+			{
 				return await debouncedPersist(client);
-			} catch (error) {
+			}
+			catch (error)
+			{
 				console.warn("[IndexedDB] Failed to persist client:", error);
 			}
 		},
-		restoreClient: async () => {
-			try {
+		restoreClient: async () =>
+		{
+			try
+			{
 				const startTime = Date.now();
 
-				if (typeof performance !== "undefined" && performance.mark) {
+				if (typeof performance !== "undefined" && performance.mark)
+				{
 					performance.mark("indexeddb-restore-start");
 				}
 
 				const result = await workerOperation("restore", idbValidKey);
 				const restoreData = result.data as RestoreResult["data"] | undefined;
 
-				if (restoreData) {
+				if (restoreData)
+				{
 					const totalDuration = Date.now() - startTime;
 					const formattedSize = formatBytes(restoreData.originalSize);
 					const formattedCompressedSize = formatBytes(restoreData.storedSize);
 
-					if (typeof performance !== "undefined" && performance.mark) {
+					if (typeof performance !== "undefined" && performance.mark)
+					{
 						performance.mark("indexeddb-restore-end");
-						try {
+						try
+						{
 							performance.measure(
 								"indexeddb-restore",
 								"indexeddb-restore-start",
 								"indexeddb-restore-end",
 							);
-						} catch {
+						}
+						catch
+						{
 							// Ignore performance API errors
 						}
 					}
 
-					if (totalDuration > 2000 || restoreData.originalSize > 1048576) {
+					if (totalDuration > 2000 || restoreData.originalSize > 1048576)
+					{
 						logIndexedDbDebug(
 							`[IndexedDB] Restore performance: Total ${totalDuration}ms, ` +
 								`Size: ${formattedCompressedSize} → ${formattedSize} (${restoreData.compressed ? "compressed" : "uncompressed"})`,
 						);
 					}
 
-					if (totalDuration > 5000) {
-						try {
+					if (totalDuration > 5000)
+					{
+						try
+						{
 							const slowRestoreError = new Error(
 								`IndexedDB slow restore: took ${totalDuration}ms to restore ${formattedSize}`,
 							);
 							slowRestoreError.name = "IndexedDBSlowRestoreError";
 
-							captureException(slowRestoreError, {
-								level: "info",
-								tags: {
-									component: "localStorage",
-									errorType: "slow-restore",
+							captureException(
+								slowRestoreError,
+								{
+									level: "info",
+									tags:
+									{
+										component: "localStorage",
+										errorType: "slow-restore",
+									},
+									extra:
+									{
+										totalDuration: totalDuration,
+										dataSize: restoreData.originalSize,
+										compressedSize: restoreData.storedSize,
+										formattedSize: formattedSize,
+										formattedCompressedSize: formattedCompressedSize,
+										compressionRatio:
+											restoreData.storedSize > 0
+												? (restoreData.originalSize / restoreData.storedSize).toFixed(2)
+												: "N/A",
+									},
 								},
-								extra: {
-									totalDuration: totalDuration,
-									dataSize: restoreData.originalSize,
-									compressedSize: restoreData.storedSize,
-									formattedSize: formattedSize,
-									formattedCompressedSize: formattedCompressedSize,
-									compressionRatio:
-										restoreData.storedSize > 0
-											? (restoreData.originalSize / restoreData.storedSize).toFixed(2)
-											: "N/A",
-								},
-							});
-						} catch (sentryError) {
+							);
+						}
+						catch (sentryError)
+						{
 							// Silently ignore Sentry errors to prevent secondary errors
 							console.warn("[IndexedDB] Failed to log slow restore to Sentry:", sentryError);
 						}
@@ -1081,63 +1452,91 @@ export function createIDBPersister(idbValidKey: string = STORAGE_KEYS.QUERY_CACH
 					return restoreData.client;
 				}
 				return undefined;
-			} catch (error) {
+			}
+			catch (error)
+			{
 				console.error("[IndexedDB] Error restoring from IndexedDB:", error);
 
-				try {
-					captureException(error, {
-						tags: {
-							component: "localStorage",
-							errorType: "restore-error",
+				try
+				{
+					captureException(
+						error,
+						{
+							tags:
+							{
+								component: "localStorage",
+								errorType: "restore-error",
+							},
+							extra:
+							{
+								key: idbValidKey,
+							},
 						},
-						extra: {
-							key: idbValidKey,
-						},
-					});
-				} catch (sentryError) {
+					);
+				}
+				catch (sentryError)
+				{
 					console.warn("[IndexedDB] Failed to log to Sentry:", sentryError);
 				}
 
-				try {
+				try
+				{
 					await workerOperation("delete", idbValidKey);
-				} catch (deleteError) {
+				}
+				catch (deleteError)
+				{
 					console.error("[IndexedDB] Failed to clear cache:", deleteError);
 				}
 
 				return undefined;
 			}
 		},
-		removeClient: async () => {
-			try {
+		removeClient: async () =>
+		{
+			try
+			{
 				await workerOperation("delete", idbValidKey);
-			} catch (error) {
+			}
+			catch (error)
+			{
 				console.error("[IndexedDB] Error removing from IndexedDB:", error);
 			}
 		},
 	};
 
 	// Validate the persister object before returning
-	if (!persister.restoreClient || typeof persister.restoreClient !== "function") {
+	if (!persister.restoreClient || typeof persister.restoreClient !== "function")
+	{
 		throw new Error("[IndexedDB] Failed to create valid persister - restoreClient method missing");
 	}
 
 	return persister;
 }
 
-export const saveToStorage = (key: string, data: any, retryWithoutBlueprintString = true): boolean => {
-	try {
+export const saveToStorage = (key: string, data: any, retryWithoutBlueprintString = true): boolean =>
+{
+	try
+	{
 		const storage = getLocalStorageCapability();
-		if (!storage) {
+		if (!storage)
+		{
 			return false;
 		}
 
 		const serializedData = JSON.stringify(data);
 		storage.setItem(key, serializedData);
 		return true;
-	} catch (error) {
-		if (error instanceof DOMException && error.name === "QuotaExceededError" && retryWithoutBlueprintString) {
-			if (data && typeof data === "object" && "blueprintString" in data) {
-				const dataWithoutBlueprintString = {...data};
+	}
+	catch (error)
+	{
+		if (error instanceof DOMException && error.name === "QuotaExceededError" && retryWithoutBlueprintString)
+		{
+			if (data && typeof data === "object" && "blueprintString" in data)
+			{
+				const dataWithoutBlueprintString =
+				{
+					...data,
+				};
 				delete dataWithoutBlueprintString.blueprintString;
 				return saveToStorage(key, dataWithoutBlueprintString, false);
 			}
@@ -1147,48 +1546,65 @@ export const saveToStorage = (key: string, data: any, retryWithoutBlueprintStrin
 	}
 };
 
-export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null => {
-	try {
+export const loadFromStorage = <T = any>(key: string, defaultValue: T | null = null): T | null =>
+{
+	try
+	{
 		const serializedData = getLocalStorageCapability()?.getItem(key);
-		if (serializedData === null) {
+		if (serializedData === null)
+		{
 			return defaultValue;
 		}
-		if (serializedData === undefined) {
+		if (serializedData === undefined)
+		{
 			return defaultValue;
 		}
 		return JSON.parse(serializedData) as T;
-	} catch {
+	}
+	catch
+	{
 		return defaultValue;
 	}
 };
 
-export const removeFromStorage = (key: string): void => {
-	try {
+export const removeFromStorage = (key: string): void =>
+{
+	try
+	{
 		getLocalStorageCapability()?.removeItem(key);
-	} catch {}
+	}
+	catch
+	{
+	}
 };
 
-interface HighWatermarkData {
+interface HighWatermarkData
+{
 	lastUpdatedDate: number;
 	lastChecked: number;
 }
 
-export const getHighWatermark = (): HighWatermarkData | null => {
+export const getHighWatermark = (): HighWatermarkData | null =>
+{
 	return loadFromStorage<HighWatermarkData>(STORAGE_KEYS.HIGH_WATERMARK);
 };
 
-const setHighWatermark = (lastUpdatedDate: number): boolean => {
-	const watermarkData: HighWatermarkData = {
+const setHighWatermark = (lastUpdatedDate: number): boolean =>
+{
+	const watermarkData: HighWatermarkData =
+	{
 		lastUpdatedDate,
 		lastChecked: Date.now(),
 	};
 	return saveToStorage(STORAGE_KEYS.HIGH_WATERMARK, watermarkData);
 };
 
-export const updateHighWatermark = (lastUpdatedDate: number): boolean => {
+export const updateHighWatermark = (lastUpdatedDate: number): boolean =>
+{
 	const currentWatermark = getHighWatermark();
 
-	if (!currentWatermark || lastUpdatedDate > currentWatermark.lastUpdatedDate) {
+	if (!currentWatermark || lastUpdatedDate > currentWatermark.lastUpdatedDate)
+	{
 		const result = setHighWatermark(lastUpdatedDate);
 		return result;
 	}

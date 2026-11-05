@@ -2,12 +2,15 @@ import flatMap from "lodash/flatMap";
 import Card from "react-bootstrap/Card";
 import TagBadge from "../TagBadge";
 
-interface TagsCardProps {
+interface TagsCardProps
+{
 	tags: string[];
 }
 
-export function TagsCard({tags}: TagsCardProps) {
-	if (!tags || tags.length === 0) {
+export function TagsCard({tags}: TagsCardProps)
+{
+	if (!tags || tags.length === 0)
+	{
 		return null;
 	}
 

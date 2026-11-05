@@ -3,23 +3,29 @@ import MarkdownIt from "markdown-it";
 import React, {useMemo} from "react";
 import {RichText} from "./RichText";
 
-const md = new MarkdownIt({
-	html: true,
-	linkify: true,
-	typographer: true,
-	breaks: false,
-});
+const md = new MarkdownIt(
+	{
+		html: true,
+		linkify: true,
+		typographer: true,
+		breaks: false,
+	},
+);
 
-interface MarkdownWithRichTextProps {
+interface MarkdownWithRichTextProps
+{
 	markdown: string;
 	className?: string;
 }
 
-const processTextContent = (content: string): React.ReactNode => {
+const processTextContent = (content: string): React.ReactNode =>
+{
 	const lines = content.split("\n");
 
-	return lines.map((line, lineIndex) => {
-		if (line.trim() === "") {
+	return lines.map((line, lineIndex) =>
+	{
+		if (line.trim() === "")
+		{
 			return lineIndex < lines.length - 1 ? "\n" : null;
 		}
 
@@ -32,18 +38,22 @@ const processTextContent = (content: string): React.ReactNode => {
 	});
 };
 
-const processHtmlWithRichText = (html: string): React.ReactNode => {
+const processHtmlWithRichText = (html: string): React.ReactNode =>
+{
 	const parser = new DOMParser();
 	const doc = parser.parseFromString(html, "text/html");
 	const container = doc.body;
 
-	const processNode = (node: Node, nodeIndex: number = 0): React.ReactNode => {
-		if (node.nodeType === Node.TEXT_NODE) {
+	const processNode = (node: Node, nodeIndex: number = 0): React.ReactNode =>
+	{
+		if (node.nodeType === Node.TEXT_NODE)
+		{
 			const text = node.textContent || "";
 			return processTextContent(text);
 		}
 
-		if (node.nodeType === Node.ELEMENT_NODE) {
+		if (node.nodeType === Node.ELEMENT_NODE)
+		{
 			const element = node as Element;
 			const tagName = element.tagName.toLowerCase();
 
@@ -56,13 +66,17 @@ const processHtmlWithRichText = (html: string): React.ReactNode => {
 			if (element.hasAttribute("href")) props.href = element.getAttribute("href");
 			if (element.hasAttribute("title")) props.title = element.getAttribute("title");
 			if (element.hasAttribute("class")) props.className = element.getAttribute("class");
-			if (element.hasAttribute("style")) {
+			if (element.hasAttribute("style"))
+			{
 				const style = element.getAttribute("style");
-				if (style) {
+				if (style)
+				{
 					props.style = {};
-					style.split(";").forEach((rule) => {
+					style.split(";").forEach((rule) =>
+					{
 						const [property, value] = rule.split(":").map((s) => s.trim());
-						if (property && value) {
+						if (property && value)
+						{
 							const camelProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
 							props.style[camelProperty] = value;
 						}
@@ -70,7 +84,8 @@ const processHtmlWithRichText = (html: string): React.ReactNode => {
 				}
 			}
 
-			switch (tagName) {
+			switch (tagName)
+			{
 				case "p":
 					return <p {...props}>{children}</p>;
 				case "h1":
@@ -142,45 +157,50 @@ const processHtmlWithRichText = (html: string): React.ReactNode => {
 	);
 };
 
-export const MarkdownWithRichText: React.FC<MarkdownWithRichTextProps> = ({markdown, className}) => {
-	const content = useMemo(() => {
+export const MarkdownWithRichText: React.FC<MarkdownWithRichTextProps> = ({markdown, className}) =>
+{
+	const content = useMemo(() =>
+	{
 		if (!markdown) return null;
 
 		const html = md.render(markdown);
 
-		const sanitizedHtml = DOMPurify.sanitize(html, {
-			ALLOWED_TAGS: [
-				"p",
-				"h1",
-				"h2",
-				"h3",
-				"h4",
-				"h5",
-				"h6",
-				"strong",
-				"b",
-				"em",
-				"i",
-				"code",
-				"pre",
-				"blockquote",
-				"ul",
-				"ol",
-				"li",
-				"a",
-				"br",
-				"hr",
-				"table",
-				"thead",
-				"tbody",
-				"tr",
-				"th",
-				"td",
-				"span",
-				"div",
-			],
-			ALLOWED_ATTR: ["href", "title", "style", "class"],
-		});
+		const sanitizedHtml = DOMPurify.sanitize(
+			html,
+			{
+				ALLOWED_TAGS: [
+					"p",
+					"h1",
+					"h2",
+					"h3",
+					"h4",
+					"h5",
+					"h6",
+					"strong",
+					"b",
+					"em",
+					"i",
+					"code",
+					"pre",
+					"blockquote",
+					"ul",
+					"ol",
+					"li",
+					"a",
+					"br",
+					"hr",
+					"table",
+					"thead",
+					"tbody",
+					"tr",
+					"th",
+					"td",
+					"span",
+					"div",
+				],
+				ALLOWED_ATTR: ["href", "title", "style", "class"],
+			},
+		);
 
 		return processHtmlWithRichText(sanitizedHtml);
 	}, [markdown]);

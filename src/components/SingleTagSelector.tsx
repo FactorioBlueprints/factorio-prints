@@ -6,45 +6,68 @@ import Select from "react-select";
 
 import {useTags} from "../hooks/useTags";
 
-interface TagOption {
+interface TagOption
+{
 	value: string;
 	label: string;
 }
 
-interface SingleTagSelectorProps {
+interface SingleTagSelectorProps
+{
 	currentTag?: string;
 }
 
-const SingleTagSelector: React.FC<SingleTagSelectorProps> = ({currentTag}) => {
+const SingleTagSelector: React.FC<SingleTagSelectorProps> = ({currentTag}) =>
+{
 	const {data: tagsData, isLoading: tagsLoading} = useTags();
 	const navigate = useNavigate();
 
 	const normalizedCurrentTag = currentTag?.replace(/^\/|\/$/g, "") || "";
 
 	const selectedOption: TagOption | null = normalizedCurrentTag
-		? {value: normalizedCurrentTag, label: normalizedCurrentTag.replace(/\//g, " › ")}
+		?
+			{
+				value: normalizedCurrentTag,
+				label: normalizedCurrentTag.replace(/\//g, " › "),
+			}
 		: null;
 
-	const options = useMemo((): TagOption[] => {
+	const options = useMemo((): TagOption[] =>
+	{
 		const tags = tagsData?.tags || [];
-		return tags.map((value) => ({
+		return tags.map((value) => (
+		{
 			value,
 			label: value.replace(/\//g, " › "),
 		}));
 	}, [tagsData]);
 
-	const handleTagSelection = (selected: TagOption | null): void => {
+	const handleTagSelection = (selected: TagOption | null): void =>
+	{
 		if (!selected) return;
 
 		const normalizedTag = selected.value.replace(/^\/|\/$/g, "");
 
-		if (normalizedTag !== normalizedCurrentTag) {
+		if (normalizedTag !== normalizedCurrentTag)
+		{
 			const parts = normalizedTag.split("/");
 
-			if (parts.length === 2) {
+			if (parts.length === 2)
+			{
 				const [category, name] = parts;
-				navigate({to: "/tagged/$category/$name", params: {category, name}});
-			} else {
+				navigate(
+					{
+						to: "/tagged/$category/$name",
+						params:
+						{
+							category,
+							name,
+						},
+					},
+				);
+			}
+			else
+			{
 			}
 		}
 	};

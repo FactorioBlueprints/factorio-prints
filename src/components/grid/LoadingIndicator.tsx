@@ -3,12 +3,14 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import React from "react";
 import Row from "react-bootstrap/Row";
 
-interface LoadingIndicatorProps {
+interface LoadingIndicatorProps
+{
 	isLoading: boolean;
 	message?: string;
 }
 
-const LoadingIndicator = ({isLoading, message = "Loading..."}: LoadingIndicatorProps) => {
+const LoadingIndicator = ({isLoading, message = "Loading..."}: LoadingIndicatorProps) =>
+{
 	if (!isLoading) return null;
 
 	return (

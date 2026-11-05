@@ -1,9 +1,12 @@
 import {describe, expect, it} from "vite-plus/test";
 import {BlueprintError, deserializeBlueprint, deserializeBlueprintNoThrow} from "./blueprintParser";
 
-describe("blueprintParser", () => {
-	describe("corrupted data handling", () => {
-		it("should handle invalid base64 data gracefully", () => {
+describe("blueprintParser", () =>
+{
+	describe("corrupted data handling", () =>
+	{
+		it("should handle invalid base64 data gracefully", () =>
+		{
 			const invalidBase64 = "0{}[]"; // Invalid base64 characters
 
 			// Regular deserializer should throw
@@ -13,7 +16,8 @@ describe("blueprintParser", () => {
 			expect(deserializeBlueprintNoThrow(invalidBase64)).toBeNull();
 		});
 
-		it("should handle corrupted compressed data gracefully", () => {
+		it("should handle corrupted compressed data gracefully", () =>
+		{
 			// Valid base64 but invalid zlib data
 			const corruptedCompressed = "0SGVsbG8gV29ybGQ="; // "Hello World" in base64, not valid zlib
 
@@ -25,7 +29,8 @@ describe("blueprintParser", () => {
 			expect(deserializeBlueprintNoThrow(corruptedCompressed)).toBeNull();
 		});
 
-		it("should handle invalid JSON data gracefully", () => {
+		it("should handle invalid JSON data gracefully", () =>
+		{
 			// This is a valid zlib compressed string containing invalid JSON
 			// Created with: zlibSync(new TextEncoder().encode('{invalid json'))
 			const invalidJsonCompressed = "0eJyrzswrS8zJTFHIKs7PAwAlewU9";
@@ -38,7 +43,8 @@ describe("blueprintParser", () => {
 			expect(deserializeBlueprintNoThrow(invalidJsonCompressed)).toBeNull();
 		});
 
-		it("should handle schema validation errors gracefully", () => {
+		it("should handle schema validation errors gracefully", () =>
+		{
 			// Valid compressed JSON that doesn't match blueprint schema (null)
 			const invalidSchemaCompressed = "0eJzLK83JAQAEXwG8";
 
@@ -49,7 +55,8 @@ describe("blueprintParser", () => {
 			expect(deserializeBlueprintNoThrow(invalidSchemaCompressed)).toBeNull();
 		});
 
-		it("should handle blueprints that do not start with 0", () => {
+		it("should handle blueprints that do not start with 0", () =>
+		{
 			const invalidFormat = "1somedata";
 
 			// All versions should handle this the same way

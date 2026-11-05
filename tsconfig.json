@@ -1,5 +1,6 @@
 {
-	"compilerOptions": {
+	"compilerOptions":
+	{
 		"target": "ES2022",
 		"module": "ESNext",
 		"lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
@@ -24,7 +25,8 @@
 		"noPropertyAccessFromIndexSignature": false,
 		"verbatimModuleSyntax": false,
 		"useDefineForClassFields": true,
-		"paths": {
+		"paths":
+		{
 			"src/*": ["./src/*"]
 		},
 		"newLine": "lf",

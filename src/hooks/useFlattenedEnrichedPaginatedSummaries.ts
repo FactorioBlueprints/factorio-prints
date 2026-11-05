@@ -3,9 +3,12 @@ import type {EnrichedBlueprintSummary, EnrichedPaginatedBlueprintSummaries} from
 
 const useFlattenedEnrichedPaginatedSummaries = (
 	paginatedData: EnrichedPaginatedBlueprintSummaries | null | undefined,
-): EnrichedBlueprintSummary[] => {
-	return useMemo(() => {
-		if (!paginatedData?.pages) {
+): EnrichedBlueprintSummary[] =>
+{
+	return useMemo(() =>
+	{
+		if (!paginatedData?.pages)
+		{
 			return [];
 		}
 
