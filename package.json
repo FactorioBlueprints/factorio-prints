@@ -19,13 +19,11 @@
 		"fmt:ci": "oxfmt-next-line --check",
 		"fallow": "fallow fix --yes --no-create-config",
 		"fallow:ci": "fallow dead-code",
-		"images:backfill": "node scripts/backfillImages.ts",
 		"images:deploy:preview": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-preview.log wrangler deploy --config workers/images/wrangler.jsonc --env preview",
 		"images:deploy:production": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-production.log wrangler deploy --config workers/images/wrangler.jsonc --env=\"\"",
 		"images:dry-run:preview": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-preview-dry-run.log wrangler deploy --config workers/images/wrangler.jsonc --env preview --dry-run",
 		"images:dry-run:production": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/images-production-dry-run.log wrangler deploy --config workers/images/wrangler.jsonc --env=\"\" --dry-run",
 		"images:imgur-authorize": "node scripts/imgurAuthorize.ts",
-		"images:reconcile": "node scripts/reconcileImages.ts",
 		"images:replace": "node scripts/replaceImages.ts",
 		"images:verify:preview": "node scripts/verifyImageGateway.ts \"$IMAGE_GATEWAY_PREVIEW_ORIGIN\"",
 		"images:verify:production": "node scripts/verifyImageGateway.ts https://images.factorioprints.com",
@@ -78,7 +76,6 @@
 	},
 	"devDependencies":
 	{
-		"@aws-sdk/client-s3": "3.1160.0",
 		"@firebase/rules-unit-testing": "6.0.0",
 		"@sentry/vite-plugin": "11.10.0",
 		"@tanstack/router-cli": "1.167.46",
