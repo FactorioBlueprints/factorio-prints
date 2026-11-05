@@ -12,6 +12,7 @@ import
 	getIndexedCollectorUserIds,
 	getLegacyCollectorUserIds,
 } from "./collectorIndex";
+import {planBlueprintLastUpdatedMirror} from "./lastUpdatedMirror";
 
 initializeApp();
 
@@ -86,6 +87,30 @@ export const updateFavoriteCount = onValueWritten(
 			`Updated favorite count for blueprint ${blueprintId}: ${favoriteCount} (user ${userId} ${wasAdded ? "added" : "removed"} favorite)`,
 		);
 
+		return null;
+	},
+);
+
+/**
+ * Copies a summary's lastUpdatedDate onto its blueprint so the two records always carry the same value,
+ * which lets the CDN copy (compared against the summary) be recognised as current.
+ */
+export const mirrorBlueprintLastUpdatedDate = onValueWritten(
+	"/blueprintSummaries/{blueprintId}/lastUpdatedDate",
+	async (event: DatabaseEvent<Change<DataSnapshot>>) =>
+	{
+		const blueprintId = event.params.blueprintId;
+		const blueprintRef = getDatabase().ref(`/blueprints/${blueprintId}/lastUpdatedDate`);
+		const current = (await blueprintRef.once("value")).val();
+		const next = planBlueprintLastUpdatedMirror(event.data.after.val(), current);
+
+		if (next === null)
+		{
+			return null;
+		}
+
+		await blueprintRef.set(next);
+		functions.logger.log(`Mirrored lastUpdatedDate ${next} onto blueprint ${blueprintId} (was ${current})`);
 		return null;
 	},
 );
