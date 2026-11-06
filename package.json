@@ -93,7 +93,7 @@
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
 		"@vitejs/plugin-react": "6.1.2",
-		"fake-indexeddb": "6.2.6",
+		"fake-indexeddb": "6.2.7",
 		"fallow": "3.37.0",
 		"firebase-tools": "^15.34.2",
 		"jsdom": "30.1.3",
