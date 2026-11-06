@@ -9,8 +9,3 @@ const getTrueKeys = (value: unknown): string[] =>
 		.map(([key]) => key);
 
 export const getIndexedCollectorUserIds = (collectorIndex: unknown): string[] => getTrueKeys(collectorIndex);
-
-export const getLegacyCollectorUserIds = (users: unknown, blueprintId: string): string[] =>
-	Object.entries(asRecord(users))
-		.filter(([, user]) => asRecord(asRecord(user).collection)[blueprintId] === true)
-		.map(([userId]) => userId);

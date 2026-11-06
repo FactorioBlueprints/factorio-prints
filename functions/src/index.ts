@@ -5,7 +5,7 @@ import {getDatabase} from "firebase-admin/database";
 import {onValueWritten, onValueDeleted, DatabaseEvent, DataSnapshot} from "firebase-functions/v2/database";
 import {Change} from "firebase-functions/v2";
 import {HttpsError, onCall} from "firebase-functions/v2/https";
-import {getIndexedCollectorUserIds, getLegacyCollectorUserIds} from "./collectorIndex";
+import {getIndexedCollectorUserIds} from "./collectorIndex";
 import {planBlueprintLastUpdatedMirror} from "./lastUpdatedMirror";
 
 initializeApp();
@@ -198,17 +198,7 @@ export const cleanupCollectionsOnBlueprintDelete = onValueDeleted(
 		const database = getDatabase();
 		const collectorSnapshot = await database.ref(`/blueprintCollectors/${blueprintId}`).once("value");
 		const indexedUserIds = getIndexedCollectorUserIds(collectorSnapshot.val());
-		const backfillSnapshot = await database.ref("/migrations/blueprintCollectorsBackfillComplete").once("value");
 		const userIds = new Set(indexedUserIds);
-
-		if (backfillSnapshot.val() !== true)
-		{
-			const usersSnapshot = await database.ref("/users").once("value");
-			for (const userId of getLegacyCollectorUserIds(usersSnapshot.val(), blueprintId))
-			{
-				userIds.add(userId);
-			}
-		}
 
 		if (userIds.size === 0)
 		{
