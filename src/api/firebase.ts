@@ -729,7 +729,7 @@ export const fetchPaginatedSummaries = async (
 
 	try
 	{
-		if (lastKey && lastValue)
+		if (lastKey != null && lastValue != null)
 		{
 			summariesQuery = query(
 				ref(getFirebaseDatabase(), "/blueprintSummaries/"),
