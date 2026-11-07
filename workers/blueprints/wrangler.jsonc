@@ -1,0 +1,33 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "factorio-prints-blueprints",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-08-23",
+	"workers_dev": false,
+	"routes": [
+		{
+			"pattern": "blueprints.factorioprints.com",
+			"custom_domain": true,
+		},
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "factorio-prints-blueprints",
+			"database_id": "REPLACE_AFTER_wrangler_d1_create",
+			"migrations_dir": "migrations",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "STRINGS",
+			"bucket_name": "factorio-prints-blueprint-strings",
+		},
+	],
+	// INGEST_SECRET is a Worker secret: wrangler secret put INGEST_SECRET
+	"observability":
+	{
+		"enabled": true,
+		"head_sampling_rate": 1,
+	},
+}
