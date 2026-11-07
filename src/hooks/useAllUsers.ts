@@ -13,6 +13,7 @@ const useAllUsers = (isAdmin = false) =>
 			queryFn: fetchAllUsers,
 			enabled: isAdmin,
 			staleTime: 5 * 60 * 1000, // 5 minutes
+			refetchOnWindowFocus: false, // the whole /users node is tens of MB
 		},
 	);
 };

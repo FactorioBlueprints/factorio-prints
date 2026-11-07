@@ -10,7 +10,7 @@ import
 	clearWatermarkCache,
 	reconcileFavoritesCount,
 } from "./firebase";
-import {get} from "firebase/database";
+import {endAt, get} from "firebase/database";
 import {getFunctions, httpsCallable} from "firebase/functions";
 import type {EnrichedBlueprintSummary, RawBlueprint} from "../schemas";
 
@@ -726,6 +726,19 @@ describe("firebase API", () =>
 
 	describe("fetchPaginatedSummaries", () =>
 	{
+		it("continues from a cursor whose sort value is zero", async () =>
+		{
+			vi.mocked(get).mockResolvedValue(
+				{
+					exists: () => false,
+				} as any,
+			);
+
+			await fetchPaginatedSummaries(60, "blueprint-key", 0, "numberOfFavorites");
+
+			expect(endAt).toHaveBeenCalledWith(0, "blueprint-key");
+		});
+
 		it("should reverse the data returned from Firebase to display newest items first", async () =>
 		{
 			const mockData =

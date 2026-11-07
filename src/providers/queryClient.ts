@@ -1,4 +1,5 @@
 import {QueryCache, QueryClient} from "@tanstack/react-query";
+import {ZodError} from "zod";
 
 export const QUERY_CACHE_RETENTION_MILLISECONDS = 24 * 24 * 60 * 60 * 1000;
 
@@ -43,7 +44,7 @@ export const queryClient = new QueryClient(
 				staleTime: 1000 * 60 * 60,
 				refetchOnWindowFocus: true,
 				refetchOnMount: true,
-				retry: 1,
+				retry: (failureCount: number, error: Error) => !(error instanceof ZodError) && failureCount < 1,
 				gcTime: QUERY_CACHE_RETENTION_MILLISECONDS,
 			},
 			mutations:
