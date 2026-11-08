@@ -1,0 +1,11 @@
+# Generated files, collapsed in GitHub diffs.
+# drizzle-kit snapshots, journals, and generated initial migrations; hand-written migrations stay visible.
+workers/blueprints/migrations/meta/*.json linguist-generated=true
+workers/blueprints/migrations/0000_*.sql linguist-generated=true
+workers/blueprints/test/migrations/meta/*.json linguist-generated=true
+workers/blueprints/test/migrations/0000_*.sql linguist-generated=true
+# Klass-generated Drizzle schema.
+workers/blueprints/src/schema.ts linguist-generated=true
+# Real-data test fixtures.
+workers/blueprints/src/ingest/fixtures/** linguist-generated=true
+src/parsing/fixtures/** linguist-generated=true

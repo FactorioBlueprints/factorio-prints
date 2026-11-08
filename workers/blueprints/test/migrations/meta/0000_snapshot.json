@@ -1,0 +1,331 @@
+{
+	"version": "6",
+	"dialect": "sqlite",
+	"id": "3fc059d8-4f37-4c8f-9dc1-b49c5f130c43",
+	"prevId": "00000000-0000-0000-0000-000000000000",
+	"tables":
+	{
+		"content":
+		{
+			"name": "content",
+			"columns":
+			{
+				"sha":
+				{
+					"name": "sha",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_by_id":
+				{
+					"name": "created_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"byte_length":
+				{
+					"name": "byte_length",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"item":
+		{
+			"name": "item",
+			"columns":
+			{
+				"key":
+				{
+					"name": "key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"title":
+				{
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"description":
+				{
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))",
+						"type": "virtual"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))",
+						"type": "virtual"
+					}
+				}
+			},
+			"indexes":
+			{
+				"item_system_from_idx":
+				{
+					"name": "item_system_from_idx",
+					"columns": ["key", "system_from"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"item_key_system_to_pk":
+				{
+					"columns": ["key", "system_to"],
+					"name": "item_key_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"item_part":
+		{
+			"name": "item_part",
+			"columns":
+			{
+				"item_key":
+				{
+					"name": "item_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"position":
+				{
+					"name": "position",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"count":
+				{
+					"name": "count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))",
+						"type": "virtual"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))",
+						"type": "virtual"
+					}
+				}
+			},
+			"indexes":
+			{
+				"item_part_system_from_idx":
+				{
+					"name": "item_part_system_from_idx",
+					"columns": ["item_key", "position", "system_from"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"item_part_item_key_position_system_to_pk":
+				{
+					"columns": ["item_key", "position", "system_to"],
+					"name": "item_part_item_key_position_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"item_version":
+		{
+			"name": "item_version",
+			"columns":
+			{
+				"key":
+				{
+					"name": "key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"number":
+				{
+					"name": "number",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))",
+						"type": "virtual"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))",
+						"type": "virtual"
+					}
+				}
+			},
+			"indexes":
+			{
+				"item_version_system_from_idx":
+				{
+					"name": "item_version_system_from_idx",
+					"columns": ["key", "system_from"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"item_version_key_system_to_pk":
+				{
+					"columns": ["key", "system_to"],
+					"name": "item_version_key_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		}
+	},
+	"views": {},
+	"enums": {},
+	"_meta":
+	{
+		"schemas": {},
+		"tables": {},
+		"columns": {}
+	},
+	"internal":
+	{
+		"indexes": {}
+	}
+}
