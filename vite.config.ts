@@ -49,7 +49,7 @@ export const createViteConfiguration = (environment: SentryUploadEnvironment = p
 				check:
 				{
 					command: "vp check",
-					dependsOn: ["check:images", "check:toolchain"],
+					dependsOn: ["check:blueprints", "check:images", "check:toolchain"],
 				},
 				"test:run":
 				{

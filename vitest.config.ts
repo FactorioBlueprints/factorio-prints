@@ -4,10 +4,21 @@ export default defineConfig(
 	{
 		test:
 		{
-			environment: "jsdom",
-			globals: true,
-			setupFiles: ["./test/setup.ts"],
-			exclude: ["**/.llm/**", "**/node_modules/**"],
+			projects: [
+				{
+					extends: true,
+					test:
+					{
+						name: "app",
+						environment: "jsdom",
+						globals: true,
+						setupFiles: ["./test/setup.ts"],
+						exclude: ["**/.llm/**", "**/node_modules/**", "workers/blueprints/**"],
+					},
+				},
+				// Runs inside workerd against real D1, so it needs its own pool.
+				"workers/blueprints/vitest.config.ts",
+			],
 		},
 		esbuild:
 		{

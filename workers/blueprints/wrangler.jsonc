@@ -1,0 +1,16 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "factorio-prints-blueprints",
+	"compatibility_date": "2026-08-23",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": false,
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "factorio-prints-blueprints",
+			// Placeholder until the owner creates the D1 database; tests run against a local Miniflare database.
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations",
+		},
+	],
+}
