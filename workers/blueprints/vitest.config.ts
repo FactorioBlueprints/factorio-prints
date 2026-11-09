@@ -7,6 +7,7 @@ const workerRoot = import.meta.dirname;
 export default defineConfig(async () =>
 {
 	const migrations = await readD1Migrations(path.join(workerRoot, "test/migrations"));
+	const schemaMigrations = await readD1Migrations(path.join(workerRoot, "migrations"));
 
 	return {
 		root: workerRoot,
@@ -22,6 +23,7 @@ export default defineConfig(async () =>
 						bindings:
 						{
 							TEST_MIGRATIONS: migrations,
+							SCHEMA_MIGRATIONS: schemaMigrations,
 						},
 					},
 				},
