@@ -14,12 +14,14 @@ import
 	type SqlValue,
 	tableNameFor,
 } from "./historyImportCore.ts";
+import {REBUILD_VOTE_SUMMARY_STATEMENTS} from "../workers/blueprints/src/voteSummaryRebuild.ts";
 
 // Imports factorio.school's history database, exported per table with CSVWRITE (timestamps already converted to epoch
 // milliseconds and the end-of-time sentinel remapped), into a local SQLite database built from the drizzle-kit
 // migrations. It uses the same bound-parameter statements the remote D1 import will use.
 
-// Tables the D1 plan deliberately leaves out: the favorite count is derived from votes, not imported.
+// Tables the D1 plan deliberately leaves out. BLUEPRINT_VOTE_SUMMARY is a cache of the favorite count, rebuilt from
+// the imported votes rather than copied.
 // BLUEPRINT_STRING waits on a decision: the Klass model stores the string inline (NOT NULL), but the plan keeps
 // strings in R2, and 565 of them exceed D1's 2 MB value limit. Its content is written out for R2 with --strings-out.
 const SKIPPED_TABLES = new Set(["BLUEPRINT_VOTE_SUMMARY", "BLUEPRINT_STRING", "BLUEPRINT_STRING_CONTENT"]);
@@ -31,7 +33,7 @@ interface TableColumn
 	type: ColumnType;
 }
 
-const applyMigrations = async (database: DatabaseSync, migrationsDirectory: string): Promise<void> =>
+export const applyMigrations = async (database: DatabaseSync, migrationsDirectory: string): Promise<void> =>
 {
 	const files = (await readdir(migrationsDirectory)).filter((file) => file.endsWith(".sql")).sort();
 	for (const file of files)
@@ -45,6 +47,17 @@ const applyMigrations = async (database: DatabaseSync, migrationsDirectory: stri
 			}
 		}
 	}
+};
+
+/** Recounts the blueprint_vote_summary cache from the imported current blueprints and votes. */
+export const rebuildVoteSummaryCache = (database: DatabaseSync): void =>
+{
+	database.exec("BEGIN");
+	for (const statement of REBUILD_VOTE_SUMMARY_STATEMENTS)
+	{
+		database.exec(statement);
+	}
+	database.exec("COMMIT");
 };
 
 const writableColumns = (database: DatabaseSync, table: string): Map<string, TableColumn> =>
@@ -241,6 +254,14 @@ const main = async (): Promise<void> =>
 		report[tableNameFor(csvTable)] = await importTable(database, join(csvDirectory, file), csvTable);
 		console.error(`${csvTable}: ${report[tableNameFor(csvTable)]} rows`);
 	}
+
+	rebuildVoteSummaryCache(database);
+	report["blueprint_vote_summary (rebuilt)"] = (
+		database.prepare("SELECT count(*) AS count FROM blueprint_vote_summary").get() as
+		{
+			count: number;
+		}
+	).count;
 
 	if (values["strings-out"])
 	{
