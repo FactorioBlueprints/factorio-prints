@@ -62,6 +62,23 @@ export interface TemporalTable<TTable extends SQLiteTable, TKey extends keyof Ro
 	readonly keyNames: readonly TKey[];
 	readonly valueNames: readonly string[];
 	readonly columns: Record<string, SQLiteColumn>;
+	readonly afterWrite?: AfterWrite<TTable>;
+}
+
+/**
+ * Statements derived from one row write, such as a cache adjustment, that join the same atomic batch. `before` is
+ * the current row being replaced or phased out, `after` the values phased in; either is undefined for an insert or
+ * a phase-out. They are planned only when the write changes a row, and roll back with it.
+ */
+export type AfterWrite<TTable extends SQLiteTable> = (
+	db: Database,
+	before: Row<TTable> | undefined,
+	after: TemporalValues<TTable> | undefined,
+) => BatchItem<"sqlite">[];
+
+export interface TemporalTableOptions<TTable extends SQLiteTable>
+{
+	afterWrite?: AfterWrite<TTable>;
 }
 
 export interface ContentAddressedTable<TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>
@@ -107,6 +124,7 @@ const columnsOf = (table: SQLiteTable) => getTableColumns(table) as Record<strin
 export const temporalTable = <TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>(
 	table: TTable,
 	keyNames: readonly [TKey, ...TKey[]],
+	options: TemporalTableOptions<TTable> = {},
 ): TemporalTable<TTable, TKey> =>
 {
 	const columns = columnsOf(table);
@@ -129,6 +147,7 @@ export const temporalTable = <TTable extends SQLiteTable, TKey extends keyof Row
 		keyNames,
 		valueNames,
 		columns,
+		afterWrite: options.afterWrite,
 	};
 };
 
@@ -255,6 +274,13 @@ const insertStatement = (unitOfWork: UnitOfWork, target: TemporalTable<any, any>
 };
 
 /** Plans the write of one incoming row given the current row it replaces, if any. */
+const derivedStatements = (
+	unitOfWork: UnitOfWork,
+	target: TemporalTable<any, any>,
+	before: Record<string, unknown> | undefined,
+	after: Record<string, unknown> | undefined,
+) => target.afterWrite?.(unitOfWork.db, before, after) ?? [];
+
 const planReplacement = (
 	unitOfWork: UnitOfWork,
 	target: TemporalTable<any, any>,
@@ -274,7 +300,10 @@ const planReplacement = (
 			unitOfWork,
 			{
 				change: change("inserted"),
-				statements: [insertStatement(unitOfWork, target, values)],
+				statements: [
+					insertStatement(unitOfWork, target, values),
+					...derivedStatements(unitOfWork, target, undefined, values),
+				],
 			},
 		);
 	}
@@ -295,6 +324,7 @@ const planReplacement = (
 			statements: [
 				...phaseOutStatements(unitOfWork, target, current),
 				insertStatement(unitOfWork, target, values),
+				...derivedStatements(unitOfWork, target, current, values),
 			],
 		},
 	);
@@ -435,7 +465,10 @@ export const phaseOut = async <TTable extends SQLiteTable, TKey extends keyof Ro
 		unitOfWork,
 		{
 			change: change("phased-out"),
-			statements: phaseOutStatements(unitOfWork, target, latest),
+			statements: [
+				...phaseOutStatements(unitOfWork, target, latest),
+				...derivedStatements(unitOfWork, target, latest, undefined),
+			],
 		},
 	);
 };
@@ -512,7 +545,10 @@ export const mergeList = async <TTable extends SQLiteTable, TKey extends keyof R
 						key,
 						outcome: "phased-out",
 					},
-					statements: phaseOutStatements(unitOfWork, target, row),
+					statements: [
+						...phaseOutStatements(unitOfWork, target, row),
+						...derivedStatements(unitOfWork, target, row, undefined),
+					],
 				},
 			),
 		);
