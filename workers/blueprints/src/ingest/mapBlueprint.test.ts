@@ -87,6 +87,28 @@ describe("mapBlueprint", () =>
 		]);
 	});
 
+	it("keys the blueprint string by its SHA-256", async () =>
+	{
+		const rows = await mapBlueprint(
+			"-key",
+			{
+				blueprintString: "hello",
+				image:
+				{
+					id: "abc",
+					type: "image/png",
+				},
+				authorId: "uid",
+				createdDate: 1,
+			},
+			{},
+		);
+
+		expect(rows?.blueprint.blueprintStringSha).toBe(
+			"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+		);
+	});
+
 	it("skips a blueprint without a blueprint string", async () =>
 	{
 		const rows = await mapBlueprint(

@@ -15,10 +15,13 @@ export interface BlueprintContext
 	thumbnail?: string | null;
 }
 
-/** Lowercase hex SHA-1 of the UTF-8 bytes, the key of the blueprint string in R2 and `blueprint_string`. */
-const sha1Hex = async (text: string): Promise<string> =>
+/**
+ * Lowercase hex SHA-256 of the UTF-8 bytes: the digest key of the blueprint string in R2 and `blueprint_string`.
+ * factorio.school's history database still keys by SHA-1 until it migrates its keys.
+ */
+const sha256Hex = async (text: string): Promise<string> =>
 {
-	const digest = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(text));
+	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
 	return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 
@@ -50,7 +53,7 @@ const mapTags = (key: string, tags: RealtimeBlueprint["tags"]): BlueprintTagRow[
 
 /**
  * Maps one `/blueprints/<key>` node to its rows, or `undefined` when it has no blueprint string, which the converter
- * skips as invalid. The string itself goes to R2; only its SHA-1 is referenced here.
+ * skips as invalid. The string itself goes to R2; only its SHA-256 is referenced here.
  */
 export const mapBlueprint = async (
 	key: string,
@@ -104,7 +107,7 @@ export const mapBlueprint = async (
 		{
 			key,
 			imgurImageId: image.id,
-			blueprintStringSha: await sha1Hex(blueprintString),
+			blueprintStringSha: await sha256Hex(blueprintString),
 			...audit,
 			title: mapTitle(realtime.title),
 			descriptionMarkdown: truncate(
