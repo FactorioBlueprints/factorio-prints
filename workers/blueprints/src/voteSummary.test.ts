@@ -4,8 +4,9 @@ import {beforeEach, describe, expect, it} from "vite-plus/test";
 import {emptyDatabase} from "../test/database.ts";
 import {SYSTEM_TO_SENTINEL} from "./temporal/columns.ts";
 import {commit, createUnitOfWork, mergeList, phaseOut, upsert} from "./temporal/temporal.ts";
-import {rebuildVoteSummary, votes} from "./voteSummary.ts";
+import {blueprints, rebuildVoteSummary, votes} from "./voteSummary.ts";
 
+const t0 = Date.UTC(2026, 10, 9, 11, 0, 0, 0);
 const t1 = Date.UTC(2026, 10, 9, 12, 0, 0, 0);
 const t2 = t1 + 1_000;
 const t3 = t1 + 2_000;
@@ -35,6 +36,38 @@ const vote = async (now: number, userId: string, blueprintKey: string, direction
 	return commit(unitOfWork);
 };
 
+const blueprintValues = (key: string, title = "title") => (
+{
+	key,
+	imgurImageId: "img",
+	blueprintStringSha: "sha",
+	createdById: "user",
+	createdOn: t0,
+	lastUpdatedById: "user",
+	title,
+	descriptionMarkdown: "",
+});
+
+const publish = async (now: number, key: string, title = "title") =>
+{
+	const unitOfWork = createUnitOfWork(db, now);
+	await upsert(unitOfWork, blueprints, blueprintValues(key, title));
+	return commit(unitOfWork);
+};
+
+const unpublish = async (now: number, key: string) =>
+{
+	const unitOfWork = createUnitOfWork(db, now);
+	await phaseOut(
+		unitOfWork,
+		blueprints,
+		{
+			key,
+		},
+	);
+	return commit(unitOfWork);
+};
+
 const unvote = async (now: number, userId: string, blueprintKey: string) =>
 {
 	const unitOfWork = createUnitOfWork(db, now);
@@ -51,7 +84,12 @@ const unvote = async (now: number, userId: string, blueprintKey: string) =>
 
 describe("vote summary maintenance", () =>
 {
-	it("counts an up vote phased in, and creates the summary row when it is missing", async () =>
+	beforeEach(async () =>
+	{
+		await publish(t0, "a");
+	});
+
+	it("counts an up vote phased in", async () =>
 	{
 		await vote(t1, "alice", "a", "up");
 		await vote(t1, "bob", "a", "up");
@@ -116,6 +154,8 @@ describe("vote summary maintenance", () =>
 
 	it("adjusts every blueprint touched by a merged list of one user's votes", async () =>
 	{
+		await publish(t0, "b");
+		await publish(t0, "c");
 		await vote(t1, "alice", "a", "up");
 		await vote(t1, "alice", "b", "up");
 
@@ -180,6 +220,79 @@ describe("vote summary maintenance", () =>
 				number_of_upvotes: 0,
 			},
 		]);
+	});
+});
+
+describe("blueprint writes", () =>
+{
+	it("give a new blueprint a zero count", async () =>
+	{
+		await publish(t1, "a");
+
+		expect(await summaries()).toEqual([
+			{
+				key: "a",
+				number_of_upvotes: 0,
+			},
+		]);
+	});
+
+	it("leave the count alone when a blueprint is edited", async () =>
+	{
+		await publish(t0, "a");
+		await vote(t1, "alice", "a", "up");
+		await publish(t2, "a", "edited");
+
+		expect(await summaries()).toEqual([
+			{
+				key: "a",
+				number_of_upvotes: 1,
+			},
+		]);
+	});
+
+	it("delete the cached count in the same batch that phases the blueprint out", async () =>
+	{
+		await publish(t0, "a");
+		await publish(t0, "b");
+		await vote(t1, "alice", "a", "up");
+
+		await unpublish(t2, "a");
+
+		expect(await summaries()).toEqual([
+			{
+				key: "b",
+				number_of_upvotes: 0,
+			},
+		]);
+	});
+
+	it("keep votes on a phased-out blueprint out of the cache, and recount them when it is restored", async () =>
+	{
+		await publish(t0, "a");
+		await vote(t1, "alice", "a", "up");
+		await unpublish(t2, "a");
+		await vote(t2, "bob", "a", "up");
+		await unvote(t2, "alice", "a");
+		await vote(t2, "carol", "a", "up");
+
+		expect(await summaries()).toEqual([]);
+
+		await publish(t3, "a");
+
+		expect(await summaries()).toEqual([
+			{
+				key: "a",
+				number_of_upvotes: 2,
+			},
+		]);
+	});
+
+	it("ignore votes on a blueprint that does not exist", async () =>
+	{
+		await vote(t1, "alice", "missing", "up");
+
+		expect(await summaries()).toEqual([]);
 	});
 });
 
