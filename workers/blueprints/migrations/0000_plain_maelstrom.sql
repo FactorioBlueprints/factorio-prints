@@ -139,17 +139,10 @@ CREATE INDEX `blueprint_version_idx_created_by` ON `blueprint_version` (`created
 CREATE INDEX `blueprint_version_idx_last_updated_by` ON `blueprint_version` (`last_updated_by_id`,`system_to`);--> statement-breakpoint
 CREATE INDEX `blueprint_version_idx_system_to_from` ON `blueprint_version` (`system_to`,`system_from`);--> statement-breakpoint
 CREATE TABLE `blueprint_vote_summary` (
-	`key` text NOT NULL,
-	`system_from` integer NOT NULL,
-	`system_to` integer DEFAULT 253402300799999 NOT NULL,
-	`number_of_upvotes` integer NOT NULL,
-	`system_from_text` text GENERATED ALWAYS AS (strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch')) VIRTUAL,
-	`system_to_text` text GENERATED ALWAYS AS (strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch')) VIRTUAL,
-	PRIMARY KEY(`key`, `system_to`)
+	`key` text PRIMARY KEY NOT NULL,
+	`number_of_upvotes` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `blueprint_vote_summary_system_from_idx` ON `blueprint_vote_summary` (`key`,`system_from`);--> statement-breakpoint
-CREATE INDEX `blueprint_vote_summary_idx_system_to_from` ON `blueprint_vote_summary` (`system_to`,`system_from`);--> statement-breakpoint
 CREATE TABLE `comment` (
 	`id` text NOT NULL,
 	`reply_to_id` text,

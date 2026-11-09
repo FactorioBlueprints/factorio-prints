@@ -527,30 +527,14 @@ export const blueprintVoteSummary = sqliteTable(
 	"blueprint_vote_summary",
 	{
 		key: text("key").notNull(),
-		systemFrom: integer("system_from").notNull(),
-		systemTo: integer("system_to").notNull().default(253402300799999),
 		numberOfUpvotes: integer("number_of_upvotes").notNull(),
-		systemFromText: text("system_from_text").generatedAlwaysAs(
-			sql`strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch')`,
-			{
-				mode: "virtual",
-			},
-		),
-		systemToText: text("system_to_text").generatedAlwaysAs(
-			sql`strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch')`,
-			{
-				mode: "virtual",
-			},
-		),
 	},
 	(table) => [
 		primaryKey(
 			{
-				columns: [table.key, table.systemTo],
+				columns: [table.key],
 			},
 		),
-		uniqueIndex("blueprint_vote_summary_system_from_idx").on(table.key, table.systemFrom),
-		index("blueprint_vote_summary_idx_system_to_from").on(table.systemTo, table.systemFrom),
 	],
 );
 

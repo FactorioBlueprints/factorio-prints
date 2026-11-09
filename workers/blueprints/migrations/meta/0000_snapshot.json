@@ -1,7 +1,7 @@
 {
 	"version": "6",
 	"dialect": "sqlite",
-	"id": "5b86d415-d40a-4555-8611-535f3ee9dbf5",
+	"id": "3b462d7b-0c26-45a3-b0dc-5ad3459fd697",
 	"prevId": "00000000-0000-0000-0000-000000000000",
 	"tables":
 	{
@@ -1032,26 +1032,9 @@
 				{
 					"name": "key",
 					"type": "text",
-					"primaryKey": false,
+					"primaryKey": true,
 					"notNull": true,
 					"autoincrement": false
-				},
-				"system_from":
-				{
-					"name": "system_from",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"autoincrement": false
-				},
-				"system_to":
-				{
-					"name": "system_to",
-					"type": "integer",
-					"primaryKey": false,
-					"notNull": true,
-					"autoincrement": false,
-					"default": 253402300799999
 				},
 				"number_of_upvotes":
 				{
@@ -1060,58 +1043,11 @@
 					"primaryKey": false,
 					"notNull": true,
 					"autoincrement": false
-				},
-				"system_from_text":
-				{
-					"name": "system_from_text",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": false,
-					"autoincrement": false,
-					"generated":
-					{
-						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))",
-						"type": "virtual"
-					}
-				},
-				"system_to_text":
-				{
-					"name": "system_to_text",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": false,
-					"autoincrement": false,
-					"generated":
-					{
-						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))",
-						"type": "virtual"
-					}
 				}
 			},
-			"indexes":
-			{
-				"blueprint_vote_summary_system_from_idx":
-				{
-					"name": "blueprint_vote_summary_system_from_idx",
-					"columns": ["key", "system_from"],
-					"isUnique": true
-				},
-				"blueprint_vote_summary_idx_system_to_from":
-				{
-					"name": "blueprint_vote_summary_idx_system_to_from",
-					"columns": ["system_to", "system_from"],
-					"isUnique": false
-				}
-			},
+			"indexes": {},
 			"foreignKeys": {},
-			"compositePrimaryKeys":
-			{
-				"blueprint_vote_summary_key_system_to_pk":
-				{
-					"columns": ["key", "system_to"],
-					"name": "blueprint_vote_summary_key_system_to_pk"
-				}
-			},
+			"compositePrimaryKeys": {},
 			"uniqueConstraints": {},
 			"checkConstraints": {}
 		},
