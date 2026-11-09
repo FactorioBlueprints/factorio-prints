@@ -741,7 +741,7 @@
 				{
 					"imgurId": "VMUQ6PV",
 					"imgurType": "image/jpeg",
-					"deleteHash": null,
+					"deleteHash": "deletehash-17",
 					"height": 703,
 					"width": 635
 				}
@@ -844,7 +844,7 @@
 				{
 					"imgurId": "J3QSzCM",
 					"imgurType": "image/png",
-					"deleteHash": null,
+					"deleteHash": "deletehash-20",
 					"height": 579,
 					"width": 728
 				}
@@ -3474,7 +3474,7 @@
 			}
 		},
 		{
-			"case": "private node clears deletehash",
+			"case": "private node without deletehash keeps the image one",
 			"key": "-LYGJMGWwOB3qEdM6aa3",
 			"blueprint":
 			{
@@ -3558,14 +3558,14 @@
 				{
 					"imgurId": "Y39Fun4",
 					"imgurType": "image/jpeg",
-					"deleteHash": null,
+					"deleteHash": "deletehash-101",
 					"height": 898,
 					"width": 1152
 				}
 			}
 		},
 		{
-			"case": "private node clears deletehash",
+			"case": "private node without deletehash keeps the image one",
 			"key": "-LYIU7E7l1Lrn1ve0kFg",
 			"blueprint":
 			{
@@ -3655,14 +3655,14 @@
 				{
 					"imgurId": "lbJe1kG",
 					"imgurType": "image/jpeg",
-					"deleteHash": null,
+					"deleteHash": "deletehash-104",
 					"height": 1156,
 					"width": 770
 				}
 			}
 		},
 		{
-			"case": "private node clears deletehash",
+			"case": "private node without deletehash keeps the image one",
 			"key": "-LYIXVBtNNnpf4sLCtBo",
 			"blueprint":
 			{
@@ -3746,7 +3746,7 @@
 				{
 					"imgurId": "akcawdR",
 					"imgurType": "image/jpeg",
-					"deleteHash": null,
+					"deleteHash": "deletehash-107",
 					"height": 1222,
 					"width": 881
 				}
@@ -5185,7 +5185,7 @@
 			{
 				"imgurId": "soy1Qbu",
 				"imgurType": "image/png",
-				"deleteHash": null,
+				"deleteHash": "deletehash-146",
 				"height": 324,
 				"width": 456
 			}
@@ -5260,7 +5260,7 @@
 			{
 				"imgurId": "nYC1fyD",
 				"imgurType": "image/jpeg",
-				"deleteHash": null,
+				"deleteHash": "deletehash-150",
 				"height": 580,
 				"width": 1707
 			}

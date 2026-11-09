@@ -77,14 +77,15 @@ export const mapBlueprint = async (
 	let thumbnailData = realtime.thumbnail ?? null;
 	let deleteHash = image.deletehash ?? null;
 
-	// The private node wins for the image URL and delete hash even when it lacks them, as in cleanseBlueprintsPrivate.
+	// The private node wins for the image URL even when it lacks one, as in the reference converter. Its delete hash
+	// wins only when present: the reference converter cleared the hash otherwise, which made the image undeletable.
 	const blueprintPrivate = context.blueprintPrivate;
 	if (blueprintPrivate)
 	{
 		fileName = blueprintPrivate.fileName ?? fileName;
 		firebaseImageUrl = blueprintPrivate.imageUrl ?? null;
 		thumbnailData ??= blueprintPrivate.thumbnail ?? null;
-		deleteHash = blueprintPrivate.deletehash ?? null;
+		deleteHash = blueprintPrivate.deletehash ?? deleteHash;
 	}
 	if (context.thumbnail !== null && context.thumbnail !== undefined && !thumbnailData)
 	{

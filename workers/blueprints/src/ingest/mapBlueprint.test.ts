@@ -45,6 +45,48 @@ describe("mapBlueprint", () =>
 		expect(rows === undefined ? rows : byTagName(rows)).toStrictEqual(byTagName(fixture.expected));
 	});
 
+	it("keeps the image's delete hash when the private node has none, and prefers the private one", async () =>
+	{
+		const blueprint: RealtimeBlueprint =
+		{
+			blueprintString: "0abc",
+			image:
+			{
+				id: "abc",
+				type: "image/png",
+				deletehash: "from-image",
+			},
+			authorId: "uid",
+			createdDate: 1,
+		};
+
+		const kept = await mapBlueprint(
+			"-key",
+			blueprint,
+			{
+				blueprintPrivate:
+				{
+					fileName: "a.png",
+				},
+			},
+		);
+		const replaced = await mapBlueprint(
+			"-key",
+			blueprint,
+			{
+				blueprintPrivate:
+				{
+					deletehash: "from-private",
+				},
+			},
+		);
+
+		expect([kept?.imgurImage.deleteHash, replaced?.imgurImage.deleteHash]).toStrictEqual([
+			"from-image",
+			"from-private",
+		]);
+	});
+
 	it("skips a blueprint without a blueprint string", async () =>
 	{
 		const rows = await mapBlueprint(
