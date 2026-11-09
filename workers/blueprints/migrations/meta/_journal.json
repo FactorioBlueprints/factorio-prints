@@ -8,6 +8,13 @@
 			"when": 1794221701988,
 			"tag": "0000_plain_maelstrom",
 			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "6",
+			"when": 1794221996194,
+			"tag": "0001_vote_summary_upvotes_index",
+			"breakpoints": true
 		}
 	]
 }
