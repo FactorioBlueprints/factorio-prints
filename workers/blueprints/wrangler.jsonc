@@ -4,7 +4,16 @@
 	"account_id": "d6a6604075c347336a008699794d5fb9",
 	"compatibility_date": "2026-08-23",
 	"compatibility_flags": ["nodejs_compat"],
+	"main": "src/index.ts",
 	"workers_dev": false,
+	"vars":
+	{
+		// Cloud Functions mint their ID token for this audience.
+		"INGEST_AUDIENCE": "https://blueprints.factorioprints.com/ingest",
+		// Comma-separated service accounts allowed to call /ingest: the account the ingest Cloud Functions run as.
+		"INGEST_SERVICE_ACCOUNTS": "facorio-blueprints@appspot.gserviceaccount.com",
+		"FIREBASE_PROJECT_ID": "facorio-blueprints",
+	},
 	"routes": [
 		{
 			"pattern": "blueprints.factorioprints.com",

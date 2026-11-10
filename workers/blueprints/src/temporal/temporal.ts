@@ -596,6 +596,58 @@ export const insertIfAbsent = async <TTable extends SQLiteTable, TKey extends ke
 	);
 };
 
+/** D1 binds at most 100 parameters per statement. */
+const MAX_BOUND_PARAMETERS = 100;
+
+/**
+ * Inserts many rows of a content-addressed table, skipping any whose key exists, as multi-row
+ * `INSERT ... ON CONFLICT DO NOTHING` statements sized to D1's bound-parameter limit. Unlike {@link insertIfAbsent} it
+ * reads nothing first, so use it for the rows of a composite whose root was just found absent: every row reports
+ * "inserted", and the root's own {@link insertIfAbsent} outcome says whether the composite was really new.
+ */
+export const insertAllIfAbsent = async <TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>(
+	unitOfWork: UnitOfWork,
+	target: ContentAddressedTable<TTable, TKey>,
+	rows: readonly InferInsertModel<TTable>[],
+): Promise<RowChange[]> =>
+{
+	const columnCount = Object.values(target.columns).filter((column) => !column.generated).length;
+	const rowsPerStatement = Math.max(1, Math.floor(MAX_BOUND_PARAMETERS / columnCount));
+	const changes: RowChange[] = [];
+	for (let start = 0; start < rows.length; start += rowsPerStatement)
+	{
+		const chunk = rows.slice(start, start + rowsPerStatement);
+		for (const row of chunk)
+		{
+			claim(unitOfWork, target, keyOf(target, row as Record<string, unknown>));
+		}
+		const keys = chunk.map((row) => keyOf(target, row as Record<string, unknown>));
+		const statement = unitOfWork.db
+			.insert(target.table)
+			.values([...chunk])
+			.onConflictDoNothing();
+		// One planned write per chunk carries the statement; the chunk's other rows ride along with no statements.
+		keys.forEach((key, index) =>
+		{
+			changes.push(
+				plan(
+					unitOfWork,
+					{
+						change:
+						{
+							table: target.name,
+							key,
+							outcome: "inserted",
+						},
+						statements: index === 0 ? [statement] : [],
+					},
+				),
+			);
+		});
+	}
+	return changes;
+};
+
 const isWrite = (change: RowChange) => change.outcome !== "unchanged" && change.outcome !== "skipped-stale";
 
 /**
@@ -623,13 +675,15 @@ export const bumpVersion = async <TTable extends SQLiteTable, TKey extends keyof
 		return unchanged;
 	}
 	claim(unitOfWork, target, businessKey);
-	const current = (await findCurrent(unitOfWork.db, target, key)) as Record<string, unknown> | undefined;
+	// Number from the latest version, even a phased-out one, so a restored composite continues its numbering.
+	const latest = await latestVersion(unitOfWork.db, target, businessKey);
+	const current = latest?.systemTo === SYSTEM_TO_SENTINEL ? latest : undefined;
 	const next =
 	{
-		...current,
+		...latest,
 		...values,
 		...businessKey,
-		number: ((current?.number as number | undefined) ?? 0) + 1,
+		number: ((latest?.number as number | undefined) ?? 0) + 1,
 	};
 	return planReplacement(unitOfWork, target, current, next);
 };

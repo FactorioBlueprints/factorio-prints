@@ -12,6 +12,7 @@ import
 	findAsOf,
 	findCurrent,
 	history,
+	insertAllIfAbsent,
 	insertIfAbsent,
 	mergeList,
 	phaseOut,
@@ -930,6 +931,51 @@ describe("composite versions", () =>
 		).toEqual([versionRow(1, t1, t2), versionRow(2, t2)]);
 	});
 
+	it("continues the numbering when the composite comes back after its version row was phased out", async () =>
+	{
+		await saveComposite(
+			t1,
+			"first",
+			{
+				1: 10,
+			},
+		);
+		const deletion = createUnitOfWork(db, t2);
+		await phaseOut(
+			deletion,
+			items,
+			{
+				key: "a",
+			},
+		);
+		await phaseOut(
+			deletion,
+			versions,
+			{
+				key: "a",
+			},
+		);
+		await commit(deletion);
+
+		await saveComposite(
+			t3,
+			"restored",
+			{
+				1: 10,
+			},
+		);
+
+		expect(
+			await history(
+				db,
+				versions,
+				{
+					key: "a",
+				},
+			),
+		).toEqual([versionRow(1, t1, t2), versionRow(2, t3)]);
+	});
+
 	it("leaves the version alone when only a stale event arrived", async () =>
 	{
 		await saveComposite(
@@ -978,6 +1024,53 @@ describe("composite versions", () =>
 
 describe("content-addressed tables", () =>
 {
+	it("inserts many rows in chunks that fit D1's bound-parameter limit, leaving existing rows untouched", async () =>
+	{
+		const existing = createUnitOfWork(db, t1);
+		await insertIfAbsent(
+			existing,
+			contents,
+			{
+				sha: "sha-007",
+				createdById: "first",
+				byteLength: 7,
+			},
+		);
+		await commit(existing);
+
+		const rows = Array.from(
+			{
+				length: 75,
+			},
+			(_, index) => (
+			{
+				sha: `sha-${String(index).padStart(3, "0")}`,
+				createdById: "bulk",
+				byteLength: index,
+			}),
+		);
+		const unitOfWork = createUnitOfWork(db, t2);
+		await insertAllIfAbsent(unitOfWork, contents, rows);
+		expect((await commit(unitOfWork)).status).toEqual("committed");
+
+		const stored = await db.select().from(content).orderBy(content.sha);
+		expect(stored.length).toEqual(75);
+		expect(stored[7]).toEqual(
+			{
+				sha: "sha-007",
+				createdById: "first",
+				byteLength: 7,
+			},
+		);
+		expect(stored[74]).toEqual(
+			{
+				sha: "sha-074",
+				createdById: "bulk",
+				byteLength: 74,
+			},
+		);
+	});
+
 	it("inserts a row once and never overwrites it", async () =>
 	{
 		const first = createUnitOfWork(db, t1);
