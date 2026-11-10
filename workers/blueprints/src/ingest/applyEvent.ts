@@ -46,6 +46,8 @@ import type
 {
 	BlueprintEvent,
 	CollectionEvent,
+	CollectionListEvent,
+	FavoriteListEvent,
 	CommentEvent,
 	IngestEvent,
 	ModeratorsEvent,
@@ -55,13 +57,15 @@ import type
 } from "./events.ts";
 import {mapBlueprint} from "./mapBlueprint.ts";
 import {mapComments} from "./mapComments.ts";
-import {applyAuth, mapModerators, mapUser} from "./mapUser.ts";
+import {applyAuth, mapCollections, mapFavorites, mapModerators, mapUser} from "./mapUser.ts";
 import {mapTagList} from "./tags.ts";
 
 export interface IngestDependencies
 {
 	db: Database;
 	strings: R2Bucket;
+	/** Plan without writing anything, R2 included. The reconciler's shadow mode. */
+	dryRun?: boolean;
 }
 
 export interface EventResult
@@ -100,7 +104,7 @@ const storeBlueprintString = async (
 
 	// R2 first: D1 must never reference a string R2 lacks, and a string written for a batch that then fails is
 	// harmless because it is content-addressed.
-	await putBlueprintString(dependencies.strings, sha, content);
+	if (!dependencies.dryRun) await putBlueprintString(dependencies.strings, sha, content);
 	const factorioItems = await dependencies.db
 		.select(
 			{
@@ -422,6 +426,74 @@ const planTagList = async (unitOfWork: UnitOfWork, event: TagListEvent, options:
 	return undefined;
 };
 
+/** The author of each listed blueprint that is current, by key. */
+const currentBlueprintAuthors = async (unitOfWork: UnitOfWork, keys: readonly string[]) =>
+{
+	const authors = new Map<string, string>();
+	for (const key of keys)
+	{
+		const blueprint = await findCurrent(
+			unitOfWork.db,
+			blueprints,
+			{
+				key,
+			},
+		);
+		if (blueprint !== undefined) authors.set(key, blueprint.createdById);
+	}
+	return authors;
+};
+
+const planFavoriteList = async (unitOfWork: UnitOfWork, event: FavoriteListEvent, options: WriteOptions) =>
+{
+	const favorites = event.favorites ?? {};
+	const blueprintAuthors = await currentBlueprintAuthors(unitOfWork, Object.keys(favorites));
+	const rows = mapFavorites(
+		event.userId,
+		{
+			favorites,
+		},
+		{
+			blueprintAuthors,
+		},
+	);
+	await mergeList(
+		unitOfWork,
+		votes,
+		{
+			userId: event.userId,
+		},
+		rows,
+		options,
+	);
+	return undefined;
+};
+
+const planCollectionList = async (unitOfWork: UnitOfWork, event: CollectionListEvent, options: WriteOptions) =>
+{
+	const collection = event.collection ?? {};
+	const blueprintKeys = new Set((await currentBlueprintAuthors(unitOfWork, Object.keys(collection))).keys());
+	const rows = mapCollections(
+		event.userId,
+		{
+			collection,
+		},
+		{
+			blueprintKeys,
+		},
+	);
+	await mergeList(
+		unitOfWork,
+		blueprintCollectionEntries,
+		{
+			userId: event.userId,
+		},
+		rows,
+		options,
+	);
+	return undefined;
+};
+
 const plan = (dependencies: IngestDependencies, unitOfWork: UnitOfWork, event: IngestEvent): Promise<Planned> =>
 {
 	const options: WriteOptions =
@@ -444,6 +516,10 @@ const plan = (dependencies: IngestDependencies, unitOfWork: UnitOfWork, event: I
 			return planModerators(unitOfWork, event, options);
 		case "tags":
 			return planTagList(unitOfWork, event, options);
+		case "favoriteList":
+			return planFavoriteList(unitOfWork, event, options);
+		case "collectionList":
+			return planCollectionList(unitOfWork, event, options);
 	}
 };
 
@@ -482,4 +558,32 @@ export const applyEvent = async (dependencies: IngestDependencies, event: Ingest
 		result = await applyOnce(dependencies, event);
 	}
 	return result;
+};
+
+const isStaleOnly = (changes: readonly RowChange[]) =>
+	changes.length > 0 && changes.every((change) => change.outcome === "skipped-stale");
+
+/** Plans one event and reports what it would change, writing nothing. */
+export const dryRunEvent = async (dependencies: IngestDependencies, event: IngestEvent): Promise<EventResult> =>
+{
+	const unitOfWork = createUnitOfWork(dependencies.db, event.eventTime);
+	const ignored = await plan(
+		{
+			...dependencies,
+			dryRun: true,
+		},
+		unitOfWork,
+		event,
+	);
+	if (ignored !== undefined)
+		return {
+			status: "ignored",
+			reason: ignored,
+			changes: [],
+		};
+	const changes = unitOfWork.planned.map((write) => write.change);
+	return {
+		status: isStaleOnly(changes) ? "skipped-stale" : "applied",
+		changes,
+	};
 };

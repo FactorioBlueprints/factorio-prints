@@ -198,6 +198,109 @@ describe("POST /ingest", () =>
 	});
 });
 
+describe("POST /reconcile", () =>
+{
+	const reconcileRequest = async (body: unknown, token?: string) =>
+		worker.fetch(
+			new Request(
+				"https://blueprints.factorioprints.com/reconcile",
+				{
+					method: "POST",
+					headers:
+						token === undefined
+							? {}
+							:
+								{
+									authorization: `Bearer ${token}`,
+								},
+					body: JSON.stringify(body),
+				},
+			),
+			env,
+		);
+
+	it("rejects a request without a service-account token", async () =>
+	{
+		expect(
+			(
+				await reconcileRequest(
+					{
+						events: [],
+					},
+				)
+			).status,
+		).toEqual(401);
+	});
+
+	it("reports drift in shadow mode unless repair is asked for", async () =>
+	{
+		const response = await reconcileRequest(
+			{
+				events: [moderatorsEvent],
+			},
+			await serviceAccountToken(),
+		);
+
+		expect(await response.json()).toEqual(
+			{
+				drift: [
+					{
+						event:
+						{
+							type: "moderators",
+						},
+						changes: [
+							{
+								table: "user_entitlement",
+								key:
+								{
+									userId: "alice",
+									userRole: "administrator",
+								},
+								outcome: "inserted",
+							},
+						],
+					},
+				],
+				stale: 0,
+				ignored: 0,
+			},
+		);
+		expect(await env.DB.prepare("SELECT count(*) AS count FROM user_entitlement").first("count")).toEqual(0);
+	});
+
+	it("applies the events in repair mode", async () =>
+	{
+		await reconcileRequest(
+			{
+				mode: "repair",
+				events: [moderatorsEvent],
+			},
+			await serviceAccountToken(),
+		);
+
+		expect(await env.DB.prepare("SELECT count(*) AS count FROM user_entitlement").first("count")).toEqual(1);
+	});
+
+	it("rejects an unknown mode", async () =>
+	{
+		const response = await reconcileRequest(
+			{
+				mode: "fix",
+				events: [],
+			},
+			await serviceAccountToken(),
+		);
+
+		expect(response.status).toEqual(400);
+		expect(await response.json()).toEqual(
+			{
+				error: "mode must be shadow or repair",
+			},
+		);
+	});
+});
+
 describe("unknown routes", () =>
 {
 	it("answer 404", async () =>

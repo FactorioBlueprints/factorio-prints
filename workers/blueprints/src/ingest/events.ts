@@ -83,8 +83,29 @@ export interface UserEvent extends EventBase
 	authUser: AuthUser | null;
 }
 
+/**
+ * A user's whole `/users/<uid>/favorites` map. The Cloud Functions send single votes; the reconciler sends whole
+ * lists so that votes missing from a dump are phased out.
+ */
+export interface FavoriteListEvent extends EventBase
+{
+	type: "favoriteList";
+	userId: string;
+	favorites: Readonly<Record<string, boolean>> | null;
+}
+
+/** A user's whole `/users/<uid>/collection` map, for the reconciler. */
+export interface CollectionListEvent extends EventBase
+{
+	type: "collectionList";
+	userId: string;
+	collection: Readonly<Record<string, boolean>> | null;
+}
+
 export type IngestEvent =
 	| BlueprintEvent
+	| FavoriteListEvent
+	| CollectionListEvent
 	| UserEvent
 	| VoteEvent
 	| CollectionEvent
@@ -113,6 +134,8 @@ const requiredStrings: Record<IngestEvent["type"], readonly string[]> =
 	comment: ["blueprintKey", "commentId"],
 	moderators: [],
 	tags: [],
+	favoriteList: ["userId"],
+	collectionList: ["userId"],
 };
 
 const requiredBooleans: Partial<Record<IngestEvent["type"], string>> =
@@ -128,6 +151,8 @@ const requiredNullableObjects: Partial<Record<IngestEvent["type"], string>> =
 	comment: "comment",
 	moderators: "moderators",
 	tags: "byTag",
+	favoriteList: "favorites",
+	collectionList: "collection",
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
