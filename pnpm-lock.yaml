@@ -242,9 +242,6 @@ importers:
       '@tanstack/react-store':
         specifier: 0.11.2
         version: 0.11.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      atob:
-        specifier: 2.1.2
-        version: 2.1.2
       bootswatch:
         specifier: 5.3.8
         version: 5.3.8
@@ -324,9 +321,6 @@ importers:
       '@testing-library/react':
         specifier: 16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@types/atob':
-        specifier: 2.1.4
-        version: 2.1.4
       '@types/lodash':
         specifier: 4.17.27
         version: 4.17.27
@@ -2870,9 +2864,6 @@ packages:
   '@types/aria-query@5.0.4':
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
 
-  '@types/atob@2.1.4':
-    resolution: {integrity: sha512-FisOhG87cCFqzCgq6FUtSYsTMOHCB/p28zJbSN1QBo4ZGJfg9PEhMjdIV++NDeOnloUUe0Gz6jwBV+L1Ac00Mw==}
-
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -3433,11 +3424,6 @@ packages:
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
-
-  atob@2.1.2:
-    resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
-    engines: {node: '>= 4.5.0'}
-    hasBin: true
 
   b4a@1.9.0:
     resolution: {integrity: sha512-dpfcF9fDNR6++cthXR67iyhgqWy9CBouAvIWhIntzBG6cvK/cnIPiZQjBwi/ZqjjBEDGfoNDtmB0kTjroOJ3pQ==}
@@ -8960,8 +8946,6 @@ snapshots:
 
   '@types/aria-query@5.0.4': {}
 
-  '@types/atob@2.1.4': {}
-
   '@types/chai@5.2.3':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -9361,8 +9345,6 @@ snapshots:
   async@3.2.6: {}
 
   asynckit@0.4.0: {}
-
-  atob@2.1.2: {}
 
   b4a@1.9.0: {}
 
