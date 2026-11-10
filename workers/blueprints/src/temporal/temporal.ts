@@ -18,6 +18,15 @@ import type {DrizzleD1Database} from "drizzle-orm/d1";
 import type {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {SYSTEM_TO_SENTINEL} from "./columns.ts";
 
+// System time here means when the change happened in the source, the Firebase Realtime Database, not when D1
+// processed it. Live ingest creates each unit of work with the change event's commit time, the history import
+// keeps system_from from the daily snapshot instants, and the reconciler uses the dump instant, so every row's
+// system_from and system_to say when the Realtime Database held that version. That is also what makes the
+// stale-event guard sound: it compares an event's time with the time the stored row's change happened. Two
+// different changes to one row in the same millisecond cannot both be recorded (system time is never bumped to make
+// room): the second fails the unique index (business key, system_from), the unit of work reports a conflict, and the
+// row takes that state from the next event, which carries the whole current node.
+//
 // Every write in a unit of work is planned against the rows read when the operation is called, and all of them
 // run in one D1 batch at commit, which D1 executes as a single transaction. D1 has no interactive transactions, so
 // a concurrent unit of work can commit between the read and the batch. Two things catch that and roll the whole
@@ -424,6 +433,39 @@ export const upsert = async <TTable extends SQLiteTable, TKey extends keyof Row<
 	return planReplacement(unitOfWork, target, current, incoming);
 };
 
+/**
+ * Guards a composite by its version row, which moves whenever any member changes: when that row changed after the
+ * event, the whole event is stale, and a "skipped-stale" change is planned and returned. A member's own row can
+ * be older than the composite's latest change, so guarding the root row alone would let a stale event rewrite the
+ * members, ending rows before they began.
+ */
+export const skipIfStale = async <TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>(
+	unitOfWork: UnitOfWork,
+	target: TemporalTable<TTable, TKey>,
+	key: BusinessKey<TTable, TKey>,
+	options: WriteOptions,
+): Promise<RowChange | undefined> =>
+{
+	const latest = await latestVersion(unitOfWork.db, target, key);
+	if (latest === undefined || !isStale([latest], options))
+	{
+		return undefined;
+	}
+	claim(unitOfWork, target, key);
+	return plan(
+		unitOfWork,
+		{
+			change:
+			{
+				table: target.name,
+				key,
+				outcome: "skipped-stale",
+			},
+			statements: [],
+		},
+	);
+};
+
 /** Non-destructive delete: closes the current row at `now`. */
 export const phaseOut = async <TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>(
 	unitOfWork: UnitOfWork,
@@ -596,6 +638,58 @@ export const insertIfAbsent = async <TTable extends SQLiteTable, TKey extends ke
 	);
 };
 
+/** D1 binds at most 100 parameters per statement. */
+const MAX_BOUND_PARAMETERS = 100;
+
+/**
+ * Inserts many rows of a content-addressed table, skipping any whose key exists, as multi-row
+ * `INSERT ... ON CONFLICT DO NOTHING` statements sized to D1's bound-parameter limit. Unlike {@link insertIfAbsent} it
+ * reads nothing first, so use it for the rows of a composite whose root was just found absent: every row reports
+ * "inserted", and the root's own {@link insertIfAbsent} outcome says whether the composite was really new.
+ */
+export const insertAllIfAbsent = async <TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>(
+	unitOfWork: UnitOfWork,
+	target: ContentAddressedTable<TTable, TKey>,
+	rows: readonly InferInsertModel<TTable>[],
+): Promise<RowChange[]> =>
+{
+	const columnCount = Object.values(target.columns).filter((column) => !column.generated).length;
+	const rowsPerStatement = Math.max(1, Math.floor(MAX_BOUND_PARAMETERS / columnCount));
+	const changes: RowChange[] = [];
+	for (let start = 0; start < rows.length; start += rowsPerStatement)
+	{
+		const chunk = rows.slice(start, start + rowsPerStatement);
+		for (const row of chunk)
+		{
+			claim(unitOfWork, target, keyOf(target, row as Record<string, unknown>));
+		}
+		const keys = chunk.map((row) => keyOf(target, row as Record<string, unknown>));
+		const statement = unitOfWork.db
+			.insert(target.table)
+			.values([...chunk])
+			.onConflictDoNothing();
+		// One planned write per chunk carries the statement; the chunk's other rows ride along with no statements.
+		keys.forEach((key, index) =>
+		{
+			changes.push(
+				plan(
+					unitOfWork,
+					{
+						change:
+						{
+							table: target.name,
+							key,
+							outcome: "inserted",
+						},
+						statements: index === 0 ? [statement] : [],
+					},
+				),
+			);
+		});
+	}
+	return changes;
+};
+
 const isWrite = (change: RowChange) => change.outcome !== "unchanged" && change.outcome !== "skipped-stale";
 
 /**
@@ -623,13 +717,15 @@ export const bumpVersion = async <TTable extends SQLiteTable, TKey extends keyof
 		return unchanged;
 	}
 	claim(unitOfWork, target, businessKey);
-	const current = (await findCurrent(unitOfWork.db, target, key)) as Record<string, unknown> | undefined;
+	// Number from the latest version, even a phased-out one, so a restored composite continues its numbering.
+	const latest = await latestVersion(unitOfWork.db, target, businessKey);
+	const current = latest?.systemTo === SYSTEM_TO_SENTINEL ? latest : undefined;
 	const next =
 	{
-		...current,
+		...latest,
 		...values,
 		...businessKey,
-		number: ((current?.number as number | undefined) ?? 0) + 1,
+		number: ((latest?.number as number | undefined) ?? 0) + 1,
 	};
 	return planReplacement(unitOfWork, target, current, next);
 };
