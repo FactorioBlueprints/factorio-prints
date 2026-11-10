@@ -18,6 +18,15 @@ import type {DrizzleD1Database} from "drizzle-orm/d1";
 import type {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {SYSTEM_TO_SENTINEL} from "./columns.ts";
 
+// System time here means when the change happened in the source, the Firebase Realtime Database, not when D1
+// processed it. Live ingest creates each unit of work with the change event's commit time, the history import
+// keeps system_from from the daily snapshot instants, and the reconciler uses the dump instant, so every row's
+// system_from and system_to say when the Realtime Database held that version. That is also what makes the
+// stale-event guard sound: it compares an event's time with the time the stored row's change happened. Two
+// different changes to one row in the same millisecond cannot both be recorded (system time is never bumped to make
+// room): the second fails the unique index (business key, system_from), the unit of work reports a conflict, and the
+// row takes that state from the next event, which carries the whole current node.
+//
 // Every write in a unit of work is planned against the rows read when the operation is called, and all of them
 // run in one D1 batch at commit, which D1 executes as a single transaction. D1 has no interactive transactions, so
 // a concurrent unit of work can commit between the read and the batch. Two things catch that and roll the whole

@@ -268,6 +268,61 @@ describe("blueprint events", () =>
 		).toEqual(4);
 	});
 
+	it("report a second change in the same millisecond as a conflict, and take its state with the next event", async () =>
+	{
+		await saveBlueprint(
+			t1,
+			{
+				title: "First",
+			},
+		);
+
+		const collision = await saveBlueprint(
+			t1,
+			{
+				title: "Second",
+			},
+		);
+
+		expect(collision.status).toEqual("conflict");
+		expect(
+			(
+				await history(
+					db,
+					blueprints,
+					{
+						key,
+					},
+				)
+			).map((row) => [row.title, row.systemFrom, row.systemTo]),
+		).toEqual([["First", t1, SYSTEM_TO_SENTINEL]]);
+
+		expect(
+			(
+				await saveBlueprint(
+					t1 + 1,
+					{
+						title: "Second",
+					},
+				)
+			).status,
+		).toEqual("applied");
+		expect(
+			(
+				await history(
+					db,
+					blueprints,
+					{
+						key,
+					},
+				)
+			).map((row) => [row.title, row.systemFrom, row.systemTo]),
+		).toEqual([
+			["First", t1, t1 + 1],
+			["Second", t1 + 1, SYSTEM_TO_SENTINEL],
+		]);
+	});
+
 	it("skip an event older than the stored blueprint", async () =>
 	{
 		await saveBlueprint(
