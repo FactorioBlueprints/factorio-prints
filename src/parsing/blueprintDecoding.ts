@@ -1,5 +1,5 @@
 import atob from "atob";
-import {unzlibSync} from "fflate";
+import {Unzlib, unzlibSync} from "fflate";
 
 export class BlueprintError extends Error
 {
@@ -55,7 +55,7 @@ export function decodeBlueprintJson(blueprintData: string): unknown
 	let decompressedBytes: Uint8Array;
 	try
 	{
-		decompressedBytes = unzlibSync(bytes);
+		decompressedBytes = inflate(bytes);
 	}
 	catch (error)
 	{
@@ -82,4 +82,41 @@ export function decodeBlueprintJson(blueprintData: string): unknown
 			},
 		);
 	}
+}
+
+// Some stored strings end before the deflate stream does, though the JSON inside is complete. They still decode,
+// so fall back to the bytes inflated before the input ran out.
+function inflate(bytes: Uint8Array): Uint8Array
+{
+	try
+	{
+		return unzlibSync(bytes);
+	}
+	catch (error)
+	{
+		const partial = inflatePartially(bytes);
+		if (partial.length === 0) throw error;
+		return partial;
+	}
+}
+
+function inflatePartially(bytes: Uint8Array): Uint8Array
+{
+	const chunks: Uint8Array[] = [];
+	try
+	{
+		new Unzlib((chunk) => chunks.push(chunk)).push(bytes, false);
+	}
+	catch
+	{
+		return new Uint8Array();
+	}
+	const result = new Uint8Array(chunks.reduce((length, chunk) => length + chunk.length, 0));
+	let offset = 0;
+	for (const chunk of chunks)
+	{
+		result.set(chunk, offset);
+		offset += chunk.length;
+	}
+	return result;
 }
