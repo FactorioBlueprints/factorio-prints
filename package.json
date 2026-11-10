@@ -12,6 +12,7 @@
 		"check:toolchain": "node scripts/checkToolchainAlignment.ts",
 		"check:blueprints": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/wrangler.log wrangler types workers/blueprints/worker-configuration.d.ts --config workers/blueprints/wrangler.jsonc && tsc --project workers/blueprints/tsconfig.json",
 		"check:images": "WRANGLER_LOG_PATH=node_modules/.cache/wrangler/wrangler.log wrangler types workers/images/worker-configuration.d.ts --config workers/images/wrangler.jsonc && tsc --project workers/images/tsconfig.json",
+		"blueprints:export-history": "node scripts/exportHistory.ts",
 		"blueprints:import-history": "node scripts/importHistory.ts",
 		"blueprints:migrations": "drizzle-kit generate --config workers/blueprints/drizzle.config.ts",
 		"blueprints:reconcile": "node scripts/reconcileD1.ts",
