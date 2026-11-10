@@ -12,6 +12,8 @@ import
 	blueprintVersions,
 	commentVersions,
 	comments,
+	firebaseUsers,
+	firebaseUserVersions,
 	imgurImages,
 	tags,
 	userEntitlements,
@@ -746,5 +748,219 @@ describe("moderator and tag list events", () =>
 			["prioritizer", 3],
 			["tap", 2],
 		]);
+	});
+});
+
+describe("user events", () =>
+{
+	const profile =
+	{
+		displayName: "Alice",
+		email: null,
+		emailVerified: true,
+		providerDisplayName: null,
+	};
+	const authUser =
+	{
+		localId: "alice",
+		email: "alice@example.com",
+		displayName: "Alice Liddell",
+		photoUrl: "https://example.com/alice.png",
+		providerUserInfo: [
+			{
+				providerId: "github.com",
+			},
+		],
+	};
+	const user = (eventTime: number, overrides: Record<string, unknown> = {}) =>
+		apply(
+			{
+				type: "user",
+				eventTime,
+				userId: "alice",
+				profile,
+				authUser,
+				...overrides,
+			} as IngestEvent,
+		);
+
+	it("combine the Realtime profile's display fields with the Admin SDK record's provider fields", async () =>
+	{
+		expect((await user(t1)).status).toEqual("applied");
+
+		expect(
+			withoutSystem(
+				await findCurrent(
+					db,
+					firebaseUsers,
+					{
+						userId: "alice",
+					},
+				),
+			),
+		).toEqual(
+			{
+				userId: "alice",
+				displayName: "Alice",
+				providerDisplayName: "Alice Liddell",
+				email: "alice@example.com",
+				emailVerified: true,
+				photoURL: "https://example.com/alice.png",
+				providerId: "github.com",
+			},
+		);
+		expect(
+			(
+				await findCurrent(
+					db,
+					firebaseUserVersions,
+					{
+						userId: "alice",
+					},
+				)
+			)?.number,
+		).toEqual(1);
+	});
+
+	it("version a rename once, and change nothing on replay", async () =>
+	{
+		await user(t1);
+		await user(
+			t2,
+			{
+				profile:
+				{
+					...profile,
+					displayName: "Alice L.",
+				},
+			},
+		);
+		await user(
+			t2,
+			{
+				profile:
+				{
+					...profile,
+					displayName: "Alice L.",
+				},
+			},
+		);
+
+		expect(
+			(
+				await history(
+					db,
+					firebaseUsers,
+					{
+						userId: "alice",
+					},
+				)
+			).map((row) => row.displayName),
+		).toEqual(["Alice", "Alice L."]);
+		expect(
+			(
+				await findCurrent(
+					db,
+					firebaseUserVersions,
+					{
+						userId: "alice",
+					},
+				)
+			)?.number,
+		).toEqual(2);
+	});
+
+	it("skip a profile older than the stored one", async () =>
+	{
+		await user(t2);
+
+		expect(
+			(
+				await user(
+					t1,
+					{
+						profile:
+						{
+							...profile,
+							displayName: "Old",
+						},
+					},
+				)
+			).status,
+		).toEqual("skipped-stale");
+	});
+
+	it("mark a user without an auth record as a deleted account and drop their favorites and collection", async () =>
+	{
+		await saveBlueprint(t1);
+		await apply(
+			{
+				type: "vote",
+				eventTime: t1,
+				userId: "alice",
+				blueprintKey: key,
+				favorited: true,
+			},
+		);
+		await apply(
+			{
+				type: "collection",
+				eventTime: t1,
+				userId: "alice",
+				blueprintKey: key,
+				collected: true,
+			},
+		);
+		await user(t1);
+
+		await user(
+			t2,
+			{
+				profile: null,
+				authUser: null,
+			},
+		);
+
+		expect(
+			withoutSystem(
+				await findCurrent(
+					db,
+					firebaseUsers,
+					{
+						userId: "alice",
+					},
+				),
+			),
+		).toEqual(
+			{
+				userId: "alice",
+				displayName: "deleted account",
+				providerDisplayName: "deleted account",
+				email: "deleted account",
+				emailVerified: false,
+				photoURL: "deleted account",
+				providerId: null,
+			},
+		);
+		expect(
+			await findCurrent(
+				db,
+				votes,
+				{
+					userId: "alice",
+					blueprintKey: key,
+				},
+			),
+		).toBeUndefined();
+		expect(
+			await findCurrent(
+				db,
+				blueprintCollectionEntries,
+				{
+					userId: "alice",
+					blueprintKey: key,
+				},
+			),
+		).toBeUndefined();
 	});
 });

@@ -17,6 +17,8 @@ import
 	blueprintVersions,
 	comments,
 	commentVersions,
+	firebaseUsers,
+	firebaseUserVersions,
 	imgurImages,
 	tags,
 	userEntitlements,
@@ -48,11 +50,12 @@ import type
 	IngestEvent,
 	ModeratorsEvent,
 	TagListEvent,
+	UserEvent,
 	VoteEvent,
 } from "./events.ts";
 import {mapBlueprint} from "./mapBlueprint.ts";
 import {mapComments} from "./mapComments.ts";
-import {mapModerators} from "./mapUser.ts";
+import {applyAuth, mapModerators, mapUser} from "./mapUser.ts";
 import {mapTagList} from "./tags.ts";
 
 export interface IngestDependencies
@@ -361,6 +364,43 @@ const planComment = async (unitOfWork: UnitOfWork, event: CommentEvent, options:
 	return undefined;
 };
 
+const planUser = async (unitOfWork: UnitOfWork, event: UserEvent, options: WriteOptions): Promise<Planned> =>
+{
+	const {userId} = event;
+	const profile = applyAuth(event.profile ?? {}, event.authUser ?? undefined);
+	const root = await upsert(unitOfWork, firebaseUsers, mapUser(userId, profile), options);
+	if (root.outcome === "skipped-stale") return undefined;
+	await bumpVersion(
+		unitOfWork,
+		firebaseUserVersions,
+		{
+			userId,
+		},
+		[root],
+	);
+	if (event.authUser === null)
+	{
+		// As the converter does for an account missing from the auth export: its favorites and collection go.
+		await mergeList(
+			unitOfWork,
+			votes,
+			{
+				userId,
+			},
+			[],
+		);
+		await mergeList(
+			unitOfWork,
+			blueprintCollectionEntries,
+			{
+				userId,
+			},
+			[],
+		);
+	}
+	return undefined;
+};
+
 const planModerators = async (unitOfWork: UnitOfWork, event: ModeratorsEvent, options: WriteOptions) =>
 {
 	await mergeList(
@@ -392,6 +432,8 @@ const plan = (dependencies: IngestDependencies, unitOfWork: UnitOfWork, event: I
 	{
 		case "blueprint":
 			return planBlueprint(dependencies, unitOfWork, event, options);
+		case "user":
+			return planUser(unitOfWork, event, options);
 		case "vote":
 			return planVote(unitOfWork, event, options);
 		case "collection":

@@ -2,7 +2,15 @@
 // the time the source changed (the database event's commit time), which becomes the unit of work's timestamp and
 // the stale-event guard's reference, so replaying an event changes nothing and an older event never overwrites a
 // newer row.
-import type {RealtimeBlueprint, RealtimeBlueprintPrivate, RealtimeByTag, RealtimeComment} from "./realtime.ts";
+import type
+{
+	AuthUser,
+	RealtimeBlueprint,
+	RealtimeBlueprintPrivate,
+	RealtimeByTag,
+	RealtimeComment,
+	RealtimeUser,
+} from "./realtime.ts";
 
 interface EventBase
 {
@@ -61,7 +69,28 @@ export interface TagListEvent extends EventBase
 	byTag: RealtimeByTag | null;
 }
 
-export type IngestEvent = BlueprintEvent | VoteEvent | CollectionEvent | CommentEvent | ModeratorsEvent | TagListEvent;
+/**
+ * A user's profile from two sources: `/users/<uid>` in the Realtime Database for the display fields, and the
+ * Firebase Admin SDK's user record (looked up by the Cloud Function) for the provider and auth fields. The profile's
+ * favorites and collection maps are ignored here; they arrive as their own events.
+ */
+export interface UserEvent extends EventBase
+{
+	type: "user";
+	userId: string;
+	profile: RealtimeUser | null;
+	/** The Admin SDK record in Firebase Auth export shape, or null when the account no longer exists. */
+	authUser: AuthUser | null;
+}
+
+export type IngestEvent =
+	| BlueprintEvent
+	| UserEvent
+	| VoteEvent
+	| CollectionEvent
+	| CommentEvent
+	| ModeratorsEvent
+	| TagListEvent;
 
 export type ParsedIngestRequest =
 	|
@@ -78,6 +107,7 @@ export type ParsedIngestRequest =
 const requiredStrings: Record<IngestEvent["type"], readonly string[]> =
 {
 	blueprint: ["key"],
+	user: ["userId"],
 	vote: ["userId", "blueprintKey"],
 	collection: ["userId", "blueprintKey"],
 	comment: ["blueprintKey", "commentId"],
@@ -94,6 +124,7 @@ const requiredBooleans: Partial<Record<IngestEvent["type"], string>> =
 const requiredNullableObjects: Partial<Record<IngestEvent["type"], string>> =
 {
 	blueprint: "blueprint",
+	user: "profile",
 	comment: "comment",
 	moderators: "moderators",
 	tags: "byTag",
@@ -124,6 +155,10 @@ const validateEvent = (event: unknown, index: number): string | undefined =>
 	if (objectField !== undefined && event[objectField] !== null && !isRecord(event[objectField]))
 	{
 		return `event ${index} has no ${objectField} object or null`;
+	}
+	if (type === "user" && event.authUser !== null && !isRecord(event.authUser))
+	{
+		return `event ${index} has no authUser object or null`;
 	}
 	return undefined;
 };

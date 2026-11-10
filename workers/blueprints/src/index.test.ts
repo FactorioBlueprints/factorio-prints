@@ -121,6 +121,30 @@ describe("POST /ingest", () =>
 		);
 	});
 
+	it("rejects a user event whose Admin SDK record is not an object", async () =>
+	{
+		const response = await ingest(
+			{
+				events: [
+					{
+						type: "user",
+						eventTime: 1,
+						userId: "alice",
+						profile: null,
+						authUser: "alice",
+					},
+				],
+			},
+			await serviceAccountToken(),
+		);
+
+		expect(await response.json()).toEqual(
+			{
+				error: "event 0 has no authUser object or null",
+			},
+		);
+	});
+
 	it("applies the events in order and reports each one", async () =>
 	{
 		const response = await ingest(

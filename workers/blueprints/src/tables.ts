@@ -14,6 +14,8 @@ import
 	blueprintVersion,
 	comment,
 	commentVersion,
+	firebaseUser,
+	firebaseUserVersion,
 	imgurImage,
 	tag,
 	userEntitlement,
@@ -29,6 +31,8 @@ export const imgurImages = temporalTable(imgurImage, ["imgurId"]);
 export const tags = temporalTable(tag, ["category", "name"]);
 export const blueprintCollectionEntries = temporalTable(blueprintCollectionEntry, ["userId", "blueprintKey"]);
 export const userEntitlements = temporalTable(userEntitlement, ["userId", "userRole"]);
+export const firebaseUsers = temporalTable(firebaseUser, ["userId"]);
+export const firebaseUserVersions = temporalTable(firebaseUserVersion, ["userId"]);
 export const comments = temporalTable(comment, ["id"]);
 export const commentVersions = temporalTable(commentVersion, ["id"]);
 
