@@ -25,5 +25,4 @@ export const getBlueprintString = async (bucket: R2Bucket, sha: string): Promise
 	return object === null ? null : object.text();
 };
 
-/** The value written to blueprint_string.blueprint_string while the column still exists. */
-export const STRING_STORED_IN_R2 = "";
+export {STRING_STORED_IN_R2} from "./stringLayout.ts";
