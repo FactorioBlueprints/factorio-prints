@@ -1,4 +1,5 @@
 // @vitest-environment node
+import {readFileSync} from "node:fs";
 import {zlibSync} from "fflate";
 import {describe, expect, it} from "vite-plus/test";
 import
@@ -68,6 +69,31 @@ describe("computeBlueprintStringSha", () =>
 
 describe("extractGameData", () =>
 {
+	it("reads strings whose zlib stream is cut short after the complete JSON", () =>
+	{
+		// A real string from factorio.school: unpadded base64 and a deflate stream missing its final bytes.
+		const blueprintString = readFileSync(new URL("fixtures/truncatedZlibBook.txt", import.meta.url), "utf8");
+		const version = (position: string, label: string, itemType: string) => (
+		{
+			sha: SHA,
+			position,
+			versionNumber: 68722819072,
+			version1: 0,
+			version2: 16,
+			version3: 51,
+			version4: 0,
+			versionString: "0.16.51.0",
+			label,
+			itemType,
+		});
+
+		expect(extractGameData(SHA, blueprintString, modPacks).gameData).toEqual([
+			version("1", "Train-Port", "blueprint-book"),
+			version("1.1", "Main Station", "blueprint"),
+			version("1.2", "Default Station", "blueprint"),
+		]);
+	});
+
 	it("extracts a blueprint's row, icons, entity and recipe counts, and mod packs", () =>
 	{
 		const blueprintString = encode(
