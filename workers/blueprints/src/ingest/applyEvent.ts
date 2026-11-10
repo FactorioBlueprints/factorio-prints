@@ -334,6 +334,7 @@ const planComment = async (unitOfWork: UnitOfWork, event: CommentEvent, options:
 			options,
 		);
 		if (root.outcome === "phased-out")
+		{
 			await phaseOut(
 				unitOfWork,
 				commentVersions,
@@ -341,6 +342,7 @@ const planComment = async (unitOfWork: UnitOfWork, event: CommentEvent, options:
 					id,
 				},
 			);
+		}
 		return undefined;
 	}
 	const blueprintExists =
@@ -542,18 +544,22 @@ const applyOnce = async (dependencies: IngestDependencies, event: IngestEvent): 
 	const unitOfWork = createUnitOfWork(dependencies.db, event.eventTime);
 	const ignored = await plan(dependencies, unitOfWork, event);
 	if (ignored !== undefined)
+	{
 		return {
 			status: "ignored",
 			reason: ignored,
 			changes: [],
 		};
+	}
 
 	const result = await commit(unitOfWork);
 	if (result.status === "conflict")
+	{
 		return {
 			status: "conflict",
 			changes: result.changes,
 		};
+	}
 	const stale = result.changes.length > 0 && result.changes.every((change) => change.outcome === "skipped-stale");
 	return {
 		status: stale ? "skipped-stale" : "applied",
@@ -588,11 +594,13 @@ export const dryRunEvent = async (dependencies: IngestDependencies, event: Inges
 		event,
 	);
 	if (ignored !== undefined)
+	{
 		return {
 			status: "ignored",
 			reason: ignored,
 			changes: [],
 		};
+	}
 	const changes = unitOfWork.planned.map((write) => write.change);
 	return {
 		status: isStaleOnly(changes) ? "skipped-stale" : "applied",

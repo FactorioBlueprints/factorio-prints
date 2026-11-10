@@ -192,18 +192,22 @@ const validateEvent = (event: unknown, index: number): string | undefined =>
 export const parseIngestRequest = (body: unknown): ParsedIngestRequest =>
 {
 	if (!isRecord(body) || !Array.isArray(body.events))
+	{
 		return {
 			ok: false,
 			error: "body must be {events: [...]}",
 		};
+	}
 	for (const [index, event] of body.events.entries())
 	{
 		const error = validateEvent(event, index);
 		if (error !== undefined)
+		{
 			return {
 				ok: false,
 				error,
 			};
+		}
 	}
 	return {
 		ok: true,

@@ -13,8 +13,9 @@ beforeAll(async () =>
 	keys = await generateSigningKeys();
 	worker = createWorker(
 		{
-			now: () => nowSeconds,
+			now: () => nowSeconds * 1000,
 			serviceAccountKeys: publicKeyLookup(keys),
+			firebaseKeys: async () => null,
 		},
 	);
 });
