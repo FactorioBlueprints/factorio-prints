@@ -18,6 +18,7 @@
 		"blueprints:migrations": "drizzle-kit generate --config workers/blueprints/drizzle.config.ts",
 		"blueprints:reconcile": "node scripts/reconcileD1.ts",
 		"blueprints:test-migrations": "drizzle-kit generate --config workers/blueprints/drizzle.test.config.ts",
+		"blueprints:upload-strings": "node scripts/uploadStrings.ts",
 		"build": "vp run route:generate && tsc && vp build && VERIFY_SERVICE_WORKER_BUILD=true node node_modules/vitest/dist/cli.js run src/serviceWorkerTombstones.test.ts",
 		"build:staging": "vp run route:generate && tsc && vp build --mode staging",
 		"oxlint": "vp lint . --fix",
