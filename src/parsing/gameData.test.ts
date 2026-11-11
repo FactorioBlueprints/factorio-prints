@@ -254,9 +254,9 @@ describe("extractGameData", () =>
 		);
 	});
 
-	it("drops icons without a signal type or name and numbers the rest from one", () =>
+	it("treats an icon without a signal type as an item, drops icons without a name, and numbers the rest from one", () =>
 	{
-		// Factorio 2.0 omits the signal type for items, so such icons are dropped.
+		// Factorio 2.0 omits the signal type for items.
 		const blueprintString = encode(
 			{
 				blueprint:
@@ -296,6 +296,13 @@ describe("extractGameData", () =>
 				sha: SHA,
 				position: "1",
 				index: 1,
+				signalName: "iron-plate",
+				signalType: "item",
+			},
+			{
+				sha: SHA,
+				position: "1",
+				index: 2,
 				signalName: "signal-A",
 				signalType: "virtual",
 			},
