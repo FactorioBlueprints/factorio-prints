@@ -242,9 +242,9 @@ function addContent(result: BlueprintStringGameData, content: BlueprintContent, 
 				signal,
 			): signal is
 			{
-				type: string;
+				type: string | null;
 				name: string;
-			} => signal?.name != null && signal.type != null,
+			} => signal?.name != null,
 		)
 		.forEach((signal, index) =>
 		{
@@ -254,7 +254,8 @@ function addContent(result: BlueprintStringGameData, content: BlueprintContent, 
 					position,
 					index: index + 1,
 					signalName: signal.name,
-					signalType: signal.type,
+					// Factorio 2.0 omits the signal type for items.
+					signalType: signal.type ?? "item",
 				},
 			);
 		});
