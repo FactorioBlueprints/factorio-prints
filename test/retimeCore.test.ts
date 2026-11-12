@@ -2,7 +2,14 @@
 import {DatabaseSync} from "node:sqlite";
 import {describe, expect, it} from "vite-plus/test";
 import {applyMigrations} from "../scripts/importHistory";
-import {buildDateTableStatements, RETIME_REPORT_QUERY, RETIME_STATEMENTS} from "../scripts/retimeCore";
+import
+{
+	buildDateTableStatements,
+	RETIME_REPORT_QUERY,
+	RETIME_STATEMENTS,
+	VERSION_CUT_REPORT_QUERY,
+	VERSION_CUT_STATEMENTS,
+} from "../scripts/retimeCore";
 
 const sentinel = 253402300799999;
 
@@ -140,6 +147,99 @@ describe("re-timing history versions to the date of the save that made them", ()
 					"edited added 150 253402300799999",
 					"tagBetween odd 170 253402300799999",
 				],
+			},
+		);
+		database.close();
+	});
+});
+
+describe("cutting the versions that history left out", () =>
+{
+	it("starts a version wherever a blueprint's tags or private data changed without one, renumbers the versions after it, and changes nothing when run again", async () =>
+	{
+		const database = new DatabaseSync(":memory:");
+		await applyMigrations(database, "workers/blueprints/migrations");
+		const version = (key: string, number: number, from: number, to: number, author = "user"): void =>
+		{
+			database
+				.prepare(
+					`INSERT INTO blueprint_version (key, system_from, system_to, created_by_id, created_on,
+						last_updated_by_id, number) VALUES (?, ?, ?, ?, 7, ?, ?)`,
+				)
+				.run(key, from, to, author, author, number);
+		};
+		const tag = (key: string, name: string, from: number, to: number): void =>
+		{
+			database
+				.prepare(
+					"INSERT INTO blueprint_tag (blueprint_key, tag_category, tag_name, system_from, system_to) VALUES (?, 'general', ?, ?, ?)",
+				)
+				.run(key, name, from, to);
+		};
+		const privateData = (key: string, from: number, to: number): void =>
+		{
+			database
+				.prepare("INSERT INTO blueprint_private_data (key, system_from, system_to) VALUES (?, ?, ?)")
+				.run(key, from, to);
+		};
+		// Tags changed at 150 and again at 170 inside version 1, and at 250 inside version 2; private data at 270.
+		version("edited", 1, 100, 200, "alice");
+		version("edited", 2, 200, sentinel, "bob");
+		tag("edited", "first", 100, 150);
+		tag("edited", "second", 150, 170);
+		tag("edited", "third", 170, 250);
+		tag("edited", "fourth", 250, sentinel);
+		privateData("edited", 100, 270);
+		privateData("edited", 270, sentinel);
+		// Everything changed with a version, including the tags that ended when the blueprint was deleted at 200.
+		version("untouched", 1, 100, 200);
+		tag("untouched", "always", 100, 200);
+		privateData("untouched", 100, 200);
+		// Deleted and created again: history numbered both versions 1.
+		version("recreated", 1, 100, 200);
+		version("recreated", 1, 300, sentinel);
+
+		const statements = VERSION_CUT_STATEMENTS.join("\n");
+		database.exec(statements);
+		const report =
+		{
+			...database.prepare(VERSION_CUT_REPORT_QUERY).get(),
+		};
+		const rows = (): unknown[] =>
+			database
+				.prepare(
+					"SELECT key, number, system_from, system_to, created_by_id FROM blueprint_version ORDER BY key, system_from",
+				)
+				.all()
+				.map((row) => Object.values(row).join(" | "));
+		const once = rows();
+		database.exec(statements);
+
+		expect(
+			{
+				report,
+				once,
+				twice: rows(),
+			},
+		).toStrictEqual(
+			{
+				report:
+				{
+					cuts: 4,
+					blueprints: 1,
+				},
+				once: [
+					"edited | 1 | 100 | 150 | alice",
+					"edited | 2 | 150 | 170 | alice",
+					"edited | 3 | 170 | 200 | alice",
+					"edited | 4 | 200 | 250 | bob",
+					"edited | 5 | 250 | 270 | bob",
+					`edited | 6 | 270 | ${sentinel} | bob`,
+					"recreated | 1 | 100 | 200 | user",
+					`recreated | 2 | 300 | ${sentinel} | user`,
+					"untouched | 1 | 100 | 200 | user",
+				],
+				twice: once,
 			},
 		);
 		database.close();

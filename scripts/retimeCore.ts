@@ -104,3 +104,52 @@ export const RETIME_REPORT_QUERY =
 	`(SELECT count(*) FROM ${RETIME}) AS earlier, ` +
 	`(SELECT count(*) FROM ${RETIME} WHERE eligible = 1) AS retimed, ` +
 	`(SELECT count(*) FROM ${RETIME} WHERE eligible = 0) AS skipped`;
+
+const CUTS = "_blueprint_version_cut";
+const SEGMENTS = "_blueprint_version_segment";
+// The parts of a blueprint whose change is an edit of the blueprint, apart from its own row.
+const VERSIONED_PARTS: readonly (readonly [table: string, keyColumn: string])[] = [
+	["blueprint_tag", "blueprint_key"],
+	["blueprint_private_data", "key"],
+];
+
+const changeTimes = VERSIONED_PARTS.flatMap(([table, keyColumn]) =>
+	["system_from", "system_to"].map((column) => `SELECT ${keyColumn} AS key, ${column} AS time FROM ${table}`),
+).join(" UNION ");
+
+/**
+ * History starts a version only when the blueprint's own row changes, so an edit that changed nothing but its tags
+ * or private data has none, and the blueprint's last version looks older than its last edit. These statements
+ * start a version at every such change that falls inside an existing version: that version ends there, a new one
+ * with the same author and created date runs to where the old one ended, and the blueprint's versions are numbered
+ * again in order (which also gives a blueprint that was deleted and created again one sequence of numbers). A
+ * change at a version's own start or end needs nothing. Running the statements again changes nothing.
+ */
+export const VERSION_CUT_STATEMENTS: readonly string[] = [
+	`DROP TABLE IF EXISTS ${CUTS};`,
+	`CREATE TABLE ${CUTS} AS SELECT DISTINCT v.key AS key, c.time AS cut_time ` +
+		`FROM (${changeTimes}) c JOIN blueprint_version v ` +
+		"ON v.key = c.key AND v.system_from < c.time AND c.time < v.system_to;",
+	`DROP TABLE IF EXISTS ${SEGMENTS};`,
+	`CREATE TABLE ${SEGMENTS} AS SELECT v.key AS key, c.cut_time AS system_from, ` +
+		`coalesce((SELECT min(n.cut_time) FROM ${CUTS} n WHERE n.key = v.key AND n.cut_time > c.cut_time ` +
+		"AND n.cut_time < v.system_to), v.system_to) AS system_to, " +
+		"v.created_by_id AS created_by_id, v.created_on AS created_on, v.last_updated_by_id AS last_updated_by_id " +
+		`FROM ${CUTS} c JOIN blueprint_version v ` +
+		"ON v.key = c.key AND v.system_from < c.cut_time AND c.cut_time < v.system_to;",
+	`UPDATE blueprint_version SET system_to = (SELECT min(c.cut_time) FROM ${CUTS} c ` +
+		"WHERE c.key = blueprint_version.key AND c.cut_time > blueprint_version.system_from " +
+		"AND c.cut_time < blueprint_version.system_to) " +
+		`WHERE EXISTS (SELECT 1 FROM ${CUTS} c WHERE c.key = blueprint_version.key ` +
+		"AND c.cut_time > blueprint_version.system_from AND c.cut_time < blueprint_version.system_to);",
+	"INSERT INTO blueprint_version (key, system_from, system_to, created_by_id, created_on, last_updated_by_id, number) " +
+		`SELECT key, system_from, system_to, created_by_id, created_on, last_updated_by_id, 0 FROM ${SEGMENTS};`,
+	"UPDATE blueprint_version SET number = r.number FROM " +
+		"(SELECT key, system_from, row_number() OVER (PARTITION BY key ORDER BY system_from) AS number " +
+		"FROM blueprint_version) r " +
+		"WHERE r.key = blueprint_version.key AND r.system_from = blueprint_version.system_from " +
+		"AND blueprint_version.number <> r.number;",
+];
+
+/** What the last run cut: the versions started, and the blueprints they belong to. */
+export const VERSION_CUT_REPORT_QUERY = `SELECT count(*) AS cuts, count(DISTINCT key) AS blueprints FROM ${CUTS}`;
