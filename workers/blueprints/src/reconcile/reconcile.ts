@@ -194,16 +194,21 @@ export const reconcile = async (
 			// In shadow mode the rows still differ, so the dry run below would only repeat it as drift.
 			if (request.mode === "shadow") continue;
 		}
+		// Before the event, so the event finds the image as the dump has it: restoring what history lost is a
+		// correction, not an edit that would give the blueprint a new version.
+		const image =
+			request.dumpTime === undefined
+				? undefined
+				: await reconcileImage(dependencies, event, request.dumpTime, request.mode === "shadow");
 		const result: EventResult =
 			request.mode === "repair" ? await applyEvent(dependencies, event) : await dryRunEvent(dependencies, event);
 		if (result.status === "skipped-stale") report.stale++;
 		if (result.status === "ignored") report.ignored++;
-		const changes = result.changes.filter(isDrift);
-		if (request.dumpTime !== undefined && !changes.some((change) => change.table === imgurImages.name))
-		{
-			const image = await reconcileImage(dependencies, event, request.dumpTime, request.mode === "shadow");
-			if (image !== undefined) changes.push(image);
-		}
+		// In shadow mode nothing was written, so the event's own dry run reports the same image again.
+		const changes = result.changes.filter(
+			(change) => isDrift(change) && !(image !== undefined && change.table === imgurImages.name),
+		);
+		if (image !== undefined) changes.push(image);
 		if (changes.length > 0)
 		{
 			report.drift.push(

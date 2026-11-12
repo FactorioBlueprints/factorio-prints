@@ -609,4 +609,51 @@ describe("reconcile", () =>
 			},
 		);
 	});
+
+	it("restores an image's details from the dump without counting it as an edit of the blueprint, even when the blueprint was saved again since", async () =>
+	{
+		await applyEvent(dependencies(), blueprintEvent(t1, "Same"));
+		const resaved: IngestEvent =
+		{
+			type: "blueprint",
+			// Saved again after t1 with nothing changed; the dump still knows the image's delete hash.
+			eventTime: t1 + 1000,
+			key,
+			blueprint:
+			{
+				...fixture.blueprint,
+				title: "Same",
+				image:
+				{
+					...fixture.blueprint.image!,
+					deletehash: "from-dump",
+				},
+			},
+		};
+
+		await reconcile(
+			dependencies(),
+			{
+				mode: "repair",
+				events: [resaved],
+				dumpTime,
+			},
+		);
+
+		expect(
+			{
+				images: (
+					await env.DB.prepare("SELECT delete_hash, system_from FROM imgur_image ORDER BY system_from").all()
+				).results.map((row) => Object.values(row).join(" | ")),
+				versions: (
+					await env.DB.prepare("SELECT number, system_from FROM blueprint_version ORDER BY system_from").all()
+				).results.map((row) => Object.values(row).join(" | ")),
+			},
+		).toEqual(
+			{
+				images: [` | ${t1}`, `from-dump | ${dumpTime}`],
+				versions: [`1 | ${t1}`],
+			},
+		);
+	});
 });
