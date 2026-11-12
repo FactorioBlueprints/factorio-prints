@@ -103,28 +103,22 @@ const dumpEvents = (dump: RealtimeDump, options: BuildOptions): ReconcileEvent[]
 	const authByUserId = options.authUsers && new Map(options.authUsers.map((user) => [user.localId, user]));
 	for (const [userId, user] of Object.entries(dump.users ?? {}))
 	{
-		if (user.favorites !== undefined)
-		{
-			events.push(
-				{
-					type: "favoriteList",
-					eventTime: dumpTime,
-					userId,
-					favorites: user.favorites,
-				},
-			);
-		}
-		if (user.collection !== undefined)
-		{
-			events.push(
-				{
-					type: "collectionList",
-					eventTime: dumpTime,
-					userId,
-					collection: user.collection,
-				},
-			);
-		}
+		// A user whose last favorite or collection entry was removed has no such node left, so an absent node is an
+		// empty list: it ends whatever the store still holds for them.
+		events.push(
+			{
+				type: "favoriteList",
+				eventTime: dumpTime,
+				userId,
+				favorites: user.favorites ?? {},
+			},
+			{
+				type: "collectionList",
+				eventTime: dumpTime,
+				userId,
+				collection: user.collection ?? {},
+			},
+		);
 		if (authByUserId !== undefined)
 		{
 			events.push(userEvent(userId, user, authByUserId.get(userId) ?? null, dumpTime));
@@ -171,10 +165,3 @@ export const buildReconcileRequests = (dump: RealtimeDump, options: BuildOptions
 	}
 	return requests;
 };
-
-export const mergeReports = (reports: readonly ReconcileResponse[]): ReconcileResponse => (
-{
-	drift: reports.flatMap((report) => report.drift),
-	stale: reports.reduce((total, report) => total + report.stale, 0),
-	ignored: reports.reduce((total, report) => total + report.ignored, 0),
-});

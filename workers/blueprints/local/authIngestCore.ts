@@ -1,7 +1,7 @@
 import type {DatabaseSync} from "node:sqlite";
 import {drizzle} from "drizzle-orm/d1";
-import {type AuthUser, userEvent} from "../../../functions/src/ingestEvents.ts";
-import type {AuthExport} from "../../../scripts/authExportCore.ts";
+import {userEvent} from "../../../functions/src/ingestEvents.ts";
+import {type AuthExport, toAccountRecord} from "../../../scripts/authExportCore.ts";
 import {reconcile} from "../src/reconcile/reconcile.ts";
 import {localD1} from "./localD1.ts";
 
@@ -62,19 +62,7 @@ export const applyAuthExport = async (
 	for (const user of stored)
 	{
 		const account = accounts.get(user.user_id);
-		const authUser: AuthUser | null =
-			account === undefined
-				? null
-				:
-					{
-						localId: account.uid,
-						email: account.email,
-						photoUrl: account.photoURL,
-						providerUserInfo: account.providerIds.map((providerId) => (
-						{
-							providerId,
-						})),
-					};
+		const authUser = account === undefined ? null : toAccountRecord(account);
 		const profile =
 			account === undefined
 				? null
