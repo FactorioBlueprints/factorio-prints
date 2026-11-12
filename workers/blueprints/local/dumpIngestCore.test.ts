@@ -424,4 +424,83 @@ describe("ingestDump", () =>
 		);
 		database.close();
 	});
+
+	it("treats a blueprint that has no summary as deleted, ending its favorites in the same pass, and never brings a new one in", async () =>
+	{
+		const database = new DatabaseSync(":memory:");
+		await applyMigrations(database, "workers/blueprints/migrations");
+		const merge = (dump: unknown, time: number) =>
+			ingestDump(
+				{
+					database,
+					strings: strings(),
+					readDump: chunksOf(dump),
+					dumpTime: time,
+					blueprintTime: "lastUpdatedDate",
+					mode: "repair",
+				},
+			);
+		const users =
+		{
+			alice:
+			{
+				displayName: "Alice",
+				favorites:
+				{
+					listed: true,
+					halfDeleted: true,
+				},
+			},
+		};
+		await merge(
+			{
+				blueprints:
+				{
+					listed: blueprint("Listed", savedBeforeBackup),
+					halfDeleted: blueprint("Half deleted", savedBeforeBackup),
+				},
+				users,
+			},
+			backupTime,
+		);
+
+		// The same blueprints and favorites, but one summary is gone, and a blueprint appears that never had one.
+		await merge(
+			{
+				blueprintSummaries:
+				{
+					listed:
+					{
+						title: "Listed",
+					},
+				},
+				blueprints:
+				{
+					listed: blueprint("Listed", savedBeforeBackup),
+					halfDeleted: blueprint("Half deleted", savedBeforeBackup),
+					neverListed: blueprint("Never listed", savedAfterBackup),
+				},
+				users,
+			},
+			dumpTime,
+		);
+
+		const list = (sql: string): unknown[] =>
+			database
+				.prepare(sql)
+				.all()
+				.map((row) => Object.values(row).join(" | "));
+		expect(
+			{
+				blueprints: list("SELECT key, system_to FROM blueprint ORDER BY key"),
+				votes: list("SELECT blueprint_key, system_to FROM vote ORDER BY blueprint_key"),
+			},
+		).toStrictEqual(
+			{
+				blueprints: [`halfDeleted | ${dumpTime}`, `listed | ${sentinel}`],
+				votes: [`halfDeleted | ${dumpTime}`, `listed | ${sentinel}`],
+			},
+		);
+		database.close();
+	});
 });

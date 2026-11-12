@@ -16,7 +16,9 @@ import
 // by live ingest for instance, is left alone. A blueprint can be timed by its own lastUpdatedDate, so the version
 // the merge brings in is dated by the save that made it. Everything without a date of its own (favorites,
 // collections, profiles, moderators, tags, deletions) uses the backup instant. A current blueprint the backup
-// lacks is phased out at the backup instant, again unless it was written after that.
+// lacks is phased out at the backup instant, again unless it was written after that. So is one the backup still
+// holds but without a summary: the site lists, finds and shows a blueprint through its summary, so that is a
+// blueprint whose deletion was left half done.
 // Where the requests go is up to the caller: the Worker's /reconcile route, or its code run on a local database.
 
 export interface DumpReconcileOptions
@@ -131,6 +133,7 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 	// after it in the dump, and tags and moderators go in before the blueprints.
 	const small: Record<string, Record<string, unknown>> =
 	{
+		blueprintSummaries: {},
 		blueprintsPrivate: {},
 		thumbnails: {},
 		users: {},
@@ -151,6 +154,8 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 		},
 	);
 
+	// A dump with no summaries at all is a partial one, and says nothing about which blueprints are listed.
+	const summaries = present<Record<string, unknown>>("blueprintSummaries");
 	const blueprintKeys: string[] = [];
 	let batch: Record<string, Node> = {};
 	const sendBatch = async (): Promise<void> =>
@@ -169,6 +174,7 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 	};
 	for await (const [, key, value] of children(["blueprints"]))
 	{
+		if (summaries !== undefined && !(key in summaries)) continue;
 		blueprintKeys.push(key);
 		batch[key] = value as Node;
 		if (Object.keys(batch).length >= options.chunkSize)
@@ -179,6 +185,16 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 	await sendBatch();
 	report.blueprintsInDump = blueprintKeys.length;
 
+	// The request that closes the dump: current blueprints it lacks are phased out, and the watermark advances.
+	// It comes before the users, so the favorites of a blueprint that just ended end in the same pass.
+	await send(
+		{
+			mode,
+			events: [],
+			expectedBlueprintKeys: blueprintKeys,
+			dumpTime,
+		},
+	);
 	// Favorites and collection entries only count for blueprints that exist, so users follow the blueprints.
 	const users = small.users as Record<string, Node>;
 	const {accountOf} = options;
@@ -192,15 +208,6 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 				const account = accountOf(userId, profile);
 				return account === null ? [] : [account];
 			}),
-	);
-	// The request that closes the dump: current blueprints it lacks are phased out, and the watermark advances.
-	await send(
-		{
-			mode,
-			events: [],
-			expectedBlueprintKeys: blueprintKeys,
-			dumpTime,
-		},
 	);
 	return report;
 };
