@@ -305,6 +305,15 @@ const handleModerator = async (
 const BLUEPRINT_PATH = /^\/blueprints\/([^/]+)$/;
 const MODERATOR_PATH = /^\/moderator\/blueprints\/([^/]+)\/(history|restore)$/;
 
+/** The public read routes, which answer GET and HEAD. */
+const handleRead = async (request: Request, url: URL, env: Env): Promise<Response> =>
+{
+	if (url.pathname === "/blueprintSummaries") return handleSummaries(url, env);
+	const blueprintMatch = BLUEPRINT_PATH.exec(url.pathname);
+	if (blueprintMatch !== null) return handleBlueprint(request, env, decodeURIComponent(blueprintMatch[1]));
+	return error("not found", 404);
+};
+
 /** Every message in an error's chain of causes: a query builder wraps the database's own error, which says why. */
 const causeChain = (thrown: unknown): string =>
 {
@@ -333,11 +342,12 @@ const createRoutes = (options: WorkerOptions) => (
 		{
 			return handleModerator(request, env, options, decodeURIComponent(moderatorMatch[1]), moderatorMatch[2]);
 		}
-		if (request.method === "GET")
+		if (request.method === "GET") return handleRead(request, url, env);
+		if (request.method === "HEAD")
 		{
-			if (pathname === "/blueprintSummaries") return handleSummaries(url, env);
-			const blueprintMatch = BLUEPRINT_PATH.exec(pathname);
-			if (blueprintMatch !== null) return handleBlueprint(request, env, decodeURIComponent(blueprintMatch[1]));
+			// The status and headers of the same GET, without its body.
+			const response = await handleRead(request, url, env);
+			return new Response(null, response);
 		}
 		return error("not found", 404);
 	},
