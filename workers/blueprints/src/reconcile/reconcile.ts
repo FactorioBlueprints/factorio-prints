@@ -9,10 +9,12 @@
 import {eq} from "drizzle-orm";
 import {applyEvent, dryRunEvent, type EventResult, type IngestDependencies} from "../ingest/applyEvent.ts";
 import type {IngestEvent} from "../ingest/events.ts";
+import {mapBlueprint} from "../ingest/mapBlueprint.ts";
 import {blueprint, dataImportTimestamp} from "../schema.ts";
+import {imgurImages} from "../tables.ts";
 import {SYSTEM_TO_SENTINEL} from "../temporal/columns.ts";
 import {amendBlueprintAudit} from "./amendAudit.ts";
-import {commit, createUnitOfWork, type RowChange, temporalTable, upsert} from "../temporal/temporal.ts";
+import {commit, createUnitOfWork, findCurrent, type RowChange, temporalTable, upsert} from "../temporal/temporal.ts";
 
 export interface ReconcileRequest
 {
@@ -63,6 +65,59 @@ const advanceWatermark = async (dependencies: IngestDependencies, dumpTime: numb
 		},
 	);
 	await commit(unitOfWork);
+};
+
+/**
+ * An image's details (type, size, delete hash) are the dump's own data about the image, whatever the date of the
+ * blueprint that shows it. A blueprint event dated before the stored image row is stale and leaves the row alone,
+ * so the dump's details are brought in separately, at the dump instant, guarded by the image row's own time.
+ */
+const reconcileImage = async (
+	dependencies: IngestDependencies,
+	event: IngestEvent,
+	dumpTime: number,
+	dryRun: boolean,
+): Promise<RowChange | undefined> =>
+{
+	if (event.type !== "blueprint" || event.blueprint === null || event.blueprint === undefined) return undefined;
+	let rows;
+	try
+	{
+		rows = await mapBlueprint(
+			event.key,
+			event.blueprint,
+			{
+				blueprintPrivate: event.blueprintPrivate,
+				thumbnail: event.thumbnail,
+			},
+		);
+	}
+	catch
+	{
+		return undefined;
+	}
+	if (rows === undefined) return undefined;
+	// A new image is the blueprint event's to insert; this only corrects one already stored.
+	const stored = await findCurrent(
+		dependencies.db,
+		imgurImages,
+		{
+			imgurId: rows.imgurImage.imgurId,
+		},
+	);
+	if (stored === undefined) return undefined;
+	const unitOfWork = createUnitOfWork(dependencies.db, dumpTime);
+	const change = await upsert(
+		unitOfWork,
+		imgurImages,
+		rows.imgurImage,
+		{
+			eventTime: dumpTime,
+		},
+	);
+	if (!isDrift(change)) return undefined;
+	if (!dryRun) await commit(unitOfWork);
+	return change;
 };
 
 const IDENTIFYING_FIELDS = ["key", "userId", "blueprintKey", "commentId"] as const;
@@ -144,6 +199,11 @@ export const reconcile = async (
 		if (result.status === "skipped-stale") report.stale++;
 		if (result.status === "ignored") report.ignored++;
 		const changes = result.changes.filter(isDrift);
+		if (request.dumpTime !== undefined && !changes.some((change) => change.table === imgurImages.name))
+		{
+			const image = await reconcileImage(dependencies, event, request.dumpTime, request.mode === "shadow");
+			if (image !== undefined) changes.push(image);
+		}
 		if (changes.length > 0)
 		{
 			report.drift.push(

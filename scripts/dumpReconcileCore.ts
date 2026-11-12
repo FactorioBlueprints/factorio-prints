@@ -74,6 +74,8 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 		const result = await options.send(
 			{
 				...request,
+				// On every request, so the Worker can bring image details in at the backup instant.
+				dumpTime,
 				amendAudit: options.amendAudit,
 			},
 		);

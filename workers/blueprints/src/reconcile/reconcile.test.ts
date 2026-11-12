@@ -451,4 +451,162 @@ describe("reconcile", () =>
 			},
 		);
 	});
+
+	it("brings an image's details from the dump in at the dump instant, even when the blueprint itself is older than the stored image row, but not over a newer row", async () =>
+	{
+		const withHash = (eventTime: number, deletehash: string, blueprintKey = key): IngestEvent => (
+		{
+			type: "blueprint",
+			eventTime,
+			key: blueprintKey,
+			blueprint:
+			{
+				...fixture.blueprint,
+				title: "Same",
+				image:
+				{
+					...fixture.blueprint.image!,
+					deletehash,
+				},
+			},
+		});
+		const images = async () =>
+			(
+				await env.DB.prepare(
+					"SELECT delete_hash, system_from, system_to FROM imgur_image ORDER BY system_from",
+				).all()
+			).results.map((row) => Object.values(row).join(" | "));
+		// History: the blueprint was saved before t1, and the image row, stamped t1, lost its delete hash.
+		await applyEvent(dependencies(), blueprintEvent(t1, "Same"));
+		const before = await images();
+
+		const shadow = await reconcile(
+			dependencies(),
+			{
+				mode: "shadow",
+				events: [withHash(t1 - 1000, "from-dump")],
+				dumpTime,
+			},
+		);
+		const afterShadow = await images();
+		await reconcile(
+			dependencies(),
+			{
+				mode: "repair",
+				events: [withHash(t1 - 1000, "from-dump")],
+				dumpTime,
+			},
+		);
+		const repaired = await images();
+		// A live save after the dump changes the image again; an older dump must not undo it.
+		await applyEvent(dependencies(), withHash(dumpTime + 1000, "live"));
+		await reconcile(
+			dependencies(),
+			{
+				mode: "repair",
+				events: [withHash(t1 - 1000, "from-dump")],
+				dumpTime,
+			},
+		);
+
+		expect(
+			{
+				before,
+				shadowDrift: shadow.drift.map((entry) =>
+					entry.changes.map((change) => `${change.table}:${change.outcome}`),
+				),
+				afterShadow,
+				repaired,
+				afterLive: await images(),
+			},
+		).toEqual(
+			{
+				before: [` | ${t1} | ${SYSTEM_TO_SENTINEL}`],
+				shadowDrift: [["imgur_image:updated"]],
+				afterShadow: before,
+				repaired: [` | ${t1} | ${dumpTime}`, `from-dump | ${dumpTime} | ${SYSTEM_TO_SENTINEL}`],
+				afterLive: [
+					` | ${t1} | ${dumpTime}`,
+					`from-dump | ${dumpTime} | ${dumpTime + 1000}`,
+					`live | ${dumpTime + 1000} | ${SYSTEM_TO_SENTINEL}`,
+				],
+			},
+		);
+	});
+
+	it("corrects the tags of a version in place when the dump shows the same version with other tags", async () =>
+	{
+		const tagged = (eventTime: number, title: string, tags: string[]): IngestEvent => (
+		{
+			type: "blueprint",
+			eventTime,
+			key,
+			blueprint:
+			{
+				...fixture.blueprint,
+				title,
+				tags,
+			},
+		});
+		const t2 = t1 + 60_000;
+		const tagRows = async () =>
+			(
+				await env.DB.prepare(
+					"SELECT tag_name, system_from, system_to FROM blueprint_tag ORDER BY tag_name, system_from",
+				).all()
+			).results.map((row) => Object.values(row).join(" | "));
+		await applyEvent(dependencies(), tagged(t1, "First", ["/general/kept/", "/general/older/"]));
+		await applyEvent(
+			dependencies(),
+			tagged(t2, "Second", ["/general/kept/", "/general/older/", "/general/wrong/"]),
+		);
+
+		// The dump shows the second version, saved at the same instant, without two of those tags and with another.
+		const report = await reconcile(
+			dependencies(),
+			{
+				mode: "repair",
+				events: [tagged(t2, "Second", ["/general/kept/", "/general/added/"])],
+				amendAudit: true,
+			},
+		);
+		const again = await reconcile(
+			dependencies(),
+			{
+				mode: "repair",
+				events: [tagged(t2, "Second", ["/general/kept/", "/general/added/"])],
+				amendAudit: true,
+			},
+		);
+
+		expect(
+			{
+				amended: [report.amended, again.amended],
+				driftAfter: again.drift,
+				tags: await tagRows(),
+				versions: (
+					await history(
+						db,
+						blueprints,
+						{
+							key,
+						},
+					)
+				).length,
+			},
+		).toEqual(
+			{
+				amended: [1, 0],
+				driftAfter: [],
+				tags: [
+					`added | ${t2} | ${SYSTEM_TO_SENTINEL}`,
+					`kept | ${t1} | ${SYSTEM_TO_SENTINEL}`,
+					// It began with the first version, so it ends where the second begins.
+					`older | ${t1} | ${t2}`,
+					// "wrong" began with the second version and was never part of it: no row remains.
+				],
+				versions: 2,
+			},
+		);
+	});
 });
