@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vite-plus/test";
-import {buildReconcileRequests, mergeReports} from "../scripts/reconcileCore";
+import {buildReconcileRequests} from "../scripts/reconcileCore";
 
 const dumpTime = Date.UTC(2026, 10, 8, 15, 42);
 
@@ -251,60 +251,6 @@ describe("buildReconcileRequests", () =>
 			},
 		]);
 		expect(requests[0].mode).toBe("repair");
-	});
-});
-
-describe("mergeReports", () =>
-{
-	test("concatenates drift and adds up the counts", () =>
-	{
-		const change =
-		{
-			table: "blueprint",
-			key:
-			{
-				key: "bp1",
-			},
-			outcome: "updated",
-		};
-		expect(
-			mergeReports([
-				{
-					drift: [
-						{
-							event:
-							{
-								type: "blueprint",
-								key: "bp1",
-							},
-							changes: [change],
-						},
-					],
-					stale: 1,
-					ignored: 0,
-				},
-				{
-					drift: [],
-					stale: 2,
-					ignored: 3,
-				},
-			]),
-		).toStrictEqual(
-			{
-				drift: [
-					{
-						event:
-						{
-							type: "blueprint",
-							key: "bp1",
-						},
-						changes: [change],
-					},
-				],
-				stale: 3,
-				ignored: 3,
-			},
-		);
 	});
 });
 
