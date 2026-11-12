@@ -433,6 +433,39 @@ export const upsert = async <TTable extends SQLiteTable, TKey extends keyof Row<
 	return planReplacement(unitOfWork, target, current, incoming);
 };
 
+/**
+ * Guards a composite by its version row, which moves whenever any member changes: when that row changed after the
+ * event, the whole event is stale, and a "skipped-stale" change is planned and returned. A member's own row can
+ * be older than the composite's latest change, so guarding the root row alone would let a stale event rewrite the
+ * members, ending rows before they began.
+ */
+export const skipIfStale = async <TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>(
+	unitOfWork: UnitOfWork,
+	target: TemporalTable<TTable, TKey>,
+	key: BusinessKey<TTable, TKey>,
+	options: WriteOptions,
+): Promise<RowChange | undefined> =>
+{
+	const latest = await latestVersion(unitOfWork.db, target, key);
+	if (latest === undefined || !isStale([latest], options))
+	{
+		return undefined;
+	}
+	claim(unitOfWork, target, key);
+	return plan(
+		unitOfWork,
+		{
+			change:
+			{
+				table: target.name,
+				key,
+				outcome: "skipped-stale",
+			},
+			statements: [],
+		},
+	);
+};
+
 /** Non-destructive delete: closes the current row at `now`. */
 export const phaseOut = async <TTable extends SQLiteTable, TKey extends keyof Row<TTable> & string>(
 	unitOfWork: UnitOfWork,

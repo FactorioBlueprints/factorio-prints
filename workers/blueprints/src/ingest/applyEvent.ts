@@ -37,6 +37,7 @@ import
 	insertIfAbsent,
 	mergeList,
 	phaseOut,
+	skipIfStale,
 	type RowChange,
 	type UnitOfWork,
 	upsert,
@@ -141,6 +142,16 @@ const planBlueprint = async (
 ): Promise<Planned> =>
 {
 	const {key} = event;
+	// The version row is the composite's clock: an event older than any part of the blueprint changes nothing.
+	const stale = await skipIfStale(
+		unitOfWork,
+		blueprintVersions,
+		{
+			key,
+		},
+		options,
+	);
+	if (stale !== undefined) return undefined;
 	if (event.blueprint === null)
 	{
 		const root = await phaseOut(
@@ -206,7 +217,8 @@ const planBlueprint = async (
 		rows.blueprintTags,
 	);
 	const privateData = await upsert(unitOfWork, blueprintPrivateDatas, rows.blueprintPrivateData);
-	await upsert(unitOfWork, imgurImages, rows.imgurImage);
+	// An image can be shared by blueprints, so it is guarded by its own row.
+	await upsert(unitOfWork, imgurImages, rows.imgurImage, options);
 	await bumpVersion(
 		unitOfWork,
 		blueprintVersions,

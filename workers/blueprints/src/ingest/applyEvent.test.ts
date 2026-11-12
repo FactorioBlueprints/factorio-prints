@@ -366,6 +366,116 @@ describe("blueprint events", () =>
 		).toEqual(1);
 	});
 
+	it("skip an event older than the latest change to any part of the blueprint, such as its tags, leaving no row that ends before it begins", async () =>
+	{
+		await saveBlueprint(t1);
+		// A later save that only changes the tags leaves the blueprint row itself at t1.
+		await saveBlueprint(
+			t3,
+			{
+				tags: ["/general/tileable/"],
+			},
+		);
+
+		const older = await saveBlueprint(
+			t2,
+			{
+				title: "Older than the tag change",
+				tags: ["/mods/vanilla/"],
+			},
+		);
+		const deletion = await apply(
+			{
+				type: "blueprint",
+				eventTime: t2,
+				key,
+				blueprint: null,
+			},
+		);
+
+		expect(
+			{
+				statuses: [older.status, deletion.status],
+				title: (
+					await findCurrent(
+						db,
+						blueprints,
+						{
+							key,
+						},
+					)
+				)?.title,
+				tags: await currentTags(),
+				versions: (
+					await history(
+						db,
+						blueprintVersions,
+						{
+							key,
+						},
+					)
+				).map((row) => row.number),
+				backwards: await count(
+					`(SELECT 1 FROM blueprint_tag WHERE system_from >= system_to UNION ALL
+					SELECT 1 FROM blueprint_version WHERE system_from >= system_to UNION ALL
+					SELECT 1 FROM blueprint WHERE system_from >= system_to)`,
+				),
+			},
+		).toEqual(
+			{
+				statuses: ["skipped-stale", "skipped-stale"],
+				title: fixture.expected.blueprint.title,
+				tags: ["general/tileable"],
+				versions: [1, 2],
+				backwards: 0,
+			},
+		);
+	});
+
+	it("leave an image row alone when an older event carries different details for it", async () =>
+	{
+		await saveBlueprint(
+			t2,
+			{
+				image:
+				{
+					...fixture.blueprint.image!,
+					deletehash: "newer",
+				},
+			},
+		);
+
+		// Another blueprint with the same image, saved earlier.
+		await apply(
+			{
+				type: "blueprint",
+				eventTime: t1,
+				key: "another",
+				blueprint:
+				{
+					...fixture.blueprint,
+					image:
+					{
+						...fixture.blueprint.image!,
+						deletehash: "older",
+					},
+				},
+			},
+		);
+
+		expect(
+			(
+				await history(
+					db,
+					imgurImages,
+					{
+						imgurId: fixture.blueprint.image!.id,
+					},
+				)
+			).map((row) => [row.deleteHash, row.systemFrom, row.systemTo]),
+		).toEqual([["newer", t2, SYSTEM_TO_SENTINEL]]);
+	});
+
 	it("phase out the composite and its cached vote count when the blueprint is deleted", async () =>
 	{
 		await saveBlueprint(t1);
