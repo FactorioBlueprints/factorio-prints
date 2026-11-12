@@ -1,0 +1,2987 @@
+{
+	"id": "e971b219-0311-4403-90ed-25cbfb1a9fa7",
+	"prevId": "3b462d7b-0c26-45a3-b0dc-5ad3459fd697",
+	"version": "6",
+	"dialect": "sqlite",
+	"tables":
+	{
+		"blueprint":
+		{
+			"name": "blueprint",
+			"columns":
+			{
+				"key":
+				{
+					"name": "key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"imgur_image_id":
+				{
+					"name": "imgur_image_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"blueprint_string_sha":
+				{
+					"name": "blueprint_string_sha",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"created_by_id":
+				{
+					"name": "created_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_on":
+				{
+					"name": "created_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"last_updated_by_id":
+				{
+					"name": "last_updated_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"title":
+				{
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"description_markdown":
+				{
+					"name": "description_markdown",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				},
+				"created_on_text":
+				{
+					"name": "created_on_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', created_on / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"blueprint_system_from_idx":
+				{
+					"name": "blueprint_system_from_idx",
+					"columns": ["key", "system_from"],
+					"isUnique": true
+				},
+				"blueprint_idx_imgur_image":
+				{
+					"name": "blueprint_idx_imgur_image",
+					"columns": ["imgur_image_id", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_idx_blueprint_string":
+				{
+					"name": "blueprint_idx_blueprint_string",
+					"columns": ["blueprint_string_sha", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_idx_author":
+				{
+					"name": "blueprint_idx_author",
+					"columns": ["created_by_id", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_idx_last_updated_by":
+				{
+					"name": "blueprint_idx_last_updated_by",
+					"columns": ["last_updated_by_id", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_idx_system_to_from":
+				{
+					"name": "blueprint_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_key_system_to_pk":
+				{
+					"columns": ["key", "system_to"],
+					"name": "blueprint_key_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_collection_entry":
+		{
+			"name": "blueprint_collection_entry",
+			"columns":
+			{
+				"user_id":
+				{
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"blueprint_key":
+				{
+					"name": "blueprint_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"blueprint_collection_entry_system_from_idx":
+				{
+					"name": "blueprint_collection_entry_system_from_idx",
+					"columns": ["user_id", "blueprint_key", "system_from"],
+					"isUnique": true
+				},
+				"blueprint_collection_entry_idx_firebase_user":
+				{
+					"name": "blueprint_collection_entry_idx_firebase_user",
+					"columns": ["user_id", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_collection_entry_idx_blueprint":
+				{
+					"name": "blueprint_collection_entry_idx_blueprint",
+					"columns": ["blueprint_key", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_collection_entry_idx_system_to_from":
+				{
+					"name": "blueprint_collection_entry_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_collection_entry_user_id_blueprint_key_system_to_pk":
+				{
+					"columns": ["user_id", "blueprint_key", "system_to"],
+					"name": "blueprint_collection_entry_user_id_blueprint_key_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_game_data":
+		{
+			"name": "blueprint_game_data",
+			"columns":
+			{
+				"sha":
+				{
+					"name": "sha",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"position":
+				{
+					"name": "position",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"version_number":
+				{
+					"name": "version_number",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"version1":
+				{
+					"name": "version1",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"version2":
+				{
+					"name": "version2",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"version3":
+				{
+					"name": "version3",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"version4":
+				{
+					"name": "version4",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"version_string":
+				{
+					"name": "version_string",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"label":
+				{
+					"name": "label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"item_type":
+				{
+					"name": "item_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes":
+			{
+				"blueprint_game_data_idx_factorio_game_version":
+				{
+					"name": "blueprint_game_data_idx_factorio_game_version",
+					"columns": ["version_number"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_game_data_sha_position_pk":
+				{
+					"columns": ["sha", "position"],
+					"name": "blueprint_game_data_sha_position_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_game_data_entity":
+		{
+			"name": "blueprint_game_data_entity",
+			"columns":
+			{
+				"sha":
+				{
+					"name": "sha",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"position":
+				{
+					"name": "position",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"entity":
+				{
+					"name": "entity",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"count":
+				{
+					"name": "count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_game_data_entity_sha_position_entity_pk":
+				{
+					"columns": ["sha", "position", "entity"],
+					"name": "blueprint_game_data_entity_sha_position_entity_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_game_data_icon":
+		{
+			"name": "blueprint_game_data_icon",
+			"columns":
+			{
+				"sha":
+				{
+					"name": "sha",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"position":
+				{
+					"name": "position",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"index":
+				{
+					"name": "index",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"signal_name":
+				{
+					"name": "signal_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"signal_type":
+				{
+					"name": "signal_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_game_data_icon_sha_position_index_pk":
+				{
+					"columns": ["sha", "position", "index"],
+					"name": "blueprint_game_data_icon_sha_position_index_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_game_data_recipe":
+		{
+			"name": "blueprint_game_data_recipe",
+			"columns":
+			{
+				"sha":
+				{
+					"name": "sha",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"position":
+				{
+					"name": "position",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"recipe":
+				{
+					"name": "recipe",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"count":
+				{
+					"name": "count",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_game_data_recipe_sha_position_recipe_pk":
+				{
+					"columns": ["sha", "position", "recipe"],
+					"name": "blueprint_game_data_recipe_sha_position_recipe_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_private_data":
+		{
+			"name": "blueprint_private_data",
+			"columns":
+			{
+				"key":
+				{
+					"name": "key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"firebase_image_url":
+				{
+					"name": "firebase_image_url",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"thumbnail_data":
+				{
+					"name": "thumbnail_data",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"file_name":
+				{
+					"name": "file_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"blueprint_private_data_system_from_idx":
+				{
+					"name": "blueprint_private_data_system_from_idx",
+					"columns": ["key", "system_from"],
+					"isUnique": true
+				},
+				"blueprint_private_data_idx_system_to_from":
+				{
+					"name": "blueprint_private_data_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_private_data_key_system_to_pk":
+				{
+					"columns": ["key", "system_to"],
+					"name": "blueprint_private_data_key_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_string":
+		{
+			"name": "blueprint_string",
+			"columns":
+			{
+				"sha":
+				{
+					"name": "sha",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_by_id":
+				{
+					"name": "created_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_on":
+				{
+					"name": "created_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"blueprint_string":
+				{
+					"name": "blueprint_string",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_on_text":
+				{
+					"name": "created_on_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', created_on / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"blueprint_string_idx_created_by":
+				{
+					"name": "blueprint_string_idx_created_by",
+					"columns": ["created_by_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_string_mod":
+		{
+			"name": "blueprint_string_mod",
+			"columns":
+			{
+				"blueprint_string_sha":
+				{
+					"name": "blueprint_string_sha",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"mod_pack_name":
+				{
+					"name": "mod_pack_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes":
+			{
+				"blueprint_string_mod_idx_mod_pack":
+				{
+					"name": "blueprint_string_mod_idx_mod_pack",
+					"columns": ["mod_pack_name"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_string_mod_blueprint_string_sha_mod_pack_name_pk":
+				{
+					"columns": ["blueprint_string_sha", "mod_pack_name"],
+					"name": "blueprint_string_mod_blueprint_string_sha_mod_pack_name_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_tag":
+		{
+			"name": "blueprint_tag",
+			"columns":
+			{
+				"blueprint_key":
+				{
+					"name": "blueprint_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"tag_category":
+				{
+					"name": "tag_category",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"tag_name":
+				{
+					"name": "tag_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"blueprint_tag_system_from_idx":
+				{
+					"name": "blueprint_tag_system_from_idx",
+					"columns": ["blueprint_key", "tag_category", "tag_name", "system_from"],
+					"isUnique": true
+				},
+				"blueprint_tag_idx_blueprint":
+				{
+					"name": "blueprint_tag_idx_blueprint",
+					"columns": ["blueprint_key", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_tag_idx_tag":
+				{
+					"name": "blueprint_tag_idx_tag",
+					"columns": ["tag_category", "tag_name", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_tag_idx_system_to_from":
+				{
+					"name": "blueprint_tag_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_tag_blueprint_key_tag_category_tag_name_system_to_pk":
+				{
+					"columns": ["blueprint_key", "tag_category", "tag_name", "system_to"],
+					"name": "blueprint_tag_blueprint_key_tag_category_tag_name_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_version":
+		{
+			"name": "blueprint_version",
+			"columns":
+			{
+				"key":
+				{
+					"name": "key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"created_by_id":
+				{
+					"name": "created_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_on":
+				{
+					"name": "created_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"last_updated_by_id":
+				{
+					"name": "last_updated_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"number":
+				{
+					"name": "number",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				},
+				"created_on_text":
+				{
+					"name": "created_on_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', created_on / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"blueprint_version_system_from_idx":
+				{
+					"name": "blueprint_version_system_from_idx",
+					"columns": ["key", "system_from"],
+					"isUnique": true
+				},
+				"blueprint_version_idx_created_by":
+				{
+					"name": "blueprint_version_idx_created_by",
+					"columns": ["created_by_id", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_version_idx_last_updated_by":
+				{
+					"name": "blueprint_version_idx_last_updated_by",
+					"columns": ["last_updated_by_id", "system_to"],
+					"isUnique": false
+				},
+				"blueprint_version_idx_system_to_from":
+				{
+					"name": "blueprint_version_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"blueprint_version_key_system_to_pk":
+				{
+					"columns": ["key", "system_to"],
+					"name": "blueprint_version_key_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"blueprint_vote_summary":
+		{
+			"name": "blueprint_vote_summary",
+			"columns":
+			{
+				"key":
+				{
+					"name": "key",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"number_of_upvotes":
+				{
+					"name": "number_of_upvotes",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"comment":
+		{
+			"name": "comment",
+			"columns":
+			{
+				"id":
+				{
+					"name": "id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"reply_to_id":
+				{
+					"name": "reply_to_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"created_by_id":
+				{
+					"name": "created_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_on":
+				{
+					"name": "created_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"last_updated_by_id":
+				{
+					"name": "last_updated_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"blueprint_key":
+				{
+					"name": "blueprint_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"text":
+				{
+					"name": "text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"deleted":
+				{
+					"name": "deleted",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				},
+				"created_on_text":
+				{
+					"name": "created_on_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', created_on / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"comment_system_from_idx":
+				{
+					"name": "comment_system_from_idx",
+					"columns": ["id", "system_from"],
+					"isUnique": true
+				},
+				"comment_idx_reply_to":
+				{
+					"name": "comment_idx_reply_to",
+					"columns": ["reply_to_id", "system_to"],
+					"isUnique": false
+				},
+				"comment_idx_created_by":
+				{
+					"name": "comment_idx_created_by",
+					"columns": ["created_by_id", "system_to"],
+					"isUnique": false
+				},
+				"comment_idx_last_updated_by":
+				{
+					"name": "comment_idx_last_updated_by",
+					"columns": ["last_updated_by_id", "system_to"],
+					"isUnique": false
+				},
+				"comment_idx_system_to_from":
+				{
+					"name": "comment_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"comment_id_system_to_pk":
+				{
+					"columns": ["id", "system_to"],
+					"name": "comment_id_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"comment_version":
+		{
+			"name": "comment_version",
+			"columns":
+			{
+				"id":
+				{
+					"name": "id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"created_by_id":
+				{
+					"name": "created_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_on":
+				{
+					"name": "created_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"last_updated_by_id":
+				{
+					"name": "last_updated_by_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"number":
+				{
+					"name": "number",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				},
+				"created_on_text":
+				{
+					"name": "created_on_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', created_on / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"comment_version_system_from_idx":
+				{
+					"name": "comment_version_system_from_idx",
+					"columns": ["id", "system_from"],
+					"isUnique": true
+				},
+				"comment_version_idx_created_by":
+				{
+					"name": "comment_version_idx_created_by",
+					"columns": ["created_by_id", "system_to"],
+					"isUnique": false
+				},
+				"comment_version_idx_last_updated_by":
+				{
+					"name": "comment_version_idx_last_updated_by",
+					"columns": ["last_updated_by_id", "system_to"],
+					"isUnique": false
+				},
+				"comment_version_idx_system_to_from":
+				{
+					"name": "comment_version_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"comment_version_id_system_to_pk":
+				{
+					"columns": ["id", "system_to"],
+					"name": "comment_version_id_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"comment_vote":
+		{
+			"name": "comment_vote",
+			"columns":
+			{
+				"user_id":
+				{
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"comment_id":
+				{
+					"name": "comment_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"direction":
+				{
+					"name": "direction",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"comment_vote_system_from_idx":
+				{
+					"name": "comment_vote_system_from_idx",
+					"columns": ["user_id", "comment_id", "system_from"],
+					"isUnique": true
+				},
+				"comment_vote_idx_user":
+				{
+					"name": "comment_vote_idx_user",
+					"columns": ["user_id", "system_to"],
+					"isUnique": false
+				},
+				"comment_vote_idx_comment":
+				{
+					"name": "comment_vote_idx_comment",
+					"columns": ["comment_id", "system_to"],
+					"isUnique": false
+				},
+				"comment_vote_idx_system_to_from":
+				{
+					"name": "comment_vote_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"comment_vote_user_id_comment_id_system_to_pk":
+				{
+					"columns": ["user_id", "comment_id", "system_to"],
+					"name": "comment_vote_user_id_comment_id_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"data_import_timestamp":
+		{
+			"name": "data_import_timestamp",
+			"columns":
+			{
+				"name":
+				{
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"timestamp":
+				{
+					"name": "timestamp",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				},
+				"timestamp_text":
+				{
+					"name": "timestamp_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', timestamp / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"data_import_timestamp_system_from_idx":
+				{
+					"name": "data_import_timestamp_system_from_idx",
+					"columns": ["name", "system_from"],
+					"isUnique": true
+				},
+				"data_import_timestamp_idx_system_to_from":
+				{
+					"name": "data_import_timestamp_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"data_import_timestamp_name_system_to_pk":
+				{
+					"columns": ["name", "system_to"],
+					"name": "data_import_timestamp_name_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"disqus_comment":
+		{
+			"name": "disqus_comment",
+			"columns":
+			{
+				"id":
+				{
+					"name": "id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"reply_to_id":
+				{
+					"name": "reply_to_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"author_name":
+				{
+					"name": "author_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"created_on":
+				{
+					"name": "created_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"blueprint_key":
+				{
+					"name": "blueprint_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"text":
+				{
+					"name": "text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"deleted":
+				{
+					"name": "deleted",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				},
+				"created_on_text":
+				{
+					"name": "created_on_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', created_on / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"disqus_comment_system_from_idx":
+				{
+					"name": "disqus_comment_system_from_idx",
+					"columns": ["id", "system_from"],
+					"isUnique": true
+				},
+				"disqus_comment_idx_reply_to":
+				{
+					"name": "disqus_comment_idx_reply_to",
+					"columns": ["reply_to_id", "system_to"],
+					"isUnique": false
+				},
+				"disqus_comment_idx_author":
+				{
+					"name": "disqus_comment_idx_author",
+					"columns": ["author_name", "system_to"],
+					"isUnique": false
+				},
+				"disqus_comment_idx_system_to_from":
+				{
+					"name": "disqus_comment_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"disqus_comment_id_system_to_pk":
+				{
+					"columns": ["id", "system_to"],
+					"name": "disqus_comment_id_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"disqus_user":
+		{
+			"name": "disqus_user",
+			"columns":
+			{
+				"username":
+				{
+					"name": "username",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"name":
+				{
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"anonymous":
+				{
+					"name": "anonymous",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"disqus_user_system_from_idx":
+				{
+					"name": "disqus_user_system_from_idx",
+					"columns": ["username", "system_from"],
+					"isUnique": true
+				},
+				"disqus_user_idx_system_to_from":
+				{
+					"name": "disqus_user_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"disqus_user_username_system_to_pk":
+				{
+					"columns": ["username", "system_to"],
+					"name": "disqus_user_username_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"entity_mod_mapping":
+		{
+			"name": "entity_mod_mapping",
+			"columns":
+			{
+				"entity_name":
+				{
+					"name": "entity_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"mod":
+				{
+					"name": "mod",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"entity_mod_mapping_system_from_idx":
+				{
+					"name": "entity_mod_mapping_system_from_idx",
+					"columns": ["entity_name", "mod", "system_from"],
+					"isUnique": true
+				},
+				"entity_mod_mapping_idx_entity":
+				{
+					"name": "entity_mod_mapping_idx_entity",
+					"columns": ["entity_name", "system_to"],
+					"isUnique": false
+				},
+				"entity_mod_mapping_idx_system_to_from":
+				{
+					"name": "entity_mod_mapping_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"entity_mod_mapping_entity_name_mod_system_to_pk":
+				{
+					"columns": ["entity_name", "mod", "system_to"],
+					"name": "entity_mod_mapping_entity_name_mod_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"factorio_game_version":
+		{
+			"name": "factorio_game_version",
+			"columns":
+			{
+				"version_number":
+				{
+					"name": "version_number",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"version1":
+				{
+					"name": "version1",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"version2":
+				{
+					"name": "version2",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"version3":
+				{
+					"name": "version3",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"version4":
+				{
+					"name": "version4",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"version_string":
+				{
+					"name": "version_string",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"factorio_item":
+		{
+			"name": "factorio_item",
+			"columns":
+			{
+				"name":
+				{
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"mod_pack_name":
+				{
+					"name": "mod_pack_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"type":
+				{
+					"name": "type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"label":
+				{
+					"name": "label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"description":
+				{
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"icon_encoded_data":
+				{
+					"name": "icon_encoded_data",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"factorio_item_system_from_idx":
+				{
+					"name": "factorio_item_system_from_idx",
+					"columns": ["name", "mod_pack_name", "system_from"],
+					"isUnique": true
+				},
+				"factorio_item_idx_blueprint_game_data_entity":
+				{
+					"name": "factorio_item_idx_blueprint_game_data_entity",
+					"columns": ["name", "system_to"],
+					"isUnique": false
+				},
+				"factorio_item_idx_mod_pack":
+				{
+					"name": "factorio_item_idx_mod_pack",
+					"columns": ["mod_pack_name", "system_to"],
+					"isUnique": false
+				},
+				"factorio_item_idx_system_to_from":
+				{
+					"name": "factorio_item_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"factorio_item_name_mod_pack_name_system_to_pk":
+				{
+					"columns": ["name", "mod_pack_name", "system_to"],
+					"name": "factorio_item_name_mod_pack_name_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"firebase_user":
+		{
+			"name": "firebase_user",
+			"columns":
+			{
+				"user_id":
+				{
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"display_name":
+				{
+					"name": "display_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"provider_display_name":
+				{
+					"name": "provider_display_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"email":
+				{
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"email_verified":
+				{
+					"name": "email_verified",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"photo_u_r_l":
+				{
+					"name": "photo_u_r_l",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"provider_id":
+				{
+					"name": "provider_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"firebase_user_system_from_idx":
+				{
+					"name": "firebase_user_system_from_idx",
+					"columns": ["user_id", "system_from"],
+					"isUnique": true
+				},
+				"firebase_user_idx_system_to_from":
+				{
+					"name": "firebase_user_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"firebase_user_user_id_system_to_pk":
+				{
+					"columns": ["user_id", "system_to"],
+					"name": "firebase_user_user_id_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"firebase_user_version":
+		{
+			"name": "firebase_user_version",
+			"columns":
+			{
+				"user_id":
+				{
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"number":
+				{
+					"name": "number",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"firebase_user_version_system_from_idx":
+				{
+					"name": "firebase_user_version_system_from_idx",
+					"columns": ["user_id", "system_from"],
+					"isUnique": true
+				},
+				"firebase_user_version_idx_system_to_from":
+				{
+					"name": "firebase_user_version_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"firebase_user_version_user_id_system_to_pk":
+				{
+					"columns": ["user_id", "system_to"],
+					"name": "firebase_user_version_user_id_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"imgur_image":
+		{
+			"name": "imgur_image",
+			"columns":
+			{
+				"imgur_id":
+				{
+					"name": "imgur_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"imgur_type":
+				{
+					"name": "imgur_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"delete_hash":
+				{
+					"name": "delete_hash",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"height":
+				{
+					"name": "height",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"width":
+				{
+					"name": "width",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"imgur_image_system_from_idx":
+				{
+					"name": "imgur_image_system_from_idx",
+					"columns": ["imgur_id", "system_from"],
+					"isUnique": true
+				},
+				"imgur_image_idx_system_to_from":
+				{
+					"name": "imgur_image_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"imgur_image_imgur_id_system_to_pk":
+				{
+					"columns": ["imgur_id", "system_to"],
+					"name": "imgur_image_imgur_id_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"mod_pack":
+		{
+			"name": "mod_pack",
+			"columns":
+			{
+				"name":
+				{
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"description":
+				{
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"mod_pack_system_from_idx":
+				{
+					"name": "mod_pack_system_from_idx",
+					"columns": ["name", "system_from"],
+					"isUnique": true
+				},
+				"mod_pack_idx_system_to_from":
+				{
+					"name": "mod_pack_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"mod_pack_name_system_to_pk":
+				{
+					"columns": ["name", "system_to"],
+					"name": "mod_pack_name_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"recipe_mod_mapping":
+		{
+			"name": "recipe_mod_mapping",
+			"columns":
+			{
+				"recipe_name":
+				{
+					"name": "recipe_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"mod":
+				{
+					"name": "mod",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"recipe_mod_mapping_system_from_idx":
+				{
+					"name": "recipe_mod_mapping_system_from_idx",
+					"columns": ["recipe_name", "mod", "system_from"],
+					"isUnique": true
+				},
+				"recipe_mod_mapping_idx_recipe":
+				{
+					"name": "recipe_mod_mapping_idx_recipe",
+					"columns": ["recipe_name", "system_to"],
+					"isUnique": false
+				},
+				"recipe_mod_mapping_idx_system_to_from":
+				{
+					"name": "recipe_mod_mapping_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"recipe_mod_mapping_recipe_name_mod_system_to_pk":
+				{
+					"columns": ["recipe_name", "mod", "system_to"],
+					"name": "recipe_mod_mapping_recipe_name_mod_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"tag":
+		{
+			"name": "tag",
+			"columns":
+			{
+				"category":
+				{
+					"name": "category",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"name":
+				{
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"ordinal":
+				{
+					"name": "ordinal",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"tag_system_from_idx":
+				{
+					"name": "tag_system_from_idx",
+					"columns": ["category", "name", "system_from"],
+					"isUnique": true
+				},
+				"tag_idx_system_to_from":
+				{
+					"name": "tag_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"tag_category_name_system_to_pk":
+				{
+					"columns": ["category", "name", "system_to"],
+					"name": "tag_category_name_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"user_entitlement":
+		{
+			"name": "user_entitlement",
+			"columns":
+			{
+				"user_id":
+				{
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"user_role":
+				{
+					"name": "user_role",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"user_entitlement_system_from_idx":
+				{
+					"name": "user_entitlement_system_from_idx",
+					"columns": ["user_id", "user_role", "system_from"],
+					"isUnique": true
+				},
+				"user_entitlement_idx_firebase_user":
+				{
+					"name": "user_entitlement_idx_firebase_user",
+					"columns": ["user_id", "system_to"],
+					"isUnique": false
+				},
+				"user_entitlement_idx_system_to_from":
+				{
+					"name": "user_entitlement_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"user_entitlement_user_id_user_role_system_to_pk":
+				{
+					"columns": ["user_id", "user_role", "system_to"],
+					"name": "user_entitlement_user_id_user_role_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"vote":
+		{
+			"name": "vote",
+			"columns":
+			{
+				"user_id":
+				{
+					"name": "user_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"blueprint_key":
+				{
+					"name": "blueprint_key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from":
+				{
+					"name": "system_from",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_to":
+				{
+					"name": "system_to",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 253402300799999
+				},
+				"direction":
+				{
+					"name": "direction",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"system_from_text":
+				{
+					"name": "system_from_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_from / 1000.0, 'unixepoch'))"
+					}
+				},
+				"system_to_text":
+				{
+					"name": "system_to_text",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"generated":
+					{
+						"type": "virtual",
+						"as": "(strftime('%Y-%m-%d %H:%M:%f', system_to / 1000.0, 'unixepoch'))"
+					}
+				}
+			},
+			"indexes":
+			{
+				"vote_system_from_idx":
+				{
+					"name": "vote_system_from_idx",
+					"columns": ["user_id", "blueprint_key", "system_from"],
+					"isUnique": true
+				},
+				"vote_idx_firebase_user":
+				{
+					"name": "vote_idx_firebase_user",
+					"columns": ["user_id", "system_to"],
+					"isUnique": false
+				},
+				"vote_idx_blueprint":
+				{
+					"name": "vote_idx_blueprint",
+					"columns": ["blueprint_key", "system_to"],
+					"isUnique": false
+				},
+				"vote_idx_system_to_from":
+				{
+					"name": "vote_idx_system_to_from",
+					"columns": ["system_to", "system_from"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys":
+			{
+				"vote_user_id_blueprint_key_system_to_pk":
+				{
+					"columns": ["user_id", "blueprint_key", "system_to"],
+					"name": "vote_user_id_blueprint_key_system_to_pk"
+				}
+			},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		}
+	},
+	"views": {},
+	"enums": {},
+	"_meta":
+	{
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	},
+	"internal":
+	{
+		"indexes": {}
+	}
+}

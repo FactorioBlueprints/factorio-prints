@@ -1,0 +1,28 @@
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"name": "factorio-prints-blueprints",
+	"account_id": "d6a6604075c347336a008699794d5fb9",
+	"compatibility_date": "2026-08-23",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": false,
+	"routes": [
+		{
+			"pattern": "blueprints.factorioprints.com",
+			"custom_domain": true,
+		},
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "factorio-prints-blueprints",
+			"database_id": "9bfdca55-7427-4fdf-b287-2e5418c4c8ee",
+			"migrations_dir": "migrations",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "BLUEPRINT_STRINGS",
+			"bucket_name": "factorio-prints-blueprint-strings",
+		},
+	],
+}
