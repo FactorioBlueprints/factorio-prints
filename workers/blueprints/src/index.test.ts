@@ -322,6 +322,72 @@ describe("POST /reconcile", () =>
 	});
 });
 
+describe("a failing database", () =>
+{
+	it("answers 503 in JSON and logs the database's own error, not only the query that failed", async () =>
+	{
+		const failing =
+		{
+			...env,
+			DB:
+			{
+				prepare: () =>
+				{
+					throw new Error(
+						"D1_ERROR: storage operation exceeded timeout",
+						{
+							cause: new Error("the object was reset"),
+						},
+					);
+				},
+			} as unknown as D1Database,
+		};
+		const logged: string[] = [];
+		const original = console.error;
+		console.error = (...parts: unknown[]) =>
+		{
+			logged.push(parts.join(" "));
+		};
+		let responses: Response[];
+		try
+		{
+			responses = [
+				await worker.fetch(new Request("https://blueprints.factorioprints.com/blueprints/any"), failing),
+				await worker.fetch(new Request("https://blueprints.factorioprints.com/blueprintSummaries"), failing),
+			];
+		}
+		finally
+		{
+			console.error = original;
+		}
+
+		expect(
+			{
+				statuses: responses.map((response) => response.status),
+				bodies: await Promise.all(responses.map((response) => response.json())),
+				logsTheCause: logged.map(
+					(line) =>
+						line.includes("D1_ERROR: storage operation exceeded timeout") &&
+						line.includes("the object was reset"),
+				),
+			},
+		).toEqual(
+			{
+				statuses: [503, 503],
+				bodies: [
+					{
+						error: "the blueprint store is unavailable",
+					},
+					{
+						error: "the blueprint store is unavailable",
+					},
+				],
+				logsTheCause: [true, true],
+			},
+		);
+	});
+});
+
 describe("unknown routes", () =>
 {
 	it("answer 404", async () =>
