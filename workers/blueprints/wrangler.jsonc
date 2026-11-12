@@ -10,8 +10,9 @@
 	{
 		// Cloud Functions mint their ID token for this audience.
 		"INGEST_AUDIENCE": "https://blueprints.factorioprints.com/ingest",
-		// Comma-separated service accounts allowed to call /ingest and /reconcile: the v2 Cloud Functions' runtime account.
-		"INGEST_SERVICE_ACCOUNTS": "329845993350-compute@developer.gserviceaccount.com",
+		// Comma-separated service accounts allowed to call /ingest and /reconcile: the runtime accounts of the second
+		// and first generation Cloud Functions. The account-deletion trigger is first generation.
+		"INGEST_SERVICE_ACCOUNTS": "329845993350-compute@developer.gserviceaccount.com,facorio-blueprints@appspot.gserviceaccount.com",
 		"FIREBASE_PROJECT_ID": "facorio-blueprints",
 	},
 	"routes": [
