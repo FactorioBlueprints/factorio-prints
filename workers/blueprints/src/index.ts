@@ -305,7 +305,19 @@ const handleModerator = async (
 const BLUEPRINT_PATH = /^\/blueprints\/([^/]+)$/;
 const MODERATOR_PATH = /^\/moderator\/blueprints\/([^/]+)\/(history|restore)$/;
 
-export const createWorker = (options: WorkerOptions) => (
+/** Every message in an error's chain of causes: a query builder wraps the database's own error, which says why. */
+const causeChain = (thrown: unknown): string =>
+{
+	const messages: string[] = [];
+	for (let current = thrown; current !== undefined && current !== null && messages.length < 10;)
+	{
+		messages.push(current instanceof Error ? `${current.name}: ${current.message}` : String(current));
+		current = current instanceof Error ? current.cause : undefined;
+	}
+	return messages.join(" <- ");
+};
+
+const createRoutes = (options: WorkerOptions) => (
 {
 	async fetch(request: Request, env: Env): Promise<Response>
 	{
@@ -330,6 +342,29 @@ export const createWorker = (options: WorkerOptions) => (
 		return error("not found", 404);
 	},
 });
+
+/**
+ * The Worker: its routes, with a failure of the store (the database is briefly unavailable after a long query, for
+ * one) logged with its full cause and answered as a JSON 503 rather than an opaque platform error page.
+ */
+export const createWorker = (options: WorkerOptions) =>
+{
+	const routes = createRoutes(options);
+	return {
+		async fetch(request: Request, env: Env): Promise<Response>
+		{
+			try
+			{
+				return await routes.fetch(request, env);
+			}
+			catch (thrown)
+			{
+				console.error(`${request.method} ${new URL(request.url).pathname} failed: ${causeChain(thrown)}`);
+				return error("the blueprint store is unavailable", 503);
+			}
+		},
+	};
+};
 
 const nowSeconds = () => Math.floor(Date.now() / 1000);
 
