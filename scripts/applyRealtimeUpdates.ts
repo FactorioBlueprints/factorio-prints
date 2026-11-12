@@ -1,7 +1,7 @@
-import {execFileSync} from "node:child_process";
 import {readFile} from "node:fs/promises";
 import {parseArgs} from "node:util";
 import {chunkUpdates, type RealtimeUpdates} from "./realtimeRepairCore.ts";
+import {writeUpdates} from "./realtimeRest.ts";
 
 // Applies a multi-path update file written by planRealtimeRepairs.ts to the Realtime Database, a limited number of
 // blueprints or users per write, with the application default credentials already on the machine. Without
@@ -57,37 +57,12 @@ const main = async (): Promise<void> =>
 	{
 		return;
 	}
-	const token = execFileSync(
-		"gcloud",
-		["auth", "application-default", "print-access-token"],
-		{
-			encoding: "utf8",
-		},
-	).trim();
-	for (const [index, chunk] of chunks.entries())
-	{
-		if (index < Number(values.skip)) continue;
-		const response = await fetch(
-			`${values["database-url"]}/.json`,
-			{
-				method: "PATCH",
-				headers:
-				{
-					authorization: `Bearer ${token}`,
-					"content-type": "application/json",
-				},
-				body: JSON.stringify(chunk),
-			},
-		);
-		if (!response.ok)
-		{
-			throw new Error(
-				`Write ${index + 1} of ${chunks.length} returned ${response.status}: ${await response.text()}. ` +
-					`${index} writes went through; resume with --skip ${index}.`,
-			);
-		}
-		console.log(`write ${index + 1} of ${chunks.length} done`);
-	}
+	await writeUpdates(
+		values["database-url"],
+		JSON.parse(await readFile(values.updates, "utf8")) as RealtimeUpdates,
+		Number(values["per-write"]),
+		Number(values.skip),
+	);
 };
 
 await main();

@@ -1,5 +1,12 @@
 import {describe, expect, it} from "vite-plus/test";
-import {chunkUpdates, planCounterRepairs, planDateRepairs, planFavoriteRemovals} from "../scripts/realtimeRepairCore";
+import
+{
+	chunkUpdates,
+	planCounterRepairs,
+	planDateRepairs,
+	planFavoriteRemovals,
+	selectCounterWrites,
+} from "../scripts/realtimeRepairCore";
 
 describe("planDateRepairs", () =>
 {
@@ -141,5 +148,67 @@ describe("chunkUpdates", () =>
 				"/blueprints/c/lastUpdatedDate": 3,
 			},
 		]);
+	});
+});
+
+describe("selectCounterWrites", () =>
+{
+	it("writes a counter only where the live value is still the one the plan was made from, and reports the rest as skipped", () =>
+	{
+		const repairs = [
+			{
+				id: "stale",
+				blueprintCounter: 3,
+				summaryCounter: 9,
+				favorites: 9,
+				newValue: 9,
+			},
+			{
+				id: "favoritedSince",
+				blueprintCounter: 3,
+				summaryCounter: 9,
+				favorites: 9,
+				newValue: 9,
+			},
+			{
+				id: "both",
+				blueprintCounter: 5,
+				summaryCounter: 4,
+				favorites: 2,
+				newValue: 2,
+			},
+		];
+
+		expect(
+			selectCounterWrites(
+				repairs,
+				new Map([
+					["/blueprints/stale/numberOfFavorites", 3],
+					["/blueprints/favoritedSince/numberOfFavorites", 10],
+					["/blueprints/both/numberOfFavorites", 5],
+					["/blueprintSummaries/both/numberOfFavorites", 2],
+				]),
+			),
+		).toStrictEqual(
+			{
+				updates:
+				{
+					"/blueprints/stale/numberOfFavorites": 9,
+					"/blueprints/both/numberOfFavorites": 2,
+				},
+				skipped: [
+					{
+						path: "/blueprints/favoritedSince/numberOfFavorites",
+						planned: 3,
+						live: 10,
+					},
+					{
+						path: "/blueprintSummaries/both/numberOfFavorites",
+						planned: 4,
+						live: 2,
+					},
+				],
+			},
+		);
 	});
 });

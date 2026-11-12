@@ -151,6 +151,63 @@ export const planCounterRepairs = (blueprints: readonly FavoritedBlueprint[], ac
 	};
 };
 
+export interface CounterRepair
+{
+	id: string;
+	blueprintCounter: number;
+	summaryCounter: number;
+	favorites: number;
+	newValue: number;
+}
+
+/** The counter paths a repair would write, each with the value the plan saw there. */
+export const counterPaths = (repair: CounterRepair): [path: string, planned: number][] =>
+	(
+		[
+			[`/blueprints/${repair.id}/numberOfFavorites`, repair.blueprintCounter],
+			[`/blueprintSummaries/${repair.id}/numberOfFavorites`, repair.summaryCounter],
+		] as [string, number][]
+	).filter(([, planned]) => planned !== repair.newValue);
+
+/**
+ * A plan is made from a backup, and favorites keep arriving. A counter is written only where its live value is
+ * still the one the plan saw; anywhere else something has recounted it since, and it is skipped and reported.
+ */
+export const selectCounterWrites = (repairs: readonly CounterRepair[], live: ReadonlyMap<string, unknown>) =>
+{
+	const updates: RealtimeUpdates = {};
+	const skipped:
+	{
+		path: string;
+		planned: number;
+		live: unknown;
+	}[] = [];
+	for (const repair of repairs)
+	{
+		for (const [path, planned] of counterPaths(repair))
+		{
+			if (live.get(path) === planned)
+			{
+				updates[path] = repair.newValue;
+			}
+			else
+			{
+				skipped.push(
+					{
+						path,
+						planned,
+						live: live.get(path) ?? null,
+					},
+				);
+			}
+		}
+	}
+	return {
+		updates,
+		skipped,
+	};
+};
+
 /**
  * Splits a plan into updates of at most `subjects` blueprints or users each, keeping one subject's paths together.
  * One write may trigger only a limited number of Cloud Functions, and each of these paths triggers some.
