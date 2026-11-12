@@ -1,6 +1,9 @@
 import type {DatabaseSync} from "node:sqlite";
 import {drizzle} from "drizzle-orm/d1";
+import type {AuthUser} from "../../../functions/src/ingestEvents.ts";
 import {reconcile, type ReconcileRequest} from "../src/reconcile/reconcile.ts";
+import {dataImportTimestamp} from "../src/schema.ts";
+import {commit, createUnitOfWork, temporalTable, upsert} from "../src/temporal/temporal.ts";
 import {DumpChildScanner} from "../../../scripts/dumpStreamCore.ts";
 import {localD1} from "./localD1.ts";
 import {type BuildOptions, buildReconcileRequests, type RealtimeDump} from "../../../scripts/reconcileCore.ts";
@@ -9,7 +12,13 @@ import {type BuildOptions, buildReconcileRequests, type RealtimeDump} from "../.
 // reconcile code: every node of the dump becomes the change event live ingest would send, and an event is applied
 // only where the stored rows differ. A blueprint can be timed by its own lastUpdatedDate, so the version this
 // brings in is dated by the save that made it; an unchanged blueprint gets no version even when its date moved.
-// Everything without a date of its own (favorites, collections, moderators, tags, deletions) uses the dump instant.
+// Everything without a date of its own (favorites, collections, profiles, moderators, tags, deletions) uses the
+// dump instant, which also becomes the import watermark.
+//
+// User profiles come from the dump's own users node. The fields only an account record carries (photo, provider,
+// and the email and provider name where the profile lacks them) are kept from the stored row, so a profile is
+// never blanked for want of an account export. Without that export, deleted accounts cannot be told apart from
+// live ones, so no account is treated as deleted.
 
 export interface StringStore
 {
@@ -44,6 +53,40 @@ export interface IngestDumpReport
 
 type Node = Record<string, unknown>;
 
+const importTimestamps = temporalTable(dataImportTimestamp, ["name"]);
+const WATERMARK_NAME = "firebase";
+
+interface StoredUser
+{
+	user_id: string;
+	provider_display_name: string | null;
+	email: string | null;
+	photo_u_r_l: string | null;
+	provider_id: string | null;
+}
+
+const text = (value: unknown): string | null => (typeof value === "string" ? value : null);
+
+/** Stands in for the account record: the profile's own account fields, else what the database already holds. */
+const accountOf = (userId: string, profile: Node, stored: StoredUser | undefined): AuthUser =>
+{
+	const providerId = stored?.provider_id ?? text(profile.providerId);
+	return {
+		localId: userId,
+		displayName: stored?.provider_display_name ?? null,
+		email: stored?.email ?? null,
+		photoUrl: text(profile.photoURL) ?? stored?.photo_u_r_l ?? null,
+		providerUserInfo:
+			providerId === null
+				? null
+				: [
+						{
+							providerId,
+						},
+					],
+	};
+};
+
 export const ingestDump = async (options: IngestDumpOptions): Promise<IngestDumpReport> =>
 {
 	const {dumpTime, mode} = options;
@@ -74,7 +117,7 @@ export const ingestDump = async (options: IngestDumpOptions): Promise<IngestDump
 		}
 	};
 	/** Sends the events of a part of the dump. Deletions are sent once, at the end, from every key seen. */
-	const sendPart = async (part: RealtimeDump): Promise<void> =>
+	const sendPart = async (part: RealtimeDump, authUsers?: readonly AuthUser[]): Promise<void> =>
 	{
 		const requests = buildReconcileRequests(
 			part,
@@ -83,6 +126,7 @@ export const ingestDump = async (options: IngestDumpOptions): Promise<IngestDump
 				mode,
 				chunkSize: 500,
 				blueprintTime: options.blueprintTime,
+				authUsers,
 			},
 		);
 		for (const request of requests)
@@ -147,10 +191,22 @@ export const ingestDump = async (options: IngestDumpOptions): Promise<IngestDump
 	report.blueprintsInDump = blueprintKeys.length;
 
 	// Favorites and collection entries only count for blueprints that exist, so users follow the blueprints.
+	const storedUsers = new Map(
+		(
+			options.database
+				.prepare(
+					`SELECT user_id, provider_display_name, email, photo_u_r_l, provider_id FROM firebase_user
+					WHERE system_to = 253402300799999`,
+				)
+				.all() as unknown as StoredUser[]
+		).map((user) => [user.user_id, user]),
+	);
+	const users = small.users as Record<string, Node>;
 	await sendPart(
 		{
-			users: small.users as Record<string, Node>,
+			users,
 		},
+		Object.entries(users).map(([userId, profile]) => accountOf(userId, profile, storedUsers.get(userId))),
 	);
 	await send(
 		{
@@ -160,5 +216,18 @@ export const ingestDump = async (options: IngestDumpOptions): Promise<IngestDump
 			dumpTime,
 		},
 	);
+	if (mode === "repair")
+	{
+		const unitOfWork = createUnitOfWork(dependencies.db, dumpTime);
+		await upsert(
+			unitOfWork,
+			importTimestamps,
+			{
+				name: WATERMARK_NAME,
+				timestamp: dumpTime,
+			},
+		);
+		await commit(unitOfWork);
+	}
 	return report;
 };

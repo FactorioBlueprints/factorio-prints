@@ -63,6 +63,20 @@ describe("ingestDump", () =>
 							old: blueprint("Old", savedBeforeBackup),
 							gone: blueprint("Gone", savedBeforeBackup),
 						},
+						users:
+						{
+							alice:
+							{
+								displayName: "Alice",
+								email: "alice@example.com",
+								photoURL: "https://example.com/alice.png",
+								providerId: "google.com",
+								favorites:
+								{
+									old: true,
+								},
+							},
+						},
 					},
 				),
 				dumpTime: backupTime,
@@ -91,12 +105,20 @@ describe("ingestDump", () =>
 						},
 						users:
 						{
+							// Renamed, and the dump no longer carries the fields only the account record has.
 							alice:
 							{
+								displayName: "Alice B",
 								favorites:
 								{
+									old: true,
 									created: true,
 								},
+							},
+							bob:
+							{
+								displayName: "Bob",
+								providerId: "github.com",
 							},
 						},
 					},
@@ -118,12 +140,23 @@ describe("ingestDump", () =>
 						...row,
 					})),
 				votes: database
-					.prepare("SELECT user_id, blueprint_key, system_from FROM vote")
+					.prepare("SELECT user_id, blueprint_key, system_from FROM vote ORDER BY system_from")
 					.all()
 					.map((row) => (
 					{
 						...row,
 					})),
+				users: database
+					.prepare(
+						`SELECT user_id, display_name, email, photo_u_r_l, provider_id, system_from, system_to
+						FROM firebase_user ORDER BY user_id, system_from`,
+					)
+					.all()
+					.map((row) => Object.values(row).join(" | ")),
+				watermark: database
+					.prepare("SELECT timestamp, system_from, system_to FROM data_import_timestamp ORDER BY system_from")
+					.all()
+					.map((row) => Object.values(row).join(" | ")),
 				newStrings: newStrings.stored.size,
 			},
 		).toStrictEqual(
@@ -131,8 +164,8 @@ describe("ingestDump", () =>
 				report:
 				{
 					blueprintsInDump: 4,
-					events: 5,
-					drifting: 4,
+					events: 7,
+					drifting: 6,
 					stale: 1,
 					ignored: 0,
 					changes: expect.objectContaining(
@@ -141,6 +174,8 @@ describe("ingestDump", () =>
 							"blueprint:updated": 1,
 							"blueprint:phased-out": 1,
 							"vote:inserted": 1,
+							"firebase_user:inserted": 1,
+							"firebase_user:updated": 1,
 						},
 					) as unknown,
 				},
@@ -185,10 +220,21 @@ describe("ingestDump", () =>
 				votes: [
 					{
 						user_id: "alice",
+						blueprint_key: "old",
+						system_from: backupTime,
+					},
+					{
+						user_id: "alice",
 						blueprint_key: "created",
 						system_from: dumpTime,
 					},
 				],
+				users: [
+					`alice | Alice | alice@example.com | https://example.com/alice.png | google.com | ${backupTime} | ${dumpTime}`,
+					`alice | Alice B | alice@example.com | https://example.com/alice.png | google.com | ${dumpTime} | ${sentinel}`,
+					`bob | Bob |  |  | github.com | ${dumpTime} | ${sentinel}`,
+				],
+				watermark: [`${backupTime} | ${backupTime} | ${dumpTime}`, `${dumpTime} | ${dumpTime} | ${sentinel}`],
 				newStrings: 1,
 			},
 		);
