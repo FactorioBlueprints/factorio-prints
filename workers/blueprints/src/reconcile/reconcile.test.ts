@@ -51,6 +51,13 @@ const count = async (table: string) =>
 		count: number;
 	}>())!.count;
 
+const watermarks = async () =>
+	(
+		await env.DB.prepare(
+			"SELECT name, timestamp, system_from FROM data_import_timestamp WHERE system_to = 253402300799999",
+		).all()
+	).results;
+
 describe("reconcile", () =>
 {
 	it("reports drift in shadow mode without writing anything", async () =>
@@ -213,6 +220,7 @@ describe("reconcile", () =>
 				key: "gone",
 			},
 		]);
+		expect(await watermarks()).toEqual([]);
 
 		await reconcile(
 			dependencies(),
@@ -232,6 +240,23 @@ describe("reconcile", () =>
 				},
 			),
 		).toBeUndefined();
+		// Closing a dump in repair mode records its instant as the import watermark, and an older dump cannot move it back.
+		await reconcile(
+			dependencies(),
+			{
+				mode: "repair",
+				events: [],
+				expectedBlueprintKeys: [key],
+				dumpTime: dumpTime - 1000,
+			},
+		);
+		expect(await watermarks()).toEqual([
+			{
+				name: "firebase",
+				timestamp: dumpTime,
+				system_from: dumpTime,
+			},
+		]);
 		expect(
 			await findCurrent(
 				db,
