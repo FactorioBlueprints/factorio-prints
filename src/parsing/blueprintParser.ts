@@ -1,29 +1,10 @@
-import atob from "atob";
-import {unzlibSync, zlibSync} from "fflate";
+import {zlibSync} from "fflate";
 import {type BlueprintBook, type RawBlueprintData, validateRawBlueprintData} from "../schemas";
 import {type CompressionSettings, DEFAULT_COMPRESSION_SETTINGS} from "./compressionSettings";
+import {BlueprintError, decodeBlueprintJson} from "./blueprintDecoding";
 import {getErrorMessage} from "./errors";
 
-export class BlueprintError extends Error
-{
-	public cause?: Error;
-
-	constructor(
-		message: string,
-		options?:
-		{
-			cause?: Error;
-		},
-	)
-	{
-		super(message);
-		this.name = "BlueprintError";
-		if (options?.cause)
-		{
-			this.cause = options.cause;
-		}
-	}
-}
+export {BlueprintError};
 
 export function deserializeBlueprint(
 	blueprintData: string,
@@ -33,62 +14,7 @@ export function deserializeBlueprint(
 	},
 ): RawBlueprintData
 {
-	if (!blueprintData.startsWith("0"))
-	{
-		throw new BlueprintError(
-			`Unknown blueprint format: string does not start with '0'.\nStarts with:\n'${blueprintData.slice(0, 80)}'`,
-		);
-	}
-
-	const base64String = blueprintData.slice(1);
-
-	let bytes: Uint8Array;
-	try
-	{
-		bytes = Uint8Array.from(atob(base64String), (c: string) => c.charCodeAt(0));
-	}
-	catch (error)
-	{
-		throw new BlueprintError(
-			"Invalid base64 data",
-			{
-				cause: error as Error,
-			},
-		);
-	}
-
-	let decompressedBytes: Uint8Array;
-	try
-	{
-		decompressedBytes = unzlibSync(bytes);
-	}
-	catch (error)
-	{
-		throw new BlueprintError(
-			"Failed to decompress blueprint data",
-			{
-				cause: error as Error,
-			},
-		);
-	}
-
-	const decompressedStr = new TextDecoder().decode(decompressedBytes);
-
-	let parsedData: unknown;
-	try
-	{
-		parsedData = JSON.parse(decompressedStr.trim());
-	}
-	catch (error)
-	{
-		throw new BlueprintError(
-			"Invalid JSON in blueprint data",
-			{
-				cause: error as Error,
-			},
-		);
-	}
-
+	const parsedData = decodeBlueprintJson(blueprintData);
 	const result = validateRawBlueprintData(parsedData, context);
 
 	return result;
