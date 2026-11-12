@@ -13,7 +13,13 @@ export default defineConfig(
 						environment: "jsdom",
 						globals: true,
 						setupFiles: ["./test/setup.ts"],
-						exclude: ["**/.llm/**", "**/node_modules/**", "workers/blueprints/**"],
+						// The Worker's own tests run in workerd, below; workers/blueprints/local runs on Node.
+						exclude: [
+							"**/.llm/**",
+							"**/node_modules/**",
+							"workers/blueprints/src/**",
+							"workers/blueprints/test/**",
+						],
 					},
 				},
 				// Runs inside workerd against real D1, so it needs its own pool.
