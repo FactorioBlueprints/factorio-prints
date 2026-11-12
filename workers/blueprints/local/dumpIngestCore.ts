@@ -25,7 +25,7 @@ export interface StringStore
 
 export interface IngestDumpOptions extends Pick<
 	DumpReconcileOptions,
-	"readDump" | "dumpTime" | "blueprintTime" | "mode"
+	"readDump" | "dumpTime" | "blueprintTime" | "mode" | "amendAudit"
 >
 {
 	database: DatabaseSync;
@@ -89,6 +89,7 @@ export const ingestDump = async (options: IngestDumpOptions): Promise<DumpReconc
 			dumpTime: options.dumpTime,
 			blueprintTime: options.blueprintTime,
 			mode: options.mode,
+			amendAudit: options.amendAudit,
 			// Nothing limits the calls of one request here, unlike on the Worker.
 			chunkSize: 500,
 			send: (request) => reconcile(dependencies, request as ReconcileRequest),

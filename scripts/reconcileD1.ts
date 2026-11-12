@@ -17,7 +17,8 @@ import type {ReconcileRequestBody, ReconcileResponse} from "./reconcileCore.ts";
 // with gcloud and renews it during a long run; otherwise INGEST_ID_TOKEN must hold one. --auth-export is a listing
 // from scripts/exportAuthUsers.ts: with it, profiles are reconciled and a user without an account is marked
 // deleted; without it, profiles are left alone. A request the Worker refuses stops the run, naming the request, and
-// --skip-requests <n> resumes after the n requests that went through.
+// --skip-requests <n> resumes after the n requests that went through. --amend-audit also corrects a blueprint's
+// created date and author in place where nothing else about it differs, without a new version.
 
 const TOKEN_LIFETIME_MS = 45 * 60_000;
 
@@ -68,6 +69,11 @@ const main = async (): Promise<void> =>
 					type: "boolean",
 					default: false,
 				},
+				"amend-audit":
+				{
+					type: "boolean",
+					default: false,
+				},
 			},
 		},
 	);
@@ -77,7 +83,7 @@ const main = async (): Promise<void> =>
 	if (!dump || Number.isNaN(dumpTime) || (!impersonate && !process.env.INGEST_ID_TOKEN))
 	{
 		throw new Error(
-			"Usage: [INGEST_ID_TOKEN=<token>] node scripts/reconcileD1.ts --dump <instant>_data.json[.gz] [--impersonate <service account>] [--dump-time <ISO instant>] [--auth-export <file>] [--chunk-size 20] [--skip-requests <n>] [--repair]",
+			"Usage: [INGEST_ID_TOKEN=<token>] node scripts/reconcileD1.ts --dump <instant>_data.json[.gz] [--impersonate <service account>] [--dump-time <ISO instant>] [--auth-export <file>] [--chunk-size 20] [--skip-requests <n>] [--amend-audit] [--repair]",
 		);
 	}
 
@@ -125,6 +131,7 @@ const main = async (): Promise<void> =>
 				drift: [],
 				stale: 0,
 				ignored: 0,
+				amended: 0,
 			};
 		}
 		const response = await fetch(
@@ -166,6 +173,7 @@ const main = async (): Promise<void> =>
 			blueprintTime: "lastUpdatedDate",
 			mode: values.repair ? "repair" : "shadow",
 			chunkSize: Number(values["chunk-size"]),
+			amendAudit: values["amend-audit"],
 			send,
 			accountOf: accounts && ((userId) => accounts.get(userId) ?? null),
 		},
