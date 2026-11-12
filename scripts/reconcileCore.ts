@@ -52,7 +52,7 @@ export interface ReconcileRequestBody
 	dumpTime?: number;
 }
 
-export interface ReconcileReport
+export interface ReconcileResponse
 {
 	drift:
 	{
@@ -68,6 +68,11 @@ export interface BuildOptions
 	dumpTime: number;
 	mode: "shadow" | "repair";
 	chunkSize: number;
+	/**
+	 * The event time of a blueprint: the dump instant (the default), or the blueprint's own lastUpdatedDate, so a
+	 * version the dump brings in is dated by the save that made it. A blueprint without the date uses the dump instant.
+	 */
+	blueprintTime?: "dump" | "lastUpdatedDate";
 	/** A Firebase Auth export. Without one, user profiles are not reconciled. */
 	authUsers?: readonly AuthUser[];
 }
@@ -88,7 +93,9 @@ const dumpEvents = (dump: RealtimeDump, options: BuildOptions): ReconcileEvent[]
 				blueprint,
 				dump.blueprintsPrivate?.[key] ?? null,
 				dump.thumbnails?.[key] ?? null,
-				dumpTime,
+				options.blueprintTime === "lastUpdatedDate" && typeof blueprint.lastUpdatedDate === "number"
+					? blueprint.lastUpdatedDate
+					: dumpTime,
 			),
 		);
 	}
@@ -165,7 +172,7 @@ export const buildReconcileRequests = (dump: RealtimeDump, options: BuildOptions
 	return requests;
 };
 
-export const mergeReports = (reports: readonly ReconcileReport[]): ReconcileReport => (
+export const mergeReports = (reports: readonly ReconcileResponse[]): ReconcileResponse => (
 {
 	drift: reports.flatMap((report) => report.drift),
 	stale: reports.reduce((total, report) => total + report.stale, 0),
