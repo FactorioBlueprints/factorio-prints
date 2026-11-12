@@ -21,6 +21,7 @@
 		"blueprints:load-d1": "node scripts/loadD1.ts",
 		"blueprints:migrations": "drizzle-kit generate --config workers/blueprints/drizzle.config.ts",
 		"blueprints:reconcile": "node scripts/reconcileD1.ts",
+		"blueprints:rederive-game-data": "node workers/blueprints/local/rederiveGameData.ts",
 		"blueprints:retime-history": "node scripts/retimeHistory.ts",
 		"blueprints:test-migrations": "drizzle-kit generate --config workers/blueprints/drizzle.test.config.ts",
 		"blueprints:upload-strings": "node scripts/uploadStrings.ts",

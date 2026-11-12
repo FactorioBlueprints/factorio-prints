@@ -305,6 +305,46 @@ describe("POST /reconcile", () =>
 		expect(await env.DB.prepare("SELECT count(*) AS count FROM user_entitlement").first("count")).toEqual(1);
 	});
 
+	it("checks a page of stored strings against the parser when asked to re-derive, and validates the page", async () =>
+	{
+		const page = await reconcileRequest(
+			{
+				mode: "shadow",
+				rederive:
+				{
+					after: "",
+					limit: 5,
+				},
+			},
+			await serviceAccountToken(),
+		);
+		const invalid = await reconcileRequest(
+			{
+				mode: "shadow",
+				rederive:
+				{
+					after: "",
+					limit: 0,
+				},
+			},
+			await serviceAccountToken(),
+		);
+
+		expect([page.status, await page.json(), invalid.status]).toEqual([
+			200,
+			{
+				rederive:
+				{
+					checked: 0,
+					next: null,
+					missing: [],
+					changed: [],
+				},
+			},
+			400,
+		]);
+	});
+
 	it("rejects an unknown mode", async () =>
 	{
 		const response = await reconcileRequest(
