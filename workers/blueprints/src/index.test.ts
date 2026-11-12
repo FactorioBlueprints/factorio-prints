@@ -100,12 +100,13 @@ describe("POST /ingest", () =>
 		).toEqual(401);
 	});
 
-	it("accepts the runtime account of both generations of Cloud Functions, since the account-deletion trigger is first generation", async () =>
+	it("accepts the runtime account of both generations of Cloud Functions, since the account-deletion trigger is first generation, and the account the backup merge workflow runs as", async () =>
 	{
 		const statuses: number[] = [];
 		for (const email of [
 			"329845993350-compute@developer.gserviceaccount.com",
 			"facorio-blueprints@appspot.gserviceaccount.com",
+			"firebase-adminsdk-70chk@facorio-blueprints.iam.gserviceaccount.com",
 		])
 		{
 			const response = await ingest(
@@ -117,7 +118,7 @@ describe("POST /ingest", () =>
 			statuses.push(response.status);
 		}
 
-		expect(statuses).toStrictEqual([200, 200]);
+		expect(statuses).toStrictEqual([200, 200, 200]);
 	});
 
 	it("rejects a malformed body", async () =>
