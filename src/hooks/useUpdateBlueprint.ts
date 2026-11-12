@@ -38,6 +38,34 @@ interface DeleteBlueprintMutationParams
 	tags: string[];
 }
 
+const sameTags = (left: readonly string[], right: readonly string[]): boolean =>
+	left.length === right.length && [...left].sort().join("\n") === [...right].sort().join("\n");
+
+/**
+ * True when saving the form would store nothing new: the same title, string, description and set of tags, and no
+ * new screenshot. Such a save must write nothing, because every write stamps lastUpdatedDate, which would mark
+ * the blueprint as updated when it was not.
+ */
+const isUnchangedSave = (rawBlueprint: RawBlueprint, formData: UpdateBlueprintFormData): boolean =>
+	formData.title === rawBlueprint.title &&
+	formData.blueprintString === rawBlueprint.blueprintString &&
+	formData.descriptionMarkdown === rawBlueprint.descriptionMarkdown &&
+	sameTags(formData.tags, rawBlueprint.tags ?? []) &&
+	(formData.image === null || formData.image.id === rawBlueprint.image?.id);
+
+const viewBlueprint = (navigate: ReturnType<typeof useNavigate>, blueprintId: string): void =>
+{
+	void navigate(
+		{
+			to: "/view/$blueprintId",
+			params:
+			{
+				blueprintId,
+			},
+		},
+	);
+};
+
 export const useUpdateBlueprint = () =>
 {
 	const queryClient = useQueryClient();
@@ -47,6 +75,11 @@ export const useUpdateBlueprint = () =>
 		{
 			mutationFn: async ({id, rawBlueprint, formData, availableTags}) =>
 			{
+				if (isUnchangedSave(rawBlueprint, formData))
+				{
+					return id;
+				}
+
 				const image: ImgurImage | null = formData.image
 					?
 						{
@@ -93,6 +126,12 @@ export const useUpdateBlueprint = () =>
 			},
 			onSuccess: (blueprintId, variables) =>
 			{
+				if (isUnchangedSave(variables.rawBlueprint, variables.formData))
+				{
+					viewBlueprint(navigate, blueprintId);
+					return;
+				}
+
 				const now = new Date();
 				const unixTimestamp = now.getTime();
 
@@ -189,15 +228,7 @@ export const useUpdateBlueprint = () =>
 					}
 				});
 
-				navigate(
-					{
-						to: "/view/$blueprintId",
-						params:
-						{
-							blueprintId,
-						},
-					},
-				);
+				viewBlueprint(navigate, blueprintId);
 			},
 		},
 	);
