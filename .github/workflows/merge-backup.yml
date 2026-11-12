@@ -1,0 +1,67 @@
+name: Merge backup into blueprint store
+
+# Merges the newest Realtime Database backup into the blueprints Worker's store through its reconcile route, then has
+# the Worker bring every string's stored game data in line with its parser. It is safe while live ingest is writing:
+# only rows older than the backup's events are overwritten. Run it in shadow mode first, which reports what would
+# change and writes nothing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: shadow reports only, repair applies
+        type: choice
+        options:
+          - shadow
+          - repair
+        default: shadow
+      chunk_size:
+        description: Events per request
+        type: string
+        default: "50"
+
+concurrency:
+  group: merge-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  merge:
+    name: Merge the newest backup (${{ inputs.mode }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+      - run: just install-ci
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Download the newest backup
+        run: |
+          newest="$(gcloud storage ls 'gs://facorio-blueprints-backups/*_data.json.gz' | sort | tail -n 1)"
+          echo "Newest backup: ${newest}"
+          mkdir -p "${RUNNER_TEMP}/backup"
+          gcloud storage cp "${newest}" "${RUNNER_TEMP}/backup/"
+          echo "DUMP=${RUNNER_TEMP}/backup/$(basename "${newest}")" >> "${GITHUB_ENV}"
+
+      - name: List Auth accounts
+        run: node scripts/exportAuthUsers.ts --project facorio-blueprints --out "${RUNNER_TEMP}/auth-users.json"
+
+      - name: Merge
+        run: |
+          arguments=(--dump "${DUMP}" --auth-export "${RUNNER_TEMP}/auth-users.json" --gcloud-token --amend-audit --rederive-game-data --chunk-size "${CHUNK_SIZE}")
+          if [ "${MODE}" = "repair" ]; then
+            arguments+=(--repair)
+          fi
+          node scripts/reconcileD1.ts "${arguments[@]}"
+        env:
+          MODE: ${{ inputs.mode }}
+          CHUNK_SIZE: ${{ inputs.chunk_size }}

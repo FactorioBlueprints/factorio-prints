@@ -7,6 +7,7 @@ import {parseIngestRequest} from "./ingest/events.ts";
 import {readBlueprint, readSummaries, type SummaryQuery} from "./read/blueprintReads.ts";
 import {blueprintHistory, isModerator, restoreBlueprint} from "./read/moderation.ts";
 import {reconcile} from "./reconcile/reconcile.ts";
+import {rederiveGameData} from "./reconcile/rederive.ts";
 
 export interface WorkerOptions
 {
@@ -122,12 +123,48 @@ const handleReconcile = async (request: Request, env: Env): Promise<Response> =>
 		mode?: unknown;
 		expectedBlueprintKeys?: unknown;
 		dumpTime?: unknown;
+		amendAudit?: unknown;
+		rederive?: unknown;
 	};
 	const mode = body.mode ?? "shadow";
 	if (mode !== "shadow" && mode !== "repair") return error("mode must be shadow or repair", 400);
+	if (body.rederive !== undefined)
+	{
+		// A page of stored strings to check against today's parser, instead of events.
+		const {after, limit} = body.rederive as
+		{
+			after?: unknown;
+			limit?: unknown;
+		};
+		if (
+			typeof after !== "string" ||
+			!Number.isSafeInteger(limit) ||
+			(limit as number) < 1 ||
+			(limit as number) > 200
+		)
+		{
+			return error('rederive needs after (a sha or "") and limit (1 to 200)', 400);
+		}
+		return json(
+			{
+				rederive: await rederiveGameData(
+					ingestDependencies(env),
+					{
+						after,
+						limit: limit as number,
+						dryRun: mode === "shadow",
+					},
+				),
+			},
+		);
+	}
 	const parsed = parseIngestRequest(read.body);
 	if (!parsed.ok) return error(parsed.error, 400);
-	const {expectedBlueprintKeys, dumpTime} = body;
+	const {expectedBlueprintKeys, dumpTime, amendAudit} = body;
+	if (amendAudit !== undefined && typeof amendAudit !== "boolean")
+	{
+		return error("amendAudit must be a boolean", 400);
+	}
 	if (
 		expectedBlueprintKeys !== undefined &&
 		(!Array.isArray(expectedBlueprintKeys) || !expectedBlueprintKeys.every((key) => typeof key === "string"))
@@ -148,6 +185,7 @@ const handleReconcile = async (request: Request, env: Env): Promise<Response> =>
 				events: parsed.events,
 				expectedBlueprintKeys: expectedBlueprintKeys as string[] | undefined,
 				dumpTime,
+				amendAudit,
 			},
 		),
 	);
@@ -305,6 +343,15 @@ const handleModerator = async (
 const BLUEPRINT_PATH = /^\/blueprints\/([^/]+)$/;
 const MODERATOR_PATH = /^\/moderator\/blueprints\/([^/]+)\/(history|restore)$/;
 
+/** The public read routes, which answer GET and HEAD. */
+const handleRead = async (request: Request, url: URL, env: Env): Promise<Response> =>
+{
+	if (url.pathname === "/blueprintSummaries") return handleSummaries(url, env);
+	const blueprintMatch = BLUEPRINT_PATH.exec(url.pathname);
+	if (blueprintMatch !== null) return handleBlueprint(request, env, decodeURIComponent(blueprintMatch[1]));
+	return error("not found", 404);
+};
+
 /** Every message in an error's chain of causes: a query builder wraps the database's own error, which says why. */
 const causeChain = (thrown: unknown): string =>
 {
@@ -333,11 +380,12 @@ const createRoutes = (options: WorkerOptions) => (
 		{
 			return handleModerator(request, env, options, decodeURIComponent(moderatorMatch[1]), moderatorMatch[2]);
 		}
-		if (request.method === "GET")
+		if (request.method === "GET") return handleRead(request, url, env);
+		if (request.method === "HEAD")
 		{
-			if (pathname === "/blueprintSummaries") return handleSummaries(url, env);
-			const blueprintMatch = BLUEPRINT_PATH.exec(pathname);
-			if (blueprintMatch !== null) return handleBlueprint(request, env, decodeURIComponent(blueprintMatch[1]));
+			// The status and headers of the same GET, without its body.
+			const response = await handleRead(request, url, env);
+			return new Response(null, response);
 		}
 		return error("not found", 404);
 	},

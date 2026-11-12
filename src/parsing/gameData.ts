@@ -1,4 +1,4 @@
-import {decodeBlueprintJson} from "./blueprintDecoding";
+import {decodeBlueprintJson} from "./blueprintDecoding.ts";
 
 /*
  * Derives the "game data" rows that factorio.school's history database holds for a

@@ -3,6 +3,8 @@
  * The runner in importHistory.ts does the file and database IO.
  */
 
+import {createHash} from "node:crypto";
+
 export type CsvField = string | null;
 export type SqlValue = string | number | null;
 export type ColumnType = "INTEGER" | "TEXT" | "REAL";
@@ -123,6 +125,35 @@ export class CsvRowParser
 }
 
 export const tableNameFor = (csvTableName: string): string => csvTableName.toLowerCase();
+
+/** Lowercase hex SHA-256 of the UTF-8 bytes: the digest key of a blueprint string, in D1 and in R2. */
+export const sha256Hex = (content: string): string => createHash("sha256").update(content, "utf8").digest("hex");
+
+const isShaColumn = (column: string): boolean => column === "sha" || column.endsWith("_sha");
+
+/**
+ * The history still keys blueprint strings by SHA-1. Translates a row's string key or reference (any `sha` or `*_sha`
+ * column, in every table and every history row) to the SHA-256 the string was re-keyed under.
+ */
+export const rekeyRow = (
+	csvTable: string,
+	columns: string[],
+	row: CsvField[],
+	sha256BySha1: ReadonlyMap<string, string>,
+): CsvField[] =>
+	row.map((value, index) =>
+	{
+		if (value === null || !isShaColumn(columns[index]))
+		{
+			return value;
+		}
+		const sha256 = sha256BySha1.get(value);
+		if (sha256 === undefined)
+		{
+			throw new Error(`${csvTable}.${columns[index]} references ${value}, which has no blueprint string`);
+		}
+		return sha256;
+	});
 
 export const coerceValue = (value: CsvField, type: ColumnType): SqlValue =>
 {
