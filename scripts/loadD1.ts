@@ -37,7 +37,8 @@ const localTables = (database: DatabaseSync): Table[] =>
 	const names = database
 		.prepare(
 			"SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'd1_%' " +
-				"AND name NOT LIKE '_cf_%' ORDER BY name",
+				// A leading underscore marks helper tables: D1's own, and those the local history tools leave behind.
+				"AND name NOT LIKE '\\_%' ESCAPE '\\' ORDER BY name",
 		)
 		.all() as
 	{
