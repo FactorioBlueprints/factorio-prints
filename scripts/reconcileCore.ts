@@ -51,6 +51,27 @@ export interface ReconcileRequestBody
 	expectedBlueprintKeys?: string[];
 	dumpTime?: number;
 	amendAudit?: boolean;
+	/** Instead of events: a page of stored strings whose game data is checked against today's parser. */
+	rederive?:
+	{
+		after: string;
+		limit: number;
+	};
+}
+
+export interface RederiveResponse
+{
+	rederive:
+	{
+		checked: number;
+		next: string | null;
+		missing: string[];
+		changed:
+		{
+			sha: string;
+			tables: string[];
+		}[];
+	};
 }
 
 export interface ReconcileResponse

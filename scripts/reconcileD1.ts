@@ -5,8 +5,8 @@ import {basename} from "node:path";
 import {parseArgs} from "node:util";
 import {createGunzip} from "node:zlib";
 import {type AuthExport, toAccountRecord} from "./authExportCore.ts";
-import {reconcileDump} from "./dumpReconcileCore.ts";
-import type {ReconcileRequestBody, ReconcileResponse} from "./reconcileCore.ts";
+import {reconcileDump, rederiveAll} from "./dumpReconcileCore.ts";
+import type {ReconcileRequestBody, ReconcileResponse, RederiveResponse} from "./reconcileCore.ts";
 
 // Merges a Realtime Database backup (<instant>_<project>_data.json.gz) into the blueprints Worker's store through
 // its /reconcile route, reading the backup as a stream and posting the events in small batches. Shadow mode, the
@@ -20,6 +20,8 @@ import type {ReconcileRequestBody, ReconcileResponse} from "./reconcileCore.ts";
 // deleted; without it, profiles are left alone. A request the Worker refuses stops the run, naming the request, and
 // --skip-requests <n> resumes after the n requests that went through. --amend-audit also corrects a blueprint's
 // created date and author in place where nothing else about it differs, without a new version.
+// --rederive-game-data then has the Worker check every stored string's game data against its parser and replace
+// what differs.
 
 const TOKEN_LIFETIME_MS = 45 * 60_000;
 
@@ -80,6 +82,16 @@ const main = async (): Promise<void> =>
 					type: "boolean",
 					default: false,
 				},
+				"rederive-game-data":
+				{
+					type: "boolean",
+					default: false,
+				},
+				"rederive-page-size":
+				{
+					type: "string",
+					default: "5",
+				},
 			},
 		},
 	);
@@ -90,7 +102,7 @@ const main = async (): Promise<void> =>
 	if (!dump || Number.isNaN(dumpTime) || (!mint && !process.env.INGEST_ID_TOKEN))
 	{
 		throw new Error(
-			"Usage: [INGEST_ID_TOKEN=<token>] node scripts/reconcileD1.ts --dump <instant>_data.json[.gz] [--gcloud-token | --impersonate <service account>] [--dump-time <ISO instant>] [--auth-export <file>] [--chunk-size 20] [--skip-requests <n>] [--amend-audit] [--repair]",
+			"Usage: [INGEST_ID_TOKEN=<token>] node scripts/reconcileD1.ts --dump <instant>_data.json[.gz] [--gcloud-token | --impersonate <service account>] [--dump-time <ISO instant>] [--auth-export <file>] [--chunk-size 20] [--skip-requests <n>] [--amend-audit] [--rederive-game-data] [--repair]",
 		);
 	}
 
@@ -128,18 +140,9 @@ const main = async (): Promise<void> =>
 		: undefined;
 	const skip = Number(values["skip-requests"]);
 	let requests = 0;
-	const send = async (request: ReconcileRequestBody): Promise<ReconcileResponse> =>
+	const post = async (request: ReconcileRequestBody): Promise<unknown> =>
 	{
 		requests++;
-		if (requests <= skip)
-		{
-			return {
-				drift: [],
-				stale: 0,
-				ignored: 0,
-				amended: 0,
-			};
-		}
 		const response = await fetch(
 			values.url,
 			{
@@ -163,7 +166,21 @@ const main = async (): Promise<void> =>
 		{
 			console.error(`${requests} requests sent`);
 		}
-		return (await response.json()) as ReconcileResponse;
+		return response.json();
+	};
+	const send = async (request: ReconcileRequestBody): Promise<ReconcileResponse> =>
+	{
+		if (requests < skip)
+		{
+			requests++;
+			return {
+				drift: [],
+				stale: 0,
+				ignored: 0,
+				amended: 0,
+			};
+		}
+		return (await post(request)) as ReconcileResponse;
 	};
 
 	const report = await reconcileDump(
@@ -184,11 +201,22 @@ const main = async (): Promise<void> =>
 			accountOf: accounts && ((userId) => accounts.get(userId) ?? null),
 		},
 	);
+	// After the merge, so the strings it brought in are covered too.
+	const gameData = values["rederive-game-data"]
+		? await rederiveAll(
+				{
+					mode: values.repair ? "repair" : "shadow",
+					pageSize: Number(values["rederive-page-size"]),
+					send: async (request) => (await post(request)) as RederiveResponse,
+				},
+			)
+		: undefined;
 	console.log(
 		JSON.stringify(
 			{
 				requests,
 				...report,
+				gameData,
 			},
 			null,
 			"\t",

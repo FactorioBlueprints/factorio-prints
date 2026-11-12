@@ -7,6 +7,7 @@ import
 	type RealtimeDump,
 	type ReconcileRequestBody,
 	type ReconcileResponse,
+	type RederiveResponse,
 } from "./reconcileCore.ts";
 
 // Merges one Realtime Database backup into the blueprint store through the Worker's reconcile code, reading the
@@ -200,4 +201,61 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 		},
 	);
 	return report;
+};
+
+export interface RederiveOptions
+{
+	mode: "shadow" | "repair";
+	/** Strings per request. Each is read from the bucket and parsed within one invocation's limits. */
+	pageSize: number;
+	send: (request: ReconcileRequestBody) => Promise<RederiveResponse>;
+}
+
+export interface RederiveSummary
+{
+	checked: number;
+	changedStrings: number;
+	/** Strings whose rows differed, by table. */
+	changedTables: Record<string, number>;
+	/** Strings whose content the bucket does not hold. */
+	missing: string[];
+}
+
+/**
+ * Has the Worker check the game data of every stored string against what its parser derives today, a page at a
+ * time, replacing the rows that differ in repair mode. A second run finds nothing to change.
+ */
+export const rederiveAll = async (options: RederiveOptions): Promise<RederiveSummary> =>
+{
+	const summary: RederiveSummary =
+	{
+		checked: 0,
+		changedStrings: 0,
+		changedTables: {},
+		missing: [],
+	};
+	let after: string | null = "";
+	while (after !== null)
+	{
+		const {rederive} = await options.send(
+			{
+				mode: options.mode,
+				events: [],
+				rederive:
+				{
+					after,
+					limit: options.pageSize,
+				},
+			},
+		);
+		summary.checked += rederive.checked;
+		summary.changedStrings += rederive.changed.length;
+		summary.missing.push(...rederive.missing);
+		for (const table of rederive.changed.flatMap((string) => string.tables))
+		{
+			summary.changedTables[table] = (summary.changedTables[table] ?? 0) + 1;
+		}
+		after = rederive.next;
+	}
+	return summary;
 };
