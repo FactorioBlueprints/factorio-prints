@@ -3,6 +3,8 @@
  * The runner in exportAuthUsers.ts does the credential, network and file IO.
  */
 
+import type {AuthUser} from "../functions/src/ingestEvents.ts";
+
 export interface AuthExportUser
 {
 	uid: string;
@@ -53,3 +55,15 @@ export const toAuthExportUser = (account: Record<string, unknown>): AuthExportUs
 		disabled: account.disabled === true,
 	};
 };
+
+/** A listed account as the account record the ingest events carry. */
+export const toAccountRecord = (user: AuthExportUser): AuthUser => (
+{
+	localId: user.uid,
+	email: user.email,
+	photoUrl: user.photoURL,
+	providerUserInfo: user.providerIds.map((providerId) => (
+	{
+		providerId,
+	})),
+});

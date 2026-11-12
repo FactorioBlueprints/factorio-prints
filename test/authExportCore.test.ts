@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vite-plus/test";
-import {authListUrl, toAuthExportUser} from "../scripts/authExportCore";
+import {authListUrl, toAccountRecord, toAuthExportUser} from "../scripts/authExportCore";
 
 describe("authListUrl", () =>
 {
@@ -74,5 +74,37 @@ describe("toAuthExportUser", () =>
 				disabled: false,
 			},
 		]);
+	});
+});
+
+describe("toAccountRecord", () =>
+{
+	it("gives a listed account the shape the ingest events carry", () =>
+	{
+		expect(
+			toAccountRecord(
+				{
+					uid: "alice",
+					email: "alice@example.com",
+					photoURL: null,
+					providerIds: ["github.com", "google.com"],
+					disabled: false,
+				},
+			),
+		).toStrictEqual(
+			{
+				localId: "alice",
+				email: "alice@example.com",
+				photoUrl: null,
+				providerUserInfo: [
+					{
+						providerId: "github.com",
+					},
+					{
+						providerId: "google.com",
+					},
+				],
+			},
+		);
 	});
 });
