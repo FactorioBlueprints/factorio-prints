@@ -307,3 +307,42 @@ describe("mergeReports", () =>
 		);
 	});
 });
+
+describe("buildReconcileRequests with blueprints timed by their own lastUpdatedDate", () =>
+{
+	test("stamps each blueprint event with the blueprint's date, and everything else with the dump instant", () =>
+	{
+		const requests = buildReconcileRequests(
+			{
+				blueprints:
+				{
+					dated:
+					{
+						blueprintString: "0eN",
+						lastUpdatedDate: 1_700_000_000_123,
+					},
+					undated:
+					{
+						blueprintString: "0eM",
+					},
+				},
+				moderators:
+				{
+					alice: true,
+				},
+			},
+			{
+				dumpTime,
+				mode: "repair",
+				chunkSize: 10,
+				blueprintTime: "lastUpdatedDate",
+			},
+		);
+
+		expect(requests[0].events.map((event) => [event.type, event.eventTime])).toStrictEqual([
+			["moderators", dumpTime],
+			["blueprint", 1_700_000_000_123],
+			["blueprint", dumpTime],
+		]);
+	});
+});

@@ -1,7 +1,7 @@
 import {readFile} from "node:fs/promises";
 import {parseArgs} from "node:util";
 import type {AuthUser} from "../functions/src/ingestEvents.ts";
-import {buildReconcileRequests, mergeReports, type RealtimeDump, type ReconcileReport} from "./reconcileCore.ts";
+import {buildReconcileRequests, mergeReports, type RealtimeDump, type ReconcileResponse} from "./reconcileCore.ts";
 
 // Compares the blueprints Worker's D1 rows with a Realtime Database dump and prints the drift. Shadow mode, the
 // default, only reports; --repair applies the dump's version of each drifting entity. The Worker accepts an ID
@@ -74,7 +74,7 @@ const main = async (): Promise<void> =>
 		},
 	);
 
-	const reports: ReconcileReport[] = [];
+	const reports: ReconcileResponse[] = [];
 	for (const [index, request] of requests.entries())
 	{
 		const response = await fetch(
@@ -95,7 +95,7 @@ const main = async (): Promise<void> =>
 				`Request ${index + 1} of ${requests.length} returned ${response.status}: ${await response.text()}`,
 			);
 		}
-		reports.push((await response.json()) as ReconcileReport);
+		reports.push((await response.json()) as ReconcileResponse);
 		console.error(`Reconciled request ${index + 1} of ${requests.length}`);
 	}
 	console.log(JSON.stringify(mergeReports(reports), null, 2));
