@@ -13,8 +13,9 @@ import type {ReconcileRequestBody, ReconcileResponse} from "./reconcileCore.ts";
 // default, only reports the drift; --repair applies it. It is safe to run while live ingest is writing: the Worker
 // overwrites a row only when its stored time is older than the event's (see scripts/dumpReconcileCore.ts).
 //
-// The Worker accepts an ID token minted for it by an allowed service account. --impersonate <account> mints one
-// with gcloud and renews it during a long run; otherwise INGEST_ID_TOKEN must hold one. --auth-export is a listing
+// The Worker accepts an ID token minted for it by an allowed service account. --gcloud-token mints one with gcloud
+// as the service account gcloud is signed in as, and --impersonate <account> as another account; either renews it
+// during a long run. Otherwise INGEST_ID_TOKEN must hold one. --auth-export is a listing
 // from scripts/exportAuthUsers.ts: with it, profiles are reconciled and a user without an account is marked
 // deleted; without it, profiles are left alone. A request the Worker refuses stops the run, naming the request, and
 // --skip-requests <n> resumes after the n requests that went through. --amend-audit also corrects a blueprint's
@@ -54,6 +55,11 @@ const main = async (): Promise<void> =>
 				{
 					type: "string",
 				},
+				"gcloud-token":
+				{
+					type: "boolean",
+					default: false,
+				},
 				"chunk-size":
 				{
 					type: "string",
@@ -78,12 +84,13 @@ const main = async (): Promise<void> =>
 		},
 	);
 	const {dump, impersonate} = values;
+	const mint = impersonate !== undefined || values["gcloud-token"];
 	// A backup is named by the instant it was taken.
 	const dumpTime = Date.parse(values["dump-time"] ?? basename(dump ?? "").split("_")[0]);
-	if (!dump || Number.isNaN(dumpTime) || (!impersonate && !process.env.INGEST_ID_TOKEN))
+	if (!dump || Number.isNaN(dumpTime) || (!mint && !process.env.INGEST_ID_TOKEN))
 	{
 		throw new Error(
-			"Usage: [INGEST_ID_TOKEN=<token>] node scripts/reconcileD1.ts --dump <instant>_data.json[.gz] [--impersonate <service account>] [--dump-time <ISO instant>] [--auth-export <file>] [--chunk-size 20] [--skip-requests <n>] [--amend-audit] [--repair]",
+			"Usage: [INGEST_ID_TOKEN=<token>] node scripts/reconcileD1.ts --dump <instant>_data.json[.gz] [--gcloud-token | --impersonate <service account>] [--dump-time <ISO instant>] [--auth-export <file>] [--chunk-size 20] [--skip-requests <n>] [--amend-audit] [--repair]",
 		);
 	}
 
@@ -91,16 +98,15 @@ const main = async (): Promise<void> =>
 	let mintedAt = 0;
 	const currentToken = (): string =>
 	{
-		if (impersonate && Date.now() - mintedAt > TOKEN_LIFETIME_MS)
+		if (mint && Date.now() - mintedAt > TOKEN_LIFETIME_MS)
 		{
 			token = execFileSync(
 				"gcloud",
 				[
 					"auth",
 					"print-identity-token",
-					`--impersonate-service-account=${impersonate}`,
 					`--audiences=${values.audience}`,
-					"--include-email",
+					...(impersonate ? [`--impersonate-service-account=${impersonate}`, "--include-email"] : []),
 				],
 				{
 					encoding: "utf8",
