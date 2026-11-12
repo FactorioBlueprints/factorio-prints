@@ -37,6 +37,11 @@ const main = async (): Promise<void> =>
 					type: "boolean",
 					default: false,
 				},
+				"amend-audit":
+				{
+					type: "boolean",
+					default: false,
+				},
 			},
 		},
 	);
@@ -74,6 +79,7 @@ const main = async (): Promise<void> =>
 			dumpTime,
 			blueprintTime: "lastUpdatedDate",
 			mode: values.repair ? "repair" : "shadow",
+			amendAudit: values["amend-audit"],
 		},
 	);
 	database.close();

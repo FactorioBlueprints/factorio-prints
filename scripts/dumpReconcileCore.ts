@@ -28,6 +28,8 @@ export interface DumpReconcileOptions
 	mode: "shadow" | "repair";
 	/** Events per request. The Worker's route does several database calls per event within one invocation's limit. */
 	chunkSize: number;
+	/** Correct a blueprint's created date and author in place where nothing else about it differs. */
+	amendAudit?: boolean;
 	send: (request: ReconcileRequestBody) => Promise<ReconcileResponse>;
 	/**
 	 * The account record of a user in the dump, or null when the account no longer exists, which marks the user
@@ -45,6 +47,8 @@ export interface DumpReconcileReport
 	/** Events older than the rows they would change, which are left alone. */
 	stale: number;
 	ignored: number;
+	/** Blueprints whose created date or author was corrected in place, or would be in shadow mode. */
+	amended: number;
 	/** Row changes by "table:outcome". */
 	changes: Record<string, number>;
 }
@@ -61,11 +65,18 @@ export const reconcileDump = async (options: DumpReconcileOptions): Promise<Dump
 		drifting: 0,
 		stale: 0,
 		ignored: 0,
+		amended: 0,
 		changes: {},
 	};
 	const send = async (request: ReconcileRequestBody): Promise<void> =>
 	{
-		const result = await options.send(request);
+		const result = await options.send(
+			{
+				...request,
+				amendAudit: options.amendAudit,
+			},
+		);
+		report.amended += result.amended;
 		report.events += request.events.length;
 		report.drifting += result.drift.length;
 		report.stale += result.stale;

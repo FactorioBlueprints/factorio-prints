@@ -11,6 +11,7 @@ import {applyEvent, dryRunEvent, type EventResult, type IngestDependencies} from
 import type {IngestEvent} from "../ingest/events.ts";
 import {blueprint, dataImportTimestamp} from "../schema.ts";
 import {SYSTEM_TO_SENTINEL} from "../temporal/columns.ts";
+import {amendBlueprintAudit} from "./amendAudit.ts";
 import {commit, createUnitOfWork, type RowChange, temporalTable, upsert} from "../temporal/temporal.ts";
 
 export interface ReconcileRequest
@@ -22,6 +23,8 @@ export interface ReconcileRequest
 	expectedBlueprintKeys?: string[];
 	/** The dump instant, required with `expectedBlueprintKeys`. */
 	dumpTime?: number;
+	/** Correct a blueprint's created date and author in place where nothing else differs (see amendAudit.ts). */
+	amendAudit?: boolean;
 }
 
 export interface DriftEntry
@@ -38,6 +41,8 @@ export interface ReconcileReport
 	stale: number;
 	/** Events the mapping rejects, such as a blueprint without a string. */
 	ignored: number;
+	/** Blueprints whose created date or author was corrected in place, or would be in shadow mode. */
+	amended: number;
 }
 
 const importTimestamps = temporalTable(dataImportTimestamp, ["name"]);
@@ -124,9 +129,16 @@ export const reconcile = async (
 		drift: [],
 		stale: 0,
 		ignored: 0,
+		amended: 0,
 	};
 	for (const event of events)
 	{
+		if (request.amendAudit && (await amendBlueprintAudit(dependencies, event, request.mode === "shadow")))
+		{
+			report.amended++;
+			// In shadow mode the rows still differ, so the dry run below would only repeat it as drift.
+			if (request.mode === "shadow") continue;
+		}
 		const result: EventResult =
 			request.mode === "repair" ? await applyEvent(dependencies, event) : await dryRunEvent(dependencies, event);
 		if (result.status === "skipped-stale") report.stale++;

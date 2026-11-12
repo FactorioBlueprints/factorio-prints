@@ -122,12 +122,17 @@ const handleReconcile = async (request: Request, env: Env): Promise<Response> =>
 		mode?: unknown;
 		expectedBlueprintKeys?: unknown;
 		dumpTime?: unknown;
+		amendAudit?: unknown;
 	};
 	const mode = body.mode ?? "shadow";
 	if (mode !== "shadow" && mode !== "repair") return error("mode must be shadow or repair", 400);
 	const parsed = parseIngestRequest(read.body);
 	if (!parsed.ok) return error(parsed.error, 400);
-	const {expectedBlueprintKeys, dumpTime} = body;
+	const {expectedBlueprintKeys, dumpTime, amendAudit} = body;
+	if (amendAudit !== undefined && typeof amendAudit !== "boolean")
+	{
+		return error("amendAudit must be a boolean", 400);
+	}
 	if (
 		expectedBlueprintKeys !== undefined &&
 		(!Array.isArray(expectedBlueprintKeys) || !expectedBlueprintKeys.every((key) => typeof key === "string"))
@@ -148,6 +153,7 @@ const handleReconcile = async (request: Request, env: Env): Promise<Response> =>
 				events: parsed.events,
 				expectedBlueprintKeys: expectedBlueprintKeys as string[] | undefined,
 				dumpTime,
+				amendAudit,
 			},
 		),
 	);
