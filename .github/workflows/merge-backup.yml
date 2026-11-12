@@ -1,8 +1,9 @@
 name: Merge backup into blueprint store
 
-# Merges the newest Realtime Database backup into the blueprints Worker's store through its reconcile route. It is
-# safe while live ingest is writing: only rows older than the backup's events are overwritten. Run it in shadow
-# mode first, which reports what would change and writes nothing.
+# Merges the newest Realtime Database backup into the blueprints Worker's store through its reconcile route, then has
+# the Worker bring every string's stored game data in line with its parser. It is safe while live ingest is writing:
+# only rows older than the backup's events are overwritten. Run it in shadow mode first, which reports what would
+# change and writes nothing.
 
 on:
   workflow_dispatch:
@@ -56,7 +57,7 @@ jobs:
 
       - name: Merge
         run: |
-          arguments=(--dump "${DUMP}" --auth-export "${RUNNER_TEMP}/auth-users.json" --gcloud-token --amend-audit --chunk-size "${CHUNK_SIZE}")
+          arguments=(--dump "${DUMP}" --auth-export "${RUNNER_TEMP}/auth-users.json" --gcloud-token --amend-audit --rederive-game-data --chunk-size "${CHUNK_SIZE}")
           if [ "${MODE}" = "repair" ]; then
             arguments+=(--repair)
           fi

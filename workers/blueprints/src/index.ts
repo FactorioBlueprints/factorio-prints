@@ -7,6 +7,7 @@ import {parseIngestRequest} from "./ingest/events.ts";
 import {readBlueprint, readSummaries, type SummaryQuery} from "./read/blueprintReads.ts";
 import {blueprintHistory, isModerator, restoreBlueprint} from "./read/moderation.ts";
 import {reconcile} from "./reconcile/reconcile.ts";
+import {rederiveGameData} from "./reconcile/rederive.ts";
 
 export interface WorkerOptions
 {
@@ -123,9 +124,40 @@ const handleReconcile = async (request: Request, env: Env): Promise<Response> =>
 		expectedBlueprintKeys?: unknown;
 		dumpTime?: unknown;
 		amendAudit?: unknown;
+		rederive?: unknown;
 	};
 	const mode = body.mode ?? "shadow";
 	if (mode !== "shadow" && mode !== "repair") return error("mode must be shadow or repair", 400);
+	if (body.rederive !== undefined)
+	{
+		// A page of stored strings to check against today's parser, instead of events.
+		const {after, limit} = body.rederive as
+		{
+			after?: unknown;
+			limit?: unknown;
+		};
+		if (
+			typeof after !== "string" ||
+			!Number.isSafeInteger(limit) ||
+			(limit as number) < 1 ||
+			(limit as number) > 200
+		)
+		{
+			return error('rederive needs after (a sha or "") and limit (1 to 200)', 400);
+		}
+		return json(
+			{
+				rederive: await rederiveGameData(
+					ingestDependencies(env),
+					{
+						after,
+						limit: limit as number,
+						dryRun: mode === "shadow",
+					},
+				),
+			},
+		);
+	}
 	const parsed = parseIngestRequest(read.body);
 	if (!parsed.ok) return error(parsed.error, 400);
 	const {expectedBlueprintKeys, dumpTime, amendAudit} = body;
