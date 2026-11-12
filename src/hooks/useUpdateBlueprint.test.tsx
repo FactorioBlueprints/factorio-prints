@@ -325,4 +325,100 @@ describe("useUpdateBlueprint", () =>
 			},
 		);
 	});
+
+	it("writes nothing and keeps lastUpdatedDate when the save changes no field, so an unchanged re-save cannot bump the date", async () =>
+	{
+		vi.mocked(dbUpdate).mockResolvedValue(undefined);
+		const rawBlueprint =
+		{
+			title: "Same Title",
+			blueprintString: "same string",
+			descriptionMarkdown: "same description",
+			tags: ["/general/tileable/", "/mods/vanilla/"],
+			image:
+			{
+				id: "sameImage",
+				type: "image/png",
+			},
+			author:
+			{
+				userId: "user123",
+			},
+			numberOfFavorites: 0,
+			lastUpdatedDate: 1700000000000,
+			createdDate: 1600000000000,
+			favorites: {},
+		};
+		const summary =
+		{
+			title: "Same Title",
+			imgurId: "sameImage",
+			imgurType: "image/png",
+			numberOfFavorites: 0,
+			lastUpdatedDate: 1700000000000,
+		};
+		queryClient.setQueryData(["blueprints", "blueprintId", "blueprint123"], rawBlueprint);
+		queryClient.setQueryData(["blueprintSummaries", "blueprintId", "blueprint123"], summary);
+		const {result} = renderHook(
+			() => useUpdateBlueprint(),
+			{
+				wrapper,
+			},
+		);
+
+		// The same tags in another order, and the current screenshot uploaded again, are not changes.
+		for (const image of [
+			null,
+			{
+				id: "sameImage",
+				type: "image/png",
+			},
+		])
+		{
+			await result.current.mutateAsync(
+				{
+					id: "blueprint123",
+					rawBlueprint,
+					formData:
+					{
+						title: "Same Title",
+						blueprintString: "same string",
+						descriptionMarkdown: "same description",
+						tags: ["/mods/vanilla/", "/general/tileable/"],
+						image,
+					},
+					availableTags: ["/general/tileable/", "/mods/vanilla/", "/belt/balancer/"],
+				},
+			);
+		}
+
+		expect(
+			{
+				writes: vi.mocked(dbUpdate).mock.calls.length,
+				blueprint: queryClient.getQueryData(["blueprints", "blueprintId", "blueprint123"]),
+				summary: queryClient.getQueryData(["blueprintSummaries", "blueprintId", "blueprint123"]),
+				navigations: navigateMock.mock.calls,
+			},
+		).toStrictEqual(
+			{
+				writes: 0,
+				blueprint: rawBlueprint,
+				summary,
+				navigations: Array.from(
+					{
+						length: 2,
+					},
+					() => [
+						{
+							to: "/view/$blueprintId",
+							params:
+							{
+								blueprintId: "blueprint123",
+							},
+						},
+					],
+				),
+			},
+		);
+	});
 });
