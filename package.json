@@ -93,7 +93,7 @@
 		"@vitejs/plugin-react": "6.2.1",
 		"fake-indexeddb": "6.2.7",
 		"fallow": "3.39.0",
-		"firebase-tools": "^15.34.2",
+		"firebase-tools": "^15.35.0",
 		"jsdom": "30.1.3",
 		"markdownlint-cli2": "0.24.0",
 		"playwright-core": "1.64.1",
