@@ -285,6 +285,7 @@ describe("POST /reconcile", () =>
 				],
 				stale: 0,
 				ignored: 0,
+				amended: 0,
 			},
 		);
 		expect(await env.DB.prepare("SELECT count(*) AS count FROM user_entitlement").first("count")).toEqual(0);

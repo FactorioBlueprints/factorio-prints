@@ -172,6 +172,7 @@ describe("ingestDump", () =>
 					drifting: 6,
 					stale: 1,
 					ignored: 0,
+					amended: 0,
 					changes: expect.objectContaining(
 						{
 							"blueprint:inserted": 1,
@@ -371,6 +372,54 @@ describe("ingestDump", () =>
 					`retitledLive | Old | ${liveTime}`,
 				],
 				votes: [`alice | outdated | ${liveTime} | ${sentinel}`, `bob | outdated | ${backupTime} | ${dumpTime}`],
+			},
+		);
+		database.close();
+	});
+
+	it("corrects a created date that history recorded wrongly, in place, when asked", async () =>
+	{
+		const database = new DatabaseSync(":memory:");
+		await applyMigrations(database, "workers/blueprints/migrations");
+		const merge = (createdDate: number, amendAudit: boolean) =>
+			ingestDump(
+				{
+					database,
+					strings: strings(),
+					readDump: chunksOf(
+						{
+							blueprints:
+							{
+								quirk:
+								{
+									...blueprint("Quirk", savedBeforeBackup),
+									createdDate,
+								},
+							},
+						},
+					),
+					dumpTime,
+					blueprintTime: "lastUpdatedDate",
+					mode: "repair",
+					amendAudit,
+				},
+			);
+		await merge(1_600_000_000_000 + 4 * 3_600_000, false);
+
+		const report = await merge(1_600_000_000_000, true);
+
+		expect(
+			{
+				amended: report.amended,
+				rows: database
+					.prepare("SELECT created_on, system_from, system_to FROM blueprint")
+					.all()
+					.map((row) => Object.values(row).join(" | ")),
+			},
+		).toStrictEqual(
+			{
+				amended: 1,
+				rows: [`1600000000000 | ${savedBeforeBackup} | ${sentinel}`],
 			},
 		);
 		database.close();

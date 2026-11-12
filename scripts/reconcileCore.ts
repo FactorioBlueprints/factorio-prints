@@ -50,6 +50,7 @@ export interface ReconcileRequestBody
 	events: ReconcileEvent[];
 	expectedBlueprintKeys?: string[];
 	dumpTime?: number;
+	amendAudit?: boolean;
 }
 
 export interface ReconcileResponse
@@ -61,6 +62,7 @@ export interface ReconcileResponse
 	}[];
 	stale: number;
 	ignored: number;
+	amended: number;
 }
 
 export interface BuildOptions
