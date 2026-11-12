@@ -1,0 +1,43 @@
+name: Deploy blueprints Worker
+
+on:
+  push:
+    branches:
+      - factorio-prints.com
+    paths:
+      - workers/blueprints/**
+      - .github/workflows/deploy-blueprints-worker.yml
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-blueprints-worker-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy blueprints.factorioprints.com
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The Cloudflare token that can deploy Workers is a secret of this environment, shared with the image Worker.
+    environment: image-worker-production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@f5be966e4a917d54244728e6a5fdcd1d93a35e6c # v5.2.6
+      - run: just install-ci
+
+      - name: Test the Worker
+        run: vp run test:run workers/blueprints
+
+      - name: Type check the Worker
+        run: vp run check:blueprints
+
+      - name: Deploy to production
+        run: vp exec wrangler deploy --config workers/blueprints/wrangler.jsonc
+        env:
+          CLOUDFLARE_ACCOUNT_ID: d6a6604075c347336a008699794d5fb9
+          CLOUDFLARE_API_TOKEN: ${{ secrets.IMAGE_WORKER_CLOUDFLARE_API_TOKEN }}

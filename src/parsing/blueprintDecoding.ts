@@ -1,4 +1,3 @@
-import atob from "atob";
 import {Unzlib, unzlibSync} from "fflate";
 
 export class BlueprintError extends Error
