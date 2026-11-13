@@ -94,7 +94,7 @@
 		"fake-indexeddb": "6.2.7",
 		"fallow": "3.40.0",
 		"firebase-tools": "^15.35.0",
-		"jsdom": "30.1.3",
+		"jsdom": "31.0.0",
 		"markdownlint-cli2": "0.24.0",
 		"playwright-core": "1.65.0",
 		"typescript": "7.0.2",
