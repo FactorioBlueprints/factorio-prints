@@ -340,8 +340,8 @@ importers:
         specifier: 6.3.0
         version: 6.3.0(@voidzero-dev/vite-plus-core@1.4.0(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(typescript@7.0.2)(yaml@2.9.1))
       fake-indexeddb:
-        specifier: 6.2.7
-        version: 6.2.7
+        specifier: 6.2.8
+        version: 6.2.8
       fallow:
         specifier: 3.40.0
         version: 3.40.0
@@ -3762,8 +3762,8 @@ packages:
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
-  fake-indexeddb@6.2.7:
-    resolution: {integrity: sha512-g0ghQ+BmU3CSZaHup5FigEAAtCmtNyxkrmID7OAeK2qONHghw1aQ2l2T1RxmfhP1H1tEXVRWArUTGVCk5832ww==}
+  fake-indexeddb@6.2.8:
+    resolution: {integrity: sha512-mpVW/HLUqwKXJ6F/s0hMgdK1eQfM4ncTHDioNGHWL0WKV3VcZCoZq1NKgboBbAge07aRCO7L48yziKssL59XEQ==}
     engines: {node: '>=18'}
 
   fallow-type-aware@3.40.0:
@@ -9352,7 +9352,7 @@ snapshots:
 
   extend@3.0.2: {}
 
-  fake-indexeddb@6.2.7: {}
+  fake-indexeddb@6.2.8: {}
 
   fallow-type-aware@3.40.0:
     dependencies:
