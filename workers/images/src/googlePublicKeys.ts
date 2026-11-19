@@ -16,6 +16,8 @@ export interface GooglePublicKeyProviderOptions
 {
 	readonly fetch: (url: string) => Promise<Response>;
 	readonly now: () => number;
+	/** The JWKS to fetch: Firebase's securetoken keys by default, or Google's OAuth keys for service-account tokens. */
+	readonly url?: string;
 }
 
 interface CachedKeySet
@@ -80,7 +82,7 @@ export const createGooglePublicKeyProvider = (
 		let response: Response;
 		try
 		{
-			response = await options.fetch(googlePublicKeyUrl);
+			response = await options.fetch(options.url ?? googlePublicKeyUrl);
 		}
 		catch
 		{
