@@ -1,5 +1,13 @@
 import {describe, expect, it} from "vite-plus/test";
-import {buildInsertBatches, coerceValue, CsvRowParser, tableNameFor} from "../scripts/historyImportCore";
+import
+{
+	buildInsertBatches,
+	coerceValue,
+	CsvRowParser,
+	rekeyRow,
+	sha256Hex,
+	tableNameFor,
+} from "../scripts/historyImportCore";
 
 const parseAll = (chunks: string[]): (string | null)[][] =>
 {
@@ -136,5 +144,41 @@ describe("buildInsertBatches", () =>
 	it("refuses a table with more columns than the parameter limit allows in one row", () =>
 	{
 		expect(() => buildInsertBatches("t", ["a", "b", "c"], [[1, 2, 3]], 2)).toThrow("parameter limit");
+	});
+});
+
+describe("sha256Hex", () =>
+{
+	it("is the lowercase hex SHA-256 of the UTF-8 bytes", () =>
+	{
+		expect([sha256Hex("hello"), sha256Hex("h\u00e9llo")]).toStrictEqual([
+			"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+			"3c48591d8d098a4538f5e013dfcf406e948eac4d3277b10bf614e295d6068179",
+		]);
+	});
+});
+
+describe("rekeyRow", () =>
+{
+	const shaMap = new Map([["sha1-a", "sha256-a"]]);
+
+	it("translates the sha and *_sha columns through the map and leaves every other column alone", () =>
+	{
+		expect([
+			rekeyRow("BLUEPRINT", ["key", "blueprint_string_sha", "title"], ["k", "sha1-a", "sha1-a"], shaMap),
+			rekeyRow("BLUEPRINT_GAME_DATA", ["sha", "position"], ["sha1-a", "0"], shaMap),
+			rekeyRow("VOTE", ["user_id", "direction"], ["u", "up"], shaMap),
+		]).toStrictEqual([
+			["k", "sha256-a", "sha1-a"],
+			["sha256-a", "0"],
+			["u", "up"],
+		]);
+	});
+
+	it("fails loudly on a reference to a string that was never exported", () =>
+	{
+		expect(() => rekeyRow("BLUEPRINT_STRING_MOD", ["blueprint_string_sha"], ["sha1-missing"], shaMap)).toThrow(
+			"BLUEPRINT_STRING_MOD.blueprint_string_sha references sha1-missing, which has no blueprint string",
+		);
 	});
 });

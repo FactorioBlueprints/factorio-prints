@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vite-plus/test";
-import {buildReconcileRequests, mergeReports} from "../scripts/reconcileCore";
+import {buildReconcileRequests} from "../scripts/reconcileCore";
 
 const dumpTime = Date.UTC(2026, 10, 8, 15, 42);
 
@@ -254,56 +254,41 @@ describe("buildReconcileRequests", () =>
 	});
 });
 
-describe("mergeReports", () =>
+describe("buildReconcileRequests with blueprints timed by their own lastUpdatedDate", () =>
 {
-	test("concatenates drift and adds up the counts", () =>
+	test("stamps each blueprint event with the blueprint's date, and everything else with the dump instant", () =>
 	{
-		const change =
-		{
-			table: "blueprint",
-			key:
+		const requests = buildReconcileRequests(
 			{
-				key: "bp1",
-			},
-			outcome: "updated",
-		};
-		expect(
-			mergeReports([
+				blueprints:
 				{
-					drift: [
-						{
-							event:
-							{
-								type: "blueprint",
-								key: "bp1",
-							},
-							changes: [change],
-						},
-					],
-					stale: 1,
-					ignored: 0,
-				},
-				{
-					drift: [],
-					stale: 2,
-					ignored: 3,
-				},
-			]),
-		).toStrictEqual(
-			{
-				drift: [
+					dated:
 					{
-						event:
-						{
-							type: "blueprint",
-							key: "bp1",
-						},
-						changes: [change],
+						blueprintString: "0eN",
+						lastUpdatedDate: 1_700_000_000_123,
 					},
-				],
-				stale: 3,
-				ignored: 3,
+					undated:
+					{
+						blueprintString: "0eM",
+					},
+				},
+				moderators:
+				{
+					alice: true,
+				},
+			},
+			{
+				dumpTime,
+				mode: "repair",
+				chunkSize: 10,
+				blueprintTime: "lastUpdatedDate",
 			},
 		);
+
+		expect(requests[0].events.map((event) => [event.type, event.eventTime])).toStrictEqual([
+			["moderators", dumpTime],
+			["blueprint", 1_700_000_000_123],
+			["blueprint", dumpTime],
+		]);
 	});
 });

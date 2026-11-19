@@ -1,5 +1,5 @@
 import {createReadStream} from "node:fs";
-import {mkdir, readdir, readFile, writeFile} from "node:fs/promises";
+import {mkdir, readdir, readFile, stat, writeFile} from "node:fs/promises";
 import {join, resolve} from "node:path";
 import {DatabaseSync} from "node:sqlite";
 import {pathToFileURL} from "node:url";
@@ -11,20 +11,30 @@ import
 	coerceValue,
 	type CsvField,
 	CsvRowParser,
+	rekeyRow,
+	sha256Hex,
 	type SqlValue,
 	tableNameFor,
 } from "./historyImportCore.ts";
+import {STRING_STORED_IN_R2} from "../workers/blueprints/src/stringLayout.ts";
 import {REBUILD_VOTE_SUMMARY_STATEMENTS} from "../workers/blueprints/src/voteSummaryRebuild.ts";
 
 // Imports factorio.school's history database, exported per table with CSVWRITE (timestamps already converted to epoch
 // milliseconds and the end-of-time sentinel remapped), into a local SQLite database built from the drizzle-kit
-// migrations. It uses the same bound-parameter statements the remote D1 import will use.
+// migrations. The history keys blueprint strings by SHA-1; the import re-keys them, and every reference, by SHA-256.
 
-// Tables the D1 plan deliberately leaves out. BLUEPRINT_VOTE_SUMMARY is a cache of the favorite count, rebuilt from
-// the imported votes rather than copied.
-// BLUEPRINT_STRING waits on a decision: the Klass model stores the string inline (NOT NULL), but the plan keeps
-// strings in R2, and 565 of them exceed D1's 2 MB value limit. Its content is written out for R2 with --strings-out.
-const SKIPPED_TABLES = new Set(["BLUEPRINT_VOTE_SUMMARY", "BLUEPRINT_STRING", "BLUEPRINT_STRING_CONTENT"]);
+// BLUEPRINT_VOTE_SUMMARY is a cache of the favorite count, rebuilt from the imported votes rather than copied (and
+// still temporal in older copies of the history database). BLUEPRINT_STRING_CONTENT is
+// not a table: it holds the strings, which go to R2 under their SHA-256 and give the SHA-1 to SHA-256 key map.
+const SKIPPED_TABLES = new Set(["BLUEPRINT_VOTE_SUMMARY", "BLUEPRINT_STRING_CONTENT"]);
+// Columns the export leaves out because their content lives in R2. They stay NOT NULL until Klass drops them.
+const EXTERNAL_COLUMNS: Readonly<Record<string, Readonly<Record<string, string>>>> =
+{
+	blueprint_string:
+	{
+		blueprint_string: STRING_STORED_IN_R2,
+	},
+};
 const ROWS_PER_FLUSH = 5_000;
 
 interface TableColumn
@@ -91,10 +101,16 @@ const writableColumns = (database: DatabaseSync, table: string): Map<string, Tab
 	);
 };
 
-const importTable = async (database: DatabaseSync, csvPath: string, csvTable: string): Promise<number> =>
+const importTable = async (
+	database: DatabaseSync,
+	csvPath: string,
+	csvTable: string,
+	sha256BySha1: ReadonlyMap<string, string>,
+): Promise<number> =>
 {
 	const table = tableNameFor(csvTable);
 	const columns = writableColumns(database, table);
+	const external = Object.entries(EXTERNAL_COLUMNS[table] ?? {});
 	const parser = new CsvRowParser();
 	let header: TableColumn[] | null = null;
 	let pending: SqlValue[][] = [];
@@ -106,7 +122,7 @@ const importTable = async (database: DatabaseSync, csvPath: string, csvTable: st
 		{
 			return;
 		}
-		const names = header.map((column) => column.name);
+		const names = [...header.map((column) => column.name), ...external.map(([name]) => name)];
 		database.exec("BEGIN");
 		for (const batch of buildInsertBatches(table, names, pending))
 		{
@@ -138,7 +154,13 @@ const importTable = async (database: DatabaseSync, csvPath: string, csvTable: st
 				`${csvTable} row ${imported + pending.length + 1} has ${row.length} fields, expected ${header.length}`,
 			);
 		}
-		pending.push(row.map((value, index) => coerceValue(value, header![index].type)));
+		const names = header.map((column) => column.name);
+		pending.push([
+			...rekeyRow(csvTable, names, row, sha256BySha1).map((value, index) =>
+				coerceValue(value, header![index].type),
+			),
+			...external.map(([, value]) => value),
+		]);
 		if (pending.length >= ROWS_PER_FLUSH)
 		{
 			flush();
@@ -159,7 +181,8 @@ const importTable = async (database: DatabaseSync, csvPath: string, csvTable: st
 	return imported;
 };
 
-const writeStrings = async (csvPath: string, outputDirectory: string): Promise<number> =>
+/** Writes each string to a file named by its SHA-256, and returns the SHA-256 of every SHA-1 key in the export. */
+const writeStrings = async (csvPath: string, outputDirectory: string): Promise<Map<string, string>> =>
 {
 	await mkdir(
 		outputDirectory,
@@ -169,7 +192,7 @@ const writeStrings = async (csvPath: string, outputDirectory: string): Promise<n
 	);
 	const parser = new CsvRowParser();
 	let header = true;
-	let written = 0;
+	const sha256BySha1 = new Map<string, string>();
 	const accept = async (row: CsvField[]): Promise<void> =>
 	{
 		if (header)
@@ -177,13 +200,20 @@ const writeStrings = async (csvPath: string, outputDirectory: string): Promise<n
 			header = false;
 			return;
 		}
-		const [sha, content] = row;
-		if (!sha || !/^[0-9a-f]{40}$/.test(sha) || content === null)
+		const [sha1, content] = row;
+		if (!sha1 || !/^[0-9a-f]{40}$/.test(sha1) || content === null || sha256BySha1.has(sha1))
 		{
-			throw new Error(`Bad blueprint string row for sha ${sha}`);
+			throw new Error(`Bad blueprint string row for sha ${sha1}`);
 		}
-		await writeFile(join(outputDirectory, sha), content);
-		written++;
+		const sha256 = sha256Hex(content);
+		// A rerun finds the file already there under its digest, so there is nothing to write again.
+		const path = join(outputDirectory, sha256);
+		const existing = await stat(path).catch(() => null);
+		if (existing?.size !== Buffer.byteLength(content))
+		{
+			await writeFile(path, content);
+		}
+		sha256BySha1.set(sha1, sha256);
 	};
 	for await (const chunk of createReadStream(
 		csvPath,
@@ -201,7 +231,44 @@ const writeStrings = async (csvPath: string, outputDirectory: string): Promise<n
 	{
 		await accept(row);
 	}
-	return written;
+	return sha256BySha1;
+};
+
+/**
+ * Imports every table of the export into a migrated database, re-keyed by SHA-256, with the strings written to
+ * stringsDirectory for R2. Returns the rows imported per table.
+ */
+export const importCsvDirectory = async (
+	database: DatabaseSync,
+	csvDirectory: string,
+	stringsDirectory: string,
+): Promise<Record<string, number>> =>
+{
+	const report: Record<string, number> = {};
+	const sha256BySha1 = await writeStrings(join(csvDirectory, "BLUEPRINT_STRING_CONTENT.csv"), stringsDirectory);
+	report["r2:blueprint-strings"] = sha256BySha1.size;
+	console.error(`Wrote ${sha256BySha1.size} strings`);
+
+	const csvFiles = (await readdir(csvDirectory)).filter((file) => file.endsWith(".csv")).sort();
+	for (const file of csvFiles)
+	{
+		const csvTable = file.replace(/\.csv$/, "");
+		if (SKIPPED_TABLES.has(csvTable))
+		{
+			continue;
+		}
+		report[tableNameFor(csvTable)] = await importTable(database, join(csvDirectory, file), csvTable, sha256BySha1);
+		console.error(`${csvTable}: ${report[tableNameFor(csvTable)]} rows`);
+	}
+
+	rebuildVoteSummaryCache(database);
+	report["blueprint_vote_summary (rebuilt)"] = (
+		database.prepare("SELECT count(*) AS count FROM blueprint_vote_summary").get() as
+		{
+			count: number;
+		}
+	).count;
+	return report;
 };
 
 const main = async (): Promise<void> =>
@@ -232,45 +299,17 @@ const main = async (): Promise<void> =>
 	const csvDirectory = values["csv-dir"];
 	const migrationsDirectory = values["migrations-dir"];
 	const sqlitePath = values.sqlite;
-	if (!csvDirectory || !migrationsDirectory || !sqlitePath)
+	const stringsDirectory = values["strings-out"];
+	if (!csvDirectory || !migrationsDirectory || !sqlitePath || !stringsDirectory)
 	{
 		throw new Error(
-			"Usage: node scripts/importHistory.ts --csv-dir <dir> --migrations-dir <dir> --sqlite <file> [--strings-out <dir>]",
+			"Usage: node scripts/importHistory.ts --csv-dir <dir> --migrations-dir <dir> --sqlite <file> --strings-out <dir>",
 		);
 	}
 
 	const database = new DatabaseSync(sqlitePath);
 	await applyMigrations(database, migrationsDirectory);
-
-	const report: Record<string, number> = {};
-	const csvFiles = (await readdir(csvDirectory)).filter((file) => file.endsWith(".csv")).sort();
-	for (const file of csvFiles)
-	{
-		const csvTable = file.replace(/\.csv$/, "");
-		if (SKIPPED_TABLES.has(csvTable))
-		{
-			continue;
-		}
-		report[tableNameFor(csvTable)] = await importTable(database, join(csvDirectory, file), csvTable);
-		console.error(`${csvTable}: ${report[tableNameFor(csvTable)]} rows`);
-	}
-
-	rebuildVoteSummaryCache(database);
-	report["blueprint_vote_summary (rebuilt)"] = (
-		database.prepare("SELECT count(*) AS count FROM blueprint_vote_summary").get() as
-		{
-			count: number;
-		}
-	).count;
-
-	if (values["strings-out"])
-	{
-		report["r2:blueprint-strings"] = await writeStrings(
-			join(csvDirectory, "BLUEPRINT_STRING_CONTENT.csv"),
-			values["strings-out"],
-		);
-	}
-
+	const report = await importCsvDirectory(database, csvDirectory, stringsDirectory);
 	database.close();
 	console.log(JSON.stringify(report, null, 2));
 };
