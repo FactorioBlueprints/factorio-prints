@@ -96,7 +96,7 @@
 		"firebase-tools": "^15.36.0",
 		"jsdom": "31.0.1",
 		"markdownlint-cli2": "0.24.1",
-		"playwright-core": "1.65.0",
+		"playwright-core": "1.65.1",
 		"typescript": "7.0.2",
 		"vite": "catalog:",
 		"vite-plus": "catalog:",
