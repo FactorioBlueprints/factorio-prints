@@ -1,0 +1,18 @@
+{
+	"compilerOptions":
+	{
+		"allowImportingTsExtensions": true,
+		"isolatedModules": true,
+		"lib": ["ES2022"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitReturns": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ES2022",
+		"types": ["@cloudflare/vitest-plugin/types"]
+	},
+	"include": ["src/**/*", "test/**/*", "worker-configuration.d.ts"]
+}
