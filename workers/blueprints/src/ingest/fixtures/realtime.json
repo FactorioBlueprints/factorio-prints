@@ -1,0 +1,2094 @@
+{
+	"users": [
+		{
+			"case": "email not verified",
+			"userId": "000uRJqIXsbnMD7tK3tXsyyv66c2",
+			"user":
+			{
+				"photoURL": "https://example.com/photo/1",
+				"providerId": "github.com",
+				"email": "user1@example.com",
+				"emailVerified": false,
+				"displayName": "Anonymous"
+			},
+			"authUser":
+			{
+				"localId": "000uRJqIXsbnMD7tK3tXsyyv66c2",
+				"email": "user1@example.com",
+				"photoUrl": "https://example.com/photo/1",
+				"providerUserInfo": [
+					{
+						"providerId": "github.com"
+					}
+				]
+			},
+			"blueprintAuthors": {},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "000uRJqIXsbnMD7tK3tXsyyv66c2",
+					"displayName": "Anonymous",
+					"providerDisplayName": null,
+					"email": "user1@example.com",
+					"emailVerified": false,
+					"photoURL": "https://example.com/photo/1",
+					"providerId": "github.com"
+				},
+				"votes": []
+			}
+		},
+		{
+			"case": "plain",
+			"userId": "003s3LNGfpY5nl9m8H1Ngjx2gXh1",
+			"user":
+			{
+				"displayName": "Hüseyin Mutlu",
+				"email": "user2@example.com",
+				"emailVerified": true,
+				"photoURL": "https://example.com/photo/2",
+				"providerDisplayName": "Hüseyin Mutlu",
+				"providerId": "google.com"
+			},
+			"authUser":
+			{
+				"localId": "003s3LNGfpY5nl9m8H1Ngjx2gXh1",
+				"email": "user2@example.com",
+				"displayName": "Hüseyin Mutlu",
+				"photoUrl": "https://example.com/photo/2",
+				"providerUserInfo": [
+					{
+						"providerId": "google.com"
+					}
+				]
+			},
+			"blueprintAuthors": {},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "003s3LNGfpY5nl9m8H1Ngjx2gXh1",
+					"displayName": "Hüseyin Mutlu",
+					"providerDisplayName": "Hüseyin Mutlu",
+					"email": "user2@example.com",
+					"emailVerified": true,
+					"photoURL": "https://example.com/photo/2",
+					"providerId": "google.com"
+				},
+				"votes": []
+			}
+		},
+		{
+			"case": "provider display name from auth",
+			"userId": "00KGXlUQlLSyRCK0qhzls0SA7ho2",
+			"user":
+			{
+				"displayName": "mrluchs111 baum",
+				"email": "user3@example.com"
+			},
+			"authUser":
+			{
+				"localId": "00KGXlUQlLSyRCK0qhzls0SA7ho2",
+				"email": "user3@example.com",
+				"displayName": "mrluchs111 baum",
+				"photoUrl": "https://example.com/photo/3",
+				"providerUserInfo": [
+					{
+						"providerId": "google.com"
+					}
+				]
+			},
+			"blueprintAuthors": {},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "00KGXlUQlLSyRCK0qhzls0SA7ho2",
+					"displayName": "mrluchs111 baum",
+					"providerDisplayName": "mrluchs111 baum",
+					"email": "user3@example.com",
+					"emailVerified": false,
+					"photoURL": "https://example.com/photo/3",
+					"providerId": "google.com"
+				},
+				"votes": []
+			}
+		},
+		{
+			"case": "email from auth",
+			"userId": "022bUPV8apctgF6dqQrZHwwBvL03",
+			"user":
+			{
+				"displayName": "Anonymous",
+				"favorites":
+				{
+					"-MgS2XPtti3OgCkj5XRB": true
+				}
+			},
+			"authUser":
+			{
+				"localId": "022bUPV8apctgF6dqQrZHwwBvL03",
+				"email": "user4@example.com",
+				"displayName": "Gabin L",
+				"photoUrl": "https://example.com/photo/4",
+				"providerUserInfo": [
+					{
+						"providerId": "github.com"
+					}
+				]
+			},
+			"blueprintAuthors":
+			{
+				"-MgS2XPtti3OgCkj5XRB": "qssXWgLY71ZYGFbI9Spopl9UtHP2"
+			},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "022bUPV8apctgF6dqQrZHwwBvL03",
+					"displayName": "Anonymous",
+					"providerDisplayName": "Gabin L",
+					"email": "user4@example.com",
+					"emailVerified": false,
+					"photoURL": "https://example.com/photo/4",
+					"providerId": "github.com"
+				},
+				"votes": [
+					{
+						"userId": "022bUPV8apctgF6dqQrZHwwBvL03",
+						"blueprintKey": "-MgS2XPtti3OgCkj5XRB",
+						"direction": "up"
+					}
+				]
+			}
+		},
+		{
+			"case": "provider from auth differs",
+			"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+			"user":
+			{
+				"displayName": "It's Артюк",
+				"email": "user5@example.com",
+				"favorites":
+				{
+					"-OvaCa8bpgPSwBUhEEUE": true,
+					"-OHIIG6j6nkHquAEnPWg": true,
+					"-Owdu4Fu7X9oD-WmR3E7": true,
+					"-OdJv45RGNI-TpfrY-bR": true,
+					"-OvvPZCLOAsbxiTVn8rW": true,
+					"-OUf5gju1G_1O_K38VLl": true,
+					"-OyBar0hTSL1yqenqH32": true
+				}
+			},
+			"authUser":
+			{
+				"localId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+				"email": "user5@example.com",
+				"displayName": "It's Артюк",
+				"photoUrl": "https://example.com/photo/5",
+				"providerUserInfo": [
+					{
+						"providerId": "google.com"
+					}
+				]
+			},
+			"blueprintAuthors":
+			{
+				"-OvaCa8bpgPSwBUhEEUE": "I6YX1Ar1cWUwhbQgMcW4nyZkDs52",
+				"-OHIIG6j6nkHquAEnPWg": "I6YX1Ar1cWUwhbQgMcW4nyZkDs52",
+				"-Owdu4Fu7X9oD-WmR3E7": "I6YX1Ar1cWUwhbQgMcW4nyZkDs52",
+				"-OdJv45RGNI-TpfrY-bR": "I6YX1Ar1cWUwhbQgMcW4nyZkDs52",
+				"-OvvPZCLOAsbxiTVn8rW": "I6YX1Ar1cWUwhbQgMcW4nyZkDs52",
+				"-OUf5gju1G_1O_K38VLl": "HnO4U7Oy9ugtG0TSt4c2gMIKilp1",
+				"-OyBar0hTSL1yqenqH32": "h3Pn1meW5bh63UraoXratpMZ5Hb2"
+			},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+					"displayName": "It's Артюк",
+					"providerDisplayName": "It's Артюк",
+					"email": "user5@example.com",
+					"emailVerified": false,
+					"photoURL": "https://example.com/photo/5",
+					"providerId": "google.com"
+				},
+				"votes": [
+					{
+						"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+						"blueprintKey": "-OvaCa8bpgPSwBUhEEUE",
+						"direction": "up"
+					},
+					{
+						"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+						"blueprintKey": "-OHIIG6j6nkHquAEnPWg",
+						"direction": "up"
+					},
+					{
+						"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+						"blueprintKey": "-Owdu4Fu7X9oD-WmR3E7",
+						"direction": "up"
+					},
+					{
+						"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+						"blueprintKey": "-OdJv45RGNI-TpfrY-bR",
+						"direction": "up"
+					},
+					{
+						"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+						"blueprintKey": "-OUf5gju1G_1O_K38VLl",
+						"direction": "up"
+					},
+					{
+						"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+						"blueprintKey": "-OvvPZCLOAsbxiTVn8rW",
+						"direction": "up"
+					},
+					{
+						"userId": "02L8qYJgVxYH0vmhHc57pbq32Or2",
+						"blueprintKey": "-OyBar0hTSL1yqenqH32",
+						"direction": "up"
+					}
+				]
+			}
+		},
+		{
+			"case": "no providers in auth",
+			"userId": "08xjM0FWnYS2aKKmi58F2U7bqvk2",
+			"user":
+			{
+				"displayName": "Anonymous",
+				"email": "user6@example.com",
+				"emailVerified": true,
+				"photoURL": "https://example.com/photo/6",
+				"providerId": "password"
+			},
+			"authUser":
+			{
+				"localId": "08xjM0FWnYS2aKKmi58F2U7bqvk2",
+				"email": "user6@example.com",
+				"photoUrl": "https://example.com/photo/6",
+				"providerUserInfo": []
+			},
+			"blueprintAuthors": {},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "08xjM0FWnYS2aKKmi58F2U7bqvk2",
+					"displayName": "Anonymous",
+					"providerDisplayName": null,
+					"email": "user6@example.com",
+					"emailVerified": true,
+					"photoURL": "https://example.com/photo/6",
+					"providerId": "password"
+				},
+				"votes": []
+			}
+		},
+		{
+			"case": "photo from auth differs",
+			"userId": "0E3JJWU0YZYTSSKVModo623bOYp1",
+			"user":
+			{
+				"displayName": "MGOPW",
+				"email": "user7@example.com",
+				"emailVerified": false,
+				"photoURL": "https://example.com/photo/8",
+				"providerDisplayName": "MGOPW",
+				"providerId": "github.com",
+				"favorites":
+				{
+					"-KnQ865j-qQ21WoUPbd3": true,
+					"-Kifx85ww99ZWLB-n-9S": true
+				}
+			},
+			"authUser":
+			{
+				"localId": "0E3JJWU0YZYTSSKVModo623bOYp1",
+				"email": "user7@example.com",
+				"displayName": "Maria Gabriela Waechter",
+				"photoUrl": "https://example.com/photo/7",
+				"providerUserInfo": [
+					{
+						"providerId": "google.com"
+					}
+				]
+			},
+			"blueprintAuthors":
+			{
+				"-KnQ865j-qQ21WoUPbd3": "1ksiCkccOgNMkhCcBEbfwU8lvP12",
+				"-Kifx85ww99ZWLB-n-9S": "H3QlaVpvadfVuTpGGxs7016oR2K3"
+			},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "0E3JJWU0YZYTSSKVModo623bOYp1",
+					"displayName": "MGOPW",
+					"providerDisplayName": "MGOPW",
+					"email": "user7@example.com",
+					"emailVerified": false,
+					"photoURL": "https://example.com/photo/7",
+					"providerId": "google.com"
+				},
+				"votes": [
+					{
+						"userId": "0E3JJWU0YZYTSSKVModo623bOYp1",
+						"blueprintKey": "-KnQ865j-qQ21WoUPbd3",
+						"direction": "up"
+					},
+					{
+						"userId": "0E3JJWU0YZYTSSKVModo623bOYp1",
+						"blueprintKey": "-Kifx85ww99ZWLB-n-9S",
+						"direction": "up"
+					}
+				]
+			}
+		},
+		{
+			"case": "no display name",
+			"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+			"user":
+			{
+				"favorites":
+				{
+					"-N1xoqmKZbPLVaY0zO_x": true,
+					"-NBqr50qeE6BTmiI020t": true,
+					"-NPze9qZwRhkpKssTUzQ": true,
+					"-NPzf2LJd0Zb6MHtCsW2": true,
+					"-NpmNYwJ4rmZi6Uwy4yR": true,
+					"-OJ9osuvckxlg2II4vbA": true,
+					"-Oo2_7xLj95-GHyMzRyj": true,
+					"-Oo2agSSFYAXFfWNqlse": true
+				}
+			},
+			"authUser":
+			{
+				"localId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+				"email": "user8@example.com",
+				"displayName": "Arthur Nemo",
+				"photoUrl": "https://example.com/photo/9",
+				"providerUserInfo": [
+					{
+						"providerId": "google.com"
+					}
+				]
+			},
+			"blueprintAuthors":
+			{
+				"-N1xoqmKZbPLVaY0zO_x": "fjiDOvTIwuZynsDOq75Kf3qcG2n2",
+				"-NBqr50qeE6BTmiI020t": "EGXYFmfuzrbG4UP0e4AJ2yvqNYH3",
+				"-NPze9qZwRhkpKssTUzQ": "sUWQ7vYSDZXIMqDCM8Wt1siy42r1",
+				"-NPzf2LJd0Zb6MHtCsW2": "sUWQ7vYSDZXIMqDCM8Wt1siy42r1",
+				"-NpmNYwJ4rmZi6Uwy4yR": "1kSxr9tqTiY8z36xHAu6ltYbdqI3",
+				"-OJ9osuvckxlg2II4vbA": "MQE4ugufIydQSyj1MZFRAGzg1is2",
+				"-Oo2_7xLj95-GHyMzRyj": "RuhsmJMrVyWFAfLs0R9ArVsJFGE3",
+				"-Oo2agSSFYAXFfWNqlse": "RuhsmJMrVyWFAfLs0R9ArVsJFGE3"
+			},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+					"displayName": "Anonymous",
+					"providerDisplayName": "Arthur Nemo",
+					"email": "user8@example.com",
+					"emailVerified": false,
+					"photoURL": "https://example.com/photo/9",
+					"providerId": "google.com"
+				},
+				"votes": [
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-NBqr50qeE6BTmiI020t",
+						"direction": "up"
+					},
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-NpmNYwJ4rmZi6Uwy4yR",
+						"direction": "up"
+					},
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-NPze9qZwRhkpKssTUzQ",
+						"direction": "up"
+					},
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-NPzf2LJd0Zb6MHtCsW2",
+						"direction": "up"
+					},
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-Oo2agSSFYAXFfWNqlse",
+						"direction": "up"
+					},
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-OJ9osuvckxlg2II4vbA",
+						"direction": "up"
+					},
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-Oo2_7xLj95-GHyMzRyj",
+						"direction": "up"
+					},
+					{
+						"userId": "2GLHTOlECmfNlokKVz9qn7GYek33",
+						"blueprintKey": "-N1xoqmKZbPLVaY0zO_x",
+						"direction": "up"
+					}
+				]
+			}
+		},
+		{
+			"case": "self-favorite",
+			"userId": "2k5qv29dMcM91SriphlwQXXbCVk1",
+			"user":
+			{
+				"displayName": "Recap Lrg",
+				"email": "user9@example.com",
+				"emailVerified": true,
+				"photoURL": "https://example.com/photo/10",
+				"providerDisplayName": "Recap Lrg",
+				"providerId": "google.com",
+				"favorites":
+				{
+					"-OrJq0WqRwJTY_iSn5lH": true,
+					"-OrJqNyNeff-IiZ7_Heb": true
+				}
+			},
+			"authUser":
+			{
+				"localId": "2k5qv29dMcM91SriphlwQXXbCVk1",
+				"email": "user9@example.com",
+				"displayName": "Recap Lrg",
+				"photoUrl": "https://example.com/photo/10",
+				"providerUserInfo": [
+					{
+						"providerId": "google.com"
+					}
+				]
+			},
+			"blueprintAuthors":
+			{
+				"-OrJq0WqRwJTY_iSn5lH": "2k5qv29dMcM91SriphlwQXXbCVk1",
+				"-OrJqNyNeff-IiZ7_Heb": "2k5qv29dMcM91SriphlwQXXbCVk1"
+			},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "2k5qv29dMcM91SriphlwQXXbCVk1",
+					"displayName": "Recap Lrg",
+					"providerDisplayName": "Recap Lrg",
+					"email": "user9@example.com",
+					"emailVerified": true,
+					"photoURL": "https://example.com/photo/10",
+					"providerId": "google.com"
+				},
+				"votes": []
+			}
+		},
+		{
+			"case": "deleted account",
+			"userId": "6YW8irLQQ1hcazJwJGAR3vDFge93",
+			"user":
+			{
+				"favorites":
+				{
+					"-M6bVNM5QGKsx986IfGh": true,
+					"-M09ncl6buKTEBZFonGd": true,
+					"-M-xsLNzYiM2gacuB2ln": true,
+					"-LqNf2l9P103WklLbVzA": true
+				},
+				"displayName": "Inferno IV",
+				"email": "user10@example.com",
+				"emailVerified": true,
+				"photoURL": "https://example.com/photo/11",
+				"providerDisplayName": "Joost Nieuweboer",
+				"providerId": "google.com"
+			},
+			"blueprintAuthors":
+			{
+				"-M6bVNM5QGKsx986IfGh": "dhoe5Q1oQ0baOHZzZRTqk7xXPOG3",
+				"-M09ncl6buKTEBZFonGd": "KUhD01lo2pctrfTnVN7wQXw8lmD2",
+				"-M-xsLNzYiM2gacuB2ln": "Y9pLrcdrVOV2v7nOPNsvZkfuC4k1",
+				"-LqNf2l9P103WklLbVzA": "1xuwCtyGuYZcxGPfozeftPIp9o63"
+			},
+			"expected":
+			{
+				"firebaseUser":
+				{
+					"userId": "6YW8irLQQ1hcazJwJGAR3vDFge93",
+					"displayName": "deleted account",
+					"providerDisplayName": "deleted account",
+					"email": "deleted account",
+					"emailVerified": true,
+					"photoURL": "deleted account",
+					"providerId": "google.com"
+				},
+				"votes": []
+			}
+		}
+	],
+	"tags":
+	{
+		"byTag":
+		{
+			"belt":
+			{
+				"balancer": {},
+				"express transport belt (blue)": {},
+				"fast transport belt (red)": {},
+				"prioritizer": {},
+				"tap": {},
+				"transport belt (yellow)": {}
+			},
+			"circuit":
+			{
+				"indicator": {},
+				"counter": {}
+			},
+			"combat":
+			{
+				"defense": {},
+				"offense": {}
+			},
+			"general":
+			{
+				"achievement": {},
+				"art": {},
+				"beaconized": {},
+				"chunk aligned": {},
+				"compact": {},
+				"early game": {},
+				"late game (megabase)": {},
+				"marathon": {},
+				"mid game": {},
+				"scenario": {},
+				"speedrun": {},
+				"storage": {},
+				"text": {},
+				"tileable": {},
+				"ups friendly": {}
+			},
+			"moderation":
+			{
+				"add english translation": {},
+				"screenshot missing alt info": {},
+				"uncropped screenshot": {},
+				"duplicate": {}
+			},
+			"mods":
+			{
+				"5dim": {},
+				"aai": {},
+				"angels": {},
+				"bobs": {},
+				"creative": {},
+				"cybersyn": {},
+				"elevated-rails": {},
+				"factorissimo": {},
+				"industrial revolution": {},
+				"krastorio": {},
+				"lighted-electric-poles": {},
+				"ltn": {},
+				"other": {},
+				"pyanodons": {},
+				"quality": {},
+				"seablock": {},
+				"space-age": {},
+				"space-exploration": {},
+				"transport drones": {},
+				"vanilla": {},
+				"warehousing": {}
+			},
+			"planets":
+			{
+				"aquilo": {},
+				"fulgora": {},
+				"gleba": {},
+				"modded": {},
+				"nauvis": {},
+				"space-platform": {},
+				"vulcanus": {}
+			},
+			"power":
+			{
+				"accumulator": {},
+				"kovarex enrichment": {},
+				"nuclear": {},
+				"solar": {},
+				"steam": {}
+			},
+			"production":
+			{
+				"advanced circuit (red)": {},
+				"batteries": {},
+				"belt based": {},
+				"belts": {},
+				"coal liquification": {},
+				"electronic circuit (green)": {},
+				"guns and ammo": {},
+				"inserters": {},
+				"logistic (bot) based": {},
+				"mall (make everything)": {},
+				"mining": {},
+				"modules": {},
+				"oil processing": {},
+				"other": {},
+				"plastic": {},
+				"processing unit (blue)": {},
+				"research (labs)": {},
+				"robots": {},
+				"rocket parts": {},
+				"science": {},
+				"scrap processing": {},
+				"smelting": {},
+				"uranium": {}
+			},
+			"tag":
+			{
+				"ai-ready": {},
+				"automation": {},
+				"circuits": {},
+				"green-circuit": {},
+				"green-science": {},
+				"iron": {},
+				"metrics": {},
+				"mid-game": {},
+				"optimized": {},
+				"ratio": {},
+				"red-science": {},
+				"science": {},
+				"smelting": {},
+				"starter": {}
+			},
+			"train":
+			{
+				"crossing": {},
+				"junction": {},
+				"left-hand-drive": {},
+				"loading station": {},
+				"pax": {},
+				"right-hand-drive": {},
+				"roundabout": {},
+				"stacker": {},
+				"track": {},
+				"unloading station": {}
+			},
+			"version":
+			{
+				"0,14": {},
+				"0,15": {},
+				"0,16": {},
+				"0,17": {},
+				"0,18": {},
+				"1,0": {},
+				"1,1": {},
+				"2,0": {},
+				"2,1": {},
+				"unknown": {}
+			}
+		},
+		"existing": [
+			{
+				"category": "general",
+				"name": "tileable",
+				"ordinal": 1
+			},
+			{
+				"category": "power",
+				"name": "solar",
+				"ordinal": 2
+			},
+			{
+				"category": "belt",
+				"name": "express transport belt (blue)",
+				"ordinal": 9
+			},
+			{
+				"category": "production",
+				"name": "science",
+				"ordinal": 15
+			},
+			{
+				"category": "production",
+				"name": "advanced circuit (red)",
+				"ordinal": 14
+			},
+			{
+				"category": "belt",
+				"name": "transport belt (yellow)",
+				"ordinal": 11
+			},
+			{
+				"category": "production",
+				"name": "smelting",
+				"ordinal": 17
+			},
+			{
+				"category": "production",
+				"name": "logistic (bot) based",
+				"ordinal": 16
+			},
+			{
+				"category": "belt",
+				"name": "balancer",
+				"ordinal": 12
+			},
+			{
+				"category": "general",
+				"name": "beaconized",
+				"ordinal": 3
+			},
+			{
+				"category": "power",
+				"name": "kovarex enrichment",
+				"ordinal": 4
+			},
+			{
+				"category": "mods",
+				"name": "vanilla",
+				"ordinal": 8
+			},
+			{
+				"category": "power",
+				"name": "nuclear",
+				"ordinal": 5
+			},
+			{
+				"category": "version",
+				"name": "0,15",
+				"ordinal": 7
+			},
+			{
+				"category": "belt",
+				"name": "fast transport belt (red)",
+				"ordinal": 10
+			},
+			{
+				"category": "train",
+				"name": "crossing",
+				"ordinal": 6
+			},
+			{
+				"category": "production",
+				"name": "electronic circuit (green)",
+				"ordinal": 18
+			},
+			{
+				"category": "belt",
+				"name": "tap",
+				"ordinal": 13
+			},
+			{
+				"category": "production",
+				"name": "uranium",
+				"ordinal": 19
+			},
+			{
+				"category": "general",
+				"name": "early game",
+				"ordinal": 20
+			},
+			{
+				"category": "train",
+				"name": "left-hand-drive",
+				"ordinal": 22
+			},
+			{
+				"category": "train",
+				"name": "right-hand-drive",
+				"ordinal": 23
+			},
+			{
+				"category": "production",
+				"name": "oil processing",
+				"ordinal": 26
+			},
+			{
+				"category": "train",
+				"name": "pax",
+				"ordinal": 24
+			},
+			{
+				"category": "mods",
+				"name": "angels",
+				"ordinal": 25
+			},
+			{
+				"category": "train",
+				"name": "junction",
+				"ordinal": 21
+			},
+			{
+				"category": "production",
+				"name": "mall (make everything)",
+				"ordinal": 32
+			},
+			{
+				"category": "production",
+				"name": "belt based",
+				"ordinal": 31
+			},
+			{
+				"category": "production",
+				"name": "belts",
+				"ordinal": 29
+			},
+			{
+				"category": "production",
+				"name": "processing unit (blue)",
+				"ordinal": 30
+			},
+			{
+				"category": "version",
+				"name": "0,14",
+				"ordinal": 28
+			},
+			{
+				"category": "general",
+				"name": "mid game",
+				"ordinal": 27
+			},
+			{
+				"category": "power",
+				"name": "steam",
+				"ordinal": 34
+			},
+			{
+				"category": "general",
+				"name": "late game (megabase)",
+				"ordinal": 33
+			},
+			{
+				"category": "production",
+				"name": "batteries",
+				"ordinal": 36
+			},
+			{
+				"category": "production",
+				"name": "coal liquification",
+				"ordinal": 35
+			},
+			{
+				"category": "production",
+				"name": "modules",
+				"ordinal": 37
+			},
+			{
+				"category": "mods",
+				"name": "factorissimo",
+				"ordinal": 39
+			},
+			{
+				"category": "train",
+				"name": "unloading station",
+				"ordinal": 38
+			},
+			{
+				"category": "production",
+				"name": "rocket parts",
+				"ordinal": 40
+			},
+			{
+				"category": "general",
+				"name": "marathon",
+				"ordinal": 41
+			},
+			{
+				"category": "production",
+				"name": "research (labs)",
+				"ordinal": 42
+			},
+			{
+				"category": "circuit",
+				"name": "indicator",
+				"ordinal": 44
+			},
+			{
+				"category": "power",
+				"name": "accumulator",
+				"ordinal": 43
+			},
+			{
+				"category": "circuit",
+				"name": "counter",
+				"ordinal": 45
+			},
+			{
+				"category": "production",
+				"name": "inserters",
+				"ordinal": 48
+			},
+			{
+				"category": "general",
+				"name": "compact",
+				"ordinal": 46
+			},
+			{
+				"category": "moderation",
+				"name": "screenshot missing alt info",
+				"ordinal": 49
+			},
+			{
+				"category": "production",
+				"name": "mining",
+				"ordinal": 47
+			},
+			{
+				"category": "moderation",
+				"name": "uncropped screenshot",
+				"ordinal": 51
+			},
+			{
+				"category": "moderation",
+				"name": "add english translation",
+				"ordinal": 52
+			},
+			{
+				"category": "train",
+				"name": "loading station",
+				"ordinal": 53
+			},
+			{
+				"category": "train",
+				"name": "roundabout",
+				"ordinal": 54
+			},
+			{
+				"category": "mods",
+				"name": "creative",
+				"ordinal": 55
+			},
+			{
+				"category": "train",
+				"name": "stacker",
+				"ordinal": 56
+			},
+			{
+				"category": "mods",
+				"name": "bobs",
+				"ordinal": 57
+			},
+			{
+				"category": "production",
+				"name": "guns and ammo",
+				"ordinal": 58
+			},
+			{
+				"category": "production",
+				"name": "robots",
+				"ordinal": 59
+			},
+			{
+				"category": "mods",
+				"name": "lighted-electric-poles",
+				"ordinal": 60
+			},
+			{
+				"category": "mods",
+				"name": "other",
+				"ordinal": 61
+			},
+			{
+				"category": "mods",
+				"name": "warehousing",
+				"ordinal": 62
+			},
+			{
+				"category": "general",
+				"name": "storage",
+				"ordinal": 63
+			},
+			{
+				"category": "train",
+				"name": "track",
+				"ordinal": 64
+			},
+			{
+				"category": "production",
+				"name": "other",
+				"ordinal": 65
+			},
+			{
+				"category": "production",
+				"name": "plastic",
+				"ordinal": 66
+			},
+			{
+				"category": "version",
+				"name": "unknown",
+				"ordinal": 67
+			},
+			{
+				"category": "version",
+				"name": "0,16",
+				"ordinal": 68
+			},
+			{
+				"category": "belt",
+				"name": "prioritizer",
+				"ordinal": 69
+			},
+			{
+				"category": "general",
+				"name": "chunk aligned",
+				"ordinal": 70
+			},
+			{
+				"category": "mods",
+				"name": "aai",
+				"ordinal": 71
+			},
+			{
+				"category": "mods",
+				"name": "5dim",
+				"ordinal": 72
+			},
+			{
+				"category": "mods",
+				"name": "ltn",
+				"ordinal": 73
+			},
+			{
+				"category": "version",
+				"name": "0,17",
+				"ordinal": 74
+			},
+			{
+				"category": "mods",
+				"name": "seablock",
+				"ordinal": 76
+			},
+			{
+				"category": "version",
+				"name": "0,18",
+				"ordinal": 77
+			},
+			{
+				"category": "mods",
+				"name": "industrial revolution",
+				"ordinal": 75
+			},
+			{
+				"category": "mods",
+				"name": "krastorio",
+				"ordinal": 78
+			},
+			{
+				"category": "mods",
+				"name": "transport drones",
+				"ordinal": 79
+			},
+			{
+				"category": "version",
+				"name": "1,0",
+				"ordinal": 80
+			},
+			{
+				"category": "version",
+				"name": "1,1",
+				"ordinal": 81
+			},
+			{
+				"category": "mods",
+				"name": "space-exploration",
+				"ordinal": 82
+			},
+			{
+				"category": "general",
+				"name": "ups friendly",
+				"ordinal": 83
+			},
+			{
+				"category": "general",
+				"name": "art",
+				"ordinal": 84
+			},
+			{
+				"category": "general",
+				"name": "scenario",
+				"ordinal": 85
+			},
+			{
+				"category": "combat",
+				"name": "defense",
+				"ordinal": 86
+			},
+			{
+				"category": "combat",
+				"name": "offense",
+				"ordinal": 87
+			},
+			{
+				"category": "version",
+				"name": "2,0",
+				"ordinal": 88
+			},
+			{
+				"category": "planets",
+				"name": "space-platform",
+				"ordinal": 90
+			},
+			{
+				"category": "mods",
+				"name": "space-age",
+				"ordinal": 89
+			},
+			{
+				"category": "planets",
+				"name": "fulgora",
+				"ordinal": 91
+			},
+			{
+				"category": "mods",
+				"name": "quality",
+				"ordinal": 94
+			},
+			{
+				"category": "mods",
+				"name": "elevated-rails",
+				"ordinal": 93
+			},
+			{
+				"category": "planets",
+				"name": "vulcanus",
+				"ordinal": 95
+			},
+			{
+				"category": "planets",
+				"name": "nauvis",
+				"ordinal": 97
+			},
+			{
+				"category": "planets",
+				"name": "aquilo",
+				"ordinal": 96
+			},
+			{
+				"category": "planets",
+				"name": "gleba",
+				"ordinal": 98
+			},
+			{
+				"category": "production",
+				"name": "scrap processing",
+				"ordinal": 100
+			},
+			{
+				"category": "moderation",
+				"name": "duplicate",
+				"ordinal": 99
+			},
+			{
+				"category": "general",
+				"name": "text",
+				"ordinal": 104
+			},
+			{
+				"category": "planets",
+				"name": "modded",
+				"ordinal": 105
+			},
+			{
+				"category": "general",
+				"name": "achievement",
+				"ordinal": 106
+			},
+			{
+				"category": "general",
+				"name": "speedrun",
+				"ordinal": 107
+			},
+			{
+				"category": "mods",
+				"name": "cybersyn",
+				"ordinal": 108
+			},
+			{
+				"category": "mods",
+				"name": "pyanodons",
+				"ordinal": 109
+			},
+			{
+				"category": "tag",
+				"name": "automation",
+				"ordinal": 111
+			},
+			{
+				"category": "tag",
+				"name": "iron",
+				"ordinal": 112
+			},
+			{
+				"category": "tag",
+				"name": "ai-ready",
+				"ordinal": 110
+			},
+			{
+				"category": "tag",
+				"name": "metrics",
+				"ordinal": 113
+			},
+			{
+				"category": "tag",
+				"name": "optimized",
+				"ordinal": 114
+			},
+			{
+				"category": "tag",
+				"name": "starter",
+				"ordinal": 117
+			},
+			{
+				"category": "tag",
+				"name": "ratio",
+				"ordinal": 115
+			},
+			{
+				"category": "tag",
+				"name": "smelting",
+				"ordinal": 116
+			},
+			{
+				"category": "tag",
+				"name": "mid-game",
+				"ordinal": 121
+			},
+			{
+				"category": "tag",
+				"name": "science",
+				"ordinal": 123
+			},
+			{
+				"category": "tag",
+				"name": "circuits",
+				"ordinal": 118
+			},
+			{
+				"category": "tag",
+				"name": "green-circuit",
+				"ordinal": 119
+			},
+			{
+				"category": "tag",
+				"name": "green-science",
+				"ordinal": 120
+			},
+			{
+				"category": "tag",
+				"name": "red-science",
+				"ordinal": 122
+			},
+			{
+				"category": "version",
+				"name": "2,1",
+				"ordinal": 124
+			}
+		],
+		"expected": [
+			{
+				"category": "general",
+				"name": "tileable",
+				"ordinal": 1
+			},
+			{
+				"category": "power",
+				"name": "solar",
+				"ordinal": 2
+			},
+			{
+				"category": "belt",
+				"name": "express transport belt (blue)",
+				"ordinal": 9
+			},
+			{
+				"category": "production",
+				"name": "science",
+				"ordinal": 15
+			},
+			{
+				"category": "production",
+				"name": "advanced circuit (red)",
+				"ordinal": 14
+			},
+			{
+				"category": "belt",
+				"name": "transport belt (yellow)",
+				"ordinal": 11
+			},
+			{
+				"category": "production",
+				"name": "smelting",
+				"ordinal": 17
+			},
+			{
+				"category": "production",
+				"name": "logistic (bot) based",
+				"ordinal": 16
+			},
+			{
+				"category": "belt",
+				"name": "balancer",
+				"ordinal": 12
+			},
+			{
+				"category": "general",
+				"name": "beaconized",
+				"ordinal": 3
+			},
+			{
+				"category": "power",
+				"name": "kovarex enrichment",
+				"ordinal": 4
+			},
+			{
+				"category": "mods",
+				"name": "vanilla",
+				"ordinal": 8
+			},
+			{
+				"category": "power",
+				"name": "nuclear",
+				"ordinal": 5
+			},
+			{
+				"category": "version",
+				"name": "0,15",
+				"ordinal": 7
+			},
+			{
+				"category": "belt",
+				"name": "fast transport belt (red)",
+				"ordinal": 10
+			},
+			{
+				"category": "train",
+				"name": "crossing",
+				"ordinal": 6
+			},
+			{
+				"category": "production",
+				"name": "electronic circuit (green)",
+				"ordinal": 18
+			},
+			{
+				"category": "belt",
+				"name": "tap",
+				"ordinal": 13
+			},
+			{
+				"category": "production",
+				"name": "uranium",
+				"ordinal": 19
+			},
+			{
+				"category": "general",
+				"name": "early game",
+				"ordinal": 20
+			},
+			{
+				"category": "train",
+				"name": "left-hand-drive",
+				"ordinal": 22
+			},
+			{
+				"category": "train",
+				"name": "right-hand-drive",
+				"ordinal": 23
+			},
+			{
+				"category": "production",
+				"name": "oil processing",
+				"ordinal": 26
+			},
+			{
+				"category": "train",
+				"name": "pax",
+				"ordinal": 24
+			},
+			{
+				"category": "mods",
+				"name": "angels",
+				"ordinal": 25
+			},
+			{
+				"category": "train",
+				"name": "junction",
+				"ordinal": 21
+			},
+			{
+				"category": "production",
+				"name": "mall (make everything)",
+				"ordinal": 32
+			},
+			{
+				"category": "production",
+				"name": "belt based",
+				"ordinal": 31
+			},
+			{
+				"category": "production",
+				"name": "belts",
+				"ordinal": 29
+			},
+			{
+				"category": "production",
+				"name": "processing unit (blue)",
+				"ordinal": 30
+			},
+			{
+				"category": "version",
+				"name": "0,14",
+				"ordinal": 28
+			},
+			{
+				"category": "general",
+				"name": "mid game",
+				"ordinal": 27
+			},
+			{
+				"category": "power",
+				"name": "steam",
+				"ordinal": 34
+			},
+			{
+				"category": "general",
+				"name": "late game (megabase)",
+				"ordinal": 33
+			},
+			{
+				"category": "production",
+				"name": "batteries",
+				"ordinal": 36
+			},
+			{
+				"category": "production",
+				"name": "coal liquification",
+				"ordinal": 35
+			},
+			{
+				"category": "production",
+				"name": "modules",
+				"ordinal": 37
+			},
+			{
+				"category": "mods",
+				"name": "factorissimo",
+				"ordinal": 39
+			},
+			{
+				"category": "train",
+				"name": "unloading station",
+				"ordinal": 38
+			},
+			{
+				"category": "production",
+				"name": "rocket parts",
+				"ordinal": 40
+			},
+			{
+				"category": "general",
+				"name": "marathon",
+				"ordinal": 41
+			},
+			{
+				"category": "production",
+				"name": "research (labs)",
+				"ordinal": 42
+			},
+			{
+				"category": "circuit",
+				"name": "indicator",
+				"ordinal": 44
+			},
+			{
+				"category": "power",
+				"name": "accumulator",
+				"ordinal": 43
+			},
+			{
+				"category": "circuit",
+				"name": "counter",
+				"ordinal": 45
+			},
+			{
+				"category": "production",
+				"name": "inserters",
+				"ordinal": 48
+			},
+			{
+				"category": "general",
+				"name": "compact",
+				"ordinal": 46
+			},
+			{
+				"category": "moderation",
+				"name": "screenshot missing alt info",
+				"ordinal": 49
+			},
+			{
+				"category": "production",
+				"name": "mining",
+				"ordinal": 47
+			},
+			{
+				"category": "moderation",
+				"name": "uncropped screenshot",
+				"ordinal": 51
+			},
+			{
+				"category": "moderation",
+				"name": "add english translation",
+				"ordinal": 52
+			},
+			{
+				"category": "train",
+				"name": "loading station",
+				"ordinal": 53
+			},
+			{
+				"category": "train",
+				"name": "roundabout",
+				"ordinal": 54
+			},
+			{
+				"category": "mods",
+				"name": "creative",
+				"ordinal": 55
+			},
+			{
+				"category": "train",
+				"name": "stacker",
+				"ordinal": 56
+			},
+			{
+				"category": "mods",
+				"name": "bobs",
+				"ordinal": 57
+			},
+			{
+				"category": "production",
+				"name": "guns and ammo",
+				"ordinal": 58
+			},
+			{
+				"category": "production",
+				"name": "robots",
+				"ordinal": 59
+			},
+			{
+				"category": "mods",
+				"name": "lighted-electric-poles",
+				"ordinal": 60
+			},
+			{
+				"category": "mods",
+				"name": "other",
+				"ordinal": 61
+			},
+			{
+				"category": "mods",
+				"name": "warehousing",
+				"ordinal": 62
+			},
+			{
+				"category": "general",
+				"name": "storage",
+				"ordinal": 63
+			},
+			{
+				"category": "train",
+				"name": "track",
+				"ordinal": 64
+			},
+			{
+				"category": "production",
+				"name": "other",
+				"ordinal": 65
+			},
+			{
+				"category": "production",
+				"name": "plastic",
+				"ordinal": 66
+			},
+			{
+				"category": "version",
+				"name": "unknown",
+				"ordinal": 67
+			},
+			{
+				"category": "version",
+				"name": "0,16",
+				"ordinal": 68
+			},
+			{
+				"category": "belt",
+				"name": "prioritizer",
+				"ordinal": 69
+			},
+			{
+				"category": "general",
+				"name": "chunk aligned",
+				"ordinal": 70
+			},
+			{
+				"category": "mods",
+				"name": "aai",
+				"ordinal": 71
+			},
+			{
+				"category": "mods",
+				"name": "5dim",
+				"ordinal": 72
+			},
+			{
+				"category": "mods",
+				"name": "ltn",
+				"ordinal": 73
+			},
+			{
+				"category": "version",
+				"name": "0,17",
+				"ordinal": 74
+			},
+			{
+				"category": "mods",
+				"name": "seablock",
+				"ordinal": 76
+			},
+			{
+				"category": "version",
+				"name": "0,18",
+				"ordinal": 77
+			},
+			{
+				"category": "mods",
+				"name": "industrial revolution",
+				"ordinal": 75
+			},
+			{
+				"category": "mods",
+				"name": "krastorio",
+				"ordinal": 78
+			},
+			{
+				"category": "mods",
+				"name": "transport drones",
+				"ordinal": 79
+			},
+			{
+				"category": "version",
+				"name": "1,0",
+				"ordinal": 80
+			},
+			{
+				"category": "version",
+				"name": "1,1",
+				"ordinal": 81
+			},
+			{
+				"category": "mods",
+				"name": "space-exploration",
+				"ordinal": 82
+			},
+			{
+				"category": "general",
+				"name": "ups friendly",
+				"ordinal": 83
+			},
+			{
+				"category": "general",
+				"name": "art",
+				"ordinal": 84
+			},
+			{
+				"category": "general",
+				"name": "scenario",
+				"ordinal": 85
+			},
+			{
+				"category": "combat",
+				"name": "defense",
+				"ordinal": 86
+			},
+			{
+				"category": "combat",
+				"name": "offense",
+				"ordinal": 87
+			},
+			{
+				"category": "version",
+				"name": "2,0",
+				"ordinal": 88
+			},
+			{
+				"category": "planets",
+				"name": "space-platform",
+				"ordinal": 90
+			},
+			{
+				"category": "mods",
+				"name": "space-age",
+				"ordinal": 89
+			},
+			{
+				"category": "planets",
+				"name": "fulgora",
+				"ordinal": 91
+			},
+			{
+				"category": "mods",
+				"name": "quality",
+				"ordinal": 94
+			},
+			{
+				"category": "mods",
+				"name": "elevated-rails",
+				"ordinal": 93
+			},
+			{
+				"category": "planets",
+				"name": "vulcanus",
+				"ordinal": 95
+			},
+			{
+				"category": "planets",
+				"name": "nauvis",
+				"ordinal": 97
+			},
+			{
+				"category": "planets",
+				"name": "aquilo",
+				"ordinal": 96
+			},
+			{
+				"category": "planets",
+				"name": "gleba",
+				"ordinal": 98
+			},
+			{
+				"category": "production",
+				"name": "scrap processing",
+				"ordinal": 100
+			},
+			{
+				"category": "moderation",
+				"name": "duplicate",
+				"ordinal": 99
+			},
+			{
+				"category": "general",
+				"name": "text",
+				"ordinal": 104
+			},
+			{
+				"category": "planets",
+				"name": "modded",
+				"ordinal": 105
+			},
+			{
+				"category": "general",
+				"name": "achievement",
+				"ordinal": 106
+			},
+			{
+				"category": "general",
+				"name": "speedrun",
+				"ordinal": 107
+			},
+			{
+				"category": "mods",
+				"name": "cybersyn",
+				"ordinal": 108
+			},
+			{
+				"category": "mods",
+				"name": "pyanodons",
+				"ordinal": 109
+			},
+			{
+				"category": "version",
+				"name": "2,1",
+				"ordinal": 124
+			}
+		]
+	},
+	"comments": [
+		{
+			"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+			"comments":
+			{
+				"-OXUu6o9jffVIOepBVZN":
+				{
+					"authorDisplayName": "Craig P. Motlin",
+					"authorId": "disqus_craig_p__motlin",
+					"content": "<p>I really like this one. I use</p>",
+					"createdAt": 1481425721000,
+					"deletedAt": 1481425721000,
+					"deletedReason": "Migrated from Disqus as deleted",
+					"isDeleted": true,
+					"updatedAt": 1481425721000
+				},
+				"-OXUu6oogCQyMLsSDn75":
+				{
+					"authorDisplayName": "Richardt Radek Larsen",
+					"authorId": "disqus_richardt_radek_larsen",
+					"content": "<p>Whenever i place this, the blueprint moves all accumulators and relay stations by 1. Is this a blueprint error, or an error on my end ?</p>",
+					"createdAt": 1490043080000,
+					"isDeleted": false,
+					"updatedAt": 1490043080000
+				},
+				"-OXUu6qDU8e3oJaUL0dp":
+				{
+					"authorDisplayName": "Factorio Blueprints",
+					"authorId": "disqus_factorio_blueprints",
+					"content": "<p>Thanks, this works perfectly. I'm just going to edit the blueprint string in the post to use this one instead.</p>",
+					"createdAt": 1494423743000,
+					"isDeleted": false,
+					"parentId": "-OXUu6pZtJjNjoPRO9bz",
+					"updatedAt": 1494423743000
+				},
+				"-OXUu6quBvznb3lQ9h3C":
+				{
+					"authorDisplayName": "Iron Hair",
+					"authorId": "disqus_iron_hair",
+					"content": "<p>Is this still efficient post the increase in substation power supply radius and wire reach?</p>",
+					"createdAt": 1514548232000,
+					"isDeleted": false,
+					"updatedAt": 1514548232000
+				},
+				"-OXUu6rciWWGs1zNxiGD":
+				{
+					"authorDisplayName": "Toaster",
+					"authorId": "disqus_toaster",
+					"content": "<p>what is the roboport for?</p>",
+					"createdAt": 1520132630000,
+					"isDeleted": false,
+					"updatedAt": 1520132630000
+				},
+				"-OXUu6sGR9rC2FenTOZU":
+				{
+					"authorDisplayName": "STYX",
+					"authorId": "disqus_styx",
+					"content": "<p>Building the array</p>",
+					"createdAt": 1521474635000,
+					"isDeleted": false,
+					"parentId": "-OXUu6rciWWGs1zNxiGD",
+					"updatedAt": 1521474635000
+				},
+				"-OXUu6suihbMkpK9uHks":
+				{
+					"authorDisplayName": "Michael House",
+					"authorId": "disqus_michael_house",
+					"content": "<p>not sure if anyone would care to do this, but with a slight modification, you can get 1 more accumulator. it becomes non/symmetrical, but technically more efficient. you would put only 1 additional accumulator per 5 arrays instead of 6. if someone is interested, ill post it.</p>",
+					"createdAt": 1553459961000,
+					"isDeleted": false,
+					"updatedAt": 1553459961000
+				},
+				"-OXUu6tgXgPvKui6tTfv":
+				{
+					"authorDisplayName": "KDN",
+					"authorId": "disqus_kdn",
+					"content": "<p>I am</p>",
+					"createdAt": 1556047981000,
+					"isDeleted": false,
+					"parentId": "-OXUu6suihbMkpK9uHks",
+					"updatedAt": 1556047981000
+				}
+			},
+			"blueprintExists": true,
+			"expected": [
+				{
+					"id": "-OXUu6qDU8e3oJaUL0dp",
+					"replyToId": "-OXUu6pZtJjNjoPRO9bz",
+					"createdById": "disqus_factorio_blueprints",
+					"createdOn": 1494423743000,
+					"lastUpdatedById": "disqus_factorio_blueprints",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>Thanks, this works perfectly. I'm just going to edit the blueprint string in the post to use this one instead.</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu6oogCQyMLsSDn75",
+					"replyToId": null,
+					"createdById": "disqus_richardt_radek_larsen",
+					"createdOn": 1490043080000,
+					"lastUpdatedById": "disqus_richardt_radek_larsen",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>Whenever i place this, the blueprint moves all accumulators and relay stations by 1. Is this a blueprint error, or an error on my end ?</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu6tgXgPvKui6tTfv",
+					"replyToId": "-OXUu6suihbMkpK9uHks",
+					"createdById": "disqus_kdn",
+					"createdOn": 1556047981000,
+					"lastUpdatedById": "disqus_kdn",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>I am</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu6quBvznb3lQ9h3C",
+					"replyToId": null,
+					"createdById": "disqus_iron_hair",
+					"createdOn": 1514548232000,
+					"lastUpdatedById": "disqus_iron_hair",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>Is this still efficient post the increase in substation power supply radius and wire reach?</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu6sGR9rC2FenTOZU",
+					"replyToId": "-OXUu6rciWWGs1zNxiGD",
+					"createdById": "disqus_styx",
+					"createdOn": 1521474635000,
+					"lastUpdatedById": "disqus_styx",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>Building the array</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu6rciWWGs1zNxiGD",
+					"replyToId": null,
+					"createdById": "disqus_toaster",
+					"createdOn": 1520132630000,
+					"lastUpdatedById": "disqus_toaster",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>what is the roboport for?</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu6suihbMkpK9uHks",
+					"replyToId": null,
+					"createdById": "disqus_michael_house",
+					"createdOn": 1553459961000,
+					"lastUpdatedById": "disqus_michael_house",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>not sure if anyone would care to do this, but with a slight modification, you can get 1 more accumulator. it becomes non/symmetrical, but technically more efficient. you would put only 1 additional accumulator per 5 arrays instead of 6. if someone is interested, ill post it.</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu6o9jffVIOepBVZN",
+					"replyToId": null,
+					"createdById": "disqus_craig_p__motlin",
+					"createdOn": 1481425721000,
+					"lastUpdatedById": "disqus_craig_p__motlin",
+					"blueprintKey": "-KYeNAYQVgk2DcbuORde",
+					"text": "<p>I really like this one. I use</p>",
+					"deleted": true
+				}
+			]
+		},
+		{
+			"blueprintKey": "-KZGMoiKxO8HsEngq0B7",
+			"comments":
+			{
+				"-OXUu7OSQNjUXElCzY30":
+				{
+					"authorDisplayName": "disqus_9EbrqhVEjL",
+					"authorId": "disqus_disqus_9ebrqhvejl",
+					"content": "<p>Unknown version ('H')</p>",
+					"createdAt": 1501192341000,
+					"isDeleted": false,
+					"updatedAt": 1501192341000
+				},
+				"-OXUu7PCwfBmZcco9WHN":
+				{
+					"authorDisplayName": "disqus_9EbrqhVEjL",
+					"authorId": "disqus_disqus_9ebrqhvejl",
+					"content": "<p>Nevermind, there is a button to convert to version 0.15 and it worked!</p>",
+					"createdAt": 1501192416000,
+					"isDeleted": false,
+					"parentId": "-OXUu7OSQNjUXElCzY30",
+					"updatedAt": 1501192416000
+				},
+				"-OXUu7Ps8EXugxFXDL6q":
+				{
+					"authorDisplayName": "eeBs",
+					"authorId": "disqus_eebs",
+					"content": "<p>RIP, Not working on 0.16.51</p>",
+					"createdAt": 1529559698000,
+					"deletedAt": 1529559698000,
+					"deletedReason": "Migrated from Disqus as deleted",
+					"isDeleted": true,
+					"updatedAt": 1529559698000
+				}
+			},
+			"blueprintExists": true,
+			"expected": [
+				{
+					"id": "-OXUu7Ps8EXugxFXDL6q",
+					"replyToId": null,
+					"createdById": "disqus_eebs",
+					"createdOn": 1529559698000,
+					"lastUpdatedById": "disqus_eebs",
+					"blueprintKey": "-KZGMoiKxO8HsEngq0B7",
+					"text": "<p>RIP, Not working on 0.16.51</p>",
+					"deleted": true
+				},
+				{
+					"id": "-OXUu7PCwfBmZcco9WHN",
+					"replyToId": "-OXUu7OSQNjUXElCzY30",
+					"createdById": "disqus_disqus_9ebrqhvejl",
+					"createdOn": 1501192416000,
+					"lastUpdatedById": "disqus_disqus_9ebrqhvejl",
+					"blueprintKey": "-KZGMoiKxO8HsEngq0B7",
+					"text": "<p>Nevermind, there is a button to convert to version 0.15 and it worked!</p>",
+					"deleted": false
+				},
+				{
+					"id": "-OXUu7OSQNjUXElCzY30",
+					"replyToId": null,
+					"createdById": "disqus_disqus_9ebrqhvejl",
+					"createdOn": 1501192341000,
+					"lastUpdatedById": "disqus_disqus_9ebrqhvejl",
+					"blueprintKey": "-KZGMoiKxO8HsEngq0B7",
+					"text": "<p>Unknown version ('H')</p>",
+					"deleted": false
+				}
+			]
+		},
+		{
+			"blueprintKey": "-OAgszIIxPPz7M7Zi5VE",
+			"comments":
+			{
+				"-OXUvP5b1G6C2eXt42ck":
+				{
+					"authorDisplayName": "Contomo",
+					"authorId": "disqus_contomo",
+					"content": "<p>Would be pretty cool, except its an absolute pain to connect/balance all the lanes coming out.</p>",
+					"createdAt": 1734030953000,
+					"isDeleted": false,
+					"updatedAt": 1734030953000
+				}
+			},
+			"blueprintExists": false,
+			"expected": []
+		}
+	],
+	"moderators":
+	{
+		"moderators":
+		{
+			"H3QlaVpvadfVuTpGGxs7016oR2K3": true,
+			"k9zbSt8hH4W5IKR5UnaKrPhEAVw2": true
+		},
+		"expected": [
+			{
+				"userId": "H3QlaVpvadfVuTpGGxs7016oR2K3",
+				"userRole": "administrator"
+			},
+			{
+				"userId": "k9zbSt8hH4W5IKR5UnaKrPhEAVw2",
+				"userRole": "administrator"
+			}
+		]
+	}
+}
