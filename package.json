@@ -92,7 +92,7 @@
 		"@types/react-dom": "19.3.0",
 		"@vitejs/plugin-react": "6.3.0",
 		"fake-indexeddb": "6.2.8",
-		"fallow": "3.43.1",
+		"fallow": "3.43.2",
 		"firebase-tools": "^15.36.0",
 		"jsdom": "31.0.1",
 		"markdownlint-cli2": "0.24.1",
