@@ -50,9 +50,31 @@ export interface ReconcileRequestBody
 	events: ReconcileEvent[];
 	expectedBlueprintKeys?: string[];
 	dumpTime?: number;
+	amendAudit?: boolean;
+	/** Instead of events: a page of stored strings whose game data is checked against today's parser. */
+	rederive?:
+	{
+		after: string;
+		limit: number;
+	};
 }
 
-export interface ReconcileReport
+export interface RederiveResponse
+{
+	rederive:
+	{
+		checked: number;
+		next: string | null;
+		missing: string[];
+		changed:
+		{
+			sha: string;
+			tables: string[];
+		}[];
+	};
+}
+
+export interface ReconcileResponse
 {
 	drift:
 	{
@@ -61,6 +83,7 @@ export interface ReconcileReport
 	}[];
 	stale: number;
 	ignored: number;
+	amended: number;
 }
 
 export interface BuildOptions
@@ -68,6 +91,11 @@ export interface BuildOptions
 	dumpTime: number;
 	mode: "shadow" | "repair";
 	chunkSize: number;
+	/**
+	 * The event time of a blueprint: the dump instant (the default), or the blueprint's own lastUpdatedDate, so a
+	 * version the dump brings in is dated by the save that made it. A blueprint without the date uses the dump instant.
+	 */
+	blueprintTime?: "dump" | "lastUpdatedDate";
 	/** A Firebase Auth export. Without one, user profiles are not reconciled. */
 	authUsers?: readonly AuthUser[];
 }
@@ -88,7 +116,9 @@ const dumpEvents = (dump: RealtimeDump, options: BuildOptions): ReconcileEvent[]
 				blueprint,
 				dump.blueprintsPrivate?.[key] ?? null,
 				dump.thumbnails?.[key] ?? null,
-				dumpTime,
+				options.blueprintTime === "lastUpdatedDate" && typeof blueprint.lastUpdatedDate === "number"
+					? blueprint.lastUpdatedDate
+					: dumpTime,
 			),
 		);
 	}
@@ -96,28 +126,22 @@ const dumpEvents = (dump: RealtimeDump, options: BuildOptions): ReconcileEvent[]
 	const authByUserId = options.authUsers && new Map(options.authUsers.map((user) => [user.localId, user]));
 	for (const [userId, user] of Object.entries(dump.users ?? {}))
 	{
-		if (user.favorites !== undefined)
-		{
-			events.push(
-				{
-					type: "favoriteList",
-					eventTime: dumpTime,
-					userId,
-					favorites: user.favorites,
-				},
-			);
-		}
-		if (user.collection !== undefined)
-		{
-			events.push(
-				{
-					type: "collectionList",
-					eventTime: dumpTime,
-					userId,
-					collection: user.collection,
-				},
-			);
-		}
+		// A user whose last favorite or collection entry was removed has no such node left, so an absent node is an
+		// empty list: it ends whatever the store still holds for them.
+		events.push(
+			{
+				type: "favoriteList",
+				eventTime: dumpTime,
+				userId,
+				favorites: user.favorites ?? {},
+			},
+			{
+				type: "collectionList",
+				eventTime: dumpTime,
+				userId,
+				collection: user.collection ?? {},
+			},
+		);
 		if (authByUserId !== undefined)
 		{
 			events.push(userEvent(userId, user, authByUserId.get(userId) ?? null, dumpTime));
@@ -164,10 +188,3 @@ export const buildReconcileRequests = (dump: RealtimeDump, options: BuildOptions
 	}
 	return requests;
 };
-
-export const mergeReports = (reports: readonly ReconcileReport[]): ReconcileReport => (
-{
-	drift: reports.flatMap((report) => report.drift),
-	stale: reports.reduce((total, report) => total + report.stale, 0),
-	ignored: reports.reduce((total, report) => total + report.ignored, 0),
-});

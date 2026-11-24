@@ -1,0 +1,11 @@
+{
+	// Node scripts that run the Worker's own code against a local SQLite database: Node types for the scripts, the
+	// Workers runtime types for the code they import.
+	"extends": "../tsconfig.json",
+	"compilerOptions":
+	{
+		"resolveJsonModule": true,
+		"types": ["node"]
+	},
+	"include": ["./**/*", "../worker-configuration.d.ts"]
+}

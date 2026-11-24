@@ -2,13 +2,13 @@
 // blueprint_string content column goes away when Klass's objectStorage keyword lands, and until then it holds "".
 // Every string read and write goes through these helpers, so the storage layout is decided in one place.
 
-const objectKey = (sha: string) => `strings/${sha}`;
+import {blueprintStringObjectKey} from "./stringLayout.ts";
 
 /** Stores a string under its digest. Content-addressed, so rewriting it is harmless. */
 export const putBlueprintString = async (bucket: R2Bucket, sha: string, content: string): Promise<void> =>
 {
 	await bucket.put(
-		objectKey(sha),
+		blueprintStringObjectKey(sha),
 		content,
 		{
 			httpMetadata:
@@ -21,9 +21,8 @@ export const putBlueprintString = async (bucket: R2Bucket, sha: string, content:
 
 export const getBlueprintString = async (bucket: R2Bucket, sha: string): Promise<string | null> =>
 {
-	const object = await bucket.get(objectKey(sha));
+	const object = await bucket.get(blueprintStringObjectKey(sha));
 	return object === null ? null : object.text();
 };
 
-/** The value written to blueprint_string.blueprint_string while the column still exists. */
-export const STRING_STORED_IN_R2 = "";
+export {STRING_STORED_IN_R2} from "./stringLayout.ts";

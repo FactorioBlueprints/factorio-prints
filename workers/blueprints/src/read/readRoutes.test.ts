@@ -99,16 +99,19 @@ beforeEach(async () =>
 	);
 });
 
-const get = (path: string, headers: Record<string, string> = {}) =>
+const request = (method: string, path: string, headers: Record<string, string> = {}) =>
 	worker.fetch(
 		new Request(
 			`https://blueprints.factorioprints.com${path}`,
 			{
+				method,
 				headers,
 			},
 		),
 		env,
 	);
+
+const get = (path: string, headers: Record<string, string> = {}) => request("GET", path, headers);
 
 const firebaseToken = (userId: string) =>
 	signToken(
@@ -298,6 +301,46 @@ describe("GET /blueprintSummaries", () =>
 	it("rejects an unknown sort", async () =>
 	{
 		expect((await get("/blueprintSummaries?orderBy=title")).status).toEqual(400);
+	});
+});
+
+describe("HEAD on the read routes", () =>
+{
+	it("answers with the status and headers of the same GET, and no body", async () =>
+	{
+		const answer = async (method: string, path: string, headers: Record<string, string> = {}) =>
+		{
+			const response = await request(method, path, headers);
+			return {
+				status: response.status,
+				headers: Object.fromEntries(response.headers),
+				body: await response.text(),
+			};
+		};
+		const cached =
+		{
+			"if-none-match": `"${t1}"`,
+		};
+		const paths: [string, Record<string, string>?][] = [
+			[`/blueprints/${key}`],
+			[`/blueprints/${key}`, cached],
+			["/blueprints/missing"],
+			["/blueprintSummaries?limit=1"],
+			["/blueprintSummaries?orderBy=title"],
+			["/unknown"],
+		];
+
+		const heads = await Promise.all(paths.map(([path, headers]) => answer("HEAD", path, headers)));
+		const gets = await Promise.all(paths.map(([path, headers]) => answer("GET", path, headers)));
+
+		expect(heads).toStrictEqual(
+			gets.map((response) => (
+			{
+				...response,
+				body: "",
+			})),
+		);
+		expect(gets.map((response) => response.status)).toStrictEqual([200, 304, 404, 200, 400, 404]);
 	});
 });
 

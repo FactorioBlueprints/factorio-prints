@@ -100,12 +100,13 @@ describe("POST /ingest", () =>
 		).toEqual(401);
 	});
 
-	it("accepts the runtime account of both generations of Cloud Functions, since the account-deletion trigger is first generation", async () =>
+	it("accepts the runtime account of both generations of Cloud Functions, since the account-deletion trigger is first generation, and the account the backup merge workflow runs as", async () =>
 	{
 		const statuses: number[] = [];
 		for (const email of [
 			"329845993350-compute@developer.gserviceaccount.com",
 			"facorio-blueprints@appspot.gserviceaccount.com",
+			"firebase-adminsdk-70chk@facorio-blueprints.iam.gserviceaccount.com",
 		])
 		{
 			const response = await ingest(
@@ -117,7 +118,7 @@ describe("POST /ingest", () =>
 			statuses.push(response.status);
 		}
 
-		expect(statuses).toStrictEqual([200, 200]);
+		expect(statuses).toStrictEqual([200, 200, 200]);
 	});
 
 	it("rejects a malformed body", async () =>
@@ -285,6 +286,7 @@ describe("POST /reconcile", () =>
 				],
 				stale: 0,
 				ignored: 0,
+				amended: 0,
 			},
 		);
 		expect(await env.DB.prepare("SELECT count(*) AS count FROM user_entitlement").first("count")).toEqual(0);
@@ -301,6 +303,46 @@ describe("POST /reconcile", () =>
 		);
 
 		expect(await env.DB.prepare("SELECT count(*) AS count FROM user_entitlement").first("count")).toEqual(1);
+	});
+
+	it("checks a page of stored strings against the parser when asked to re-derive, and validates the page", async () =>
+	{
+		const page = await reconcileRequest(
+			{
+				mode: "shadow",
+				rederive:
+				{
+					after: "",
+					limit: 5,
+				},
+			},
+			await serviceAccountToken(),
+		);
+		const invalid = await reconcileRequest(
+			{
+				mode: "shadow",
+				rederive:
+				{
+					after: "",
+					limit: 0,
+				},
+			},
+			await serviceAccountToken(),
+		);
+
+		expect([page.status, await page.json(), invalid.status]).toEqual([
+			200,
+			{
+				rederive:
+				{
+					checked: 0,
+					next: null,
+					missing: [],
+					changed: [],
+				},
+			},
+			400,
+		]);
 	});
 
 	it("rejects an unknown mode", async () =>
