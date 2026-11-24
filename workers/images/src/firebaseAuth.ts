@@ -41,7 +41,13 @@ export interface VerifyIdTokenOptions
 	readonly publicKey: (keyId: string) => Promise<CryptoKey | null>;
 }
 
-const reject = (reason: IdTokenRejection): IdTokenVerification => (
+const reject = (
+	reason: IdTokenRejection,
+):
+{
+	readonly ok: false;
+	readonly reason: IdTokenRejection;
+} => (
 {
 	ok: false,
 	reason,
@@ -79,13 +85,26 @@ const decodeJsonSegment = (segment: string): Record<string, unknown> | null =>
 	}
 };
 
-const isFutureBeyondTolerance = (claim: unknown, now: number, clockToleranceSeconds: number): boolean =>
-	typeof claim === "number" && claim > now + clockToleranceSeconds;
+export type SignedJwtVerification =
+	|
+	  {
+			readonly ok: true;
+			readonly payload: Record<string, unknown>;
+	  }
+	|
+	  {
+			readonly ok: false;
+			readonly reason: IdTokenRejection;
+	  };
 
-export const verifyFirebaseIdToken = async (
+/**
+ * Decodes an RS256 JWT and checks its signature against the key its `kid` names. Claims are left to the caller,
+ * since Firebase ID tokens and Google service-account ID tokens check different issuers and audiences.
+ */
+export const verifyRs256Jwt = async (
 	token: string,
-	options: VerifyIdTokenOptions,
-): Promise<IdTokenVerification> =>
+	publicKeyFor: (keyId: string) => Promise<CryptoKey | null>,
+): Promise<SignedJwtVerification> =>
 {
 	const segments = token.split(".");
 	if (segments.length !== 3) return reject(IdTokenRejection.Malformed);
@@ -102,12 +121,31 @@ export const verifyFirebaseIdToken = async (
 		return reject(IdTokenRejection.UnknownKey);
 	}
 
-	const publicKey = await options.publicKey(header.kid);
+	const publicKey = await publicKeyFor(header.kid);
 	if (!publicKey) return reject(IdTokenRejection.UnknownKey);
 
 	const signedInput = new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`);
 	const signatureIsValid = await crypto.subtle.verify(verificationAlgorithm, publicKey, signature, signedInput);
 	if (!signatureIsValid) return reject(IdTokenRejection.InvalidSignature);
+
+	return {
+		ok: true,
+		payload,
+	};
+};
+
+/** True when an `iat`-style claim lies further in the future than the clock tolerance allows. */
+export const isFutureBeyondTolerance = (claim: unknown, now: number, clockToleranceSeconds: number): boolean =>
+	typeof claim === "number" && claim > now + clockToleranceSeconds;
+
+export const verifyFirebaseIdToken = async (
+	token: string,
+	options: VerifyIdTokenOptions,
+): Promise<IdTokenVerification> =>
+{
+	const verified = await verifyRs256Jwt(token, options.publicKey);
+	if (!verified.ok) return verified;
+	const {payload} = verified;
 
 	if (payload.aud !== options.projectId) return reject(IdTokenRejection.InvalidAudience);
 	if (payload.iss !== `https://securetoken.google.com/${options.projectId}`)
