@@ -301,8 +301,8 @@ importers:
         specifier: 6.0.0
         version: 6.0.0(firebase@13.4.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))
       '@sentry/vite-plugin':
-        specifier: 11.14.0
-        version: 11.14.0
+        specifier: 11.15.0
+        version: 11.15.0
       '@tanstack/router-cli':
         specifier: 1.168.0
         version: 1.168.0(supports-color@10.2.2)
@@ -2154,8 +2154,8 @@ packages:
     resolution: {integrity: sha512-oo2X3opEAgJ5I3doQjMagQLxvK3mtKw+mR0t2R0mVBHBFxxEVsVitj+mIH03Z1aZLqOyfhe0cO8DKbLTfTN8JQ==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
-  '@sentry/bundler-plugins@11.14.0':
-    resolution: {integrity: sha512-Afi4P+OLJP/fRjbt3h4r8ujBC9KulU9RB1pBhe8PgGHddo5hpXdn2eoDQMHPTnADqNONqqCP1DzbGwFmxVQkXA==}
+  '@sentry/bundler-plugins@11.15.0':
+    resolution: {integrity: sha512-SyqRR0H8DbVNQRaUNDy9mCQSqCVlYKxbmXkSErCOIUjfNWujsyVK5fnl5aIIYbDrj1Vy1TX8gAkmyPfMbMD/QQ==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
     peerDependencies:
       rollup: '>=3.2.0'
@@ -2169,10 +2169,6 @@ packages:
   '@sentry/conventions@0.33.0':
     resolution: {integrity: sha512-5aa3g/VOnMoL8yHbfkYIWBYC3BLgMudgRNBTKNMrcMEj1mE9aKIt/CYCG7sasijhiSU4nTcSEzyM2voIVzLCng==}
     engines: {node: '>=14'}
-
-  '@sentry/core@11.14.0':
-    resolution: {integrity: sha512-toRRdaZnm0anz/4gEkzyZC0yTCvR4R7U+024WQfjCwgklIFaYo9mjIBoElU8MJ1Sske0/RyvA0zltHfra6PvsQ==}
-    engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
   '@sentry/core@11.15.0':
     resolution: {integrity: sha512-zsprEOu/voisojJFnDIhPd+GhycAli/aqjV752eQHiNOrAwAvigCadsSh2ND5e1AEycvSmZTxOOhCNjWzSZ4Ng==}
@@ -2200,8 +2196,8 @@ packages:
     resolution: {integrity: sha512-HgfH4B0y88OzdYADL45/jy/CCxB9+XtWOWxZG/luaXiScAO7q5q4B3FogqnP9k/81r/0uf6cGXODWitFB9o9dw==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
-  '@sentry/vite-plugin@11.14.0':
-    resolution: {integrity: sha512-hX0fIQy9nMnFk5aIN72Z/uU8HzHFBefCXQ65lmO89Oyl0SUCW/6TxNn0deTZySDih+ov6O5FLIH1MauJdt+PxA==}
+  '@sentry/vite-plugin@11.15.0':
+    resolution: {integrity: sha512-D98/xSIaLz7LwwFNrFiovIyoqx557pWjC9o0+2J15tFokYLsK5aQb9sXNLkNyexxxgkz33dbdcuGGvDEhdk5uQ==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
   '@sindresorhus/is@4.6.0':
@@ -7816,9 +7812,9 @@ snapshots:
       '@sentry/replay': 11.15.0
       '@sentry/replay-canvas': 11.15.0
 
-  '@sentry/bundler-plugins@11.14.0':
+  '@sentry/bundler-plugins@11.15.0':
     dependencies:
-      '@sentry/core': 11.14.0
+      '@sentry/core': 11.15.0
       dotenv: 17.4.2
       glob: 14.0.4
       magic-string: 1.4.5
@@ -7826,10 +7822,6 @@ snapshots:
       sentry: 0.49.0
 
   '@sentry/conventions@0.33.0': {}
-
-  '@sentry/core@11.14.0':
-    dependencies:
-      '@sentry/conventions': 0.33.0
 
   '@sentry/core@11.15.0':
     dependencies:
@@ -7856,9 +7848,9 @@ snapshots:
       '@sentry/browser-utils': 11.15.0
       '@sentry/core': 11.15.0
 
-  '@sentry/vite-plugin@11.14.0':
+  '@sentry/vite-plugin@11.15.0':
     dependencies:
-      '@sentry/bundler-plugins': 11.14.0
+      '@sentry/bundler-plugins': 11.15.0
     transitivePeerDependencies:
       - rollup
       - webpack
